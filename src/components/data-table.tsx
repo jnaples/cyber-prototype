@@ -649,6 +649,7 @@ export function DataTable({
               width: "100%",
               border: "none",
               backgroundColor: "transparent",
+              "--DataGrid-overlayHeight": "320px",
               "& .MuiDataGrid-virtualScroller": {
                 overflowX: "auto",
               },

@@ -29,7 +29,6 @@ export function PageHeader({
         borderBottom: 1,
         borderColor: "divider",
         py: 2,
-        px: 3,
         width: "100%",
         position: "relative",
         zIndex: 1,
@@ -50,6 +49,7 @@ export function PageHeader({
             gap: 2,
             minWidth: 0,
             flex: 1,
+            px: 3,
           }}
         >
           {onBack && (

@@ -113,33 +113,213 @@ type RowSeed = {
   isThreat?: boolean;
 };
 
-const rows = ([
-  { time: "Nov 19, 2025 4:52:31 PM", fqdn: "github.com", result: "Allowed", categories: "Information Technology, Code Repositories", application: "Google Chrome", user: "analyst" },
-  { time: "Nov 19, 2025 4:38:15 PM", fqdn: "slack.com", result: "Allowed", categories: "Business, Collaboration", application: "Slack", user: "sales" },
-  { time: "Nov 19, 2025 4:21:48 PM", fqdn: "figma.com", result: "Allowed", categories: "Business, Design", application: "Figma", user: "design" },
-  { time: "Nov 19, 2025 4:05:22 PM", fqdn: "atlassian.net", result: "Allowed", categories: "Business, Productivity", application: "Google Chrome", user: "analyst" },
-  { time: "Nov 19, 2025 3:47:09 PM", fqdn: "malware-update-cdn.cf", result: "Blocked", isThreat: true, categories: "Malware", application: "Google Chrome", user: "sales" },
-  { time: "Nov 19, 2025 3:32:55 PM", fqdn: "calendar.google.com", result: "Allowed", categories: "Productivity, Business", application: "Google Chrome", user: "sales" },
-  { time: "Nov 19, 2025 3:15:41 PM", fqdn: "zoom.us", result: "Allowed", categories: "Business, Communication", application: "Zoom", user: "analyst" },
-  { time: "Nov 19, 2025 2:58:17 PM", fqdn: "teams.microsoft.com", result: "Allowed", categories: "Business, Collaboration", application: "Microsoft Teams", user: "sales" },
-  { time: "Nov 19, 2025 2:44:03 PM", fqdn: "chatgpt.com", result: "Allowed", categories: "Computing & Internet, Artificial Intelligence", application: "Google Chrome", user: "dev" },
-  { time: "Nov 19, 2025 2:30:29 PM", fqdn: "stackoverflow.com", result: "Allowed", categories: "Computing & Internet, Reference", application: "Google Chrome", user: "dev" },
-  { time: "Nov 19, 2025 2:18:12 PM", fqdn: "notion.so", result: "Allowed", categories: "Business, Productivity", application: "Google Chrome", user: "design" },
-  { time: "Nov 19, 2025 2:01:46 PM", fqdn: "googlle-account-verify.xyz", result: "Blocked", isThreat: true, categories: "Phishing", application: "Google Chrome", user: "design" },
-  { time: "Nov 19, 2025 1:45:33 PM", fqdn: "steamcommunity.com", result: "Blocked", categories: "Gaming", application: "Google Chrome", user: "dev" },
-  { time: "Nov 19, 2025 1:23:18 PM", fqdn: "www.facebook.com", result: "Blocked", categories: "Social Networking", application: "Google Chrome", user: "sales" },
-  { time: "Nov 19, 2025 1:08:54 PM", fqdn: "www.tiktok.com", result: "Blocked", categories: "Social Networking", application: "Google Chrome", user: "analyst" },
-  { time: "Nov 19, 2025 12:51:27 PM", fqdn: "www.netflix.com", result: "Blocked", categories: "Streaming Media", application: "Google Chrome", user: "sales" },
-  { time: "Nov 19, 2025 12:35:11 PM", fqdn: "docs.google.com", result: "Allowed", categories: "Productivity, Business", application: "Google Chrome", user: "analyst" },
-  { time: "Nov 19, 2025 12:18:43 PM", fqdn: "www.draftkings.com", result: "Blocked", categories: "Gambling", application: "Google Chrome", user: "dev" },
-  { time: "Nov 19, 2025 11:52:09 AM", fqdn: "www.linkedin.com", result: "Allowed", categories: "Business, Social Networking", application: "Google Chrome", user: "sales" },
-  { time: "Nov 19, 2025 11:34:36 AM", fqdn: "vercel.com", result: "Allowed", categories: "Computing & Internet, Web Hosting", application: "Google Chrome", user: "dev" },
-  { time: "Nov 19, 2025 11:17:22 AM", fqdn: "copilot.microsoft.com", result: "Allowed", categories: "Computing & Internet, Artificial Intelligence", application: "Microsoft Edge", user: "dev" },
-  { time: "Nov 19, 2025 10:55:48 AM", fqdn: "www.salesforce.com", result: "Allowed", categories: "Business, CRM", application: "Google Chrome", user: "sales" },
-  { time: "Nov 19, 2025 10:32:15 AM", fqdn: "secure-microsoft-login.tk", result: "Blocked", isThreat: true, categories: "Phishing", application: "Microsoft Edge", user: "sales" },
-  { time: "Nov 19, 2025 9:48:53 AM", fqdn: "mail.google.com", result: "Allowed", categories: "Webmail, Communication", application: "Google Chrome", user: "analyst" },
-  { time: "Nov 19, 2025 9:12:27 AM", fqdn: "outlook.office.com", result: "Allowed", categories: "Webmail, Business", application: "Microsoft Edge", user: "sales" },
-] satisfies RowSeed[]).map((seed, i) => {
+const rows = (
+  [
+    {
+      time: "Nov 19, 2025 4:52:31 PM",
+      fqdn: "github.com",
+      result: "Allowed",
+      categories: "Information Technology, Code Repositories",
+      application: "Google Chrome",
+      user: "analyst",
+    },
+    {
+      time: "Nov 19, 2025 4:38:15 PM",
+      fqdn: "slack.com",
+      result: "Allowed",
+      categories: "Business, Collaboration",
+      application: "Slack",
+      user: "sales",
+    },
+    {
+      time: "Nov 19, 2025 4:21:48 PM",
+      fqdn: "figma.com",
+      result: "Allowed",
+      categories: "Business, Design",
+      application: "Figma",
+      user: "design",
+    },
+    {
+      time: "Nov 19, 2025 4:05:22 PM",
+      fqdn: "atlassian.net",
+      result: "Allowed",
+      categories: "Business, Productivity",
+      application: "Google Chrome",
+      user: "analyst",
+    },
+    {
+      time: "Nov 19, 2025 3:47:09 PM",
+      fqdn: "malware-update-cdn.cf",
+      result: "Blocked",
+      isThreat: true,
+      categories: "Malware",
+      application: "Google Chrome",
+      user: "sales",
+    },
+    {
+      time: "Nov 19, 2025 3:32:55 PM",
+      fqdn: "calendar.google.com",
+      result: "Allowed",
+      categories: "Productivity, Business",
+      application: "Google Chrome",
+      user: "sales",
+    },
+    {
+      time: "Nov 19, 2025 3:15:41 PM",
+      fqdn: "zoom.us",
+      result: "Allowed",
+      categories: "Business, Communication",
+      application: "Zoom",
+      user: "analyst",
+    },
+    {
+      time: "Nov 19, 2025 2:58:17 PM",
+      fqdn: "teams.microsoft.com",
+      result: "Allowed",
+      categories: "Business, Collaboration",
+      application: "Microsoft Teams",
+      user: "sales",
+    },
+    {
+      time: "Nov 19, 2025 2:44:03 PM",
+      fqdn: "chatgpt.com",
+      result: "Allowed",
+      categories: "Computing & Internet, Artificial Intelligence",
+      application: "Google Chrome",
+      user: "dev",
+    },
+    {
+      time: "Nov 19, 2025 2:30:29 PM",
+      fqdn: "stackoverflow.com",
+      result: "Allowed",
+      categories: "Computing & Internet, Reference",
+      application: "Google Chrome",
+      user: "dev",
+    },
+    {
+      time: "Nov 19, 2025 2:18:12 PM",
+      fqdn: "notion.so",
+      result: "Allowed",
+      categories: "Business, Productivity",
+      application: "Google Chrome",
+      user: "design",
+    },
+    {
+      time: "Nov 19, 2025 2:01:46 PM",
+      fqdn: "googlle-account-verify.xyz",
+      result: "Blocked",
+      isThreat: true,
+      categories: "Phishing",
+      application: "Google Chrome",
+      user: "design",
+    },
+    {
+      time: "Nov 19, 2025 1:45:33 PM",
+      fqdn: "steamcommunity.com",
+      result: "Blocked",
+      categories: "Gaming",
+      application: "Google Chrome",
+      user: "dev",
+    },
+    {
+      time: "Nov 19, 2025 1:23:18 PM",
+      fqdn: "www.facebook.com",
+      result: "Blocked",
+      categories: "Social Networking",
+      application: "Google Chrome",
+      user: "sales",
+    },
+    {
+      time: "Nov 19, 2025 1:08:54 PM",
+      fqdn: "www.tiktok.com",
+      result: "Blocked",
+      categories: "Social Networking",
+      application: "Google Chrome",
+      user: "analyst",
+    },
+    {
+      time: "Nov 19, 2025 12:51:27 PM",
+      fqdn: "www.netflix.com",
+      result: "Blocked",
+      categories: "Streaming Media",
+      application: "Google Chrome",
+      user: "sales",
+    },
+    {
+      time: "Nov 19, 2025 12:35:11 PM",
+      fqdn: "docs.google.com",
+      result: "Allowed",
+      categories: "Productivity, Business",
+      application: "Google Chrome",
+      user: "analyst",
+    },
+    {
+      time: "Nov 19, 2025 12:18:43 PM",
+      fqdn: "www.draftkings.com",
+      result: "Blocked",
+      categories: "Gambling",
+      application: "Google Chrome",
+      user: "dev",
+    },
+    {
+      time: "Nov 19, 2025 11:52:09 AM",
+      fqdn: "www.linkedin.com",
+      result: "Allowed",
+      categories: "Business, Social Networking",
+      application: "Google Chrome",
+      user: "sales",
+    },
+    {
+      time: "Nov 19, 2025 11:34:36 AM",
+      fqdn: "vercel.com",
+      result: "Allowed",
+      categories: "Computing & Internet, Web Hosting",
+      application: "Google Chrome",
+      user: "dev",
+    },
+    {
+      time: "Nov 19, 2025 11:17:22 AM",
+      fqdn: "copilot.microsoft.com",
+      result: "Allowed",
+      categories: "Computing & Internet, Artificial Intelligence",
+      application: "Microsoft Edge",
+      user: "dev",
+    },
+    {
+      time: "Nov 19, 2025 10:55:48 AM",
+      fqdn: "www.salesforce.com",
+      result: "Allowed",
+      categories: "Business, CRM",
+      application: "Google Chrome",
+      user: "sales",
+    },
+    {
+      time: "Nov 19, 2025 10:32:15 AM",
+      fqdn: "secure-microsoft-login.tk",
+      result: "Blocked",
+      isThreat: true,
+      categories: "Phishing",
+      application: "Microsoft Edge",
+      user: "sales",
+    },
+    {
+      time: "Nov 19, 2025 9:48:53 AM",
+      fqdn: "mail.google.com",
+      result: "Allowed",
+      categories: "Webmail, Communication",
+      application: "Google Chrome",
+      user: "analyst",
+    },
+    {
+      time: "Nov 19, 2025 9:12:27 AM",
+      fqdn: "outlook.office.com",
+      result: "Allowed",
+      categories: "Webmail, Business",
+      application: "Microsoft Edge",
+      user: "sales",
+    },
+  ] satisfies RowSeed[]
+).map((seed, i) => {
   const { user, ...rest } = seed;
   return { id: i + 1, ...rest, ...USERS[user], ...SHARED_ROW_VALUES };
 });
@@ -148,8 +328,12 @@ const rows = ([
 // Status tab configuration
 // ---------------------------------------------------------------------------
 
-const ALL_ROWS_ALLOWED_COUNT = rows.filter((r) => r.result === "Allowed").length;
-const ALL_ROWS_BLOCKED_COUNT = rows.filter((r) => r.result === "Blocked").length;
+const ALL_ROWS_ALLOWED_COUNT = rows.filter(
+  (r) => r.result === "Allowed",
+).length;
+const ALL_ROWS_BLOCKED_COUNT = rows.filter(
+  (r) => r.result === "Blocked",
+).length;
 const ALL_ROWS_THREAT_COUNT = rows.filter((r) => r.isThreat).length;
 
 function buildTabsConfig(hasData: boolean): StatusTabConfig[] {
@@ -267,6 +451,7 @@ export default function QueryLogsPage() {
             display: "flex",
             flexDirection: "column",
             gap: 1.5,
+            px: 3,
           }}
         >
           <Box

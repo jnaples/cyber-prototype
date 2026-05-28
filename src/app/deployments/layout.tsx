@@ -70,7 +70,7 @@ export default function DeploymentsLayout() {
             <Divider
               orientation="vertical"
               flexItem
-              sx={{ borderColor: "rgb(0, 0, 0)", mx: "8px" }}
+              sx={{ borderColor: "divider", mx: "8px" }}
             />
             <Chip
               label="Managing 90 Organizations"
@@ -95,9 +95,8 @@ export default function DeploymentsLayout() {
       >
         <Box
           sx={{
-            mx: -2,
             mb: -2,
-            px: 2,
+            px: 3,
             display: "flex",
             alignContent: "flex-end",
             backgroundColor: (

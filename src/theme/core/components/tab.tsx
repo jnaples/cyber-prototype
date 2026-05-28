@@ -72,10 +72,8 @@ const MuiTabs: Components<Theme>["MuiTabs"] = {
       gap: theme.spacing(2),
     }),
     // ensure the inner list uses align-content: end
-    list: ({ theme }) => ({
+    list: () => ({
       alignContent: "flex-end",
-      gap: theme.spacing(2),
-      columnGap: theme.spacing(2),
     }),
     indicator: ({ theme }) => ({
       // make the indicator sit inside the active tab at the very bottom
