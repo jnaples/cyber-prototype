@@ -12,11 +12,10 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import type { Theme } from "@mui/material/styles";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
-import { brandConfig } from "@/theme/brand-config";
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -124,7 +123,7 @@ export function SetPasswordModal({ open, onClose, onSubmit }: SetPasswordModalPr
             <FormControl fullWidth error={!!errors.temporaryPassword}>
               <FormLabel
                 sx={{
-                  fontFamily: brandConfig.fontFamily.secondary,
+                  fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
                   fontWeight: 600,
                   fontSize: 18,
                   lineHeight: 1.33,
@@ -162,7 +161,7 @@ export function SetPasswordModal({ open, onClose, onSubmit }: SetPasswordModalPr
               <FormControl fullWidth error={!!errors.newPassword}>
                 <FormLabel
                   sx={{
-                    fontFamily: brandConfig.fontFamily.secondary,
+                    fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
                     fontWeight: 600,
                     fontSize: 18,
                     lineHeight: 1.33,
@@ -198,7 +197,7 @@ export function SetPasswordModal({ open, onClose, onSubmit }: SetPasswordModalPr
               <FormControl fullWidth error={!!errors.confirmPassword}>
                 <FormLabel
                   sx={{
-                    fontFamily: brandConfig.fontFamily.secondary,
+                    fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
                     fontWeight: 600,
                     fontSize: 18,
                     lineHeight: 1.33,

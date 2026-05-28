@@ -17,7 +17,7 @@ import type { Theme } from "@mui/material/styles";
 import { useState } from "react";
 
 import { PageHeader } from "@/components/page-header";
-import { brandConfig } from "@/theme/brand-config";
+import { lightPalette } from "@/theme/core/palette";
 
 function MaterialIcon({
   name,
@@ -73,7 +73,7 @@ function ActivityCard({ count, title, rows, barColor }: ActivityCardProps) {
           <Typography
             variant="h6"
             sx={{
-              fontFamily: brandConfig.fontFamily.secondary,
+              fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
               fontWeight: 600,
               fontSize: 18,
               lineHeight: 1.33,
@@ -85,7 +85,7 @@ function ActivityCard({ count, title, rows, barColor }: ActivityCardProps) {
             href="#"
             underline="none"
             sx={{
-              fontFamily: brandConfig.fontFamily.primary,
+              fontFamily: (t: Theme) => t.typography.fontFamily,
               fontSize: 13,
               fontWeight: 700,
               letterSpacing: "0.46px",
@@ -450,37 +450,37 @@ export default function CyberSightPage() {
             count={127}
             title="Websites"
             rows={WEBSITES}
-            barColor={brandConfig.palette.primary.light.main}
+            barColor={lightPalette.primary.main}
           />
           <ActivityCard
             count={84}
             title="Applications"
             rows={APPLICATIONS}
-            barColor={brandConfig.palette.pairingPurple.light.main}
+            barColor={lightPalette.pairingPurple.main}
           />
           <ActivityCard
             count={42}
             title="Categories"
             rows={CATEGORIES}
-            barColor={brandConfig.palette.warning.light.main}
+            barColor={lightPalette.warning.main}
           />
           <ActivityCard
             count={12}
             title="Streaming Activities"
             rows={STREAMING}
-            barColor={brandConfig.palette.pairingTeal.light.main}
+            barColor={lightPalette.pairingTeal.main}
           />
           <ActivityCard
             count={18}
             title="AI Tools"
             rows={AI_TOOLS}
-            barColor={brandConfig.palette.tertiary.light.main}
+            barColor={lightPalette.tertiary.main}
           />
           <ActivityCard
             count={36}
             title="Clients"
             rows={CLIENTS}
-            barColor={brandConfig.palette.success.light.main}
+            barColor={lightPalette.success.main}
           />
         </Box>
 
@@ -497,7 +497,7 @@ export default function CyberSightPage() {
             >
               <Typography
                 sx={{
-                  fontFamily: brandConfig.fontFamily.secondary,
+                  fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
                   fontWeight: 600,
                   fontSize: 18,
                   lineHeight: 1.33,
@@ -540,7 +540,7 @@ export default function CyberSightPage() {
                   sx={{
                     width: 22,
                     height: 2,
-                    bgcolor: brandConfig.palette.primary.light.main,
+                    bgcolor: lightPalette.primary.main,
                   }}
                 />
                 <Typography
@@ -555,10 +555,10 @@ export default function CyberSightPage() {
                   sx={{
                     width: 22,
                     height: 2,
-                    bgcolor: brandConfig.palette.pairingTeal.light.main,
+                    bgcolor: lightPalette.pairingTeal.main,
                     borderStyle: "dashed",
                     borderWidth: "1px 0 0 0",
-                    borderColor: brandConfig.palette.pairingTeal.light.main,
+                    borderColor: lightPalette.pairingTeal.main,
                     backgroundColor: "transparent",
                   }}
                 />

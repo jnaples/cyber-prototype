@@ -1,7 +1,7 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
+import type { Theme } from "@mui/material/styles";
 
 import { PageHeader } from "@/components/page-header";
-import { brandConfig } from "@/theme/brand-config";
 
 type SubscriptionCardProps = {
   title: string;
@@ -54,7 +54,7 @@ function SubscriptionCard({
             )}
             <Typography
               sx={{
-                fontFamily: brandConfig.fontFamily.primary,
+                fontFamily: (t: Theme) => t.typography.fontFamily,
                 fontWeight: 700,
                 fontSize: 16,
                 lineHeight: 1.5,
@@ -67,7 +67,7 @@ function SubscriptionCard({
           {subtitle && (
             <Typography
               sx={{
-                fontFamily: brandConfig.fontFamily.primary,
+                fontFamily: (t: Theme) => t.typography.fontFamily,
                 fontWeight: 400,
                 fontSize: 12,
                 lineHeight: 1.66,
@@ -82,7 +82,7 @@ function SubscriptionCard({
         <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
           <Typography
             sx={{
-              fontFamily: brandConfig.fontFamily.secondary,
+              fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
               fontWeight: 600,
               fontSize: 18,
               lineHeight: 1.33,
@@ -93,7 +93,7 @@ function SubscriptionCard({
           </Typography>
           <Typography
             sx={{
-              fontFamily: brandConfig.fontFamily.secondary,
+              fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
               fontWeight: 600,
               fontSize: 18,
               lineHeight: 1.33,

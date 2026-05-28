@@ -1,15 +1,40 @@
 import type { TypographyVariantsOptions } from "@mui/material";
 
-import type { BrandConfig } from "../brand-config";
 import { pxToRem } from "./utils";
 
 export type TypographyVariantsExtend = {
   fontSecondaryFamily: React.CSSProperties["fontFamily"];
 };
 
-export function generateTypography(brandConfig: BrandConfig) {
-  const primaryFont = brandConfig.fontFamily.primary;
-  const secondaryFont = brandConfig.fontFamily.secondary;
+export const primaryFont = [
+  "Inter Variable",
+  "-apple-system",
+  "BlinkMacSystemFont",
+  '"Segoe UI"',
+  "Roboto",
+  '"Helvetica Neue"',
+  "Arial",
+  "sans-serif",
+  '"Apple Color Emoji"',
+  '"Segoe UI Emoji"',
+  '"Segoe UI Symbol"',
+].join(",");
+
+export const secondaryFont = [
+  "Montserrat Variable",
+  "-apple-system",
+  "BlinkMacSystemFont",
+  '"Segoe UI"',
+  "Roboto",
+  '"Helvetica Neue"',
+  "Arial",
+  "sans-serif",
+  '"Apple Color Emoji"',
+  '"Segoe UI Emoji"',
+  '"Segoe UI Symbol"',
+].join(",");
+
+export function generateTypography(): TypographyVariantsOptions {
   const typography: TypographyVariantsOptions = {
     fontFamily: primaryFont,
     fontSecondaryFamily: secondaryFont,

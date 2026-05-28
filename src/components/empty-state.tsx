@@ -1,7 +1,6 @@
 import { Box, Typography } from "@mui/material";
+import type { Theme } from "@mui/material/styles";
 import type { ReactNode } from "react";
-
-import { brandConfig } from "@/theme/brand-config";
 
 export interface EmptyStateProps {
   // Convenience: pass a string src for an <img>. Ignored if `media` is provided.
@@ -48,7 +47,7 @@ export function EmptyState({
       )}
       <Typography
         sx={{
-          fontFamily: brandConfig.fontFamily.secondary,
+          fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
           fontWeight: 700,
           fontSize: 18,
           mb: 0.5,

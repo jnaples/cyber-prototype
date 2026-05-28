@@ -8,7 +8,7 @@ import { useNavigate } from "react-router";
 import { Logo, LogoCollapsed } from "@/components/logo";
 import { MspBadge } from "@/components/msp-badge";
 import { ThemeModeToggle } from "@/components/theme-mode-toggle";
-import { brandConfig } from "@/theme/brand-config";
+import { lightPalette } from "@/theme/core/palette";
 
 // Material Symbol icon component
 function Icon({
@@ -111,7 +111,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
       activeItem === itemId
         ? (theme: Theme) => theme.palette.primary.main
         : isDropdownOpen || activeItem.startsWith(itemId + "-")
-          ? brandConfig.palette.grey["800"]
+          ? lightPalette.grey[800]
           : "transparent",
     "& > svg": {
       fontSize: isExpanded ? "1.2rem" : "1.5rem",
@@ -131,7 +131,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
         activeItem === itemId
           ? (theme: Theme) => theme.palette.primary.main
           : isDropdownOpen || activeItem.startsWith(itemId + "-")
-            ? brandConfig.palette.grey["800"]
+            ? lightPalette.grey[800]
             : "rgba(255, 255, 255, 0.1)",
     },
   });
@@ -139,7 +139,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
   const getDropdownWrapperStyles = (dropdownId: string) => ({
     backgroundColor:
       activeItem.startsWith(dropdownId + "-") || expandedDropdown === dropdownId
-        ? brandConfig.palette.grey["900"]
+        ? lightPalette.grey[900]
         : "transparent",
     borderRadius: "6px",
     transition: "background-color 0.2s",
@@ -1041,7 +1041,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                     display: "flex",
                     flexDirection: "column",
                     gap: "2px",
-                    backgroundColor: brandConfig.palette.grey["900"],
+                    backgroundColor: lightPalette.grey[900],
                     borderRadius: "0 0 6px 6px",
                   }}
                 >

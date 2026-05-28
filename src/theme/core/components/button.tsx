@@ -6,6 +6,7 @@ const MuiButton: Components<Theme>["MuiButton"] = {
   },
   styleOverrides: {
     root: {
+      lineHeight: "22px",
       "&.MuiButton-containedPrimary, &.MuiButton-containedSecondary": {
         boxShadow:
           "rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px, rgba(0, 0, 0, 0.12) 0px 1px 5px 0px",
@@ -18,10 +19,11 @@ const MuiButton: Components<Theme>["MuiButton"] = {
     sizeSmall: {
       fontSize: "13px",
     },
-    text: {
+    text: ({ theme }) => ({
       paddingLeft: "10px",
       paddingRight: "10px",
-    },
+      color: theme.vars.palette.primary.light,
+    }),
   },
 };
 

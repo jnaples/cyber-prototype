@@ -31,17 +31,22 @@ export default function CardsDocs() {
   return (
     <Container maxWidth="lg">
       <Stack spacing={4}>
-        <Typography variant="h1">Card Components</Typography>
+        <Typography variant="cardTitle">Card Components</Typography>
 
         {/* Basic Card */}
         <Box>
           <Typography variant="h5" gutterBottom>
             Basic Card
           </Typography>
-          <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{ flexWrap: "wrap" }}
+          >
             <Card sx={{ maxWidth: 345, "& .MuiCardContent-root": { pb: 2 } }}>
               <CardContent>
-                <Typography gutterBottom variant="h5" component="div">
+                <Typography gutterBottom variant="cardTitle" component="div">
                   Basic Card
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -60,7 +65,12 @@ export default function CardsDocs() {
           <Typography variant="h5" gutterBottom>
             Card with Actions
           </Typography>
-          <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{ flexWrap: "wrap" }}
+          >
             <Card sx={{ maxWidth: 345, "& .MuiCardContent-root": { pb: 2 } }}>
               <CardContent>
                 <Typography gutterBottom variant="h5" component="div">
@@ -86,7 +96,12 @@ export default function CardsDocs() {
           <Typography variant="h5" gutterBottom>
             Card with Media
           </Typography>
-          <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{ flexWrap: "wrap" }}
+          >
             <Card sx={{ maxWidth: 345, "& .MuiCardContent-root": { pb: 2 } }}>
               <CardMedia
                 component="img"
@@ -119,7 +134,12 @@ export default function CardsDocs() {
           <Typography variant="h5" gutterBottom>
             Card with Header
           </Typography>
-          <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{ flexWrap: "wrap" }}
+          >
             <Card sx={{ maxWidth: 345, "& .MuiCardContent-root": { pb: 2 } }}>
               <CardHeader
                 title="Card Header"
@@ -155,7 +175,12 @@ export default function CardsDocs() {
           <Typography variant="h5" gutterBottom>
             Card with Action Area
           </Typography>
-          <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{ flexWrap: "wrap" }}
+          >
             <Card sx={{ maxWidth: 345 }}>
               <CardActionArea>
                 <CardMedia
@@ -185,7 +210,12 @@ export default function CardsDocs() {
           <Typography variant="h5" gutterBottom>
             Outlined Card
           </Typography>
-          <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{ flexWrap: "wrap" }}
+          >
             <Card
               variant="outlined"
               sx={{ maxWidth: 345, "& .MuiCardContent-root": { pb: 2 } }}
@@ -213,7 +243,12 @@ export default function CardsDocs() {
           <Typography variant="h5" gutterBottom>
             Expandable Card
           </Typography>
-          <Stack direction="row" spacing={2} useFlexGap sx={{ flexWrap: "wrap" }}>
+          <Stack
+            direction="row"
+            spacing={2}
+            useFlexGap
+            sx={{ flexWrap: "wrap" }}
+          >
             <Card sx={{ maxWidth: 345, "& .MuiCardContent-root": { pb: 2 } }}>
               <CardHeader title="Expandable Card" subheader="Click to expand" />
               <CardContent>
@@ -270,7 +305,10 @@ export default function CardsDocs() {
             direction="row"
             spacing={2}
             useFlexGap
-            sx={{ flexWrap: "wrap", "& > *": { flex: "1 1 300px", maxWidth: 345 } }}
+            sx={{
+              flexWrap: "wrap",
+              "& > *": { flex: "1 1 300px", maxWidth: 345 },
+            }}
           >
             {[1, 2, 3].map((item) => (
               <Card key={item} sx={{ "& .MuiCardContent-root": { pb: 2 } }}>

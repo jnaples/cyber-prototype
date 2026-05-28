@@ -33,7 +33,7 @@ import { TabbedDataCard } from "@/components/tabbed-data-card";
 // ---------------------------------------------------------------------------
 
 const columns: GridColDef[] = [
-  { field: "time", headerName: "Time", width: 145, minWidth: 145 },
+  { field: "time", headerName: "Time", width: 240, minWidth: 240 },
   { field: "fqdn", headerName: "FQDN", width: 172, minWidth: 150 },
   {
     field: "result",

@@ -1,7 +1,7 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
+import type { Theme } from "@mui/material/styles";
 
 import { PageHeader } from "@/components/page-header";
-import { brandConfig } from "@/theme/brand-config";
 
 type MaterialSymbolProps = {
   icon: string;
@@ -153,7 +153,7 @@ export default function Page() {
                     fontWeight: 700,
                     color: "text.primary",
                     textAlign: "center",
-                    fontFamily: brandConfig.fontFamily.secondary,
+                    fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
                   }}
                 >
                   You haven&apos;t set a site
@@ -284,7 +284,7 @@ export default function Page() {
               >
                 <Typography
                   variant="h6"
-                  sx={{ fontFamily: brandConfig.fontFamily.secondary }}
+                  sx={{ fontFamily: (t: Theme) => t.typography.fontSecondaryFamily }}
                 >
                   <Box component="span" sx={{ fontWeight: 700 }}>
                     Request Activity:
@@ -356,7 +356,7 @@ export default function Page() {
                     fontWeight: 700,
                     color: "text.primary",
                     textAlign: "center",
-                    fontFamily: brandConfig.fontFamily.secondary,
+                    fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
                   }}
                 >
                   Nothing to show yet
@@ -366,7 +366,7 @@ export default function Page() {
                   sx={{
                     color: "text.primary",
                     textAlign: "center",
-                    fontFamily: brandConfig.fontFamily.primary,
+                    fontFamily: (t: Theme) => t.typography.fontFamily,
                   }}
                 >
                   Requests over time will show here once traffic is received.

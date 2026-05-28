@@ -1,9 +1,5 @@
-import type { BrandConfig } from "..";
+export const BORDER_RADIUS = 6;
 
-export function generateShape(
-  themeConfig: BrandConfig
-): Record<"borderRadius", number> {
-  return {
-    borderRadius: themeConfig.shape.borderRadius,
-  };
+export function generateShape(): { borderRadius: number } {
+  return { borderRadius: BORDER_RADIUS };
 }

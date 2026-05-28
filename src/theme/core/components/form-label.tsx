@@ -1,9 +1,7 @@
 import type { Components, Theme } from "@mui/material/styles";
 
-import { brandConfig } from "../../brand-config";
+import { primaryFont } from "../typography";
 import { pxToRem } from "../utils";
-
-const primaryFont = brandConfig.fontFamily.primary;
 
 const MuiFormLabel: Components<Theme>["MuiFormLabel"] = {
   styleOverrides: {
