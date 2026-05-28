@@ -395,20 +395,6 @@ const FILTER_OPTIONS = {
 
 const DATE_RANGE_SHORTCUTS: DateTimeRangePickerShortcut[] = [
   {
-    label: "Today",
-    getValue: () => {
-      const now = new Date();
-      return [startOfDay(now), endOfDay(now)];
-    },
-  },
-  {
-    label: "Yesterday",
-    getValue: () => {
-      const yesterday = subDays(new Date(), 1);
-      return [startOfDay(yesterday), endOfDay(yesterday)];
-    },
-  },
-  {
     label: "Last 5 minutes",
     getValue: () => {
       const now = new Date();
@@ -441,6 +427,20 @@ const DATE_RANGE_SHORTCUTS: DateTimeRangePickerShortcut[] = [
     getValue: () => {
       const now = new Date();
       return [subHours(now, 24), now];
+    },
+  },
+  {
+    label: "Today",
+    getValue: () => {
+      const now = new Date();
+      return [startOfDay(now), endOfDay(now)];
+    },
+  },
+  {
+    label: "Yesterday",
+    getValue: () => {
+      const yesterday = subDays(new Date(), 1);
+      return [startOfDay(yesterday), endOfDay(yesterday)];
     },
   },
   {
