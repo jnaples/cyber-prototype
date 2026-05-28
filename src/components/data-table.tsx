@@ -442,6 +442,7 @@ export function DataTable({
             <Button
               ref={setFiltersButtonEl}
               variant="text"
+              color="secondary"
               size="small"
               onClick={() => {
                 if (onFiltersClick) {
@@ -529,6 +530,7 @@ export function DataTable({
               <>
                 <Button
                   variant="text"
+                  color="secondary"
                   size="small"
                   onClick={(e) => setPreferencesAnchorEl(e.currentTarget)}
                   startIcon={
@@ -598,6 +600,7 @@ export function DataTable({
             {showExport && (
               <Button
                 variant="text"
+                color="secondary"
                 size="small"
                 onClick={onExportClick}
                 startIcon={

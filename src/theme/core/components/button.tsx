@@ -22,7 +22,9 @@ const MuiButton: Components<Theme>["MuiButton"] = {
     text: ({ theme }) => ({
       paddingLeft: "10px",
       paddingRight: "10px",
-      color: theme.vars.palette.primary.light,
+      "&.MuiButton-colorPrimary": {
+        color: theme.vars.palette.primary.light,
+      },
     }),
   },
 };
