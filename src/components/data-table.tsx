@@ -21,6 +21,8 @@ import {
   DataGrid,
   type DataGridProps,
   type GridColDef,
+  gridColumnDefinitionsSelector,
+  gridColumnVisibilityModelSelector,
   GridFilterPanel,
   gridPageCountSelector,
   gridPageSelector,
@@ -31,7 +33,7 @@ import {
   useGridApiRef,
   useGridSelector,
 } from "@mui/x-data-grid";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 const DEFAULT_PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
 
@@ -154,8 +156,11 @@ function CustomColumnsPanel() {
   const apiRef = useGridApiContext();
   const [search, setSearch] = useState("");
 
-  const allColumns = apiRef.current.getAllColumns();
-  const visibilityModel = apiRef.current.state.columns.columnVisibilityModel;
+  const allColumns = useGridSelector(apiRef, gridColumnDefinitionsSelector);
+  const visibilityModel = useGridSelector(
+    apiRef,
+    gridColumnVisibilityModelSelector,
+  );
   const toggleable = allColumns.filter(
     (col) => col.field !== "__check__" && col.hideable !== false,
   );
@@ -328,7 +333,6 @@ export function DataTable({
   sx: sxOverrides,
 }: DataTableProps) {
   const apiRef = useGridApiRef();
-  const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [preferencesAnchorEl, setPreferencesAnchorEl] =
     useState<null | HTMLElement>(null);
@@ -338,10 +342,6 @@ export function DataTable({
     null,
   );
   const [panelTarget, setPanelTarget] = useState<null | HTMLElement>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -618,7 +618,7 @@ export function DataTable({
       )}
 
       <Box sx={{ minWidth: 0, width: "100%", overflowX: "auto" }}>
-        {mounted && (
+        {(
           <DataGrid
             apiRef={apiRef}
             rows={filteredRows}

@@ -99,12 +99,12 @@ export function generatePalettes({
   const basePalette = {
     common,
     grey,
-    divider: "rgba(158, 158, 158, 0.2)",
   };
 
   return {
     light: {
       ...basePalette,
+      divider: "rgba(0, 0, 0, 0.12)",
       primary: palette.primary.light,
       secondary: palette.secondary.light,
       tertiary: palette.tertiary.light,
@@ -122,6 +122,7 @@ export function generatePalettes({
     },
     dark: {
       ...basePalette,
+      divider: "rgba(255, 255, 255, 0.12)",
       primary: palette.primary.dark,
       secondary: palette.secondary.dark,
       tertiary: palette.tertiary.dark,

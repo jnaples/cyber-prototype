@@ -41,7 +41,13 @@ export function StatusTab({
           variant="determinate"
           value={100}
           size={58}
-          sx={{ color: "grey.300", position: "absolute" }}
+          sx={(theme) => ({
+            color: theme.palette.grey[300],
+            position: "absolute",
+            ...theme.applyStyles("dark", {
+              color: theme.palette.grey[800],
+            }),
+          })}
         />
         <CircularProgress
           variant="determinate"

@@ -8,11 +8,21 @@ import {
 import Box from "@mui/material/Box";
 import type { Theme } from "@mui/material/styles";
 import type { GridColDef } from "@mui/x-data-grid";
+import {
+  endOfDay,
+  format as fnsFormat,
+  startOfDay,
+  subDays,
+  subHours,
+  subMilliseconds,
+  subMinutes,
+} from "date-fns";
 import { useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { DateTimeRangePicker } from "@/components/date-time-range-picker";
+import type { DateTimeRangePickerShortcut } from "@/components/date-time-range-picker";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
@@ -106,7 +116,6 @@ const USERS = {
 };
 
 type RowSeed = {
-  time: string;
   fqdn: string;
   result: "Allowed" | "Blocked";
   categories: string;
@@ -115,216 +124,56 @@ type RowSeed = {
   isThreat?: boolean;
 };
 
-const rows = (
-  [
-    {
-      time: "Nov 19, 2025 4:52:31 PM",
-      fqdn: "github.com",
-      result: "Allowed",
-      categories: "Information Technology, Code Repositories",
-      application: "Google Chrome",
-      user: "analyst",
-    },
-    {
-      time: "Nov 19, 2025 4:38:15 PM",
-      fqdn: "slack.com",
-      result: "Allowed",
-      categories: "Business, Collaboration",
-      application: "Slack",
-      user: "sales",
-    },
-    {
-      time: "Nov 19, 2025 4:21:48 PM",
-      fqdn: "figma.com",
-      result: "Allowed",
-      categories: "Business, Design",
-      application: "Figma",
-      user: "design",
-    },
-    {
-      time: "Nov 19, 2025 4:05:22 PM",
-      fqdn: "atlassian.net",
-      result: "Allowed",
-      categories: "Business, Productivity",
-      application: "Google Chrome",
-      user: "analyst",
-    },
-    {
-      time: "Nov 19, 2025 3:47:09 PM",
-      fqdn: "malware-update-cdn.cf",
-      result: "Blocked",
-      isThreat: true,
-      categories: "Malware",
-      application: "Google Chrome",
-      user: "sales",
-    },
-    {
-      time: "Nov 19, 2025 3:32:55 PM",
-      fqdn: "calendar.google.com",
-      result: "Allowed",
-      categories: "Productivity, Business",
-      application: "Google Chrome",
-      user: "sales",
-    },
-    {
-      time: "Nov 19, 2025 3:15:41 PM",
-      fqdn: "zoom.us",
-      result: "Allowed",
-      categories: "Business, Communication",
-      application: "Zoom",
-      user: "analyst",
-    },
-    {
-      time: "Nov 19, 2025 2:58:17 PM",
-      fqdn: "teams.microsoft.com",
-      result: "Allowed",
-      categories: "Business, Collaboration",
-      application: "Microsoft Teams",
-      user: "sales",
-    },
-    {
-      time: "Nov 19, 2025 2:44:03 PM",
-      fqdn: "chatgpt.com",
-      result: "Allowed",
-      categories: "Computing & Internet, Artificial Intelligence",
-      application: "Google Chrome",
-      user: "dev",
-    },
-    {
-      time: "Nov 19, 2025 2:30:29 PM",
-      fqdn: "stackoverflow.com",
-      result: "Allowed",
-      categories: "Computing & Internet, Reference",
-      application: "Google Chrome",
-      user: "dev",
-    },
-    {
-      time: "Nov 19, 2025 2:18:12 PM",
-      fqdn: "notion.so",
-      result: "Allowed",
-      categories: "Business, Productivity",
-      application: "Google Chrome",
-      user: "design",
-    },
-    {
-      time: "Nov 19, 2025 2:01:46 PM",
-      fqdn: "googlle-account-verify.xyz",
-      result: "Blocked",
-      isThreat: true,
-      categories: "Phishing",
-      application: "Google Chrome",
-      user: "design",
-    },
-    {
-      time: "Nov 19, 2025 1:45:33 PM",
-      fqdn: "steamcommunity.com",
-      result: "Blocked",
-      categories: "Gaming",
-      application: "Google Chrome",
-      user: "dev",
-    },
-    {
-      time: "Nov 19, 2025 1:23:18 PM",
-      fqdn: "www.facebook.com",
-      result: "Blocked",
-      categories: "Social Networking",
-      application: "Google Chrome",
-      user: "sales",
-    },
-    {
-      time: "Nov 19, 2025 1:08:54 PM",
-      fqdn: "www.tiktok.com",
-      result: "Blocked",
-      categories: "Social Networking",
-      application: "Google Chrome",
-      user: "analyst",
-    },
-    {
-      time: "Nov 19, 2025 12:51:27 PM",
-      fqdn: "www.netflix.com",
-      result: "Blocked",
-      categories: "Streaming Media",
-      application: "Google Chrome",
-      user: "sales",
-    },
-    {
-      time: "Nov 19, 2025 12:35:11 PM",
-      fqdn: "docs.google.com",
-      result: "Allowed",
-      categories: "Productivity, Business",
-      application: "Google Chrome",
-      user: "analyst",
-    },
-    {
-      time: "Nov 19, 2025 12:18:43 PM",
-      fqdn: "www.draftkings.com",
-      result: "Blocked",
-      categories: "Gambling",
-      application: "Google Chrome",
-      user: "dev",
-    },
-    {
-      time: "Nov 19, 2025 11:52:09 AM",
-      fqdn: "www.linkedin.com",
-      result: "Allowed",
-      categories: "Business, Social Networking",
-      application: "Google Chrome",
-      user: "sales",
-    },
-    {
-      time: "Nov 19, 2025 11:34:36 AM",
-      fqdn: "vercel.com",
-      result: "Allowed",
-      categories: "Computing & Internet, Web Hosting",
-      application: "Google Chrome",
-      user: "dev",
-    },
-    {
-      time: "Nov 19, 2025 11:17:22 AM",
-      fqdn: "copilot.microsoft.com",
-      result: "Allowed",
-      categories: "Computing & Internet, Artificial Intelligence",
-      application: "Microsoft Edge",
-      user: "dev",
-    },
-    {
-      time: "Nov 19, 2025 10:55:48 AM",
-      fqdn: "www.salesforce.com",
-      result: "Allowed",
-      categories: "Business, CRM",
-      application: "Google Chrome",
-      user: "sales",
-    },
-    {
-      time: "Nov 19, 2025 10:32:15 AM",
-      fqdn: "secure-microsoft-login.tk",
-      result: "Blocked",
-      isThreat: true,
-      categories: "Phishing",
-      application: "Microsoft Edge",
-      user: "sales",
-    },
-    {
-      time: "Nov 19, 2025 9:48:53 AM",
-      fqdn: "mail.google.com",
-      result: "Allowed",
-      categories: "Webmail, Communication",
-      application: "Google Chrome",
-      user: "analyst",
-    },
-    {
-      time: "Nov 19, 2025 9:12:27 AM",
-      fqdn: "outlook.office.com",
-      result: "Allowed",
-      categories: "Webmail, Business",
-      application: "Microsoft Edge",
-      user: "sales",
-    },
-  ] satisfies RowSeed[]
-).map((seed, i) => {
-  const { user, ...rest } = seed;
-  return { id: i + 1, ...rest, ...USERS[user], ...SHARED_ROW_VALUES };
-});
+const ROW_SEEDS: RowSeed[] = [
+  { fqdn: "github.com", result: "Allowed", categories: "Information Technology, Code Repositories", application: "Google Chrome", user: "analyst" },
+  { fqdn: "slack.com", result: "Allowed", categories: "Business, Collaboration", application: "Slack", user: "sales" },
+  { fqdn: "figma.com", result: "Allowed", categories: "Business, Design", application: "Figma", user: "design" },
+  { fqdn: "atlassian.net", result: "Allowed", categories: "Business, Productivity", application: "Google Chrome", user: "analyst" },
+  { fqdn: "malware-update-cdn.cf", result: "Blocked", isThreat: true, categories: "Malware", application: "Google Chrome", user: "sales" },
+  { fqdn: "calendar.google.com", result: "Allowed", categories: "Productivity, Business", application: "Google Chrome", user: "sales" },
+  { fqdn: "zoom.us", result: "Allowed", categories: "Business, Communication", application: "Zoom", user: "analyst" },
+  { fqdn: "teams.microsoft.com", result: "Allowed", categories: "Business, Collaboration", application: "Microsoft Teams", user: "sales" },
+  { fqdn: "chatgpt.com", result: "Allowed", categories: "Computing & Internet, Artificial Intelligence", application: "Google Chrome", user: "dev" },
+  { fqdn: "stackoverflow.com", result: "Allowed", categories: "Computing & Internet, Reference", application: "Google Chrome", user: "dev" },
+  { fqdn: "notion.so", result: "Allowed", categories: "Business, Productivity", application: "Google Chrome", user: "design" },
+  { fqdn: "googlle-account-verify.xyz", result: "Blocked", isThreat: true, categories: "Phishing", application: "Google Chrome", user: "design" },
+  { fqdn: "steamcommunity.com", result: "Blocked", categories: "Gaming", application: "Google Chrome", user: "dev" },
+  { fqdn: "www.facebook.com", result: "Blocked", categories: "Social Networking", application: "Google Chrome", user: "sales" },
+  { fqdn: "www.tiktok.com", result: "Blocked", categories: "Social Networking", application: "Google Chrome", user: "analyst" },
+  { fqdn: "www.netflix.com", result: "Blocked", categories: "Streaming Media", application: "Google Chrome", user: "sales" },
+  { fqdn: "docs.google.com", result: "Allowed", categories: "Productivity, Business", application: "Google Chrome", user: "analyst" },
+  { fqdn: "www.draftkings.com", result: "Blocked", categories: "Gambling", application: "Google Chrome", user: "dev" },
+  { fqdn: "www.linkedin.com", result: "Allowed", categories: "Business, Social Networking", application: "Google Chrome", user: "sales" },
+  { fqdn: "vercel.com", result: "Allowed", categories: "Computing & Internet, Web Hosting", application: "Google Chrome", user: "dev" },
+  { fqdn: "copilot.microsoft.com", result: "Allowed", categories: "Computing & Internet, Artificial Intelligence", application: "Microsoft Edge", user: "dev" },
+  { fqdn: "www.salesforce.com", result: "Allowed", categories: "Business, CRM", application: "Google Chrome", user: "sales" },
+  { fqdn: "secure-microsoft-login.tk", result: "Blocked", isThreat: true, categories: "Phishing", application: "Microsoft Edge", user: "sales" },
+  { fqdn: "mail.google.com", result: "Allowed", categories: "Webmail, Communication", application: "Google Chrome", user: "analyst" },
+  { fqdn: "outlook.office.com", result: "Allowed", categories: "Webmail, Business", application: "Microsoft Edge", user: "sales" },
+];
+
+const TIME_FORMAT = "MMM d, yyyy h:mm:ss a";
+const TOTAL_ROWS = 125;
+const TIME_SPAN_MS = 7 * 24 * 60 * 60 * 1000;
+
+const rows = (() => {
+  const now = new Date();
+  const stepMs = TIME_SPAN_MS / TOTAL_ROWS;
+  return Array.from({ length: TOTAL_ROWS }, (_, i) => {
+    const seed = ROW_SEEDS[i % ROW_SEEDS.length];
+    const jitter = (Math.random() - 0.5) * stepMs * 0.6;
+    const offsetMs = Math.max(0, i * stepMs + jitter);
+    const time = subMilliseconds(now, offsetMs);
+    const { user, ...rest } = seed;
+    return {
+      id: i + 1,
+      time: fnsFormat(time, TIME_FORMAT),
+      ...rest,
+      ...USERS[user],
+      ...SHARED_ROW_VALUES,
+    };
+  });
+})();
 
 // ---------------------------------------------------------------------------
 // Status tab configuration
@@ -390,6 +239,72 @@ const FILTER_OPTIONS = {
   roamingClients: ["All Roaming Clients", "Sales Team", "Engineering"],
   users: ["All Users", "Admins", "Standard"],
 };
+
+const DATE_RANGE_SHORTCUTS: DateTimeRangePickerShortcut[] = [
+  {
+    label: "Today",
+    getValue: () => {
+      const now = new Date();
+      return [startOfDay(now), endOfDay(now)];
+    },
+  },
+  {
+    label: "Yesterday",
+    getValue: () => {
+      const yesterday = subDays(new Date(), 1);
+      return [startOfDay(yesterday), endOfDay(yesterday)];
+    },
+  },
+  {
+    label: "Last 5 minutes",
+    getValue: () => {
+      const now = new Date();
+      return [subMinutes(now, 5), now];
+    },
+  },
+  {
+    label: "Last 15 minutes",
+    getValue: () => {
+      const now = new Date();
+      return [subMinutes(now, 15), now];
+    },
+  },
+  {
+    label: "Last hour",
+    getValue: () => {
+      const now = new Date();
+      return [subHours(now, 1), now];
+    },
+  },
+  {
+    label: "Last 4 hours",
+    getValue: () => {
+      const now = new Date();
+      return [subHours(now, 4), now];
+    },
+  },
+  {
+    label: "Last 24 hours",
+    getValue: () => {
+      const now = new Date();
+      return [subHours(now, 24), now];
+    },
+  },
+  {
+    label: "Last 3 days",
+    getValue: () => {
+      const now = new Date();
+      return [subDays(now, 3), now];
+    },
+  },
+  {
+    label: "Last 7 days",
+    getValue: () => {
+      const now = new Date();
+      return [subDays(now, 7), now];
+    },
+  },
+];
 
 const FETCH_DELAY_MS = 700;
 
@@ -544,7 +459,13 @@ export default function QueryLogsPage() {
                   "& > *": { width: "100%" },
                 }}
               >
-                <DateTimeRangePicker disabled={filtersDisabled} />
+                <DateTimeRangePicker
+                  disabled={filtersDisabled}
+                  defaultValue={[startOfDay(new Date()), endOfDay(new Date())]}
+                  shortcuts={DATE_RANGE_SHORTCUTS}
+                  minDate={startOfDay(subDays(new Date(), 8))}
+                  maxDate={endOfDay(new Date())}
+                />
               </Box>
             </ArrowTooltip>
           </Box>
