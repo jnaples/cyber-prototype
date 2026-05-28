@@ -21,6 +21,7 @@
     "@mui/x-data-grid": "^8.28.6",
     "@mui/x-date-pickers": "^9.2.0",
     "@mui/x-date-pickers-pro": "^9.2.0",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "es-toolkit": "^1.39.7",
     "material-symbols": "^0.40.2",

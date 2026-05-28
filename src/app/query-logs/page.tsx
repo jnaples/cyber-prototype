@@ -12,6 +12,7 @@ import { useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
+import { DateTimeRangePicker } from "@/components/date-time-range-picker";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
@@ -457,6 +458,7 @@ export default function QueryLogsPage() {
             display: "flex",
             flexDirection: "column",
             gap: 2,
+            px: 3,
           }}
         >
           <Box
@@ -476,7 +478,13 @@ export default function QueryLogsPage() {
               )}
             />
             <ArrowTooltip title={filtersDisabledTooltip}>
-              <Box sx={{ width: "100%", display: "flex", "& > *": { width: "100%" } }}>
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  "& > *": { width: "100%" },
+                }}
+              >
                 <Autocomplete
                   size="small"
                   options={FILTER_OPTIONS.sites}
@@ -487,7 +495,13 @@ export default function QueryLogsPage() {
               </Box>
             </ArrowTooltip>
             <ArrowTooltip title={filtersDisabledTooltip}>
-              <Box sx={{ width: "100%", display: "flex", "& > *": { width: "100%" } }}>
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  "& > *": { width: "100%" },
+                }}
+              >
                 <Autocomplete
                   size="small"
                   options={FILTER_OPTIONS.roamingClients}
@@ -506,7 +520,13 @@ export default function QueryLogsPage() {
             }}
           >
             <ArrowTooltip title={filtersDisabledTooltip}>
-              <Box sx={{ width: "100%", display: "flex", "& > *": { width: "100%" } }}>
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  "& > *": { width: "100%" },
+                }}
+              >
                 <Autocomplete
                   size="small"
                   options={FILTER_OPTIONS.users}
@@ -517,29 +537,14 @@ export default function QueryLogsPage() {
               </Box>
             </ArrowTooltip>
             <ArrowTooltip title={filtersDisabledTooltip}>
-              <Box sx={{ width: "100%", display: "flex", "& > *": { width: "100%" } }}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  defaultValue="Today"
-                  disabled={filtersDisabled}
-                  slotProps={{
-                    input: {
-                      startAdornment: (
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", pr: 1 }}
-                        >
-                          <span
-                            className="material-symbols-outlined"
-                            style={{ fontSize: 20 }}
-                          >
-                            calendar_month
-                          </span>
-                        </Box>
-                      ),
-                    },
-                  }}
-                />
+              <Box
+                sx={{
+                  width: "100%",
+                  display: "flex",
+                  "& > *": { width: "100%" },
+                }}
+              >
+                <DateTimeRangePicker disabled={filtersDisabled} />
               </Box>
             </ArrowTooltip>
           </Box>

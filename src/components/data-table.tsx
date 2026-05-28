@@ -486,15 +486,14 @@ export function DataTable({
                   sx={{ px: "8px", mr: "4px" }}
                 >
                   <span style={{ marginRight: "8px" }}>Default</span>
-                  <hr
-                    style={{
-                      flexShrink: 0,
-                      borderWidth: "0px thin 0px 0px",
-                      borderStyle: "solid",
-                      height: "auto",
-                      alignSelf: "stretch",
-                      borderColor: "rgb(0, 0, 0)",
-                      margin: "-5px 4px",
+                  <Divider
+                    orientation="vertical"
+                    flexItem
+                    sx={{
+                      my: "-5px",
+                      mx: "4px",
+                      borderColor: "currentColor",
+                      opacity: 0.5,
                     }}
                   />
                   <span

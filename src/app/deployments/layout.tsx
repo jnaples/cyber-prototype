@@ -117,6 +117,7 @@ export default function DeploymentsLayout() {
             value={tabValue}
             onChange={handleTabChange}
             aria-label="deployments tabs"
+            sx={{ px: 3 }}
           >
             {TABS.map((tab) => (
               <Tab

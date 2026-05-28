@@ -41,7 +41,7 @@ export function RHFDatePicker({
       render={({ field, fieldState: { error } }) => (
         <DatePicker
           {...field}
-          value={normalizeDateValue(field.value)}
+          value={normalizeDateValue(field.value) as never}
           onChange={(newValue) => {
             if (!newValue) {
               field.onChange(null);
@@ -82,7 +82,7 @@ export function RHFTimePicker({
       render={({ field, fieldState: { error } }) => (
         <TimePicker
           {...field}
-          value={normalizeDateValue(field.value)}
+          value={normalizeDateValue(field.value) as never}
           onChange={(newValue) => {
             if (!newValue) {
               field.onChange(null);
@@ -123,7 +123,7 @@ export function RHFDateTimePicker({
       render={({ field, fieldState: { error } }) => (
         <DateTimePicker
           {...field}
-          value={normalizeDateValue(field.value)}
+          value={normalizeDateValue(field.value) as never}
           onChange={(newValue) => {
             if (!newValue) {
               field.onChange(null);
