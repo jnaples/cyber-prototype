@@ -1,19 +1,29 @@
 import { Box, Typography } from "@mui/material";
+import type { ReactNode } from "react";
 
 import { brandConfig } from "@/theme/brand-config";
 
 export interface EmptyStateProps {
+  // Convenience: pass a string src for an <img>. Ignored if `media` is provided.
   illustration?: string;
   illustrationAlt?: string;
-  title: string;
-  description?: string;
+  // Full control: render any node above the heading (SVG component, Lottie, etc.).
+  media?: ReactNode;
+  // Heading — accepts text or any node.
+  title: ReactNode;
+  // Body content below the heading — accepts text or any node.
+  description?: ReactNode;
+  // Action slot — typically a Button (or Stack of buttons).
+  action?: ReactNode;
 }
 
 export function EmptyState({
   illustration = "/empty-state-monitor.svg",
   illustrationAlt = "",
+  media,
   title,
   description,
+  action,
 }: EmptyStateProps) {
   return (
     <Box
@@ -28,18 +38,20 @@ export function EmptyState({
         textAlign: "center",
       }}
     >
-      <Box
-        component="img"
-        src={illustration}
-        alt={illustrationAlt}
-        sx={{ width: 100, height: 100, opacity: 0.85, mb: 2 }}
-      />
+      {media ?? (
+        <Box
+          component="img"
+          src={illustration}
+          alt={illustrationAlt}
+          sx={{ width: 100, height: 100, opacity: 0.85, mb: 2 }}
+        />
+      )}
       <Typography
         sx={{
           fontFamily: brandConfig.fontFamily.secondary,
           fontWeight: 700,
           fontSize: 18,
-          mb: 1,
+          mb: 0.5,
           color: "text.primary",
         }}
       >
@@ -53,6 +65,7 @@ export function EmptyState({
           {description}
         </Typography>
       )}
+      {action && <Box sx={{ mt: 2 }}>{action}</Box>}
     </Box>
   );
 }
