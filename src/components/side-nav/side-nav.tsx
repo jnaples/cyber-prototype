@@ -1,10 +1,12 @@
-import { Box, Collapse } from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Box, Collapse, MenuItem, Select } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { Logo, LogoCollapsed } from "@/components/logo";
+import { MspBadge } from "@/components/msp-badge";
 import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { brandConfig } from "@/theme/brand-config";
 
@@ -75,6 +77,13 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
   const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState<string>("dashboard-overview");
   const [expandedDropdown, setExpandedDropdown] = useState<string | null>(null);
+  const [workspace, setWorkspace] = useState<string>("test-lab");
+
+  const workspaces = [
+    { value: "test-lab", label: "Test Lab" },
+    { value: "production", label: "Production" },
+    { value: "staging", label: "Staging" },
+  ];
 
   const handleItemClick = (itemId: string) => {
     setActiveItem(itemId);
@@ -205,7 +214,9 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
         <Box sx={{ py: 1, px: 2 }}>
           {isExpanded ? (
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-              <Logo />
+              <MspBadge>
+                <Logo />
+              </MspBadge>
 
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <ThemeModeToggle inline />
@@ -223,7 +234,9 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Box>
           ) : (
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <LogoCollapsed />
+              <MspBadge>
+                <LogoCollapsed />
+              </MspBadge>
               <Box
                 sx={{
                   display: "flex",
@@ -247,6 +260,44 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Box>
           )}
         </Box>
+
+        {/* Workspace switcher */}
+        {isExpanded && (
+          <Box data-mui-color-scheme="dark" sx={{ px: 1, pt: 2, pb: 1 }}>
+            <Select
+              fullWidth
+              size="small"
+              value={workspace}
+              onChange={(e) => setWorkspace(e.target.value)}
+              IconComponent={ExpandMoreIcon}
+              sx={{
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#e5e7eb",
+                },
+                "& .MuiSelect-icon": {
+                  fontSize: 20,
+                  color: "common.white",
+                },
+              }}
+              MenuProps={{
+                slotProps: {
+                  paper: {
+                    "data-mui-color-scheme": "dark",
+                  } as React.HTMLAttributes<HTMLDivElement>,
+                },
+              }}
+            >
+              {workspaces.map((w) => (
+                <MenuItem key={w.value} value={w.value}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Icon name="language" size={20} />
+                    <span>{w.label}</span>
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+        )}
 
         {/* Navigation Links - scrollable middle */}
         <Box

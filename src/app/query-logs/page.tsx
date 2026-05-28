@@ -125,31 +125,184 @@ type RowSeed = {
 };
 
 const ROW_SEEDS: RowSeed[] = [
-  { fqdn: "github.com", result: "Allowed", categories: "Information Technology, Code Repositories", application: "Google Chrome", user: "analyst" },
-  { fqdn: "slack.com", result: "Allowed", categories: "Business, Collaboration", application: "Slack", user: "sales" },
-  { fqdn: "figma.com", result: "Allowed", categories: "Business, Design", application: "Figma", user: "design" },
-  { fqdn: "atlassian.net", result: "Allowed", categories: "Business, Productivity", application: "Google Chrome", user: "analyst" },
-  { fqdn: "malware-update-cdn.cf", result: "Blocked", isThreat: true, categories: "Malware", application: "Google Chrome", user: "sales" },
-  { fqdn: "calendar.google.com", result: "Allowed", categories: "Productivity, Business", application: "Google Chrome", user: "sales" },
-  { fqdn: "zoom.us", result: "Allowed", categories: "Business, Communication", application: "Zoom", user: "analyst" },
-  { fqdn: "teams.microsoft.com", result: "Allowed", categories: "Business, Collaboration", application: "Microsoft Teams", user: "sales" },
-  { fqdn: "chatgpt.com", result: "Allowed", categories: "Computing & Internet, Artificial Intelligence", application: "Google Chrome", user: "dev" },
-  { fqdn: "stackoverflow.com", result: "Allowed", categories: "Computing & Internet, Reference", application: "Google Chrome", user: "dev" },
-  { fqdn: "notion.so", result: "Allowed", categories: "Business, Productivity", application: "Google Chrome", user: "design" },
-  { fqdn: "googlle-account-verify.xyz", result: "Blocked", isThreat: true, categories: "Phishing", application: "Google Chrome", user: "design" },
-  { fqdn: "steamcommunity.com", result: "Blocked", categories: "Gaming", application: "Google Chrome", user: "dev" },
-  { fqdn: "www.facebook.com", result: "Blocked", categories: "Social Networking", application: "Google Chrome", user: "sales" },
-  { fqdn: "www.tiktok.com", result: "Blocked", categories: "Social Networking", application: "Google Chrome", user: "analyst" },
-  { fqdn: "www.netflix.com", result: "Blocked", categories: "Streaming Media", application: "Google Chrome", user: "sales" },
-  { fqdn: "docs.google.com", result: "Allowed", categories: "Productivity, Business", application: "Google Chrome", user: "analyst" },
-  { fqdn: "www.draftkings.com", result: "Blocked", categories: "Gambling", application: "Google Chrome", user: "dev" },
-  { fqdn: "www.linkedin.com", result: "Allowed", categories: "Business, Social Networking", application: "Google Chrome", user: "sales" },
-  { fqdn: "vercel.com", result: "Allowed", categories: "Computing & Internet, Web Hosting", application: "Google Chrome", user: "dev" },
-  { fqdn: "copilot.microsoft.com", result: "Allowed", categories: "Computing & Internet, Artificial Intelligence", application: "Microsoft Edge", user: "dev" },
-  { fqdn: "www.salesforce.com", result: "Allowed", categories: "Business, CRM", application: "Google Chrome", user: "sales" },
-  { fqdn: "secure-microsoft-login.tk", result: "Blocked", isThreat: true, categories: "Phishing", application: "Microsoft Edge", user: "sales" },
-  { fqdn: "mail.google.com", result: "Allowed", categories: "Webmail, Communication", application: "Google Chrome", user: "analyst" },
-  { fqdn: "outlook.office.com", result: "Allowed", categories: "Webmail, Business", application: "Microsoft Edge", user: "sales" },
+  {
+    fqdn: "github.com",
+    result: "Allowed",
+    categories: "Information Technology, Code Repositories",
+    application: "Google Chrome",
+    user: "analyst",
+  },
+  {
+    fqdn: "slack.com",
+    result: "Allowed",
+    categories: "Business, Collaboration",
+    application: "Slack",
+    user: "sales",
+  },
+  {
+    fqdn: "figma.com",
+    result: "Allowed",
+    categories: "Business, Design",
+    application: "Figma",
+    user: "design",
+  },
+  {
+    fqdn: "atlassian.net",
+    result: "Allowed",
+    categories: "Business, Productivity",
+    application: "Google Chrome",
+    user: "analyst",
+  },
+  {
+    fqdn: "malware-update-cdn.cf",
+    result: "Blocked",
+    isThreat: true,
+    categories: "Malware",
+    application: "Google Chrome",
+    user: "sales",
+  },
+  {
+    fqdn: "calendar.google.com",
+    result: "Allowed",
+    categories: "Productivity, Business",
+    application: "Google Chrome",
+    user: "sales",
+  },
+  {
+    fqdn: "zoom.us",
+    result: "Allowed",
+    categories: "Business, Communication",
+    application: "Zoom",
+    user: "analyst",
+  },
+  {
+    fqdn: "teams.microsoft.com",
+    result: "Allowed",
+    categories: "Business, Collaboration",
+    application: "Microsoft Teams",
+    user: "sales",
+  },
+  {
+    fqdn: "chatgpt.com",
+    result: "Allowed",
+    categories: "Computing & Internet, Artificial Intelligence",
+    application: "Google Chrome",
+    user: "dev",
+  },
+  {
+    fqdn: "stackoverflow.com",
+    result: "Allowed",
+    categories: "Computing & Internet, Reference",
+    application: "Google Chrome",
+    user: "dev",
+  },
+  {
+    fqdn: "notion.so",
+    result: "Allowed",
+    categories: "Business, Productivity",
+    application: "Google Chrome",
+    user: "design",
+  },
+  {
+    fqdn: "googlle-account-verify.xyz",
+    result: "Blocked",
+    isThreat: true,
+    categories: "Phishing",
+    application: "Google Chrome",
+    user: "design",
+  },
+  {
+    fqdn: "steamcommunity.com",
+    result: "Blocked",
+    categories: "Gaming",
+    application: "Google Chrome",
+    user: "dev",
+  },
+  {
+    fqdn: "www.facebook.com",
+    result: "Blocked",
+    categories: "Social Networking",
+    application: "Google Chrome",
+    user: "sales",
+  },
+  {
+    fqdn: "www.tiktok.com",
+    result: "Blocked",
+    categories: "Social Networking",
+    application: "Google Chrome",
+    user: "analyst",
+  },
+  {
+    fqdn: "www.netflix.com",
+    result: "Blocked",
+    categories: "Streaming Media",
+    application: "Google Chrome",
+    user: "sales",
+  },
+  {
+    fqdn: "docs.google.com",
+    result: "Allowed",
+    categories: "Productivity, Business",
+    application: "Google Chrome",
+    user: "analyst",
+  },
+  {
+    fqdn: "www.draftkings.com",
+    result: "Blocked",
+    categories: "Gambling",
+    application: "Google Chrome",
+    user: "dev",
+  },
+  {
+    fqdn: "www.linkedin.com",
+    result: "Allowed",
+    categories: "Business, Social Networking",
+    application: "Google Chrome",
+    user: "sales",
+  },
+  {
+    fqdn: "vercel.com",
+    result: "Allowed",
+    categories: "Computing & Internet, Web Hosting",
+    application: "Google Chrome",
+    user: "dev",
+  },
+  {
+    fqdn: "copilot.microsoft.com",
+    result: "Allowed",
+    categories: "Computing & Internet, Artificial Intelligence",
+    application: "Microsoft Edge",
+    user: "dev",
+  },
+  {
+    fqdn: "www.salesforce.com",
+    result: "Allowed",
+    categories: "Business, CRM",
+    application: "Google Chrome",
+    user: "sales",
+  },
+  {
+    fqdn: "secure-microsoft-login.tk",
+    result: "Blocked",
+    isThreat: true,
+    categories: "Phishing",
+    application: "Microsoft Edge",
+    user: "sales",
+  },
+  {
+    fqdn: "mail.google.com",
+    result: "Allowed",
+    categories: "Webmail, Communication",
+    application: "Google Chrome",
+    user: "analyst",
+  },
+  {
+    fqdn: "outlook.office.com",
+    result: "Allowed",
+    categories: "Webmail, Business",
+    application: "Microsoft Edge",
+    user: "sales",
+  },
 ];
 
 const TIME_FORMAT = "MMM d, yyyy h:mm:ss a";
@@ -354,6 +507,13 @@ export default function QueryLogsPage() {
     }, FETCH_DELAY_MS);
   };
 
+  const handleClear = () => {
+    setSelectedOrg(null);
+    setAppliedOrg(null);
+    setIsFetching(false);
+    setCardTab(0);
+  };
+
   return (
     <Box
       sx={{
@@ -485,27 +645,49 @@ export default function QueryLogsPage() {
             >
               Apply
             </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              size="small"
-              startIcon={
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: 16 }}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              {appliedOrg && (
+                <Button
+                  variant="text"
+                  color="error"
+                  size="small"
+                  onClick={handleClear}
+                  startIcon={
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: 16 }}
+                    >
+                      close
+                    </span>
+                  }
                 >
-                  refresh
-                </span>
-              }
-            >
-              Refresh
-            </Button>
+                  Clear
+                </Button>
+              )}
+              <Button
+                variant="outlined"
+                color="secondary"
+                size="small"
+                startIcon={
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: 16 }}
+                  >
+                    refresh
+                  </span>
+                }
+              >
+                Refresh
+              </Button>
+            </Box>
           </Box>
         </Box>
       </PageHeader>
       <Box
         sx={{
-          p: 2,
+          px: 2,
+          pt: 2,
+          pb: 8,
           minWidth: 0,
           minHeight: 0,
           flex: 1,
