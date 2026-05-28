@@ -24,7 +24,6 @@ export function EmptyState({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 1.5,
         p: 3,
         textAlign: "center",
       }}
@@ -33,13 +32,14 @@ export function EmptyState({
         component="img"
         src={illustration}
         alt={illustrationAlt}
-        sx={{ width: 100, height: 100, opacity: 0.85 }}
+        sx={{ width: 100, height: 100, opacity: 0.85, mb: 2 }}
       />
       <Typography
         sx={{
           fontFamily: brandConfig.fontFamily.secondary,
           fontWeight: 700,
           fontSize: 18,
+          mb: 1,
           color: "text.primary",
         }}
       >

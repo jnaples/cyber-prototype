@@ -96,7 +96,6 @@ export default function DeploymentsLayout() {
         <Box
           sx={{
             mb: -2,
-            px: 3,
             display: "flex",
             alignContent: "flex-end",
             backgroundColor: (

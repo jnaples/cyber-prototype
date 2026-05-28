@@ -13,7 +13,16 @@ export const ArrowTooltip = ({
   children,
 }: ArrowTooltipProps) => {
   return (
-    <Tooltip title={title} placement={direction} arrow>
+    <Tooltip
+      title={title}
+      placement={direction}
+      arrow
+      slotProps={{
+        popper: {
+          modifiers: [{ name: "offset", options: { offset: [0, -7] } }],
+        },
+      }}
+    >
       {children}
     </Tooltip>
   );

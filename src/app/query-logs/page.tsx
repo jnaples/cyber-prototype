@@ -10,6 +10,7 @@ import type { Theme } from "@mui/material/styles";
 import type { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
@@ -410,6 +411,11 @@ export default function QueryLogsPage() {
   const [appliedOrg, setAppliedOrg] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(false);
 
+  const filtersDisabled = !selectedOrg;
+  const filtersDisabledTooltip = filtersDisabled
+    ? "Select an Organization to enable this filter"
+    : "";
+
   const hasData = appliedOrg !== null && !isFetching;
   const visibleRows = hasData
     ? cardTab === 1
@@ -450,15 +456,14 @@ export default function QueryLogsPage() {
           sx={{
             display: "flex",
             flexDirection: "column",
-            gap: 1.5,
-            px: 3,
+            gap: 2,
           }}
         >
           <Box
             sx={{
               display: "grid",
               gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
-              gap: 1.5,
+              gap: 2,
             }}
           >
             <Autocomplete
@@ -470,50 +475,73 @@ export default function QueryLogsPage() {
                 <TextField {...params} placeholder="Select Organization" />
               )}
             />
-            <Autocomplete
-              size="small"
-              options={FILTER_OPTIONS.sites}
-              defaultValue="All Sites"
-              renderInput={(params) => <TextField {...params} />}
-            />
-            <Autocomplete
-              size="small"
-              options={FILTER_OPTIONS.roamingClients}
-              defaultValue="All Roaming Clients"
-              renderInput={(params) => <TextField {...params} />}
-            />
+            <ArrowTooltip title={filtersDisabledTooltip}>
+              <Box sx={{ width: "100%", display: "flex", "& > *": { width: "100%" } }}>
+                <Autocomplete
+                  size="small"
+                  options={FILTER_OPTIONS.sites}
+                  defaultValue="All Sites"
+                  disabled={filtersDisabled}
+                  renderInput={(params) => <TextField {...params} />}
+                />
+              </Box>
+            </ArrowTooltip>
+            <ArrowTooltip title={filtersDisabledTooltip}>
+              <Box sx={{ width: "100%", display: "flex", "& > *": { width: "100%" } }}>
+                <Autocomplete
+                  size="small"
+                  options={FILTER_OPTIONS.roamingClients}
+                  defaultValue="All Roaming Clients"
+                  disabled={filtersDisabled}
+                  renderInput={(params) => <TextField {...params} />}
+                />
+              </Box>
+            </ArrowTooltip>
           </Box>
           <Box
             sx={{
               display: "grid",
               gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
-              gap: 1.5,
+              gap: 2,
             }}
           >
-            <Autocomplete
-              size="small"
-              options={FILTER_OPTIONS.users}
-              defaultValue="All Users"
-              renderInput={(params) => <TextField {...params} />}
-            />
-            <TextField
-              size="small"
-              defaultValue="Today"
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <Box sx={{ display: "flex", alignItems: "center", pr: 1 }}>
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: 20 }}
-                      >
-                        calendar_month
-                      </span>
-                    </Box>
-                  ),
-                },
-              }}
-            />
+            <ArrowTooltip title={filtersDisabledTooltip}>
+              <Box sx={{ width: "100%", display: "flex", "& > *": { width: "100%" } }}>
+                <Autocomplete
+                  size="small"
+                  options={FILTER_OPTIONS.users}
+                  defaultValue="All Users"
+                  disabled={filtersDisabled}
+                  renderInput={(params) => <TextField {...params} />}
+                />
+              </Box>
+            </ArrowTooltip>
+            <ArrowTooltip title={filtersDisabledTooltip}>
+              <Box sx={{ width: "100%", display: "flex", "& > *": { width: "100%" } }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  defaultValue="Today"
+                  disabled={filtersDisabled}
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", pr: 1 }}
+                        >
+                          <span
+                            className="material-symbols-outlined"
+                            style={{ fontSize: 20 }}
+                          >
+                            calendar_month
+                          </span>
+                        </Box>
+                      ),
+                    },
+                  }}
+                />
+              </Box>
+            </ArrowTooltip>
           </Box>
           <Box
             sx={{

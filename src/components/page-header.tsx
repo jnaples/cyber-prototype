@@ -101,7 +101,7 @@ export function PageHeader({
         )}
       </Stack>
 
-      {children && <Box sx={{ mt: 2 }}>{children}</Box>}
+      {children && <Box sx={{ mt: 2, px: 3 }}>{children}</Box>}
     </Box>
   );
 }

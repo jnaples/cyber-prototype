@@ -83,7 +83,7 @@ export function generateTypography(brandConfig: BrandConfig) {
 
     body2: {
       fontFamily: primaryFont,
-      lineHeight: 1.34,
+      lineHeight: 1.6,
       fontSize: pxToRem(14),
     },
 
