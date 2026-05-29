@@ -7,6 +7,7 @@ import { formHelperText } from "./form-helper-text";
 import { formLabel } from "./form-label";
 import { global } from "./global";
 import { link } from "./link";
+import { outlinedInput } from "./outlined-input";
 import { tab } from "./tab";
 import { textField } from "./text-field";
 import { tooltip } from "./tooltip";
@@ -23,6 +24,7 @@ export const components = {
   ...tooltip,
   ...dataGrid,
   ...textField,
+  ...outlinedInput,
   ...link,
   ...circularProgress,
 };

@@ -2,7 +2,10 @@ import {
   Autocomplete,
   Button,
   Chip,
+  Divider,
   IconButton,
+  InputAdornment,
+  MenuItem,
   TextField,
 } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -22,7 +25,7 @@ import { useState } from "react";
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { DateTimeRangePicker } from "@/components/date-time-range-picker";
-import type { DateTimeRangePickerShortcut } from "@/components/date-time-range-picker";
+import type { DateTimeRangePickerValue } from "@/components/date-time-range-picker";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
@@ -311,15 +314,25 @@ const TIME_SPAN_MS = 7 * 24 * 60 * 60 * 1000;
 
 const rows = (() => {
   const now = new Date();
-  const stepMs = TIME_SPAN_MS / TOTAL_ROWS;
-  return Array.from({ length: TOTAL_ROWS }, (_, i) => {
+  // Power-law biased toward 0 → denser activity near "now", tail out to 7 days.
+  // With k=3 over TIME_SPAN_MS=7d this yields roughly:
+  //   Last 5 min  → ~10 rows
+  //   Last 15 min → ~14 rows
+  //   Last 1 hr   → ~23 rows
+  //   Last 4 hr   → ~37 rows
+  //   Last 24 hr  → ~72 rows
+  //   Last 7 days → 125 rows
+  const offsets = Array.from(
+    { length: TOTAL_ROWS },
+    () => TIME_SPAN_MS * Math.pow(Math.random(), 3),
+  ).sort((a, b) => a - b);
+  return offsets.map((offsetMs, i) => {
     const seed = ROW_SEEDS[i % ROW_SEEDS.length];
-    const jitter = (Math.random() - 0.5) * stepMs * 0.6;
-    const offsetMs = Math.max(0, i * stepMs + jitter);
     const time = subMilliseconds(now, offsetMs);
     const { user, ...rest } = seed;
     return {
       id: i + 1,
+      timestampMs: time.getTime(),
       time: fnsFormat(time, TIME_FORMAT),
       ...rest,
       ...USERS[user],
@@ -332,19 +345,20 @@ const rows = (() => {
 // Status tab configuration
 // ---------------------------------------------------------------------------
 
-const ALL_ROWS_ALLOWED_COUNT = rows.filter(
-  (r) => r.result === "Allowed",
-).length;
-const ALL_ROWS_BLOCKED_COUNT = rows.filter(
-  (r) => r.result === "Blocked",
-).length;
-const ALL_ROWS_THREAT_COUNT = rows.filter((r) => r.isThreat).length;
+type Row = (typeof rows)[number];
 
-function buildTabsConfig(hasData: boolean): StatusTabConfig[] {
-  const total = hasData ? rows.length : 0;
-  const allowed = hasData ? ALL_ROWS_ALLOWED_COUNT : 0;
-  const blocked = hasData ? ALL_ROWS_BLOCKED_COUNT : 0;
-  const threats = hasData ? ALL_ROWS_THREAT_COUNT : 0;
+function buildTabsConfig(
+  hasData: boolean,
+  rowsInRange: Row[],
+): StatusTabConfig[] {
+  const total = hasData ? rowsInRange.length : 0;
+  const allowed = hasData
+    ? rowsInRange.filter((r) => r.result === "Allowed").length
+    : 0;
+  const blocked = hasData
+    ? rowsInRange.filter((r) => r.result === "Blocked").length
+    : 0;
+  const threats = hasData ? rowsInRange.filter((r) => r.isThreat).length : 0;
 
   return [
     {
@@ -393,71 +407,54 @@ const FILTER_OPTIONS = {
   users: ["All Users", "Admins", "Standard"],
 };
 
-const DATE_RANGE_SHORTCUTS: DateTimeRangePickerShortcut[] = [
-  {
-    label: "Last 5 minutes",
-    getValue: () => {
-      const now = new Date();
+const TIME_RANGE_PRESETS = [
+  "Last 5 minutes",
+  "Last 15 minutes",
+  "Last 30 minutes",
+  "Last 1 hour",
+  "Last 4 hours",
+  "Last 8 hours",
+  "Last 12 hours",
+  "Last 24 hours",
+  "Today",
+  "Yesterday",
+] as const;
+
+const CUSTOM_TIME_RANGE = "Custom";
+
+type TimeRangeValue = (typeof TIME_RANGE_PRESETS)[number] | typeof CUSTOM_TIME_RANGE;
+
+function getRangeForPreset(
+  preset: TimeRangeValue,
+  now: Date = new Date(),
+): [Date, Date] | null {
+  switch (preset) {
+    case "Last 5 minutes":
       return [subMinutes(now, 5), now];
-    },
-  },
-  {
-    label: "Last 15 minutes",
-    getValue: () => {
-      const now = new Date();
+    case "Last 15 minutes":
       return [subMinutes(now, 15), now];
-    },
-  },
-  {
-    label: "Last hour",
-    getValue: () => {
-      const now = new Date();
+    case "Last 30 minutes":
+      return [subMinutes(now, 30), now];
+    case "Last 1 hour":
       return [subHours(now, 1), now];
-    },
-  },
-  {
-    label: "Last 4 hours",
-    getValue: () => {
-      const now = new Date();
+    case "Last 4 hours":
       return [subHours(now, 4), now];
-    },
-  },
-  {
-    label: "Last 24 hours",
-    getValue: () => {
-      const now = new Date();
+    case "Last 8 hours":
+      return [subHours(now, 8), now];
+    case "Last 12 hours":
+      return [subHours(now, 12), now];
+    case "Last 24 hours":
       return [subHours(now, 24), now];
-    },
-  },
-  {
-    label: "Today",
-    getValue: () => {
-      const now = new Date();
+    case "Today":
       return [startOfDay(now), endOfDay(now)];
-    },
-  },
-  {
-    label: "Yesterday",
-    getValue: () => {
-      const yesterday = subDays(new Date(), 1);
-      return [startOfDay(yesterday), endOfDay(yesterday)];
-    },
-  },
-  {
-    label: "Last 3 days",
-    getValue: () => {
-      const now = new Date();
-      return [subDays(now, 3), now];
-    },
-  },
-  {
-    label: "Last 7 days",
-    getValue: () => {
-      const now = new Date();
-      return [subDays(now, 7), now];
-    },
-  },
-];
+    case "Yesterday": {
+      const y = subDays(now, 1);
+      return [startOfDay(y), endOfDay(y)];
+    }
+    case "Custom":
+      return null;
+  }
+}
 
 const FETCH_DELAY_MS = 700;
 
@@ -479,6 +476,16 @@ export default function QueryLogsPage() {
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
   const [appliedOrg, setAppliedOrg] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(false);
+  const [timeRange, setTimeRange] = useState<TimeRangeValue>("Last 24 hours");
+  const [dateRange, setDateRange] = useState<DateTimeRangePickerValue>(
+    () => getRangeForPreset("Last 24 hours") ?? [null, null],
+  );
+
+  const handleTimeRangeChange = (next: TimeRangeValue) => {
+    setTimeRange(next);
+    const range = getRangeForPreset(next);
+    if (range) setDateRange(range);
+  };
 
   const filtersDisabled = !selectedOrg;
   const filtersDisabledTooltip = filtersDisabled
@@ -486,16 +493,21 @@ export default function QueryLogsPage() {
     : "";
 
   const hasData = appliedOrg !== null && !isFetching;
-  const visibleRows = hasData
-    ? cardTab === 1
-      ? rows.filter((r) => r.result === "Allowed")
-      : cardTab === 2
-        ? rows.filter((r) => r.result === "Blocked")
-        : cardTab === 3
-          ? rows.filter((r) => r.isThreat)
-          : rows
+  const [startDate, endDate] = dateRange;
+  const startMs = startDate?.getTime() ?? 0;
+  const endMs = endDate?.getTime() ?? Number.POSITIVE_INFINITY;
+  const rowsInRange = hasData
+    ? rows.filter((r) => r.timestampMs >= startMs && r.timestampMs <= endMs)
     : [];
-  const tabsConfig = buildTabsConfig(hasData);
+  const visibleRows =
+    cardTab === 1
+      ? rowsInRange.filter((r) => r.result === "Allowed")
+      : cardTab === 2
+        ? rowsInRange.filter((r) => r.result === "Blocked")
+        : cardTab === 3
+          ? rowsInRange.filter((r) => r.isThreat)
+          : rowsInRange;
+  const tabsConfig = buildTabsConfig(hasData, rowsInRange);
 
   const handleApply = () => {
     if (!selectedOrg) return;
@@ -619,13 +631,49 @@ export default function QueryLogsPage() {
                   "& > *": { width: "100%" },
                 }}
               >
-                <DateTimeRangePicker
-                  disabled={filtersDisabled}
-                  defaultValue={[startOfDay(new Date()), endOfDay(new Date())]}
-                  shortcuts={DATE_RANGE_SHORTCUTS}
-                  minDate={startOfDay(subDays(new Date(), 8))}
-                  maxDate={endOfDay(new Date())}
-                />
+                {timeRange === CUSTOM_TIME_RANGE ? (
+                  <DateTimeRangePicker
+                    disabled={filtersDisabled}
+                    value={dateRange}
+                    onChange={setDateRange}
+                    minDate={startOfDay(subDays(new Date(), 8))}
+                    maxDate={endOfDay(new Date())}
+                  />
+                ) : (
+                  <TextField
+                    select
+                    size="small"
+                    value={timeRange}
+                    onChange={(e) =>
+                      handleTimeRangeChange(e.target.value as TimeRangeValue)
+                    }
+                    disabled={filtersDisabled}
+                    slotProps={{
+                      input: {
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <span
+                              className="material-symbols-outlined"
+                              style={{ fontSize: 20 }}
+                            >
+                              date_range
+                            </span>
+                          </InputAdornment>
+                        ),
+                      },
+                    }}
+                  >
+                    {TIME_RANGE_PRESETS.map((preset) => (
+                      <MenuItem key={preset} value={preset}>
+                        {preset}
+                      </MenuItem>
+                    ))}
+                    <Divider />
+                    <MenuItem value={CUSTOM_TIME_RANGE}>
+                      {CUSTOM_TIME_RANGE}
+                    </MenuItem>
+                  </TextField>
+                )}
               </Box>
             </ArrowTooltip>
           </Box>

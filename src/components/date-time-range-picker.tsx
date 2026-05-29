@@ -94,7 +94,7 @@ export function DateTimeRangePicker({
                   className="material-symbols-outlined"
                   style={{ fontSize: 20 }}
                 >
-                  calendar_month
+                  date_range
                 </span>
               </InputAdornment>
             ),
