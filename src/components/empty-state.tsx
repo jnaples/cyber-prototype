@@ -17,7 +17,7 @@ export interface EmptyStateProps {
 }
 
 export function EmptyState({
-  illustration = "/empty-state-monitor.svg",
+  illustration = "/empty-state-monitor.png",
   illustrationAlt = "",
   media,
   title,

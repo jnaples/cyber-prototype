@@ -1,25 +1,23 @@
 import {
   Autocomplete,
   Button,
+  Checkbox,
   Chip,
   Divider,
+  FormControl,
   IconButton,
   InputAdornment,
+  ListItemText,
+  ListSubheader,
   MenuItem,
+  Select,
   TextField,
 } from "@mui/material";
+import type { SelectChangeEvent } from "@mui/material";
 import Box from "@mui/material/Box";
 import type { Theme } from "@mui/material/styles";
 import type { GridColDef } from "@mui/x-data-grid";
-import {
-  endOfDay,
-  format as fnsFormat,
-  startOfDay,
-  subDays,
-  subHours,
-  subMilliseconds,
-  subMinutes,
-} from "date-fns";
+import { endOfDay, startOfDay, subDays, subHours, subMinutes } from "date-fns";
 import { useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
@@ -30,6 +28,8 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+import { queryLogRows, relays, roamingClients } from "@/data/query-logs";
+import type { QueryLogRow } from "@/data/query-logs";
 
 // ---------------------------------------------------------------------------
 // Column definitions
@@ -102,254 +102,12 @@ const columns: GridColDef[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Row data
-// ---------------------------------------------------------------------------
-
-const SHARED_ROW_VALUES = {
-  site: "Case Study Site",
-  resolver: "android Agent 30",
-  policy: "Sales Policy",
-};
-
-const USERS = {
-  analyst: { localUserName: "analyst-laptop", deployment: "Windows Agent 15" },
-  sales: { localUserName: "sales-laptop", deployment: "Windows Agent 15" },
-  dev: { localUserName: "dev-mbp", deployment: "macOS Agent 14.2" },
-  design: { localUserName: "design-mbp", deployment: "macOS Agent 14.2" },
-};
-
-type RowSeed = {
-  fqdn: string;
-  result: "Allowed" | "Blocked";
-  categories: string;
-  application: string;
-  user: keyof typeof USERS;
-  isThreat?: boolean;
-};
-
-const ROW_SEEDS: RowSeed[] = [
-  {
-    fqdn: "github.com",
-    result: "Allowed",
-    categories: "Information Technology, Code Repositories",
-    application: "Google Chrome",
-    user: "analyst",
-  },
-  {
-    fqdn: "slack.com",
-    result: "Allowed",
-    categories: "Business, Collaboration",
-    application: "Slack",
-    user: "sales",
-  },
-  {
-    fqdn: "figma.com",
-    result: "Allowed",
-    categories: "Business, Design",
-    application: "Figma",
-    user: "design",
-  },
-  {
-    fqdn: "atlassian.net",
-    result: "Allowed",
-    categories: "Business, Productivity",
-    application: "Google Chrome",
-    user: "analyst",
-  },
-  {
-    fqdn: "malware-update-cdn.cf",
-    result: "Blocked",
-    isThreat: true,
-    categories: "Malware",
-    application: "Google Chrome",
-    user: "sales",
-  },
-  {
-    fqdn: "calendar.google.com",
-    result: "Allowed",
-    categories: "Productivity, Business",
-    application: "Google Chrome",
-    user: "sales",
-  },
-  {
-    fqdn: "zoom.us",
-    result: "Allowed",
-    categories: "Business, Communication",
-    application: "Zoom",
-    user: "analyst",
-  },
-  {
-    fqdn: "teams.microsoft.com",
-    result: "Allowed",
-    categories: "Business, Collaboration",
-    application: "Microsoft Teams",
-    user: "sales",
-  },
-  {
-    fqdn: "chatgpt.com",
-    result: "Allowed",
-    categories: "Computing & Internet, Artificial Intelligence",
-    application: "Google Chrome",
-    user: "dev",
-  },
-  {
-    fqdn: "stackoverflow.com",
-    result: "Allowed",
-    categories: "Computing & Internet, Reference",
-    application: "Google Chrome",
-    user: "dev",
-  },
-  {
-    fqdn: "notion.so",
-    result: "Allowed",
-    categories: "Business, Productivity",
-    application: "Google Chrome",
-    user: "design",
-  },
-  {
-    fqdn: "googlle-account-verify.xyz",
-    result: "Blocked",
-    isThreat: true,
-    categories: "Phishing",
-    application: "Google Chrome",
-    user: "design",
-  },
-  {
-    fqdn: "steamcommunity.com",
-    result: "Blocked",
-    categories: "Gaming",
-    application: "Google Chrome",
-    user: "dev",
-  },
-  {
-    fqdn: "www.facebook.com",
-    result: "Blocked",
-    categories: "Social Networking",
-    application: "Google Chrome",
-    user: "sales",
-  },
-  {
-    fqdn: "www.tiktok.com",
-    result: "Blocked",
-    categories: "Social Networking",
-    application: "Google Chrome",
-    user: "analyst",
-  },
-  {
-    fqdn: "www.netflix.com",
-    result: "Blocked",
-    categories: "Streaming Media",
-    application: "Google Chrome",
-    user: "sales",
-  },
-  {
-    fqdn: "docs.google.com",
-    result: "Allowed",
-    categories: "Productivity, Business",
-    application: "Google Chrome",
-    user: "analyst",
-  },
-  {
-    fqdn: "www.draftkings.com",
-    result: "Blocked",
-    categories: "Gambling",
-    application: "Google Chrome",
-    user: "dev",
-  },
-  {
-    fqdn: "www.linkedin.com",
-    result: "Allowed",
-    categories: "Business, Social Networking",
-    application: "Google Chrome",
-    user: "sales",
-  },
-  {
-    fqdn: "vercel.com",
-    result: "Allowed",
-    categories: "Computing & Internet, Web Hosting",
-    application: "Google Chrome",
-    user: "dev",
-  },
-  {
-    fqdn: "copilot.microsoft.com",
-    result: "Allowed",
-    categories: "Computing & Internet, Artificial Intelligence",
-    application: "Microsoft Edge",
-    user: "dev",
-  },
-  {
-    fqdn: "www.salesforce.com",
-    result: "Allowed",
-    categories: "Business, CRM",
-    application: "Google Chrome",
-    user: "sales",
-  },
-  {
-    fqdn: "secure-microsoft-login.tk",
-    result: "Blocked",
-    isThreat: true,
-    categories: "Phishing",
-    application: "Microsoft Edge",
-    user: "sales",
-  },
-  {
-    fqdn: "mail.google.com",
-    result: "Allowed",
-    categories: "Webmail, Communication",
-    application: "Google Chrome",
-    user: "analyst",
-  },
-  {
-    fqdn: "outlook.office.com",
-    result: "Allowed",
-    categories: "Webmail, Business",
-    application: "Microsoft Edge",
-    user: "sales",
-  },
-];
-
-const TIME_FORMAT = "MMM d, yyyy h:mm:ss a";
-const TOTAL_ROWS = 125;
-const TIME_SPAN_MS = 7 * 24 * 60 * 60 * 1000;
-
-const rows = (() => {
-  const now = new Date();
-  // Power-law biased toward 0 → denser activity near "now", tail out to 7 days.
-  // With k=3 over TIME_SPAN_MS=7d this yields roughly:
-  //   Last 5 min  → ~10 rows
-  //   Last 15 min → ~14 rows
-  //   Last 1 hr   → ~23 rows
-  //   Last 4 hr   → ~37 rows
-  //   Last 24 hr  → ~72 rows
-  //   Last 7 days → 125 rows
-  const offsets = Array.from(
-    { length: TOTAL_ROWS },
-    () => TIME_SPAN_MS * Math.pow(Math.random(), 3),
-  ).sort((a, b) => a - b);
-  return offsets.map((offsetMs, i) => {
-    const seed = ROW_SEEDS[i % ROW_SEEDS.length];
-    const time = subMilliseconds(now, offsetMs);
-    const { user, ...rest } = seed;
-    return {
-      id: i + 1,
-      timestampMs: time.getTime(),
-      time: fnsFormat(time, TIME_FORMAT),
-      ...rest,
-      ...USERS[user],
-      ...SHARED_ROW_VALUES,
-    };
-  });
-})();
-
-// ---------------------------------------------------------------------------
 // Status tab configuration
 // ---------------------------------------------------------------------------
 
-type Row = (typeof rows)[number];
-
 function buildTabsConfig(
   hasData: boolean,
-  rowsInRange: Row[],
+  rowsInRange: QueryLogRow[],
 ): StatusTabConfig[] {
   const total = hasData ? rowsInRange.length : 0;
   const allowed = hasData
@@ -403,7 +161,6 @@ function buildTabsConfig(
 const FILTER_OPTIONS = {
   organization: ["Acme Inc.", "Globex", "Initech"],
   sites: ["All Sites", "HQ", "Remote", "Branch Office"],
-  roamingClients: ["All Roaming Clients", "Sales Team", "Engineering"],
   users: ["All Users", "Admins", "Standard"],
 };
 
@@ -468,6 +225,9 @@ function QueryLogsEmptyOverlay() {
   );
 }
 
+const SELECT_ALL_VALUE = "__select_all__";
+const ALL_ROAMING_CLIENTS_AND_RELAYS = [...roamingClients, ...relays];
+
 // ---------------------------------------------------------------------------
 // Page component
 // ---------------------------------------------------------------------------
@@ -503,6 +263,25 @@ export default function QueryLogsPage() {
     setRevertState(null);
   };
 
+  // Roaming Clients & Relays multi-select (Select all sentinel toggled inside onChange).
+  const [selectedClients, setSelectedClients] = useState<string[]>([]);
+  const totalClients = ALL_ROAMING_CLIENTS_AND_RELAYS.length;
+  const allSelected = selectedClients.length === totalClients;
+  const someSelected =
+    selectedClients.length > 0 && selectedClients.length < totalClients;
+
+  const handleClientsChange = (event: SelectChangeEvent<string[]>) => {
+    const raw = event.target.value;
+    const next = typeof raw === "string" ? raw.split(",") : raw;
+    if (next.includes(SELECT_ALL_VALUE)) {
+      setSelectedClients(
+        allSelected ? [] : [...ALL_ROAMING_CLIENTS_AND_RELAYS],
+      );
+      return;
+    }
+    setSelectedClients(next);
+  };
+
   const filtersDisabled = !selectedOrg;
   const filtersDisabledTooltip = filtersDisabled
     ? "Select an Organization to enable this filter"
@@ -513,7 +292,9 @@ export default function QueryLogsPage() {
   const startMs = startDate?.getTime() ?? 0;
   const endMs = endDate?.getTime() ?? Number.POSITIVE_INFINITY;
   const rowsInRange = hasData
-    ? rows.filter((r) => r.timestampMs >= startMs && r.timestampMs <= endMs)
+    ? queryLogRows.filter(
+        (r) => r.timestampMs >= startMs && r.timestampMs <= endMs,
+      )
     : [];
   const visibleRows =
     cardTab === 1
@@ -605,13 +386,76 @@ export default function QueryLogsPage() {
                   "& > *": { width: "100%" },
                 }}
               >
-                <Autocomplete
-                  size="small"
-                  options={FILTER_OPTIONS.roamingClients}
-                  defaultValue="All Roaming Clients"
-                  disabled={filtersDisabled}
-                  renderInput={(params) => <TextField {...params} />}
-                />
+                <FormControl size="small" fullWidth disabled={filtersDisabled}>
+                  <Select
+                    multiple
+                    displayEmpty
+                    value={selectedClients}
+                    onChange={handleClientsChange}
+                    renderValue={(selected) => {
+                      if (selected.length === 0 || allSelected) {
+                        return "All Roaming Clients & Relays";
+                      }
+                      if (selected.length === 1) return selected[0];
+                      return `${selected[0]} +${selected.length - 1}`;
+                    }}
+                    MenuProps={{
+                      slotProps: { paper: { sx: { maxHeight: 400 } } },
+                    }}
+                  >
+                    <MenuItem value={SELECT_ALL_VALUE}>
+                      <Checkbox
+                        size="small"
+                        checked={allSelected}
+                        indeterminate={someSelected}
+                        sx={{ p: 0.5, mr: 1 }}
+                      />
+                      <ListItemText primary="Select all" />
+                    </MenuItem>
+                    <Divider />
+                    <ListSubheader
+                      sx={{
+                        typography: "overline",
+                        lineHeight: 1.5,
+                        color: "text.secondary",
+                        pt: 1,
+                      }}
+                    >
+                      Roaming Clients
+                    </ListSubheader>
+                    {roamingClients.map((name) => (
+                      <MenuItem key={name} value={name}>
+                        <Checkbox
+                          size="small"
+                          checked={selectedClients.includes(name)}
+                          sx={{ p: 0.5, mr: 1 }}
+                        />
+                        <ListItemText primary={name} />
+                      </MenuItem>
+                    ))}
+                    <Divider />
+                    <ListSubheader
+                      sx={{
+                        typography: "overline",
+                        lineHeight: 1.5,
+                        color: "text.secondary",
+                        pt: 1,
+                      }}
+                    >
+                      Relays
+                    </ListSubheader>
+                    {relays.map((name) => (
+                      <MenuItem key={name} value={name}>
+                        <Checkbox
+                          size="small"
+                          checked={selectedClients.includes(name)}
+                          sx={{ p: 0.5, mr: 1 }}
+                        />
+                        <ListItemText primary={name} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Box>
             </ArrowTooltip>
           </Box>

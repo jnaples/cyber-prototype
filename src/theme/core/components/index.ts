@@ -1,3 +1,4 @@
+import { autocomplete } from "./autocomplete";
 import { button } from "./button";
 import { card } from "./card";
 import { circularProgress } from "./circular-progress";
@@ -7,6 +8,8 @@ import { formHelperText } from "./form-helper-text";
 import { formLabel } from "./form-label";
 import { global } from "./global";
 import { link } from "./link";
+import { listSubheader } from "./list-subheader";
+import { menu } from "./menu";
 import { outlinedInput } from "./outlined-input";
 import { tab } from "./tab";
 import { textField } from "./text-field";
@@ -25,6 +28,9 @@ export const components = {
   ...dataGrid,
   ...textField,
   ...outlinedInput,
+  ...autocomplete,
+  ...menu,
+  ...listSubheader,
   ...link,
   ...circularProgress,
 };
