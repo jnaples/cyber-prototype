@@ -407,22 +407,23 @@ const FILTER_OPTIONS = {
   users: ["All Users", "Admins", "Standard"],
 };
 
-const TIME_RANGE_PRESETS = [
-  "Last 5 minutes",
-  "Last 15 minutes",
-  "Last 30 minutes",
-  "Last 1 hour",
-  "Last 4 hours",
-  "Last 8 hours",
-  "Last 12 hours",
-  "Last 24 hours",
-  "Today",
-  "Yesterday",
+const TIME_RANGE_GROUPS = [
+  ["Last 5 minutes", "Last 15 minutes", "Last 30 minutes"],
+  [
+    "Last hour",
+    "Last 4 hours",
+    "Last 8 hours",
+    "Last 12 hours",
+    "Last 24 hours",
+  ],
+  ["Today", "Yesterday"],
 ] as const;
 
 const CUSTOM_TIME_RANGE = "Custom";
 
-type TimeRangeValue = (typeof TIME_RANGE_PRESETS)[number] | typeof CUSTOM_TIME_RANGE;
+type TimeRangeValue =
+  | (typeof TIME_RANGE_GROUPS)[number][number]
+  | typeof CUSTOM_TIME_RANGE;
 
 function getRangeForPreset(
   preset: TimeRangeValue,
@@ -435,7 +436,7 @@ function getRangeForPreset(
       return [subMinutes(now, 15), now];
     case "Last 30 minutes":
       return [subMinutes(now, 30), now];
-    case "Last 1 hour":
+    case "Last hour":
       return [subHours(now, 1), now];
     case "Last 4 hours":
       return [subHours(now, 4), now];
@@ -680,12 +681,14 @@ export default function QueryLogsPage() {
                       },
                     }}
                   >
-                    {TIME_RANGE_PRESETS.map((preset) => (
-                      <MenuItem key={preset} value={preset}>
-                        {preset}
-                      </MenuItem>
-                    ))}
-                    <Divider />
+                    {TIME_RANGE_GROUPS.flatMap((group, groupIdx) => [
+                      ...group.map((preset) => (
+                        <MenuItem key={preset} value={preset}>
+                          {preset}
+                        </MenuItem>
+                      )),
+                      <Divider key={`divider-${groupIdx}`} />,
+                    ])}
                     <MenuItem value={CUSTOM_TIME_RANGE}>
                       {CUSTOM_TIME_RANGE}
                     </MenuItem>
