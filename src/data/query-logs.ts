@@ -23,6 +23,7 @@ type RowSeed = {
   application: string;
   user: keyof typeof USERS;
   isThreat?: boolean;
+  threat?: string;
 };
 
 const ROW_SEEDS: RowSeed[] = [
@@ -224,15 +225,41 @@ export const queryLogRows = (() => {
     { length: TOTAL_ROWS },
     () => TIME_SPAN_MS * Math.pow(Math.random(), 3),
   ).sort((a, b) => a - b);
+  const AGENT_NAMES = [
+    "sarah-mbp",
+    "david-mbp",
+    "emily-win11",
+    "marcus-mbp",
+    "priya-win11",
+    "carlos-mbp",
+    "anna-win11",
+    "mike-mbp",
+    "lisa-mbp",
+    "tom-win11",
+  ];
+  const SCHEDULED_POLICIES = [
+    "Standard Policy",
+    "Off-Hours Block",
+    "Weekend Filter",
+    "Compliance Strict",
+  ];
   return offsets.map((offsetMs, i) => {
     const seed = ROW_SEEDS[i % ROW_SEEDS.length];
     const time = subMilliseconds(now, offsetMs);
     const { user, ...rest } = seed;
+    // Derive "threat" column: show the category name for blocked threats.
+    const threat = seed.isThreat ? seed.categories.split(",")[0].trim() : "";
+    // Fake local IPv4 — deterministic per-row so it stays stable across renders.
+    const localIpv4 = `192.168.${(i % 4) + 1}.${(i * 7) % 254 + 1}`;
     return {
       id: i + 1,
       timestampMs: time.getTime(),
       time: fnsFormat(time, TIME_FORMAT),
       ...rest,
+      threat,
+      localIpv4,
+      agentName: AGENT_NAMES[i % AGENT_NAMES.length],
+      scheduledPolicyName: SCHEDULED_POLICIES[i % SCHEDULED_POLICIES.length],
       ...USERS[user],
       ...SHARED_ROW_VALUES,
     };

@@ -35,6 +35,14 @@ const MuiDataGrid: Components<Theme>["MuiDataGrid"] = {
   defaultProps: {
     slots: { filterPanel: StandardFilterPanel },
   },
+  styleOverrides: {
+    root: ({ theme }) => ({
+      "& .MuiDataGrid-columnHeader, & .MuiDataGrid-container--top [role='row'], & .MuiDataGrid-filler":
+        {
+          backgroundColor: theme.vars.palette.background.gridHeader,
+        },
+    }),
+  },
 };
 
 export const dataGrid: Components<Theme> = {

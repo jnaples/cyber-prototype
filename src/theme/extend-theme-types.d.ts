@@ -30,6 +30,7 @@ declare module "@mui/material/styles" {
   interface TypeBackground {
     neutral: string;
     neutralChannel: string;
+    gridHeader: string;
   }
 
   interface Palette {

@@ -302,6 +302,8 @@ export interface DataTableProps {
   onDefaultViewChange?: (value: string) => void;
   onFiltersClick?: () => void;
   onExportClick?: () => void;
+  columnVisibilityModel?: Record<string, boolean>;
+  onColumnVisibilityModelChange?: (model: Record<string, boolean>) => void;
   pinnedShadowFields?: { left?: string; right?: string };
   sx?: DataGridProps["sx"];
 }
@@ -319,7 +321,8 @@ export function DataTable({
   defaultViewOptions = [
     { label: "All", value: "all" },
     { label: "Default", value: "default" },
-    { label: "Status", value: "status" },
+    { label: "Investigative", value: "investigative" },
+    { label: "Compliance Audit", value: "compliance-audit" },
   ],
   showPreferences = true,
   showExport = true,
@@ -329,6 +332,8 @@ export function DataTable({
   onDefaultViewChange,
   onFiltersClick,
   onExportClick,
+  columnVisibilityModel,
+  onColumnVisibilityModelChange,
   pinnedShadowFields,
   sx: sxOverrides,
 }: DataTableProps) {
@@ -434,8 +439,6 @@ export function DataTable({
             justifyContent: "space-between",
             px: 2,
             py: 1,
-            borderBottom: "1px solid",
-            borderColor: "divider",
           }}
         >
           {showFilters ? (
@@ -634,6 +637,8 @@ export function DataTable({
             }}
             pageSizeOptions={pageSizeOptions}
             checkboxSelection={checkboxSelection}
+            columnVisibilityModel={columnVisibilityModel}
+            onColumnVisibilityModelChange={onColumnVisibilityModelChange}
             disableRowSelectionOnClick
             loading={loading}
             slots={{
@@ -658,39 +663,12 @@ export function DataTable({
               "& .MuiDataGrid-main": {
                 backgroundColor: "transparent",
               },
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: (
-                  theme: Theme & {
-                    vars?: {
-                      palette?: {
-                        background?: { neutral?: string };
-                      };
-                    };
-                  },
-                ) =>
-                  `${theme.vars?.palette?.background?.neutral ?? theme.palette.background.neutral} !important`,
+              "& .MuiDataGrid-columnHeaders, & .MuiDataGrid-columnHeader": {
+                backgroundColor:
+                  "var(--dnsf-palette-background-gridHeader) !important",
               },
-              "& .MuiDataGrid-columnHeader": {
-                backgroundColor: (
-                  theme: Theme & {
-                    vars?: {
-                      palette?: {
-                        background?: { neutral?: string };
-                      };
-                    };
-                  },
-                ) =>
-                  `${theme.vars?.palette?.background?.neutral ?? theme.palette.background.neutral} !important`,
-              },
-              "--DataGrid-containerBackground": (
-                theme: Theme & {
-                  vars?: {
-                    palette?: { background?: { neutral?: string } };
-                  };
-                },
-              ) =>
-                theme.vars?.palette?.background?.neutral ??
-                theme.palette.background.neutral,
+              "--DataGrid-containerBackground":
+                "var(--dnsf-palette-background-gridHeader)",
               "& .MuiDataGrid-columnHeaderTitle": {
                 fontFamily: "'Inter Variable', sans-serif",
                 fontWeight: 600,

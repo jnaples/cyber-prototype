@@ -75,17 +75,31 @@ const columns: GridColDef[] = [
     },
   },
   { field: "categories", headerName: "Categories", flex: 1, minWidth: 140 },
+  { field: "threat", headerName: "Threat", flex: 1, minWidth: 120 },
   { field: "application", headerName: "Application", flex: 1, minWidth: 140 },
   { field: "site", headerName: "Site", flex: 1, minWidth: 120 },
   { field: "deployment", headerName: "Deployment", flex: 1, minWidth: 140 },
+  { field: "agentName", headerName: "Agent Name", flex: 1, minWidth: 140 },
   {
     field: "localUserName",
     headerName: "Local User Name",
     flex: 1,
     minWidth: 150,
   },
+  {
+    field: "localIpv4",
+    headerName: "Local IPv4 Address",
+    flex: 1,
+    minWidth: 160,
+  },
   { field: "resolver", headerName: "Resolver", flex: 1, minWidth: 120 },
   { field: "policy", headerName: "Policy", flex: 1, minWidth: 120 },
+  {
+    field: "scheduledPolicyName",
+    headerName: "Scheduled Policy Name",
+    flex: 1,
+    minWidth: 180,
+  },
   {
     field: "actions",
     headerName: "Actions",
@@ -234,6 +248,51 @@ function QueryLogsEmptyOverlay() {
 const SELECT_ALL_VALUE = "__select_all__";
 const ALL_ROAMING_CLIENTS_AND_RELAYS = [...roamingClients, ...relays];
 
+// Column visibility presets for the "Default" view dropdown.
+// Empty array = use the default visibility (everything visible).
+const COLUMN_VIEW_PRESETS: Record<string, string[] | null> = {
+  all: null,
+  default: null,
+  investigative: [
+    "time",
+    "fqdn",
+    "result",
+    "categories",
+    "threat",
+    "policy",
+    "localUserName",
+    "agentName",
+    "localIpv4",
+    "resolver",
+    "actions",
+  ],
+  "compliance-audit": [
+    "time",
+    "localUserName",
+    "agentName",
+    "fqdn",
+    "categories",
+    "result",
+    "policy",
+    "scheduledPolicyName",
+    "site",
+    "deployment",
+    "actions",
+  ],
+};
+
+function buildVisibilityModel(
+  allFields: string[],
+  visibleFields: string[] | null,
+): Record<string, boolean> {
+  if (!visibleFields) {
+    // No restriction — show everything.
+    return Object.fromEntries(allFields.map((f) => [f, true]));
+  }
+  const visible = new Set(visibleFields);
+  return Object.fromEntries(allFields.map((f) => [f, visible.has(f)]));
+}
+
 // ---------------------------------------------------------------------------
 // Page component
 // ---------------------------------------------------------------------------
@@ -320,6 +379,20 @@ export default function QueryLogsPage() {
       return;
     }
     setSelectedUsers(next);
+  };
+
+  // Column visibility — driven by the Default-view preset selection.
+  const [columnVisibilityModel, setColumnVisibilityModel] = useState<
+    Record<string, boolean>
+  >({});
+  const handleDefaultViewChange = (value: string) => {
+    const preset = COLUMN_VIEW_PRESETS[value];
+    setColumnVisibilityModel(
+      buildVisibilityModel(
+        columns.map((c) => c.field),
+        preset === undefined ? null : preset,
+      ),
+    );
   };
 
   // Per-dropdown search state. Cleared when the menu closes.
@@ -911,6 +984,9 @@ export default function QueryLogsPage() {
             noRowsOverlay={QueryLogsEmptyOverlay}
             showSearch={false}
             pinnedShadowFields={{ left: "time", right: "actions" }}
+            columnVisibilityModel={columnVisibilityModel}
+            onColumnVisibilityModelChange={setColumnVisibilityModel}
+            onDefaultViewChange={handleDefaultViewChange}
           />
         </TabbedDataCard>
       </Box>

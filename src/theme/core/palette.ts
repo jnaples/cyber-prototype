@@ -245,6 +245,7 @@ export const lightPalette = {
     paper: common.white,
     default: blueGrey[100],
     neutral: blueGrey[50],
+    gridHeader: grey[50],
   },
   text: {
     primary: blueGrey[900],
@@ -338,6 +339,7 @@ export const darkPalette = {
     paper: "#1C252E",
     default: "#141A21",
     neutral: "#29323D",
+    gridHeader: "#1C252E",
   },
   text: {
     primary: common.white,
