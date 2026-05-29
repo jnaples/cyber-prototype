@@ -18,6 +18,7 @@ import Box from "@mui/material/Box";
 import type { Theme } from "@mui/material/styles";
 import type { GridColDef } from "@mui/x-data-grid";
 import CancelIcon from "@mui/icons-material/Cancel";
+import SearchIcon from "@mui/icons-material/Search";
 import { endOfDay, startOfDay, subDays, subHours, subMinutes } from "date-fns";
 import { useState } from "react";
 
@@ -321,6 +322,19 @@ export default function QueryLogsPage() {
     setSelectedUsers(next);
   };
 
+  // Per-dropdown search state. Cleared when the menu closes.
+  const [sitesSearch, setSitesSearch] = useState("");
+  const [clientsSearch, setClientsSearch] = useState("");
+  const [usersSearch, setUsersSearch] = useState("");
+  const matches = (name: string, q: string) =>
+    name.toLowerCase().includes(q.toLowerCase());
+  const filteredSites = sites.filter((s) => matches(s, sitesSearch));
+  const filteredRoamingClients = roamingClients.filter((c) =>
+    matches(c, clientsSearch),
+  );
+  const filteredRelays = relays.filter((r) => matches(r, clientsSearch));
+  const filteredUsers = users.filter((u) => matches(u, usersSearch));
+
   const filtersDisabled = !selectedOrg;
   const filtersDisabledTooltip = filtersDisabled
     ? "Select an Organization to enable this filter"
@@ -445,6 +459,7 @@ export default function QueryLogsPage() {
                     displayEmpty
                     value={selectedSites}
                     onChange={handleSitesChange}
+                    onClose={() => setSitesSearch("")}
                     renderValue={(selected) => {
                       if (selected.length === 0 || allSitesSelected) {
                         return "All Sites";
@@ -453,9 +468,32 @@ export default function QueryLogsPage() {
                       return `${selected[0]} +${selected.length - 1}`;
                     }}
                     MenuProps={{
+                      autoFocus: false,
                       slotProps: { paper: { sx: { maxHeight: 400 } } },
                     }}
                   >
+                    <ListSubheader sx={{ px: 2, py: 1 }}>
+                      <TextField
+                        size="small"
+                        autoFocus
+                        fullWidth
+                        placeholder="Search..."
+                        value={sitesSearch}
+                        onChange={(e) => setSitesSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key !== "Escape") e.stopPropagation();
+                        }}
+                        slotProps={{
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <SearchIcon fontSize="small" />
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                      />
+                    </ListSubheader>
                     <MenuItem value={SELECT_ALL_VALUE}>
                       <Checkbox
                         size="small"
@@ -466,7 +504,7 @@ export default function QueryLogsPage() {
                       <ListItemText primary="Select all" />
                     </MenuItem>
                     <Divider />
-                    {sites.map((name) => (
+                    {filteredSites.map((name) => (
                       <MenuItem key={name} value={name}>
                         <Checkbox
                           size="small"
@@ -525,6 +563,7 @@ export default function QueryLogsPage() {
                     displayEmpty
                     value={selectedClients}
                     onChange={handleClientsChange}
+                    onClose={() => setClientsSearch("")}
                     renderValue={(selected) => {
                       if (selected.length === 0 || allSelected) {
                         return "All Roaming Clients & Relays";
@@ -533,9 +572,32 @@ export default function QueryLogsPage() {
                       return `${selected[0]} +${selected.length - 1}`;
                     }}
                     MenuProps={{
+                      autoFocus: false,
                       slotProps: { paper: { sx: { maxHeight: 400 } } },
                     }}
                   >
+                    <ListSubheader sx={{ px: 2, py: 1 }}>
+                      <TextField
+                        size="small"
+                        autoFocus
+                        fullWidth
+                        placeholder="Search..."
+                        value={clientsSearch}
+                        onChange={(e) => setClientsSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key !== "Escape") e.stopPropagation();
+                        }}
+                        slotProps={{
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <SearchIcon fontSize="small" />
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                      />
+                    </ListSubheader>
                     <MenuItem value={SELECT_ALL_VALUE}>
                       <Checkbox
                         size="small"
@@ -546,17 +608,19 @@ export default function QueryLogsPage() {
                       <ListItemText primary="Select all" />
                     </MenuItem>
                     <Divider />
-                    <ListSubheader
-                      sx={{
-                        typography: "overline",
-                        lineHeight: 1.5,
-                        color: "text.secondary",
-                        pt: 1,
-                      }}
-                    >
-                      Roaming Clients
-                    </ListSubheader>
-                    {roamingClients.map((name) => (
+                    {filteredRoamingClients.length > 0 && (
+                      <ListSubheader
+                        sx={{
+                          typography: "overline",
+                          lineHeight: 1.5,
+                          color: "text.secondary",
+                          pt: 1,
+                        }}
+                      >
+                        Roaming Clients
+                      </ListSubheader>
+                    )}
+                    {filteredRoamingClients.map((name) => (
                       <MenuItem key={name} value={name}>
                         <Checkbox
                           size="small"
@@ -566,18 +630,21 @@ export default function QueryLogsPage() {
                         <ListItemText primary={name} />
                       </MenuItem>
                     ))}
-                    <Divider />
-                    <ListSubheader
-                      sx={{
-                        typography: "overline",
-                        lineHeight: 1.5,
-                        color: "text.secondary",
-                        pt: 1,
-                      }}
-                    >
-                      Relays
-                    </ListSubheader>
-                    {relays.map((name) => (
+                    {filteredRoamingClients.length > 0 &&
+                      filteredRelays.length > 0 && <Divider />}
+                    {filteredRelays.length > 0 && (
+                      <ListSubheader
+                        sx={{
+                          typography: "overline",
+                          lineHeight: 1.5,
+                          color: "text.secondary",
+                          pt: 1,
+                        }}
+                      >
+                        Relays
+                      </ListSubheader>
+                    )}
+                    {filteredRelays.map((name) => (
                       <MenuItem key={name} value={name}>
                         <Checkbox
                           size="small"
@@ -644,6 +711,7 @@ export default function QueryLogsPage() {
                     displayEmpty
                     value={selectedUsers}
                     onChange={handleUsersChange}
+                    onClose={() => setUsersSearch("")}
                     renderValue={(selected) => {
                       if (selected.length === 0 || allUsersSelected) {
                         return "All Users";
@@ -652,9 +720,32 @@ export default function QueryLogsPage() {
                       return `${selected[0]} +${selected.length - 1}`;
                     }}
                     MenuProps={{
+                      autoFocus: false,
                       slotProps: { paper: { sx: { maxHeight: 400 } } },
                     }}
                   >
+                    <ListSubheader sx={{ px: 2, py: 1 }}>
+                      <TextField
+                        size="small"
+                        autoFocus
+                        fullWidth
+                        placeholder="Search..."
+                        value={usersSearch}
+                        onChange={(e) => setUsersSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key !== "Escape") e.stopPropagation();
+                        }}
+                        slotProps={{
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <SearchIcon fontSize="small" />
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                      />
+                    </ListSubheader>
                     <MenuItem value={SELECT_ALL_VALUE}>
                       <Checkbox
                         size="small"
@@ -665,7 +756,7 @@ export default function QueryLogsPage() {
                       <ListItemText primary="Select all" />
                     </MenuItem>
                     <Divider />
-                    {users.map((name) => (
+                    {filteredUsers.map((name) => (
                       <MenuItem key={name} value={name}>
                         <Checkbox
                           size="small"
