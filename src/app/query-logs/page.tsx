@@ -17,6 +17,7 @@ import type { SelectChangeEvent } from "@mui/material";
 import Box from "@mui/material/Box";
 import type { Theme } from "@mui/material/styles";
 import type { GridColDef } from "@mui/x-data-grid";
+import CancelIcon from "@mui/icons-material/Cancel";
 import { endOfDay, startOfDay, subDays, subHours, subMinutes } from "date-fns";
 import { useState } from "react";
 
@@ -28,7 +29,13 @@ import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
-import { queryLogRows, relays, roamingClients } from "@/data/query-logs";
+import {
+  queryLogRows,
+  relays,
+  roamingClients,
+  sites,
+  users,
+} from "@/data/query-logs";
 import type { QueryLogRow } from "@/data/query-logs";
 
 // ---------------------------------------------------------------------------
@@ -160,8 +167,6 @@ function buildTabsConfig(
 
 const FILTER_OPTIONS = {
   organization: ["Acme Inc.", "Globex", "Initech"],
-  sites: ["All Sites", "HQ", "Remote", "Branch Office"],
-  users: ["All Users", "Admins", "Standard"],
 };
 
 const TIME_RANGE_GROUPS = [
@@ -282,6 +287,40 @@ export default function QueryLogsPage() {
     setSelectedClients(next);
   };
 
+  // Sites multi-select (same pattern as roaming clients, no group headers).
+  const [selectedSites, setSelectedSites] = useState<string[]>([]);
+  const totalSites = sites.length;
+  const allSitesSelected = selectedSites.length === totalSites;
+  const someSitesSelected =
+    selectedSites.length > 0 && selectedSites.length < totalSites;
+
+  const handleSitesChange = (event: SelectChangeEvent<string[]>) => {
+    const raw = event.target.value;
+    const next = typeof raw === "string" ? raw.split(",") : raw;
+    if (next.includes(SELECT_ALL_VALUE)) {
+      setSelectedSites(allSitesSelected ? [] : [...sites]);
+      return;
+    }
+    setSelectedSites(next);
+  };
+
+  // Users multi-select (identical pattern to Sites).
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const totalUsers = users.length;
+  const allUsersSelected = selectedUsers.length === totalUsers;
+  const someUsersSelected =
+    selectedUsers.length > 0 && selectedUsers.length < totalUsers;
+
+  const handleUsersChange = (event: SelectChangeEvent<string[]>) => {
+    const raw = event.target.value;
+    const next = typeof raw === "string" ? raw.split(",") : raw;
+    if (next.includes(SELECT_ALL_VALUE)) {
+      setSelectedUsers(allUsersSelected ? [] : [...users]);
+      return;
+    }
+    setSelectedUsers(next);
+  };
+
   const filtersDisabled = !selectedOrg;
   const filtersDisabledTooltip = filtersDisabled
     ? "Select an Organization to enable this filter"
@@ -369,13 +408,76 @@ export default function QueryLogsPage() {
                   "& > *": { width: "100%" },
                 }}
               >
-                <Autocomplete
+                <FormControl
                   size="small"
-                  options={FILTER_OPTIONS.sites}
-                  defaultValue="All Sites"
+                  fullWidth
                   disabled={filtersDisabled}
-                  renderInput={(params) => <TextField {...params} />}
-                />
+                  sx={{
+                    position: "relative",
+                    "&:hover .select-clear, &:focus-within .select-clear": {
+                      visibility: "visible",
+                    },
+                  }}
+                >
+                  {selectedSites.length > 0 && (
+                    <IconButton
+                      size="small"
+                      className="select-clear"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSites([]);
+                      }}
+                      sx={{
+                        position: "absolute",
+                        right: 32,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        visibility: "hidden",
+                        zIndex: 1,
+                      }}
+                    >
+                      <CancelIcon fontSize="small" />
+                    </IconButton>
+                  )}
+                  <Select
+                    multiple
+                    displayEmpty
+                    value={selectedSites}
+                    onChange={handleSitesChange}
+                    renderValue={(selected) => {
+                      if (selected.length === 0 || allSitesSelected) {
+                        return "All Sites";
+                      }
+                      if (selected.length === 1) return selected[0];
+                      return `${selected[0]} +${selected.length - 1}`;
+                    }}
+                    MenuProps={{
+                      slotProps: { paper: { sx: { maxHeight: 400 } } },
+                    }}
+                  >
+                    <MenuItem value={SELECT_ALL_VALUE}>
+                      <Checkbox
+                        size="small"
+                        checked={allSitesSelected}
+                        indeterminate={someSitesSelected}
+                        sx={{ p: 0.5, mr: 1 }}
+                      />
+                      <ListItemText primary="Select all" />
+                    </MenuItem>
+                    <Divider />
+                    {sites.map((name) => (
+                      <MenuItem key={name} value={name}>
+                        <Checkbox
+                          size="small"
+                          checked={selectedSites.includes(name)}
+                          sx={{ p: 0.5, mr: 1 }}
+                        />
+                        <ListItemText primary={name} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Box>
             </ArrowTooltip>
             <ArrowTooltip title={filtersDisabledTooltip}>
@@ -386,7 +488,38 @@ export default function QueryLogsPage() {
                   "& > *": { width: "100%" },
                 }}
               >
-                <FormControl size="small" fullWidth disabled={filtersDisabled}>
+                <FormControl
+                  size="small"
+                  fullWidth
+                  disabled={filtersDisabled}
+                  sx={{
+                    position: "relative",
+                    "&:hover .select-clear, &:focus-within .select-clear": {
+                      visibility: "visible",
+                    },
+                  }}
+                >
+                  {selectedClients.length > 0 && (
+                    <IconButton
+                      size="small"
+                      className="select-clear"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedClients([]);
+                      }}
+                      sx={{
+                        position: "absolute",
+                        right: 32,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        visibility: "hidden",
+                        zIndex: 1,
+                      }}
+                    >
+                      <CancelIcon fontSize="small" />
+                    </IconButton>
+                  )}
                   <Select
                     multiple
                     displayEmpty
@@ -474,13 +607,76 @@ export default function QueryLogsPage() {
                   "& > *": { width: "100%" },
                 }}
               >
-                <Autocomplete
+                <FormControl
                   size="small"
-                  options={FILTER_OPTIONS.users}
-                  defaultValue="All Users"
+                  fullWidth
                   disabled={filtersDisabled}
-                  renderInput={(params) => <TextField {...params} />}
-                />
+                  sx={{
+                    position: "relative",
+                    "&:hover .select-clear, &:focus-within .select-clear": {
+                      visibility: "visible",
+                    },
+                  }}
+                >
+                  {selectedUsers.length > 0 && (
+                    <IconButton
+                      size="small"
+                      className="select-clear"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedUsers([]);
+                      }}
+                      sx={{
+                        position: "absolute",
+                        right: 32,
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        visibility: "hidden",
+                        zIndex: 1,
+                      }}
+                    >
+                      <CancelIcon fontSize="small" />
+                    </IconButton>
+                  )}
+                  <Select
+                    multiple
+                    displayEmpty
+                    value={selectedUsers}
+                    onChange={handleUsersChange}
+                    renderValue={(selected) => {
+                      if (selected.length === 0 || allUsersSelected) {
+                        return "All Users";
+                      }
+                      if (selected.length === 1) return selected[0];
+                      return `${selected[0]} +${selected.length - 1}`;
+                    }}
+                    MenuProps={{
+                      slotProps: { paper: { sx: { maxHeight: 400 } } },
+                    }}
+                  >
+                    <MenuItem value={SELECT_ALL_VALUE}>
+                      <Checkbox
+                        size="small"
+                        checked={allUsersSelected}
+                        indeterminate={someUsersSelected}
+                        sx={{ p: 0.5, mr: 1 }}
+                      />
+                      <ListItemText primary="Select all" />
+                    </MenuItem>
+                    <Divider />
+                    {users.map((name) => (
+                      <MenuItem key={name} value={name}>
+                        <Checkbox
+                          size="small"
+                          checked={selectedUsers.includes(name)}
+                          sx={{ p: 0.5, mr: 1 }}
+                        />
+                        <ListItemText primary={name} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
               </Box>
             </ArrowTooltip>
             <ArrowTooltip title={filtersDisabledTooltip}>
