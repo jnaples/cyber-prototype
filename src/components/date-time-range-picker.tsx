@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   endOfDay,
   format as fnsFormat,
@@ -25,6 +25,10 @@ export type DateTimeRangePickerProps = {
   onChange?: (value: DateTimeRangePickerValue) => void;
   minDate?: Date;
   maxDate?: Date;
+  // When true, the calendar popover opens automatically on mount.
+  defaultOpen?: boolean;
+  // Fires when the popover closes without the user confirming (Cancel / outside click).
+  onCancel?: () => void;
 };
 
 const FORMAT = "MMM d, yyyy h:mm:ss a";
@@ -58,12 +62,20 @@ export function DateTimeRangePicker({
   onChange,
   minDate,
   maxDate,
+  defaultOpen,
+  onCancel,
 }: DateTimeRangePickerProps) {
   const [open, setOpen] = useState(false);
   const [internalValue, setInternalValue] = useState<DateTimeRangePickerValue>(
     defaultValue ?? [null, null],
   );
   const anchorRef = useRef<HTMLDivElement>(null);
+  const acceptedRef = useRef(false);
+
+  // Open the popover after mount so anchorRef is attached before MUI positions it.
+  useEffect(() => {
+    if (defaultOpen) setOpen(true);
+  }, [defaultOpen]);
 
   const currentValue = value ?? internalValue;
   const displayValue = useMemo(
@@ -74,6 +86,16 @@ export function DateTimeRangePicker({
   const handleChange = (newValue: DateTimeRangePickerValue) => {
     if (value === undefined) setInternalValue(newValue);
     onChange?.(newValue);
+  };
+
+  const handleAccept = () => {
+    acceptedRef.current = true;
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    if (!acceptedRef.current) onCancel?.();
+    acceptedRef.current = false;
   };
 
   return (
@@ -109,10 +131,11 @@ export function DateTimeRangePicker({
           disabled={disabled}
           value={currentValue}
           onChange={handleChange}
+          onAccept={handleAccept}
           minDate={minDate}
           maxDate={maxDate}
           open={open}
-          onClose={() => setOpen(false)}
+          onClose={handleClose}
           slotProps={{
             popper: { anchorEl: () => anchorRef.current as HTMLElement },
             ...(shortcuts ? { shortcuts: { items: shortcuts } } : {}),

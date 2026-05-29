@@ -476,15 +476,30 @@ export default function QueryLogsPage() {
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
   const [appliedOrg, setAppliedOrg] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(false);
-  const [timeRange, setTimeRange] = useState<TimeRangeValue>("Last 24 hours");
+  const [timeRange, setTimeRange] = useState<TimeRangeValue>("Last 15 minutes");
   const [dateRange, setDateRange] = useState<DateTimeRangePickerValue>(
-    () => getRangeForPreset("Last 24 hours") ?? [null, null],
+    () => getRangeForPreset("Last 15 minutes") ?? [null, null],
   );
+  const [revertState, setRevertState] = useState<{
+    timeRange: TimeRangeValue;
+    dateRange: DateTimeRangePickerValue;
+  } | null>(null);
 
   const handleTimeRangeChange = (next: TimeRangeValue) => {
+    if (next === CUSTOM_TIME_RANGE) {
+      // Snapshot so a Cancel in the picker can restore the prior selection.
+      setRevertState({ timeRange, dateRange });
+    }
     setTimeRange(next);
     const range = getRangeForPreset(next);
     if (range) setDateRange(range);
+  };
+
+  const handleCustomCancel = () => {
+    if (!revertState) return;
+    setTimeRange(revertState.timeRange);
+    setDateRange(revertState.dateRange);
+    setRevertState(null);
   };
 
   const filtersDisabled = !selectedOrg;
@@ -638,6 +653,8 @@ export default function QueryLogsPage() {
                     onChange={setDateRange}
                     minDate={startOfDay(subDays(new Date(), 8))}
                     maxDate={endOfDay(new Date())}
+                    defaultOpen
+                    onCancel={handleCustomCancel}
                   />
                 ) : (
                   <TextField
