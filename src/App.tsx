@@ -15,6 +15,7 @@ import TypographyDocsPage from "@/app/design-system/typography/page";
 import OverviewPage from "@/app/overview/page";
 import HomePage from "@/app/page";
 import QueryLogsPage from "@/app/query-logs/page";
+import CustomReportsPage from "@/app/reporting/custom-reports/page";
 import SettingsPage from "@/app/settings/page";
 import SubscriptionsPage from "@/app/subscriptions/page";
 
@@ -26,6 +27,9 @@ function App() {
         <Route path="overview" element={<OverviewPage />} />
         <Route path="cybersight" element={<CybersightPage />} />
         <Route path="query-logs" element={<QueryLogsPage />} />
+        <Route path="reporting">
+          <Route path="custom-reports" element={<CustomReportsPage />} />
+        </Route>
         <Route path="settings" element={<SettingsPage />} />
         <Route path="subscriptions" element={<SubscriptionsPage />} />
 

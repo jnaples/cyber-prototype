@@ -89,6 +89,7 @@ export function PageHeader({
               flexDirection: "row",
               alignItems: "center",
               gap: 1,
+              pr: 3,
               width: { xs: "100%", sm: "auto" },
               justifyContent: { xs: "stretch", sm: "flex-end" },
               "& > button": {
