@@ -243,23 +243,39 @@ export const queryLogRows = (() => {
     "Weekend Filter",
     "Compliance Strict",
   ];
+  const METHODS = ["A", "AAAA", "CNAME", "MX", "TXT", "PTR"];
+  const DEPLOYMENT_TYPES = ["Roaming Client", "Relay", "Site"];
+  const QUERY_TYPES = ["Standard", "DoH", "DoT", "DNSCrypt"];
+  const LOOKUP_TYPES = ["Forward", "Reverse"];
   return offsets.map((offsetMs, i) => {
     const seed = ROW_SEEDS[i % ROW_SEEDS.length];
     const time = subMilliseconds(now, offsetMs);
     const { user, ...rest } = seed;
     // Derive "threat" column: show the category name for blocked threats.
     const threat = seed.isThreat ? seed.categories.split(",")[0].trim() : "";
-    // Fake local IPv4 — deterministic per-row so it stays stable across renders.
+    // Deterministic-per-row fake IPs so they stay stable across renders.
     const localIpv4 = `192.168.${(i % 4) + 1}.${(i * 7) % 254 + 1}`;
+    const requestAddress = `203.0.113.${(i * 11) % 254 + 1}`;
+    const resolvedIp = `140.82.${(i % 256)}.${(i * 13) % 254 + 1}`;
+    // Apex domain: strip the leftmost label of the FQDN if there are 3+ parts.
+    const parts = seed.fqdn.split(".");
+    const domain = parts.length > 2 ? parts.slice(-2).join(".") : seed.fqdn;
     return {
       id: i + 1,
       timestampMs: time.getTime(),
       time: fnsFormat(time, TIME_FORMAT),
       ...rest,
       threat,
+      domain,
       localIpv4,
+      requestAddress,
+      resolvedIp,
       agentName: AGENT_NAMES[i % AGENT_NAMES.length],
       scheduledPolicyName: SCHEDULED_POLICIES[i % SCHEDULED_POLICIES.length],
+      method: METHODS[i % METHODS.length],
+      deploymentType: DEPLOYMENT_TYPES[i % DEPLOYMENT_TYPES.length],
+      queryType: QUERY_TYPES[i % QUERY_TYPES.length],
+      lookupType: LOOKUP_TYPES[i % LOOKUP_TYPES.length],
       ...USERS[user],
       ...SHARED_ROW_VALUES,
     };
