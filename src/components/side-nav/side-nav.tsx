@@ -664,6 +664,12 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                 }}
               >
                 <Box
+                  sx={getSubItemStyles("reporting-custom-reports")}
+                  onClick={() => handleItemClick("reporting-custom-reports")}
+                >
+                  <span style={{ margin: "4px 0" }}>Custom Reports</span>
+                </Box>
+                <Box
                   sx={getSubItemStyles("reporting-insights")}
                   onClick={() => handleItemClick("reporting-insights")}
                 >
