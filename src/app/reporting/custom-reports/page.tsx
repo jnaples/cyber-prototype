@@ -319,7 +319,7 @@ function SectionBlock({
   children: React.ReactNode;
 }) {
   return (
-    <Box sx={{ p: 2, borderBottom: 1, borderColor: "divider" }}>
+    <Box sx={{ px: 2, py: 3, borderBottom: 1, borderColor: "divider" }}>
       <Stack
         direction="row"
         spacing={1.25}
@@ -420,7 +420,7 @@ function ReportBuilder({
         <Box sx={{ flex: 1, overflow: "auto" }}>
           {/* 1. Details */}
           <SectionBlock num="1" title="Report details" done={!!name}>
-            <Stack spacing={1.5}>
+            <Stack spacing={2}>
               <FormControl>
                 <FormLabel htmlFor="report-name">Report name</FormLabel>
                 <OutlinedInput
@@ -501,7 +501,7 @@ function ReportBuilder({
             hint="Scope the data. Date range applies to every report."
             done={!!source}
           >
-            <Stack spacing={1.5}>
+            <Stack spacing={2}>
               <FormControl>
                 <FormLabel id="date-range-label">Date range</FormLabel>
                 <Select
@@ -520,8 +520,7 @@ function ReportBuilder({
               <Box>
                 <Typography
                   variant="body2"
-                  sx={{ mb: 0.75, fontWeight: 600 }}
-                  color="text.secondary"
+                  sx={{ mb: 0.75, fontWeight: 600, color: "text.secondary" }}
                 >
                   Verdict
                 </Typography>
@@ -601,7 +600,7 @@ function ReportBuilder({
 
               {availableFilters.length > 0 && (
                 <>
-                  <Divider />
+                  <Divider sx={{ my: 2 }} />
                   <FormControl>
                     <FormLabel id="add-filter-label">Add a filter</FormLabel>
                     <Select
@@ -855,9 +854,12 @@ function PreviewPane({
               borderColor: "divider",
             }}
           >
-            <Box sx={{ color: "divider" }}>
-              <Icon name="bar_chart" size={56} />
-            </Box>
+            <Box
+              component="img"
+              src="/report-icon.svg"
+              alt=""
+              sx={{ width: 100, height: 100, display: "block" }}
+            />
             <Typography variant="h6" sx={{ mt: 2.5 }}>
               Build your report
             </Typography>
