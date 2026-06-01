@@ -353,6 +353,24 @@ export function DataTable({
     onSearchChange?.(val);
   };
 
+  // Wrap each column with a default `renderHeader` so the auto-tooltip on
+  // hover doesn't fire. MUI X's default header content shows a Tooltip
+  // wrapping the title text (with description or truncated headerName) —
+  // replacing the title slot with a plain span suppresses it. Sort/filter/menu
+  // icons live outside renderHeader and still work normally.
+  const processedColumns = React.useMemo(
+    () =>
+      columns.map((col) => ({
+        ...col,
+        renderHeader:
+          col.renderHeader ??
+          (() => (
+            <span style={{ fontWeight: 600 }}>{col.headerName}</span>
+          )),
+      })),
+    [columns],
+  );
+
   // Generic search: filter by all string/number values in each row
   const filteredRows = React.useMemo(() => {
     if (!searchQuery) return rows;
@@ -627,7 +645,7 @@ export function DataTable({
           <DataGrid
             apiRef={apiRef}
             rows={filteredRows}
-            columns={columns}
+            columns={processedColumns}
             density={density}
             initialState={{
               pagination: {

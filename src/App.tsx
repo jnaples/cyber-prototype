@@ -21,8 +21,8 @@ import SubscriptionsPage from "@/app/subscriptions/page";
 function App() {
   return (
     <Routes>
+      <Route index element={<HomePage />} />
       <Route element={<RootLayout />}>
-        <Route index element={<HomePage />} />
         <Route path="overview" element={<OverviewPage />} />
         <Route path="cybersight" element={<CybersightPage />} />
         <Route path="query-logs" element={<QueryLogsPage />} />

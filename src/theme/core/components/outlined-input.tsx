@@ -1,6 +1,9 @@
 import type { Components, Theme } from "@mui/material/styles";
 
 const MuiOutlinedInput: Components<Theme>["MuiOutlinedInput"] = {
+  defaultProps: {
+    size: "small",
+  },
   styleOverrides: {
     root: ({ theme }) => ({
       "& .MuiOutlinedInput-notchedOutline": {

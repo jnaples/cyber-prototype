@@ -1,381 +1,299 @@
-import { Box, Card, CardContent, Typography } from "@mui/material";
-import type { Theme } from "@mui/material/styles";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Divider,
+  FormControl,
+  FormLabel,
+  IconButton,
+  Link,
+  OutlinedInput,
+  Stack,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { useColorScheme } from "@mui/material/styles";
+import { useNavigate } from "react-router";
 
-import { PageHeader } from "@/components/page-header";
-
-type MaterialSymbolProps = {
-  icon: string;
-  size?: number;
-  color?: string;
-  weight?: 100 | 200 | 300 | 400 | 500 | 600 | 700;
-};
-
-function MaterialSymbol({
-  icon,
-  size = 48,
-  color,
-  weight = 700,
-}: MaterialSymbolProps) {
+function ThemeToggle() {
+  const { mode, setMode } = useColorScheme();
+  const isDark = mode === "dark";
   return (
-    <span
-      className="material-symbols-outlined"
-      style={{
-        fontSize: size,
-        color: color,
-        fontVariationSettings: `'wght' ${weight}`,
-      }}
-    >
-      {icon}
-    </span>
-  );
-}
-
-type StatCardProps = {
-  icon: string;
-  value: string;
-  label: string;
-  color: string;
-};
-
-function StatCard({ icon, value, label, color }: StatCardProps) {
-  return (
-    <Card sx={{ height: "100%" }}>
-      <CardContent
+    <Tooltip title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
+      <IconButton
+        onClick={() => setMode(isDark ? "light" : "dark")}
+        aria-label="Toggle dark mode"
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          py: 4,
-          textAlign: "center",
+          bgcolor: "background.paper",
+          color: "text.primary",
+          boxShadow: 1,
+          "&:hover": { bgcolor: "background.paper" },
         }}
       >
-        <Box sx={{ mb: 2 }}>
-          <MaterialSymbol icon={icon} color={color} />
-        </Box>
-        <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
-          {value}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {label}
-        </Typography>
-      </CardContent>
-    </Card>
+        <span className="material-symbols-outlined" style={{ fontSize: 24 }}>
+          {isDark ? "light_mode" : "dark_mode"}
+        </span>
+      </IconButton>
+    </Tooltip>
   );
 }
 
-export default function Page() {
-  const stats = [
-    {
-      icon: "sensors",
-      value: "306.25M",
-      label: "Total Requests",
-      color: "var(--dnsf-palette-primary-main)",
-    },
-    {
-      icon: "check",
-      value: "305.75M",
-      label: "Allowed Requests",
-      color: "var(--dnsf-palette-pairingTeal-main)",
-    },
-    {
-      icon: "block",
-      value: "500.34K",
-      label: "Blocked Requests",
-      color: "var(--dnsf-palette-secondary-main)",
-    },
-    {
-      icon: "skull",
-      value: "659.01K",
-      label: "Threats",
-      color: "var(--dnsf-palette-tertiary-main)",
-    },
-  ];
-
+function DnsFilterLogo() {
+  // Wordmark uses `currentColor` so it follows the surrounding `color`
+  // (set to text.primary). Blue swoosh stays the brand primary.
   return (
-    <>
-      <PageHeader title="Overview" />
-      <Box sx={{ height: "100%", overflowY: "auto", pb: 14 }}>
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" },
-            gap: 2,
-            p: 2,
-          }}
+    <Box
+      component="svg"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 240 56"
+      fill="none"
+      aria-label="DNSFilter"
+      sx={{
+        width: 240,
+        height: "auto",
+        display: "block",
+        mx: "auto",
+        color: "text.primary",
+      }}
+    >
+      <g clipPath="url(#dnsfilter-logo-clip)">
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M16.7954 10.7742C18.9338 10.7629 21.0539 11.1331 23.0371 11.8641C24.9227 12.5534 26.6542 13.5522 28.1462 14.8112C29.5974 16.0492 30.7645 17.5388 31.5794 19.1931C32.4074 20.8886 32.8354 22.7245 32.8354 24.5811C32.8354 26.4378 32.4074 28.2736 31.5794 29.9691C30.7573 31.6197 29.5912 33.108 28.1462 34.351C25.0653 36.9738 21.006 38.4244 16.7954 38.4073H6.56304C5.5119 38.4311 4.46379 38.2949 3.46158 38.0043C2.68491 37.7728 1.9855 37.3645 1.42923 36.8177C0.913447 36.2724 0.544852 35.6242 0.353067 34.925C0.112742 34.1005 -0.0059218 33.2503 0.000227253 32.397V16.7684C-0.00573386 15.9162 0.112929 15.0671 0.353067 14.2437C0.551926 13.5459 0.931966 12.9022 1.46098 12.3671C2.02674 11.8308 2.7231 11.4243 3.49334 11.1805C4.49277 10.8776 5.54219 10.7358 6.59478 10.7613L16.7954 10.7742ZM6.87001 14.9079C6.65559 14.9162 6.44383 14.9543 6.24196 15.0208C5.98593 15.0961 5.74691 15.2129 5.53627 15.3658C5.31659 15.5312 5.13237 15.7323 4.99289 15.9591C4.83263 16.2219 4.7522 16.5192 4.76003 16.82V32.3616C4.74856 32.6751 4.829 32.9856 4.99289 33.2612C5.13619 33.4902 5.3253 33.6926 5.55039 33.8577C5.75781 34.0099 5.99837 34.1199 6.25608 34.1802C6.45977 34.2379 6.67097 34.2704 6.88413 34.2769H16.5449C18.0761 34.2878 19.5961 34.0363 21.0259 33.5353C22.3826 33.0537 23.6285 32.3438 24.699 31.4426C25.746 30.5917 26.5945 29.5564 27.1936 28.3988C27.7864 27.2161 28.0933 25.9304 28.0933 24.6295C28.0933 23.3286 27.7864 22.0429 27.1936 20.8602C26.5882 19.6948 25.741 18.6479 24.699 17.7776C22.4718 15.913 19.5548 14.8878 16.5343 14.9079H6.87001Z"
+          fill="currentColor"
+        />
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M64.2487 10.772H69.0649V31.937C69.0715 32.7956 68.893 33.647 68.5388 34.4424C68.2 35.2095 67.6949 35.9061 67.0536 36.4899C66.4296 37.0849 65.6826 37.5606 64.8554 37.8893C63.9905 38.2361 63.0547 38.4119 62.1101 38.4052C61.6614 38.4069 61.2126 38.3746 60.7694 38.3085C60.356 38.2475 59.9497 38.1515 59.5559 38.0215C58.8448 37.825 58.1779 37.5138 57.587 37.1026C57.0436 36.7352 56.558 36.3012 56.1437 35.8128C55.7882 35.3829 55.4596 34.9351 55.1595 34.4714C54.9619 34.1651 54.8067 33.8781 54.6548 33.6105C54.5029 33.3429 54.3901 33.1075 54.2806 32.9044C54.1715 32.7012 53.9278 32.3175 53.6706 31.8307L52.7283 30.1088C52.3755 29.4639 51.9836 28.7191 51.5782 27.9291C51.1723 27.1391 50.7454 26.3169 50.3008 25.5172C49.8562 24.7176 49.4149 23.905 48.9811 23.086C48.5472 22.267 48.145 21.5286 47.7676 20.8289C47.3896 20.1292 47.0615 19.5069 46.7829 18.9716C46.5042 18.4364 46.2784 18.0043 46.1125 17.7077C45.9467 17.411 45.8267 17.1595 45.6715 16.9048C45.5163 16.65 45.3716 16.4211 45.234 16.2147C45.0319 15.9389 44.8078 15.6771 44.5636 15.4312C44.4212 15.2762 44.2428 15.1521 44.0414 15.0679C43.8401 14.9837 43.6207 14.9414 43.3992 14.9443C42.7421 14.9434 42.1101 15.1744 41.635 15.5892C41.2068 16.0469 40.9826 16.6351 41.007 17.2369V38.402H36.1872V17.2401C36.1348 15.554 36.8118 13.917 38.0713 12.684C38.7205 12.0673 39.5016 11.5793 40.3659 11.2504C41.2303 10.9215 42.1596 10.7586 43.0958 10.772C44.0371 10.7581 44.9744 10.8878 45.8691 11.1556C46.7558 11.4226 47.5499 11.8973 48.173 12.5325C48.6562 12.9908 49.0901 13.4908 49.468 14.0254C49.7505 14.4059 50.0291 14.8282 50.3078 15.2861C50.5865 15.744 50.8796 16.2535 51.1862 16.8177C51.5511 17.5077 52.0675 18.4654 52.7353 19.6907C53.4036 20.916 54.0998 22.1982 54.824 23.5374C55.551 24.8788 56.2416 26.1686 56.8954 27.4067C57.5492 28.6449 58.074 29.6122 58.4691 30.3087C58.5847 30.4715 58.683 30.6443 58.7618 30.8246C58.7963 30.9291 58.8527 31.0266 58.9277 31.1116C59.1537 31.4695 59.3406 31.7887 59.4921 32.0789C59.644 32.3691 59.7922 32.6142 59.9334 32.8431C60.0182 32.9463 60.1132 33.0785 60.226 33.2461C60.3421 33.4166 60.4753 33.5764 60.6249 33.7234C60.7806 33.8789 60.9642 34.0088 61.1683 34.1071C61.3859 34.2102 61.6287 34.2623 61.8739 34.2586C62.2369 34.2601 62.5971 34.1954 62.9322 34.0684C63.202 33.964 63.4429 33.8066 63.6382 33.6073C64.0679 33.1515 64.2934 32.5642 64.2696 31.9628V10.772"
+          fill="currentColor"
+        />
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M96.9322 34.2604C96.8404 34.2604 96.7523 34.2604 96.6638 34.2604H74.6329V38.3942H93.3048C94.501 37.1302 95.715 35.7501 96.9322 34.2475"
+          fill="currentColor"
+        />
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M75.0104 24.4728C75.8073 25.2065 76.7528 25.7913 77.7944 26.1947C78.875 26.6095 80.0378 26.818 81.2098 26.8073H96.6783C97.5455 26.8038 98.3918 27.0516 99.0955 27.515C99.7992 27.9785 100.324 28.6338 100.595 29.3868C101.536 28.0197 102.405 26.6815 103.202 25.3724C103.068 25.2338 102.938 25.0951 102.793 24.9629C102.006 24.2454 101.075 23.6728 100.051 23.2766C98.9841 22.8657 97.8363 22.6573 96.6783 22.6639H81.2522C80.7125 22.6442 80.1822 22.5259 79.6934 22.3161C79.2041 22.1062 78.766 21.8089 78.4048 21.4419C78.0451 21.0875 77.7538 20.6797 77.5436 20.2359C77.3339 19.782 77.2267 19.2938 77.23 18.801C77.2235 18.2954 77.3302 17.7939 77.5436 17.3274C77.7529 16.8833 78.0441 16.4753 78.4048 16.1215C79.1411 15.3875 80.164 14.9475 81.2522 14.8962H103.072V10.7722H81.1958C80.0205 10.7657 78.8564 10.9854 77.7804 11.4171C76.7491 11.8288 75.8063 12.4053 74.9964 13.1196C74.1874 13.8608 73.5406 14.7363 73.0909 15.6991C72.6197 16.6898 72.3793 17.7594 72.3853 18.8397C72.3825 19.9062 72.623 20.9615 73.0909 21.9384C73.5396 22.9016 74.1865 23.7773 74.9964 24.5179"
+          fill="currentColor"
+        />
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M119.924 38.4046V18.8099C119.914 17.7541 120.139 16.7074 120.585 15.7335C121.032 14.7596 121.69 13.8788 122.521 13.1446C123.32 12.4093 124.265 11.8185 125.304 11.4035C126.381 10.9714 127.544 10.7517 128.72 10.7586H148.698V14.9051H129.013C128.442 14.9058 127.879 15.0157 127.358 15.2276C126.578 15.5345 125.912 16.0409 125.441 16.6856C124.969 17.3303 124.71 18.0859 124.697 18.8615V21.8473H148.691V25.9649H124.697V38.4046H119.924Z"
+          fill="currentColor"
+        />
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M152.046 15.0573H156.819V10.772H152.046V15.0573ZM152.046 38.4052H156.819V18.6557H152.046V38.4052Z"
+          fill="currentColor"
+        />
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M169.762 38.4051C168.595 38.4081 167.44 38.1884 166.371 37.7602C165.317 37.3502 164.359 36.7591 163.549 36.0191C162.74 35.3032 162.098 34.4442 161.665 33.4944C161.212 32.4995 160.984 31.4313 160.995 30.3538V10.772H165.768V30.328C165.763 30.8398 165.87 31.3473 166.082 31.8209C166.287 32.2731 166.578 32.6881 166.943 33.0462C167.707 33.7678 168.737 34.2044 169.833 34.2715L170.711 34.3101V38.4051H169.748"
+          fill="currentColor"
+        />
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M184.127 38.4039C182.955 38.4146 181.794 38.2061 180.714 37.7913C179.673 37.3886 178.727 36.8037 177.93 36.0694C177.127 35.338 176.481 34.475 176.025 33.5253C175.552 32.5418 175.312 31.4783 175.32 30.4041V22.8267H173.245V18.6994H175.341V12.9503H180.157V18.6994H186.723V22.8267H180.15V30.3654C180.135 30.8614 180.231 31.355 180.432 31.8158C180.634 32.2766 180.937 32.6949 181.322 33.0449C181.683 33.4123 182.121 33.7099 182.61 33.9204C183.099 34.1308 183.629 34.2497 184.169 34.2702H187.563V38.4039H184.127Z"
+          fill="currentColor"
+        />
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M195.311 30.8643C195.364 31.2922 195.505 31.7069 195.728 32.0864C195.945 32.4603 196.213 32.808 196.525 33.1214C196.922 33.4935 197.399 33.7874 197.925 33.9848C198.451 34.1822 199.016 34.279 199.584 34.2693H217.046V38.403H199.288C198.11 38.4123 196.942 38.2039 195.855 37.7903C194.813 37.3963 193.871 36.8101 193.089 36.0685C192.281 35.3258 191.635 34.4507 191.183 33.489C190.713 32.4978 190.473 31.4285 190.477 30.3484V26.6919C190.472 25.6179 190.712 24.5547 191.183 23.5707C191.641 22.6223 192.287 21.7597 193.089 21.0266C193.873 20.287 194.814 19.7011 195.855 19.3048C196.942 18.8912 198.11 18.6828 199.288 18.6921H210.889C212.617 18.6843 214.31 19.1432 215.753 20.0111C217.197 20.879 218.328 22.1174 219.005 23.5707C219.459 24.5584 219.687 25.6206 219.675 26.6919V30.8643H195.311ZM196.532 23.9737C196.14 24.3306 195.828 24.7532 195.611 25.2184C195.379 25.6942 195.259 26.2095 195.258 26.7306H214.901C214.899 26.2097 214.779 25.6948 214.548 25.2184C214.331 24.7532 214.019 24.3306 213.627 23.9737C213.23 23.602 212.753 23.3085 212.227 23.1111C211.701 22.9137 211.137 22.8166 210.568 22.8258H199.584C199.017 22.817 198.453 22.9142 197.929 23.1116C197.403 23.309 196.929 23.6024 196.532 23.9737Z"
+          fill="currentColor"
+        />
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M239.998 18.6986V22.8258H232.335C231.766 22.816 231.201 22.9129 230.675 23.1103C230.148 23.3077 229.672 23.6016 229.275 23.9737C228.884 24.3306 228.571 24.7532 228.354 25.2183C228.124 25.6947 228.004 26.2096 228.002 26.7305V38.4027H223.245V26.6918C223.243 25.6243 223.483 24.568 223.951 23.59C224.395 22.6339 225.026 21.7598 225.814 21.0105C226.632 20.2663 227.604 19.6785 228.673 19.2815C229.742 18.8846 230.888 18.6864 232.041 18.6986H239.998Z"
+          fill="currentColor"
+        />
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M99.6943 5.97763C103.791 3.22397 107.344 2.18249 109.496 3.47225C114.129 6.24522 110.537 18.7398 101.473 31.3795C92.4086 44.0191 81.3081 52.0158 76.6787 49.2425C74.5229 47.953 74.1487 44.5576 75.2676 40.0273C72.7553 47.4078 72.8858 53.1827 76.2379 55.1819C82.1017 58.6966 95.598 49.3525 106.377 34.3169C117.156 19.2815 121.158 4.24933 115.294 0.737953C111.942 -1.26763 106.099 0.92497 99.6943 5.97763Z"
+          fill="var(--dnsf-palette-primary-main)"
+        />
+      </g>
+      <defs>
+        <clipPath id="dnsfilter-logo-clip">
+          <rect width="240" height="55.9219" fill="white" />
+        </clipPath>
+      </defs>
+    </Box>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 48 48"
+      width="18"
+      height="18"
+      aria-hidden="true"
+    >
+      <path
+        fill="#FFC107"
+        d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z"
+      />
+      <path
+        fill="#FF3D00"
+        d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2.1 1.5-4.6 2.4-7.2 2.4-5.2 0-9.6-3.3-11.2-8l-6.6 5.1C9.5 39.6 16.2 44 24 44z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.6l6.2 5.2C40.9 35.9 44 30.5 44 24c0-1.2-.1-2.3-.4-3.5z"
+      />
+    </svg>
+  );
+}
+
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate("/overview");
+  };
+  return (
+    <Box
+      sx={{
+        p: 4,
+        minHeight: "100svh",
+        width: "100%",
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: "background.default",
+        backgroundImage: "url(/map_bg_light.svg)",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
+        backgroundSize: "auto",
+        '[data-mui-color-scheme="dark"] &': {
+          backgroundImage: "url(/map_bg_dark.svg)",
+        },
+      }}
+    >
+      {/* Theme toggle — top right, 24px from each edge */}
+      <Box sx={{ position: "absolute", top: 24, right: 24, zIndex: 1 }}>
+        <ThemeToggle />
+      </Box>
+
+      {/* Centered card column */}
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          px: 2,
+        }}
+      >
+        <Stack
+          spacing={3}
+          sx={{ width: "100%", maxWidth: 420, alignItems: "center" }}
         >
-          {/* Geo Activity card */}
-          <Card sx={{ height: "100%" }}>
-            <CardContent
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-                boxSizing: "border-box",
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  mb: 2,
-                }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                  Geo Activity
-                </Typography>
-                <Typography sx={{ fontSize: 12 }} color="text.secondary">
-                  Showing top 100 sites
-                </Typography>
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  bgcolor: "background.default",
-                  borderRadius: 1,
-                  flex: 1,
-                  gap: 1.5,
-                }}
-              >
-                <Box
-                  component="span"
-                  className="material-symbols-outlined"
-                  sx={{ fontSize: 40, color: "text.primary" }}
-                >
-                  map
-                </Box>
-                <Typography
-                  sx={{
-                    fontWeight: 700,
-                    color: "text.primary",
-                    textAlign: "center",
-                    fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
-                  }}
-                >
-                  You haven&apos;t set a site
-                  <br />
-                  location yet
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
+          <DnsFilterLogo />
 
-          {/* Stat cards: 2x2 grid */}
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: 2,
-            }}
-          >
-            {stats.map((stat) => (
-              <StatCard
-                key={stat.label}
-                icon={stat.icon}
-                value={stat.value}
-                label={stat.label}
-                color={stat.color}
-              />
-            ))}
-          </Box>
-        </Box>
-
-        {/* Second section: 5 stat cards + Request Activity */}
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 2fr" },
-            gap: 2,
-            px: 2,
-            pb: 2,
-          }}
-        >
-          {/* Left: 5 stat cards stacked as 2+3 */}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: 2,
-              }}
-            >
-              {[
-                {
-                  icon: "location_on",
-                  value: "0 / 1",
-                  label: "Sites Protected",
-                  color: "var(--dnsf-palette-success-main)",
-                },
-                {
-                  icon: "devices",
-                  value: "0",
-                  label: "Roaming Clients Protected",
-                  color: "var(--dnsf-palette-tertiary-main)",
-                },
-              ].map((stat) => (
-                <StatCard
-                  key={stat.label}
-                  icon={stat.icon}
-                  value={stat.value}
-                  label={stat.label}
-                  color={stat.color}
-                />
-              ))}
-            </Box>
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: 2,
-              }}
-            >
-              {[
-                {
-                  icon: "stacks",
-                  value: "0",
-                  label: "Collections",
-                  color: "var(--dnsf-palette-pairingTeal-main)",
-                },
-                {
-                  icon: "person",
-                  value: "0",
-                  label: "Users",
-                  color: "var(--dnsf-palette-pairingPurple-main)",
-                },
-                {
-                  icon: "hub",
-                  value: "0",
-                  label: "Relays",
-                  color: "var(--dnsf-palette-text-primary)",
-                },
-              ].map((stat) => (
-                <StatCard
-                  key={stat.label}
-                  icon={stat.icon}
-                  value={stat.value}
-                  label={stat.label}
-                  color={stat.color}
-                />
-              ))}
-            </Box>
-          </Box>
-
-          {/* Right: Request Activity card */}
-          <Card sx={{ height: "100%" }}>
-            <CardContent
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-                boxSizing: "border-box",
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  mb: 2,
-                }}
-              >
+          <Card sx={{ width: "100%" }}>
+            <CardContent sx={{ p: 4 }}>
+              <Stack component="form" spacing={2.5} onSubmit={handleSubmit}>
                 <Typography
                   variant="h6"
-                  sx={{ fontFamily: (t: Theme) => t.typography.fontSecondaryFamily }}
+                  align="center"
+                  sx={{ fontWeight: 700 }}
                 >
-                  <Box component="span" sx={{ fontWeight: 700 }}>
-                    Request Activity:
-                  </Box>
-                  <Box component="span" sx={{ fontWeight: 400 }}>
-                    {" "}
-                    Last 7 Days
-                  </Box>
+                  Log in to your account
                 </Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  {[
-                    {
-                      label: "Allowed",
-                      color: "var(--dnsf-palette-info-light)",
-                    },
-                    {
-                      label: "Blocked",
-                      color: "var(--dnsf-palette-secondary-main)",
-                    },
-                    {
-                      label: "Threats",
-                      color: "var(--dnsf-palette-tertiary-main)",
-                    },
-                  ].map(({ label, color }) => (
-                    <Box
-                      key={label}
-                      sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Box
-                          sx={{
-                            width: 10,
-                            height: 10,
-                            borderRadius: "50%",
-                            border: `2px solid ${color}`,
-                            bgcolor: "transparent",
-                          }}
-                        />
-                        <Box sx={{ width: 8, height: 2, bgcolor: color }} />
-                      </Box>
-                      <Typography variant="body2" color="text.secondary">
-                        {label}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  bgcolor: "background.default",
-                  borderRadius: 1,
-                  flex: 1,
-                  gap: 1.5,
-                }}
-              >
-                <Box
-                  component="span"
-                  className="material-symbols-outlined"
-                  sx={{ fontSize: 40, color: "text.primary" }}
+
+                <FormControl>
+                  <FormLabel required htmlFor="login-email">
+                    E-mail
+                  </FormLabel>
+                  <OutlinedInput
+                    id="login-email"
+                    type="email"
+                    autoComplete="email"
+                    autoFocus
+                    defaultValue="app@fakebusiness.com"
+                  />
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel required htmlFor="login-password">
+                    Password
+                  </FormLabel>
+                  <OutlinedInput
+                    id="login-password"
+                    type="password"
+                    autoComplete="current-password"
+                    defaultValue="password"
+                  />
+                </FormControl>
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  size="large"
                 >
-                  map
+                  Log in
+                </Button>
+
+                <Box sx={{ textAlign: "center" }}>
+                  <Link href="#" underline="hover">
+                    Forgot Password?
+                  </Link>
                 </Box>
-                <Typography
-                  sx={{
-                    fontWeight: 700,
-                    color: "text.primary",
-                    textAlign: "center",
-                    fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
-                  }}
+
+                <Divider />
+
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  size="large"
+                  fullWidth
+                  startIcon={<GoogleIcon />}
                 >
-                  Nothing to show yet
-                </Typography>
+                  Log in with Google
+                </Button>
+
                 <Typography
                   variant="body2"
-                  sx={{
-                    color: "text.primary",
-                    textAlign: "center",
-                    fontFamily: (t: Theme) => t.typography.fontFamily,
-                  }}
+                  align="center"
+                  sx={{ color: "text.secondary" }}
                 >
-                  Requests over time will show here once traffic is received.
+                  Don&rsquo;t have an account?{" "}
+                  <Link href="#" underline="hover">
+                    Sign Up
+                  </Link>
                 </Typography>
-              </Box>
+              </Stack>
             </CardContent>
           </Card>
-        </Box>
+        </Stack>
       </Box>
-    </>
+
+      <Box sx={{ textAlign: "center", py: 3 }}>
+        <Typography variant="caption" sx={{ color: "text.secondary" }}>
+          © 2026 DNSFilter, Inc. All rights reserved.
+        </Typography>
+      </Box>
+    </Box>
   );
 }

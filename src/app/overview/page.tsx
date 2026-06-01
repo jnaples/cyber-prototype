@@ -1,8 +1,6 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 
-import { PageHeader } from "@/components/page-header";
-
 type MaterialSymbolProps = {
   icon: string;
   size?: number;
@@ -94,7 +92,6 @@ export default function Page() {
 
   return (
     <>
-      <PageHeader title="Overview" />
       <Box sx={{ height: "100%", overflowY: "auto", pb: 14 }}>
         <Box
           sx={{
@@ -284,7 +281,9 @@ export default function Page() {
               >
                 <Typography
                   variant="h6"
-                  sx={{ fontFamily: (t: Theme) => t.typography.fontSecondaryFamily }}
+                  sx={{
+                    fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
+                  }}
                 >
                   <Box component="span" sx={{ fontWeight: 700 }}>
                     Request Activity:

@@ -9,6 +9,7 @@ import {
   InputAdornment,
   ListItemText,
   ListSubheader,
+  Menu,
   MenuItem,
   Select,
   TextField,
@@ -38,6 +39,47 @@ import {
   users,
 } from "@/data/query-logs";
 import type { QueryLogRow } from "@/data/query-logs";
+
+// ---------------------------------------------------------------------------
+// Row actions menu (placeholder items — wire up later)
+// ---------------------------------------------------------------------------
+
+const ROW_ACTION_ITEMS = [
+  "Add / Remove to Allow List",
+  "Add / Remove to Block List",
+  "Add / Remove to AppAware",
+];
+
+function RowActionsCell() {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  return (
+    <Box sx={{ display: "flex", gap: 1 }}>
+      <IconButton
+        size="small"
+        aria-label="more options"
+        onClick={(e) => setAnchorEl(e.currentTarget)}
+        sx={{ color: "text.primary" }}
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+          more_horiz
+        </span>
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        {ROW_ACTION_ITEMS.map((label) => (
+          <MenuItem key={label} onClick={() => setAnchorEl(null)}>
+            {label}
+          </MenuItem>
+        ))}
+      </Menu>
+    </Box>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Column definitions
@@ -124,19 +166,7 @@ const columns: GridColDef[] = [
     sortable: false,
     filterable: false,
     resizable: false,
-    renderCell: () => (
-      <Box sx={{ display: "flex", gap: 1 }}>
-        <IconButton
-          size="small"
-          aria-label="more options"
-          sx={{ color: "text.primary" }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-            more_horiz
-          </span>
-        </IconButton>
-      </Box>
-    ),
+    renderCell: () => <RowActionsCell />,
   },
 ];
 
