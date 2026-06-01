@@ -15,7 +15,6 @@ import {
   Typography,
 } from "@mui/material";
 import Box from "@mui/material/Box";
-import type { Theme } from "@mui/material/styles";
 import { createTheme, ThemeProvider, useTheme } from "@mui/material/styles";
 import {
   DataGrid,
