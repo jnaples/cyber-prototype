@@ -4,6 +4,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Typography,
 } from "@mui/material";
 import type { ButtonProps, DialogProps } from "@mui/material";
 import type React from "react";
@@ -88,7 +89,9 @@ export function Modal({
     >
       {title !== undefined && (
         <DialogTitle sx={{ py: 3, px: 2, textAlign: titleAlign }}>
-          {title}
+          <Typography variant="cardTitle" component="span">
+            {title}
+          </Typography>
         </DialogTitle>
       )}
       {children !== undefined && (

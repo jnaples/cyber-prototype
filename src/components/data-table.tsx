@@ -217,27 +217,33 @@ function TimeWindowChip({
 
   return (
     <>
-      <Chip
-        label={
-          <Box
-            sx={{ display: "inline-flex", alignItems: "center", gap: 0.25 }}
-          >
-            <span>{currentLabel}</span>
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16 }}
-            >
-              arrow_drop_down
-            </span>
-          </Box>
-        }
+      <Button
+        variant="outlined"
+        color="secondary"
         onClick={(e) => setAnchorEl(e.currentTarget)}
-        sx={{ borderRadius: (t) => t.spacing(1) }}
-      />
+        endIcon={
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: 20 }}
+          >
+            arrow_drop_down
+          </span>
+        }
+      >
+        Time Window
+        <span style={{ textTransform: "none", marginLeft: 4 }}>
+          {currentLabel}
+        </span>
+      </Button>
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
+        slotProps={{
+          paper: {
+            sx: { minWidth: anchorEl?.offsetWidth },
+          },
+        }}
       >
         {TIME_WINDOW_PRESETS_SECONDS.map((sec) => (
           <MenuItem
