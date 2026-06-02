@@ -229,6 +229,7 @@ function ActiveFiltersBar({
               size="small"
               label={chipLabel}
               onDelete={() => onRemove(item)}
+              sx={{ borderRadius: (t) => t.spacing(1) }}
             />
           </Box>
         );
