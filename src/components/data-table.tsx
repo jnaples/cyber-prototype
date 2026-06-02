@@ -121,6 +121,71 @@ function CustomPagination({
   );
 }
 
+function FilterPanelFooter() {
+  const apiRef = useGridApiContext();
+
+  const handleAddFilter = () => {
+    const filterableColumns = apiRef.current
+      .getAllColumns()
+      .filter((c) => c.filterable !== false && c.field !== "__check__");
+    const firstColumn = filterableColumns[0];
+    if (!firstColumn) return;
+    const defaultOperator =
+      firstColumn.filterOperators?.[0]?.value ?? "contains";
+    const existingItems = apiRef.current.state.filter.filterModel.items;
+    apiRef.current.upsertFilterItems([
+      ...existingItems,
+      {
+        id: `f-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        field: firstColumn.field,
+        operator: defaultOperator,
+      },
+    ]);
+  };
+
+  const handleRemoveAll = () => {
+    apiRef.current.setFilterModel({ items: [] });
+  };
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        p: 1,
+        borderTop: "1px solid",
+        borderColor: "divider",
+      }}
+    >
+      <Button
+        variant="text"
+        color="primary"
+        onClick={handleAddFilter}
+        startIcon={
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+            add
+          </span>
+        }
+      >
+        Add Filter
+      </Button>
+      <Button
+        variant="text"
+        color="primary"
+        onClick={handleRemoveAll}
+        startIcon={
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+            delete
+          </span>
+        }
+      >
+        Remove All
+      </Button>
+    </Box>
+  );
+}
+
 function StandardFilterPanel(
   props: React.ComponentProps<typeof GridFilterPanel>,
 ) {
@@ -146,7 +211,10 @@ function StandardFilterPanel(
   );
   return (
     <ThemeProvider theme={inner}>
-      <GridFilterPanel {...props} />
+      <Box sx={{ display: "flex", flexDirection: "column" }}>
+        <GridFilterPanel {...props} />
+        <FilterPanelFooter />
+      </Box>
     </ThemeProvider>
   );
 }
@@ -383,9 +451,7 @@ export function DataTable({
         ...col,
         renderHeader:
           col.renderHeader ??
-          (() => (
-            <span style={{ fontWeight: 600 }}>{col.headerName}</span>
-          )),
+          (() => <span style={{ fontWeight: 600 }}>{col.headerName}</span>),
       })),
     [columns],
   );
@@ -685,7 +751,7 @@ export function DataTable({
       {bulkActions}
 
       <Box sx={{ minWidth: 0, width: "100%", overflowX: "auto" }}>
-        {(
+        {
           <DataGrid
             apiRef={apiRef}
             rows={filteredRows}
@@ -775,7 +841,7 @@ export function DataTable({
               ...(sxOverrides as Record<string, unknown>),
             }}
           />
-        )}
+        }
       </Box>
     </>
   );
