@@ -145,21 +145,31 @@ function formatFilterOperator(op: string): string {
   return OPERATOR_LABELS[op] ?? op;
 }
 
+const DATETIME_LOCAL_RE =
+  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:?\d{2})?$/;
+
+function formatDateLike(d: Date, hasTime: boolean): string {
+  return d.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    ...(hasTime
+      ? { hour: "numeric", minute: "2-digit", hour12: true }
+      : {}),
+  });
+}
+
 function formatFilterValue(v: unknown): string {
   if (v == null || v === "") return "";
   if (Array.isArray(v)) {
     return v.map(formatFilterValue).filter(Boolean).join(" - ");
   }
   if (v instanceof Date) {
-    return v.toLocaleString(undefined, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-    });
+    return formatDateLike(v, true);
+  }
+  if (typeof v === "string" && DATETIME_LOCAL_RE.test(v)) {
+    const d = new Date(v);
+    if (!Number.isNaN(d.getTime())) return formatDateLike(d, true);
   }
   return String(v);
 }

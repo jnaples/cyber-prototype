@@ -3,7 +3,7 @@ import type { Components, Theme } from "@mui/material/styles";
 const MuiMenu: Components<Theme>["MuiMenu"] = {
   styleOverrides: {
     paper: {
-      maxHeight: 400,
+      maxHeight: 500,
       overflowY: "auto",
     },
   },

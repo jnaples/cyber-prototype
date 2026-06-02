@@ -18,7 +18,13 @@ import {
 import type { SelectChangeEvent } from "@mui/material";
 import Box from "@mui/material/Box";
 import type { Theme } from "@mui/material/styles";
-import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
+import type {
+  GridColDef,
+  GridFilterInputValueProps,
+  GridFilterOperator,
+  GridRowSelectionModel,
+} from "@mui/x-data-grid";
+import { getGridStringOperators } from "@mui/x-data-grid";
 import CancelIcon from "@mui/icons-material/Cancel";
 import SearchIcon from "@mui/icons-material/Search";
 import { endOfDay, startOfDay, subDays, subHours, subMinutes } from "date-fns";
@@ -27,8 +33,8 @@ import { useState } from "react";
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
-import { DateTimeRangePicker } from "@/components/date-time-range-picker";
-import type { DateTimeRangePickerValue } from "@/components/date-time-range-picker";
+import { CustomDateTimeRangePicker } from "@/components/custom-date-time-range-picker";
+import type { CustomCustomDateTimeRangePickerValue } from "@/components/custom-date-time-range-picker";
 import { EmptyState } from "@/components/empty-state";
 import { Modal } from "@/components/modal";
 import { PageHeader } from "@/components/page-header";
@@ -133,11 +139,73 @@ function RowActionsCell() {
 }
 
 // ---------------------------------------------------------------------------
+// Time range filter operator
+// ---------------------------------------------------------------------------
+
+function TimeRangeFilterInput(props: GridFilterInputValueProps) {
+  const { item, applyValue } = props;
+  const value: [string, string] = Array.isArray(item.value)
+    ? (item.value as [string, string])
+    : ["", ""];
+  const [start, end] = value;
+
+  return (
+    <Box sx={{ display: "flex", gap: 1, alignItems: "flex-end" }}>
+      <TextField
+        label="Start"
+        type="datetime-local"
+        size="small"
+        variant="standard"
+        value={start}
+        onChange={(e) =>
+          applyValue({ ...item, value: [e.target.value, end] })
+        }
+        slotProps={{ inputLabel: { shrink: true } }}
+      />
+      <TextField
+        label="End"
+        type="datetime-local"
+        size="small"
+        variant="standard"
+        value={end}
+        onChange={(e) =>
+          applyValue({ ...item, value: [start, e.target.value] })
+        }
+        slotProps={{ inputLabel: { shrink: true } }}
+      />
+    </Box>
+  );
+}
+
+const timeRangeOperator: GridFilterOperator<QueryLogRow> = {
+  label: "range",
+  value: "range",
+  getApplyFilterFn: (filterItem) => {
+    if (!Array.isArray(filterItem.value)) return null;
+    const [start, end] = filterItem.value as [string, string];
+    if (!start && !end) return null;
+    const startMs = start ? new Date(start).getTime() : -Infinity;
+    const endMs = end ? new Date(end).getTime() : Infinity;
+    return (_value, row) => {
+      const ts = row.timestampMs;
+      return ts >= startMs && ts <= endMs;
+    };
+  },
+  InputComponent: TimeRangeFilterInput,
+};
+
+// ---------------------------------------------------------------------------
 // Column definitions
 // ---------------------------------------------------------------------------
 
 const columns: GridColDef[] = [
-  { field: "time", headerName: "Time", width: 240, minWidth: 240 },
+  {
+    field: "time",
+    headerName: "Time",
+    width: 240,
+    minWidth: 240,
+    filterOperators: [timeRangeOperator, ...getGridStringOperators()],
+  },
   { field: "fqdn", headerName: "FQDN", width: 172, minWidth: 150 },
   { field: "domain", headerName: "Domain", flex: 1, minWidth: 140 },
   {
@@ -446,12 +514,12 @@ export default function QueryLogsPage() {
   const [appliedOrg, setAppliedOrg] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(false);
   const [timeRange, setTimeRange] = useState<TimeRangeValue>("Last 15 minutes");
-  const [dateRange, setDateRange] = useState<DateTimeRangePickerValue>(
+  const [dateRange, setDateRange] = useState<CustomDateTimeRangePickerValue>(
     () => getRangeForPreset("Last 15 minutes") ?? [null, null],
   );
   const [revertState, setRevertState] = useState<{
     timeRange: TimeRangeValue;
-    dateRange: DateTimeRangePickerValue;
+    dateRange: CustomDateTimeRangePickerValue;
   } | null>(null);
 
   const handleTimeRangeChange = (next: TimeRangeValue) => {
@@ -1007,7 +1075,7 @@ export default function QueryLogsPage() {
                 }}
               >
                 {timeRange === CUSTOM_TIME_RANGE ? (
-                  <DateTimeRangePicker
+                  <CustomDateTimeRangePicker
                     disabled={filtersDisabled}
                     value={dateRange}
                     onChange={setDateRange}
