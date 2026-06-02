@@ -39,8 +39,16 @@ export type CustomDateTimeRangePickerProps = {
   onCancel?: () => void;
 };
 
-const DISPLAY_FORMAT = "MMM d, yyyy h:mm:ss a";
-const FIELD_FORMAT = "MMM d, yyyy, h:mm:ss a";
+// Width of the popover paper. Sized to fit the two-month DateRangeCalendar
+// without wrapping; adjust together with the calendar width.
+const POPOVER_MIN_WIDTH = 660;
+
+// Format used in the read-only anchor TextField (what the user sees when
+// the popover is closed).
+const ANCHOR_DISPLAY_FORMAT = "MMM d, yyyy h:mm:ss a";
+
+// Format used inside the popover by the editable Start / End DateTimeFields.
+const STEPPER_FIELD_FORMAT = "MMM d, yyyy, h:mm:ss a";
 
 function getDisplayValue(range: CustomDateTimeRangePickerValue): string {
   const [start, end] = range;
@@ -56,7 +64,7 @@ function getDisplayValue(range: CustomDateTimeRangePickerValue): string {
   if (isSameMinute(start, startOfDay(y)) && isSameMinute(end, endOfDay(y))) {
     return "Yesterday";
   }
-  return `${fnsFormat(start, DISPLAY_FORMAT)} – ${fnsFormat(end, DISPLAY_FORMAT)}`;
+  return `${fnsFormat(start, ANCHOR_DISPLAY_FORMAT)} – ${fnsFormat(end, ANCHOR_DISPLAY_FORMAT)}`;
 }
 
 function withTimeOf(target: Date, source: Date | null): Date {
@@ -93,7 +101,7 @@ function StepperField({
         <DateTimeField
           value={value}
           onChange={onChange}
-          format={FIELD_FORMAT}
+          format={STEPPER_FIELD_FORMAT}
           size="small"
           minDate={minDate}
           maxDate={maxDate}
@@ -235,7 +243,7 @@ export function CustomDateTimeRangePicker({
         <ClickAwayListener onClickAway={() => open && handleCancel()}>
           <Paper
             elevation={8}
-            sx={{ p: 0, mt: 1, borderRadius: 1, minWidth: 660 }}
+            sx={{ p: 0, mt: 1, borderRadius: 1, minWidth: POPOVER_MIN_WIDTH }}
           >
             <Box
               sx={{
@@ -279,6 +287,7 @@ export function CustomDateTimeRangePicker({
                 calendars={2}
                 minDate={minDate}
                 maxDate={maxDate}
+                currentMonthCalendarPosition={2}
               />
             </Box>
 
