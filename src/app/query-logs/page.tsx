@@ -14,6 +14,7 @@ import {
   MenuItem,
   Select,
   TextField,
+  Typography,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -149,6 +150,13 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
           onClick: handleInvestigate,
         }}
       >
+        <Typography variant="body1" color="text.primary" sx={{ mb: 2 }}>
+          Filters the query log to the deployment associated with this row,
+          displaying all DNS activity within the selected time window.
+        </Typography>
+        <Typography variant="body1" color="text.primary" sx={{ mb: 2 }}>
+          Adjust the time window from the Active Filters bar after applying.
+        </Typography>
         <FormControl fullWidth>
           <FormLabel id="time-window-label">Time Window</FormLabel>
           <Select
