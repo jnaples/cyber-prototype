@@ -87,12 +87,18 @@ export function Modal({
       }}
     >
       {title !== undefined && (
-        <DialogTitle sx={{ pt: 2, px: 2, pb: 1, textAlign: titleAlign }}>
+        <DialogTitle sx={{ py: 3, px: 2, textAlign: titleAlign }}>
           {title}
         </DialogTitle>
       )}
       {children !== undefined && (
-        <DialogContent sx={disableContentPadding ? { p: 0 } : { px: 2, py: 1 }}>
+        <DialogContent
+          sx={
+            disableContentPadding
+              ? { p: 0 }
+              : { pt: 0, px: 3, pb: "20px" }
+          }
+        >
           {children}
         </DialogContent>
       )}

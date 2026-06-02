@@ -180,10 +180,17 @@ function TimeRangeFilterInput(props: GridFilterInputValueProps) {
   const [start, end] = value;
 
   // `accent-color` retints the native datetime overlay so it matches our
-  // brand; `step={1}` switches the input to hh:mm:ss precision.
-  const sharedSx = {
-    accentColor: (theme: Theme) => theme.palette.primary.main,
-  } as const;
+  // brand; `step={1}` switches the input to hh:mm:ss precision. We also hide
+  // the webkit calendar-picker indicator and, when empty, the
+  // "mm/dd/yyyy --:--:--" placeholder text.
+  const fieldSx = (empty: boolean) =>
+    ({
+      accentColor: (theme: Theme) => theme.palette.primary.main,
+      "& input::-webkit-calendar-picker-indicator": { display: "none" },
+      ...(empty && {
+        "& input::-webkit-datetime-edit": { color: "transparent" },
+      }),
+    }) as const;
   const sharedSlotProps = {
     inputLabel: { shrink: true },
     htmlInput: { step: 1 },
@@ -198,7 +205,7 @@ function TimeRangeFilterInput(props: GridFilterInputValueProps) {
         variant="standard"
         value={start}
         onChange={(e) => applyValue({ ...item, value: [e.target.value, end] })}
-        sx={sharedSx}
+        sx={fieldSx(!start)}
         slotProps={sharedSlotProps}
       />
       <TextField
@@ -210,7 +217,7 @@ function TimeRangeFilterInput(props: GridFilterInputValueProps) {
         onChange={(e) =>
           applyValue({ ...item, value: [start, e.target.value] })
         }
-        sx={sharedSx}
+        sx={fieldSx(!end)}
         slotProps={sharedSlotProps}
       />
     </Box>

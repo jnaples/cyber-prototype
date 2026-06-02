@@ -2,11 +2,13 @@ import { useMemo, useState } from "react";
 import {
   addMinutes,
   endOfDay,
+  endOfMonth,
   format as fnsFormat,
   isSameMinute,
   set as setDateParts,
   startOfDay,
   subDays,
+  subMonths,
 } from "date-fns";
 import {
   Box,
@@ -170,6 +172,21 @@ export function CustomDateTimeRangePicker({
   );
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const [resetKey, setResetKey] = useState(0);
+  // Tracks which month is "current" inside the DateRangeCalendar. With
+  // `currentMonthCalendarPosition={2}`, the right calendar shows this month
+  // and the left calendar shows the previous month. We need this so we can
+  // disable the back arrow when navigating further would put the leftmost
+  // month entirely outside [minDate, maxDate]. MUI X's built-in
+  // `usePreviousMonthDisabled` only checks `currentMonth - 1`, not the
+  // leftmost-after-navigation month (`currentMonth - 2`).
+  const [visibleMonth, setVisibleMonth] = useState<Date>(
+    () => currentValue[1] ?? currentValue[0] ?? new Date(),
+  );
+
+  // Leftmost month after pressing the back arrow once.
+  const prevDisabledOverride =
+    minDate !== undefined &&
+    endOfMonth(subMonths(visibleMonth, 2)) < minDate;
 
   const openPicker = () => {
     setDraftStart(currentValue[0] ?? null);
@@ -197,6 +214,7 @@ export function CustomDateTimeRangePicker({
   const handleReset = () => {
     setDraftStart(null);
     setDraftEnd(null);
+    setVisibleMonth(new Date());
     // Force-remount the DateRangeCalendar so its internal range-position
     // state (start vs end) resets and no day stays highlighted.
     setResetKey((k) => k + 1);
@@ -280,10 +298,17 @@ export function CustomDateTimeRangePicker({
                 key={resetKey}
                 value={[draftStart, draftEnd]}
                 onChange={handleRangeChange}
+                onMonthChange={setVisibleMonth}
                 calendars={2}
                 minDate={minDate}
                 maxDate={maxDate}
                 currentMonthCalendarPosition={2}
+                disableAutoMonthSwitching
+                slotProps={
+                  prevDisabledOverride
+                    ? { previousIconButton: { disabled: true } }
+                    : undefined
+                }
               />
             </Box>
 
