@@ -303,6 +303,9 @@ export interface DataTableProps {
   onExportClick?: () => void;
   columnVisibilityModel?: Record<string, boolean>;
   onColumnVisibilityModelChange?: (model: Record<string, boolean>) => void;
+  rowSelectionModel?: DataGridProps["rowSelectionModel"];
+  onRowSelectionModelChange?: DataGridProps["onRowSelectionModelChange"];
+  bulkActions?: React.ReactNode;
   pinnedShadowFields?: { left?: string; right?: string };
   sx?: DataGridProps["sx"];
 }
@@ -333,6 +336,9 @@ export function DataTable({
   onExportClick,
   columnVisibilityModel,
   onColumnVisibilityModelChange,
+  rowSelectionModel,
+  onRowSelectionModelChange,
+  bulkActions,
   pinnedShadowFields,
   sx: sxOverrides,
 }: DataTableProps) {
@@ -342,6 +348,15 @@ export function DataTable({
     useState<null | HTMLElement>(null);
   const [defaultViewAnchorEl, setDefaultViewAnchorEl] =
     useState<null | HTMLElement>(null);
+  const [selectedDefaultView, setSelectedDefaultView] = useState<string>(
+    () =>
+      defaultViewOptions.find((o) => o.value === "default")?.value ??
+      defaultViewOptions[0]?.value ??
+      "",
+  );
+  const selectedDefaultViewLabel =
+    defaultViewOptions.find((o) => o.value === selectedDefaultView)?.label ??
+    "";
   const [filtersButtonEl, setFiltersButtonEl] = useState<null | HTMLElement>(
     null,
   );
@@ -506,7 +521,9 @@ export function DataTable({
                   }
                   sx={{ px: "8px", mr: "4px" }}
                 >
-                  <span style={{ marginRight: "8px" }}>Default</span>
+                  <span style={{ marginRight: "8px" }}>
+                    {selectedDefaultViewLabel}
+                  </span>
                   <Divider
                     orientation="vertical"
                     flexItem
@@ -534,7 +551,9 @@ export function DataTable({
                   {defaultViewOptions.map((opt) => (
                     <MenuItem
                       key={opt.value}
+                      selected={opt.value === selectedDefaultView}
                       onClick={() => {
+                        setSelectedDefaultView(opt.value);
                         setDefaultViewAnchorEl(null);
                         onDefaultViewChange?.(opt.value);
                       }}
@@ -640,6 +659,8 @@ export function DataTable({
         </Box>
       )}
 
+      {bulkActions}
+
       <Box sx={{ minWidth: 0, width: "100%", overflowX: "auto" }}>
         {(
           <DataGrid
@@ -656,6 +677,8 @@ export function DataTable({
             checkboxSelection={checkboxSelection}
             columnVisibilityModel={columnVisibilityModel}
             onColumnVisibilityModelChange={onColumnVisibilityModelChange}
+            rowSelectionModel={rowSelectionModel}
+            onRowSelectionModelChange={onRowSelectionModelChange}
             disableRowSelectionOnClick
             loading={loading}
             slots={{

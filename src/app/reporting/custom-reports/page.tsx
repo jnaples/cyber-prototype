@@ -819,15 +819,14 @@ function PreviewPane({
             />
           </>
         )}
-        <IconButton
-          sx={{
-            border: 1,
-            borderColor: "divider",
-            bgcolor: "background.paper",
-          }}
+        <Button
+          variant="outlined"
+          color="secondary"
+          aria-label="Refresh"
+          sx={{ minWidth: 0, px: 1 }}
         >
           <Icon name="refresh" size={18} />
-        </IconButton>
+        </Button>
         <Button
           variant="outlined"
           color="secondary"

@@ -17,7 +17,7 @@ import {
 import type { SelectChangeEvent } from "@mui/material";
 import Box from "@mui/material/Box";
 import type { Theme } from "@mui/material/styles";
-import type { GridColDef } from "@mui/x-data-grid";
+import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import CancelIcon from "@mui/icons-material/Cancel";
 import SearchIcon from "@mui/icons-material/Search";
 import { endOfDay, startOfDay, subDays, subHours, subMinutes } from "date-fns";
@@ -25,6 +25,7 @@ import { useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
+import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
 import { DateTimeRangePicker } from "@/components/date-time-range-picker";
 import type { DateTimeRangePickerValue } from "@/components/date-time-range-picker";
 import { EmptyState } from "@/components/empty-state";
@@ -76,6 +77,8 @@ function RowActionsCell() {
             {label}
           </MenuItem>
         ))}
+        <Divider />
+        <MenuItem onClick={() => setAnchorEl(null)}>Investigate Query</MenuItem>
       </Menu>
     </Box>
   );
@@ -458,6 +461,12 @@ export default function QueryLogsPage() {
 
   // Users multi-select (identical pattern to Sites).
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [rowSelection, setRowSelection] = useState<GridRowSelectionModel>({
+    type: "include",
+    ids: new Set(),
+  });
+  const clearRowSelection = () =>
+    setRowSelection({ type: "include", ids: new Set() });
   const totalUsers = users.length;
   const allUsersSelected = selectedUsers.length === totalUsers;
   const someUsersSelected =
@@ -523,6 +532,12 @@ export default function QueryLogsPage() {
           ? rowsInRange.filter((r) => r.isThreat)
           : rowsInRange;
   const tabsConfig = buildTabsConfig(hasData, rowsInRange);
+  // v8 selection model: "include" lists selected ids; "exclude" lists deselected
+  // (header "Select all" uses exclude so it doesn't materialize every id).
+  const selectedRowCount =
+    rowSelection.type === "exclude"
+      ? visibleRows.length - rowSelection.ids.size
+      : rowSelection.ids.size;
 
   const handleApply = () => {
     if (!selectedOrg) return;
@@ -1079,6 +1094,34 @@ export default function QueryLogsPage() {
             columnVisibilityModel={columnVisibilityModel}
             onColumnVisibilityModelChange={setColumnVisibilityModel}
             onDefaultViewChange={handleDefaultViewChange}
+            rowSelectionModel={rowSelection}
+            onRowSelectionModelChange={setRowSelection}
+            bulkActions={
+              selectedRowCount > 0 && (
+                <DataTableBulkActions
+                  count={selectedRowCount}
+                  noun="query log entry"
+                  nounPlural="query log entries"
+                  onClose={clearRowSelection}
+                  actions={
+                    <Button
+                      variant="text"
+                      color="primary"
+                      startIcon={
+                        <span
+                          className="material-symbols-outlined"
+                          style={{ fontSize: 18 }}
+                        >
+                          edit
+                        </span>
+                      }
+                    >
+                      Edit
+                    </Button>
+                  }
+                />
+              )
+            }
           />
         </TabbedDataCard>
       </Box>
