@@ -26,8 +26,7 @@ export function PageHeader({
     <Box
       sx={{
         bgcolor: "background.paper",
-        borderBottom: 1,
-        borderColor: "divider",
+        boxShadow: 1,
         py: 2,
         width: "100%",
         position: "relative",

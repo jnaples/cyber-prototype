@@ -674,7 +674,7 @@ export default function QueryLogsPage() {
 
   const filtersDisabled = !selectedOrg;
   const filtersDisabledTooltip = filtersDisabled
-    ? "Select an Organization to enable this filter"
+    ? "Select an Organization to enable this filter."
     : "";
 
   const hasData = appliedOrg !== null && !isFetching;

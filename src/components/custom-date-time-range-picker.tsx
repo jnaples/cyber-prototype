@@ -5,6 +5,7 @@ import {
   endOfMonth,
   format as fnsFormat,
   isSameMinute,
+  parse as fnsParse,
   set as setDateParts,
   startOfDay,
   subDays,
@@ -53,6 +54,32 @@ const ANCHOR_DISPLAY_FORMAT = "MMM d, yyyy h:mm:ss a";
 // (time-only; the date portion is selected from the calendar below).
 const STEPPER_TIME_FORMAT = "h:mm:ss a";
 
+// Formats we try when parsing text pasted into a TimeField. Listed
+// from most-specific to least so a more precise match wins first.
+const TIME_PASTE_FORMATS = [
+  "h:mm:ss a",
+  "hh:mm:ss a",
+  "h:mm a",
+  "hh:mm a",
+  "HH:mm:ss",
+  "H:mm:ss",
+  "HH:mm",
+  "H:mm",
+];
+
+function parsePastedTime(text: string, baseDate: Date | null): Date | null {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  // date-fns parses "AM"/"PM" case-sensitively; normalize what users paste.
+  const normalized = trimmed.replace(/\b(am|pm)\b/i, (m) => m.toUpperCase());
+  const base = baseDate ?? new Date();
+  for (const fmt of TIME_PASTE_FORMATS) {
+    const parsed = fnsParse(normalized, fmt, base);
+    if (!Number.isNaN(parsed.getTime())) return parsed;
+  }
+  return null;
+}
+
 function getDisplayValue(range: CustomDateTimeRangePickerValue): string {
   const [start, end] = range;
   if (!start || !end) return "";
@@ -93,6 +120,18 @@ function StepperField({
     if (!value) return;
     onChange(addMinutes(value, dir));
   };
+  // Allow pasting a whole time string ("05:12:45 PM", "17:12", etc.) by
+  // intercepting paste, parsing across known formats, and dispatching the
+  // resulting Date through onChange. If parsing fails we leave the default
+  // segmented-paste behavior alone.
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const text = e.clipboardData.getData("text");
+    const parsed = parsePastedTime(text, value);
+    if (!parsed) return;
+    e.preventDefault();
+    e.stopPropagation();
+    onChange(parsed);
+  };
   return (
     <Box sx={{ flex: 1, minWidth: 0 }}>
       <FormLabel sx={{ display: "block" }}>{label}</FormLabel>
@@ -106,6 +145,7 @@ function StepperField({
           slotProps={{
             textField: {
               fullWidth: true,
+              onPaste: handlePaste,
               slotProps: {
                 input: {
                   endAdornment: (
