@@ -148,7 +148,14 @@ const columns: GridColDef[] = [
     filterable: false,
     resizable: false,
     renderCell: () => (
-      <Box sx={{ display: "flex", gap: 1 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          height: "100%",
+        }}
+      >
         <IconButton
           size="small"
           aria-label="edit"
