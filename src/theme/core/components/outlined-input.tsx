@@ -21,6 +21,13 @@ const MuiOutlinedInput: Components<Theme>["MuiOutlinedInput"] = {
       "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
         borderColor: theme.vars.palette.divider,
       },
+      // Placeholder color for enabled inputs; disabled inputs keep the
+      // default muted state.
+      "&:not(.Mui-disabled) input::placeholder, &:not(.Mui-disabled) textarea::placeholder":
+        {
+          color: theme.vars.palette.text.secondary,
+          opacity: 1,
+        },
     }),
   },
 };
