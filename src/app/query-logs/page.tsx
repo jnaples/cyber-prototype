@@ -34,7 +34,7 @@ import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
 import { CustomDateTimeRangePicker } from "@/components/custom-date-time-range-picker";
-import type { CustomCustomDateTimeRangePickerValue } from "@/components/custom-date-time-range-picker";
+import type { CustomDateTimeRangePickerValue } from "@/components/custom-date-time-range-picker";
 import { EmptyState } from "@/components/empty-state";
 import { Modal } from "@/components/modal";
 import { PageHeader } from "@/components/page-header";

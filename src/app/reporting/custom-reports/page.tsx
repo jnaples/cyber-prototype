@@ -323,8 +323,7 @@ function SectionBlock({
       <Stack
         direction="row"
         spacing={1.25}
-        alignItems="center"
-        sx={{ mb: hint ? 0.5 : 1.5 }}
+        sx={{ alignItems: "center", mb: hint ? 0.5 : 1.5 }}
       >
         <Avatar
           variant="circular"
