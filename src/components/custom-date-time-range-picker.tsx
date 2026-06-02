@@ -23,7 +23,7 @@ import {
 import { LocalizationProvider } from "@mui/x-date-pickers-pro";
 import { AdapterDateFns } from "@mui/x-date-pickers-pro/AdapterDateFns";
 import { DateRangeCalendar } from "@mui/x-date-pickers-pro/DateRangeCalendar";
-import { DateTimeField } from "@mui/x-date-pickers/DateTimeField";
+import { TimeField } from "@mui/x-date-pickers/TimeField";
 import type { DateRange } from "@mui/x-date-pickers-pro/models";
 
 export type CustomDateTimeRangePickerValue = DateRange<Date>;
@@ -47,8 +47,9 @@ const POPOVER_MIN_WIDTH = 660;
 // the popover is closed).
 const ANCHOR_DISPLAY_FORMAT = "MMM d, yyyy h:mm:ss a";
 
-// Format used inside the popover by the editable Start / End DateTimeFields.
-const STEPPER_FIELD_FORMAT = "MMM d, yyyy, h:mm:ss a";
+// Format used inside the popover by the editable Start / End TimeFields
+// (time-only; the date portion is selected from the calendar below).
+const STEPPER_TIME_FORMAT = "h:mm:ss a";
 
 function getDisplayValue(range: CustomDateTimeRangePickerValue): string {
   const [start, end] = range;
@@ -81,14 +82,10 @@ function StepperField({
   label,
   value,
   onChange,
-  minDate,
-  maxDate,
 }: {
   label: string;
   value: Date | null;
   onChange: (next: Date | null) => void;
-  minDate?: Date;
-  maxDate?: Date;
 }) {
   const step = (dir: 1 | -1) => {
     if (!value) return;
@@ -98,13 +95,11 @@ function StepperField({
     <Box sx={{ flex: 1, minWidth: 0 }}>
       <FormLabel sx={{ display: "block" }}>{label}</FormLabel>
       <Box sx={{ position: "relative" }}>
-        <DateTimeField
+        <TimeField
           value={value}
           onChange={onChange}
-          format={STEPPER_FIELD_FORMAT}
+          format={STEPPER_TIME_FORMAT}
           size="small"
-          minDate={minDate}
-          maxDate={maxDate}
           sx={{ width: "100%" }}
           slotProps={{
             textField: {
@@ -174,6 +169,7 @@ export function CustomDateTimeRangePicker({
     currentValue[1] ?? null,
   );
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
+  const [resetKey, setResetKey] = useState(0);
 
   const openPicker = () => {
     setDraftStart(currentValue[0] ?? null);
@@ -201,6 +197,9 @@ export function CustomDateTimeRangePicker({
   const handleReset = () => {
     setDraftStart(null);
     setDraftEnd(null);
+    // Force-remount the DateRangeCalendar so its internal range-position
+    // state (start vs end) resets and no day stays highlighted.
+    setResetKey((k) => k + 1);
   };
 
   const handleRangeChange = (range: DateRange<Date>) => {
@@ -260,8 +259,6 @@ export function CustomDateTimeRangePicker({
                 label="Start"
                 value={draftStart}
                 onChange={setDraftStart}
-                minDate={minDate}
-                maxDate={maxDate}
               />
               <Box sx={{ pt: 3, color: "text.secondary" }}>
                 <span
@@ -275,13 +272,12 @@ export function CustomDateTimeRangePicker({
                 label="End"
                 value={draftEnd}
                 onChange={setDraftEnd}
-                minDate={minDate}
-                maxDate={maxDate}
               />
             </Box>
 
             <Box sx={{ display: "flex", justifyContent: "center" }}>
               <DateRangeCalendar
+                key={resetKey}
                 value={[draftStart, draftEnd]}
                 onChange={handleRangeChange}
                 calendars={2}

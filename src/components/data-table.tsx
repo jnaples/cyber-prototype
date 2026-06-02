@@ -181,17 +181,93 @@ function hasFilterValue(item: GridFilterItem): boolean {
   return true;
 }
 
+const TIME_WINDOW_PRESETS_SECONDS = [5, 10, 15] as const;
+
+function TimeWindowChip({
+  filterItem,
+  onUpdate,
+}: {
+  filterItem: GridFilterItem;
+  onUpdate: (item: GridFilterItem) => void;
+}) {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const value = Array.isArray(filterItem.value)
+    ? (filterItem.value as [string, string])
+    : ["", ""];
+  const startMs = value[0] ? new Date(value[0]).getTime() : NaN;
+  const endMs = value[1] ? new Date(value[1]).getTime() : NaN;
+  const validRange =
+    Number.isFinite(startMs) && Number.isFinite(endMs) && endMs >= startMs;
+  if (!validRange) return null;
+  const centerMs = (startMs + endMs) / 2;
+  const halfSec = Math.round((endMs - startMs) / 2 / 1000);
+  const currentLabel = `±${halfSec}s`;
+
+  const pick = (sec: number) => {
+    const newStart = new Date(centerMs - sec * 1000).toISOString();
+    const newEnd = new Date(centerMs + sec * 1000).toISOString();
+    onUpdate({ ...filterItem, value: [newStart, newEnd] });
+    setAnchorEl(null);
+  };
+
+  return (
+    <>
+      <Chip
+        label={
+          <Box
+            sx={{ display: "inline-flex", alignItems: "center", gap: 0.25 }}
+          >
+            <span>{currentLabel}</span>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 16 }}
+            >
+              arrow_drop_down
+            </span>
+          </Box>
+        }
+        onClick={(e) => setAnchorEl(e.currentTarget)}
+        sx={{ borderRadius: (t) => t.spacing(1) }}
+      />
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+      >
+        {TIME_WINDOW_PRESETS_SECONDS.map((sec) => (
+          <MenuItem
+            key={sec}
+            selected={sec === halfSec}
+            onClick={() => pick(sec)}
+          >
+            ±{sec}s
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  );
+}
+
 function ActiveFiltersBar({
   items,
   columns,
   onRemove,
   onClearAll,
+  onUpdate,
+  timeRangeField,
 }: {
   items: GridFilterItem[];
   columns: GridColDef[];
   onRemove: (item: GridFilterItem) => void;
   onClearAll: () => void;
+  onUpdate: (item: GridFilterItem) => void;
+  timeRangeField?: string;
 }) {
+  const timeRangeFilter = timeRangeField
+    ? items.find(
+        (it) => it.field === timeRangeField && it.operator === "range",
+      )
+    : undefined;
   return (
     <Box
       sx={{
@@ -244,6 +320,9 @@ function ActiveFiltersBar({
           </Box>
         );
       })}
+      {timeRangeFilter && (
+        <TimeWindowChip filterItem={timeRangeFilter} onUpdate={onUpdate} />
+      )}
       <Button
         variant="text"
         color="error"
@@ -504,6 +583,13 @@ export interface DataTableProps {
   showPreferences?: boolean;
   showExport?: boolean;
   showRefresh?: boolean;
+  /**
+   * Field name of a column that uses a "range" filter operator with a
+   * [startISO, endISO] value tuple. When set, an extra ±Ns time-window chip
+   * appears in the Active Filters bar, letting users quickly resize the range
+   * around its midpoint.
+   */
+  timeRangeField?: string;
   loading?: boolean;
   noRowsOverlay?: React.ComponentType;
   onSearchChange?: (query: string) => void;
@@ -539,6 +625,7 @@ export function DataTable({
   showPreferences = true,
   showExport = true,
   showRefresh = true,
+  timeRangeField,
   loading = false,
   noRowsOverlay,
   onSearchChange,
@@ -900,6 +987,8 @@ export function DataTable({
           columns={columns}
           onRemove={(item) => apiRef.current?.deleteFilterItem(item)}
           onClearAll={() => apiRef.current?.setFilterModel({ items: [] })}
+          onUpdate={(item) => apiRef.current?.upsertFilterItem(item)}
+          timeRangeField={timeRangeField}
         />
       )}
 

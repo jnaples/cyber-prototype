@@ -179,6 +179,16 @@ function TimeRangeFilterInput(props: GridFilterInputValueProps) {
     : ["", ""];
   const [start, end] = value;
 
+  // `accent-color` retints the native datetime overlay so it matches our
+  // brand; `step={1}` switches the input to hh:mm:ss precision.
+  const sharedSx = {
+    accentColor: (theme: Theme) => theme.palette.primary.main,
+  } as const;
+  const sharedSlotProps = {
+    inputLabel: { shrink: true },
+    htmlInput: { step: 1 },
+  } as const;
+
   return (
     <Box sx={{ display: "flex", gap: 1, alignItems: "flex-end" }}>
       <TextField
@@ -190,7 +200,8 @@ function TimeRangeFilterInput(props: GridFilterInputValueProps) {
         onChange={(e) =>
           applyValue({ ...item, value: [e.target.value, end] })
         }
-        slotProps={{ inputLabel: { shrink: true } }}
+        sx={sharedSx}
+        slotProps={sharedSlotProps}
       />
       <TextField
         label="End"
@@ -201,7 +212,8 @@ function TimeRangeFilterInput(props: GridFilterInputValueProps) {
         onChange={(e) =>
           applyValue({ ...item, value: [start, e.target.value] })
         }
-        slotProps={{ inputLabel: { shrink: true } }}
+        sx={sharedSx}
+        slotProps={sharedSlotProps}
       />
     </Box>
   );
@@ -700,6 +712,9 @@ export default function QueryLogsPage() {
     setAppliedOrg(null);
     setIsFetching(false);
     setCardTab(0);
+    setTimeRange("Last 15 minutes");
+    setDateRange(getRangeForPreset("Last 15 minutes") ?? [null, null]);
+    setRevertState(null);
   };
 
   return (
@@ -1236,6 +1251,7 @@ export default function QueryLogsPage() {
             loading={isFetching}
             noRowsOverlay={QueryLogsEmptyOverlay}
             showSearch={false}
+            timeRangeField="time"
             pinnedShadowFields={{ left: "time", right: "actions" }}
             columnVisibilityModel={columnVisibilityModel}
             onColumnVisibilityModelChange={setColumnVisibilityModel}
