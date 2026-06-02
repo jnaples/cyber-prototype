@@ -295,12 +295,14 @@ export interface DataTableProps {
   defaultViewOptions?: DefaultViewOption[];
   showPreferences?: boolean;
   showExport?: boolean;
+  showRefresh?: boolean;
   loading?: boolean;
   noRowsOverlay?: React.ComponentType;
   onSearchChange?: (query: string) => void;
   onDefaultViewChange?: (value: string) => void;
   onFiltersClick?: () => void;
   onExportClick?: () => void;
+  onRefreshClick?: () => void;
   columnVisibilityModel?: Record<string, boolean>;
   onColumnVisibilityModelChange?: (model: Record<string, boolean>) => void;
   rowSelectionModel?: DataGridProps["rowSelectionModel"];
@@ -328,12 +330,14 @@ export function DataTable({
   ],
   showPreferences = true,
   showExport = true,
+  showRefresh = true,
   loading = false,
   noRowsOverlay,
   onSearchChange,
   onDefaultViewChange,
   onFiltersClick,
   onExportClick,
+  onRefreshClick,
   columnVisibilityModel,
   onColumnVisibilityModelChange,
   rowSelectionModel,
@@ -655,6 +659,25 @@ export function DataTable({
                 Export
               </Button>
             )}
+
+            {showRefresh && (
+              <Button
+                variant="text"
+                color="secondary"
+                size="small"
+                onClick={onRefreshClick}
+                startIcon={
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: 20 }}
+                  >
+                    refresh
+                  </span>
+                }
+              >
+                Refresh
+              </Button>
+            )}
           </Box>
         </Box>
       )}
@@ -701,6 +724,9 @@ export function DataTable({
                 overflowX: "auto",
               },
               "& .MuiDataGrid-main": {
+                backgroundColor: "transparent",
+              },
+              "& .MuiDataGrid-overlay": {
                 backgroundColor: "transparent",
               },
               "& .MuiDataGrid-columnHeaders, & .MuiDataGrid-columnHeader": {

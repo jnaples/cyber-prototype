@@ -5,6 +5,7 @@ import { styled } from "@mui/material/styles";
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { Logo, LogoCollapsed } from "@/components/logo";
 import { MspBadge } from "@/components/msp-badge";
 import { ThemeModeToggle } from "@/components/theme-mode-toggle";
@@ -88,6 +89,15 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
   const handleItemClick = (itemId: string) => {
     setActiveItem(itemId);
   };
+
+  const withCollapsedTooltip = (label: string, node: React.ReactElement) =>
+    isExpanded ? (
+      node
+    ) : (
+      <ArrowTooltip title={label} direction="right">
+        {node}
+      </ArrowTooltip>
+    );
 
   const handleDropdownToggle = (dropdownId: string) => {
     if (isExpanded) {
@@ -206,7 +216,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           {isExpanded ? (
             <Icon name="chevron_left" size={20} />
           ) : (
-            <Icon name="chevron_right" size={20} />
+            <Icon name="chevron_right" size={24} />
           )}
         </button>
 
@@ -242,7 +252,6 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 1,
                 }}
               >
                 <button
@@ -312,23 +321,28 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             minHeight: 0,
           }}
         >
-          <Box
-            sx={getItemStyles("overview")}
-            onClick={() => {
-              handleItemClick("overview");
-              navigate("/overview");
-            }}
-          >
-            <Icon name="language" />
-            {isExpanded && <span style={{ margin: "4px 0" }}>Overview</span>}
-          </Box>
+          {withCollapsedTooltip(
+            "Overview",
+            <Box
+              sx={getItemStyles("overview")}
+              onClick={() => {
+                handleItemClick("overview");
+                navigate("/overview");
+              }}
+            >
+              <Icon name="language" size={isExpanded ? 20 : 24} />
+              {isExpanded && <span style={{ margin: "4px 0" }}>Overview</span>}
+            </Box>,
+          )}
 
           {/* Policies Links */}
           <Box sx={getDropdownWrapperStyles("policies")}>
-            <Box
-              sx={getItemStyles("policies", expandedDropdown === "policies")}
-              onClick={() => handleDropdownToggle("policies")}
-            >
+            {withCollapsedTooltip(
+              "Policies",
+              <Box
+                sx={getItemStyles("policies", expandedDropdown === "policies")}
+                onClick={() => handleDropdownToggle("policies")}
+              >
               {isExpanded && (
                 <>
                   <div
@@ -371,8 +385,9 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   </div>
                 </>
               )}
-              {!isExpanded && <Icon name="menu_book" />}
-            </Box>
+                {!isExpanded && <Icon name="menu_book" size={24} />}
+              </Box>,
+            )}
             {/* Policies Dropdown Items */}
             <Collapse in={expandedDropdown === "policies" && isExpanded}>
               <Box
@@ -410,13 +425,15 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
 
           {/* Deployments Link with Dropdown */}
           <Box sx={getDropdownWrapperStyles("deployments")}>
-            <Box
-              sx={getItemStyles(
-                "deployments",
-                expandedDropdown === "deployments",
-              )}
-              onClick={() => handleDropdownToggle("deployments")}
-            >
+            {withCollapsedTooltip(
+              "Deployments",
+              <Box
+                sx={getItemStyles(
+                  "deployments",
+                  expandedDropdown === "deployments",
+                )}
+                onClick={() => handleDropdownToggle("deployments")}
+              >
               {isExpanded && (
                 <>
                   <div
@@ -458,8 +475,9 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   </div>
                 </>
               )}
-              {!isExpanded && <Icon name="device_hub" />}
-            </Box>
+                {!isExpanded && <Icon name="device_hub" size={24} />}
+              </Box>,
+            )}
 
             {/* Analytics Dropdown Items */}
             <Collapse in={expandedDropdown === "deployments" && isExpanded}>
@@ -526,13 +544,15 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
 
           {/* CyberSight Link with Dropdown */}
           <Box sx={getDropdownWrapperStyles("cybersight")}>
-            <Box
-              sx={getItemStyles(
-                "cybersight",
-                expandedDropdown === "cybersight",
-              )}
-              onClick={() => handleDropdownToggle("cybersight")}
-            >
+            {withCollapsedTooltip(
+              "CyberSight",
+              <Box
+                sx={getItemStyles(
+                  "cybersight",
+                  expandedDropdown === "cybersight",
+                )}
+                onClick={() => handleDropdownToggle("cybersight")}
+              >
               {isExpanded && (
                 <>
                   <div
@@ -571,8 +591,9 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   </div>
                 </>
               )}
-              {!isExpanded && <Icon name="insights" />}
-            </Box>
+                {!isExpanded && <Icon name="insights" size={24} />}
+              </Box>,
+            )}
 
             <Collapse in={expandedDropdown === "cybersight" && isExpanded}>
               <Box
@@ -605,10 +626,15 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
 
           {/* Reporting Link with Dropdown */}
           <Box sx={getDropdownWrapperStyles("reporting")}>
-            <Box
-              sx={getItemStyles("reporting", expandedDropdown === "reporting")}
-              onClick={() => handleDropdownToggle("reporting")}
-            >
+            {withCollapsedTooltip(
+              "Reporting",
+              <Box
+                sx={getItemStyles(
+                  "reporting",
+                  expandedDropdown === "reporting",
+                )}
+                onClick={() => handleDropdownToggle("reporting")}
+              >
               {isExpanded && (
                 <>
                   <div
@@ -650,8 +676,9 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   </div>
                 </>
               )}
-              {!isExpanded && <Icon name="bar_chart" />}
-            </Box>
+                {!isExpanded && <Icon name="bar_chart" size={24} />}
+              </Box>,
+            )}
             {/* Analytics Dropdown Items */}
             <Collapse in={expandedDropdown === "reporting" && isExpanded}>
               <Box
@@ -749,13 +776,15 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
 
           {/* Organization Link */}
           <Box sx={getDropdownWrapperStyles("organization")}>
-            <Box
-              sx={getItemStyles(
-                "organization",
-                expandedDropdown === "organization",
-              )}
-              onClick={() => handleDropdownToggle("organization")}
-            >
+            {withCollapsedTooltip(
+              "Organization",
+              <Box
+                sx={getItemStyles(
+                  "organization",
+                  expandedDropdown === "organization",
+                )}
+                onClick={() => handleDropdownToggle("organization")}
+              >
               {isExpanded && (
                 <>
                   <div
@@ -796,8 +825,9 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   </div>
                 </>
               )}
-              {!isExpanded && <Icon name="business" />}
-            </Box>
+                {!isExpanded && <Icon name="business" size={24} />}
+              </Box>,
+            )}
             {/* Analytics Dropdown Items */}
             <Collapse in={expandedDropdown === "organization" && isExpanded}>
               <Box
@@ -848,10 +878,12 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
 
           {/* Tools Link */}
           <Box sx={getDropdownWrapperStyles("tools")}>
-            <Box
-              sx={getItemStyles("tools", expandedDropdown === "tools")}
-              onClick={() => handleDropdownToggle("tools")}
-            >
+            {withCollapsedTooltip(
+              "Tools",
+              <Box
+                sx={getItemStyles("tools", expandedDropdown === "tools")}
+                onClick={() => handleDropdownToggle("tools")}
+              >
               {isExpanded && (
                 <>
                   <div
@@ -890,8 +922,9 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   </div>
                 </>
               )}
-              {!isExpanded && <Icon name="build" />}
-            </Box>
+                {!isExpanded && <Icon name="build" size={24} />}
+              </Box>,
+            )}
             {/* Analytics Dropdown Items */}
             <Collapse in={expandedDropdown === "tools" && isExpanded}>
               <Box
@@ -941,15 +974,21 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           </Box>
 
           {/* Integrations Link */}
-          <Box
-            sx={getItemStyles("integrations")}
-            onClick={() => handleItemClick("integrations")}
-          >
-            <Icon name="integration_instructions" />
-            {isExpanded && (
-              <span style={{ margin: "4px 0" }}>Integrations</span>
-            )}
-          </Box>
+          {withCollapsedTooltip(
+            "Integrations",
+            <Box
+              sx={getItemStyles("integrations")}
+              onClick={() => handleItemClick("integrations")}
+            >
+              <Icon
+                name="integration_instructions"
+                size={isExpanded ? 20 : 24}
+              />
+              {isExpanded && (
+                <span style={{ margin: "4px 0" }}>Integrations</span>
+              )}
+            </Box>,
+          )}
         </Box>
         {/* Second Nav Links - pinned bottom */}
         <Box>
@@ -967,10 +1006,12 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           >
             {/* Account Link */}
             <Box sx={getDropdownWrapperStyles("account")}>
-              <Box
-                sx={getItemStyles("account", expandedDropdown === "account")}
-                onClick={() => handleDropdownToggle("account")}
-              >
+              {withCollapsedTooltip(
+                "Account",
+                <Box
+                  sx={getItemStyles("account", expandedDropdown === "account")}
+                  onClick={() => handleDropdownToggle("account")}
+                >
                 {isExpanded && (
                   <>
                     <div
@@ -1041,7 +1082,8 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                     DJ
                   </Box>
                 )}
-              </Box>
+                </Box>,
+              )}
               {/* Account Dropdown Items */}
               <Collapse in={expandedDropdown === "account" && isExpanded}>
                 <Box
@@ -1070,15 +1112,21 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
               </Collapse>
             </Box>
             {/* Domain Report Link */}
-            <Box
-              sx={getItemStyles("domain-report")}
-              onClick={() => handleItemClick("domain-report")}
-            >
-              <Icon name="integration_instructions" />
-              {isExpanded && (
-                <span style={{ margin: "4px 0" }}>Domain Report</span>
-              )}
-            </Box>
+            {withCollapsedTooltip(
+              "Domain Report",
+              <Box
+                sx={getItemStyles("domain-report")}
+                onClick={() => handleItemClick("domain-report")}
+              >
+                <Icon
+                  name="integration_instructions"
+                  size={isExpanded ? 20 : 24}
+                />
+                {isExpanded && (
+                  <span style={{ margin: "4px 0" }}>Domain Report</span>
+                )}
+              </Box>,
+            )}
           </Box>
           <Box sx={{ padding: "8px 2px" }}>
             {isExpanded && (
@@ -1096,7 +1144,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
               </Box>
             )}
             {!isExpanded && (
-              <Icon name="check_circle" size={20} color="rgb(30, 241, 162)" />
+              <Icon name="check_circle" size={24} color="rgb(30, 241, 162)" />
             )}
           </Box>
         </Box>

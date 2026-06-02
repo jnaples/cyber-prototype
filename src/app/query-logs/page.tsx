@@ -29,6 +29,7 @@ import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
 import { DateTimeRangePicker } from "@/components/date-time-range-picker";
 import type { DateTimeRangePickerValue } from "@/components/date-time-range-picker";
 import { EmptyState } from "@/components/empty-state";
+import { Modal } from "@/components/modal";
 import { PageHeader } from "@/components/page-header";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
@@ -51,8 +52,12 @@ const ROW_ACTION_ITEMS = [
   "Add / Remove to AppAware",
 ];
 
+const TIME_WINDOW_OPTIONS = ["±5s", "±10s", "±15s"] as const;
+
 function RowActionsCell() {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [investigateOpen, setInvestigateOpen] = useState(false);
+  const [timeWindow, setTimeWindow] = useState<string>(TIME_WINDOW_OPTIONS[0]);
   return (
     <Box sx={{ display: "flex", gap: 1 }}>
       <IconButton
@@ -78,8 +83,43 @@ function RowActionsCell() {
           </MenuItem>
         ))}
         <Divider />
-        <MenuItem onClick={() => setAnchorEl(null)}>Investigate Query</MenuItem>
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
+            setInvestigateOpen(true);
+          }}
+        >
+          Investigate Query
+        </MenuItem>
       </Menu>
+      <Modal
+        open={investigateOpen}
+        onClose={() => setInvestigateOpen(false)}
+        title="Investigate Query"
+        secondaryAction={{
+          label: "Cancel",
+          onClick: () => setInvestigateOpen(false),
+        }}
+        primaryAction={{
+          label: "Submit",
+          onClick: () => setInvestigateOpen(false),
+        }}
+      >
+        <TextField
+          select
+          fullWidth
+          size="small"
+          label="Time Window"
+          value={timeWindow}
+          onChange={(e) => setTimeWindow(e.target.value)}
+        >
+          {TIME_WINDOW_OPTIONS.map((opt) => (
+            <MenuItem key={opt} value={opt}>
+              {opt}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Modal>
     </Box>
   );
 }
