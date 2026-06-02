@@ -1,5 +1,6 @@
 import {
   Button,
+  Chip,
   CircularProgress,
   Divider,
   InputAdornment,
@@ -20,6 +21,8 @@ import {
   DataGrid,
   type DataGridProps,
   type GridColDef,
+  type GridFilterItem,
+  type GridFilterModel,
   gridColumnDefinitionsSelector,
   gridColumnVisibilityModelSelector,
   GridFilterPanel,
@@ -117,6 +120,132 @@ function CustomPagination({
         )}
         onChange={(_event, value) => apiRef.current.setPage(value - 1)}
       />
+    </Box>
+  );
+}
+
+const OPERATOR_LABELS: Record<string, string> = {
+  range: "spans",
+  contains: "contains",
+  equals: "equals",
+  startsWith: "starts with",
+  endsWith: "ends with",
+  isAnyOf: "is any of",
+  isEmpty: "is empty",
+  isNotEmpty: "is not empty",
+  is: "is",
+  not: "is not",
+  after: "after",
+  before: "before",
+  onOrAfter: "on or after",
+  onOrBefore: "on or before",
+};
+
+function formatFilterOperator(op: string): string {
+  return OPERATOR_LABELS[op] ?? op;
+}
+
+function formatFilterValue(v: unknown): string {
+  if (v == null || v === "") return "";
+  if (Array.isArray(v)) {
+    return v.map(formatFilterValue).filter(Boolean).join(" - ");
+  }
+  if (v instanceof Date) {
+    return v.toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    });
+  }
+  return String(v);
+}
+
+function hasFilterValue(item: GridFilterItem): boolean {
+  const v = item.value;
+  if (v === undefined || v === null || v === "") return false;
+  if (Array.isArray(v) && v.every((x) => x == null || x === "")) return false;
+  return true;
+}
+
+function ActiveFiltersBar({
+  items,
+  columns,
+  onRemove,
+  onClearAll,
+}: {
+  items: GridFilterItem[];
+  columns: GridColDef[];
+  onRemove: (item: GridFilterItem) => void;
+  onClearAll: () => void;
+}) {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: 1.5,
+        mx: 2,
+        mb: 1,
+      }}
+    >
+      <Typography
+        variant="caption"
+        sx={{ fontWeight: 700, color: "text.primary" }}
+      >
+        Active Filters:
+      </Typography>
+      {items.map((item, idx) => {
+        const col = columns.find((c) => c.field === item.field);
+        const fieldLabel = col?.headerName ?? item.field;
+        const opLabel = formatFilterOperator(item.operator);
+        const valLabel = formatFilterValue(item.value);
+        const chipLabel = [opLabel, valLabel].filter(Boolean).join(" ");
+        return (
+          <Box
+            key={item.id ?? `${item.field}-${idx}`}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.75,
+              px: 1,
+              py: 0.5,
+              border: "1px dashed",
+              borderColor: "divider",
+              borderRadius: 2,
+            }}
+          >
+            <Typography
+              variant="caption"
+              sx={{ fontWeight: 700, color: "text.primary" }}
+            >
+              {fieldLabel}:
+            </Typography>
+            <Chip
+              size="small"
+              label={chipLabel}
+              onDelete={() => onRemove(item)}
+            />
+          </Box>
+        );
+      })}
+      <Button
+        variant="text"
+        color="error"
+        size="small"
+        onClick={onClearAll}
+        startIcon={
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+            close
+          </span>
+        }
+      >
+        Clear
+      </Button>
     </Box>
   );
 }
@@ -433,6 +562,10 @@ export function DataTable({
     null,
   );
   const [panelTarget, setPanelTarget] = useState<null | HTMLElement>(null);
+  const [filterModel, setFilterModel] = useState<GridFilterModel>({
+    items: [],
+  });
+  const activeFilterItems = filterModel.items.filter(hasFilterValue);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -750,6 +883,15 @@ export function DataTable({
 
       {bulkActions}
 
+      {activeFilterItems.length > 0 && (
+        <ActiveFiltersBar
+          items={activeFilterItems}
+          columns={columns}
+          onRemove={(item) => apiRef.current?.deleteFilterItem(item)}
+          onClearAll={() => apiRef.current?.setFilterModel({ items: [] })}
+        />
+      )}
+
       <Box sx={{ minWidth: 0, width: "100%", overflowX: "auto" }}>
         {
           <DataGrid
@@ -768,6 +910,8 @@ export function DataTable({
             onColumnVisibilityModelChange={onColumnVisibilityModelChange}
             rowSelectionModel={rowSelectionModel}
             onRowSelectionModelChange={onRowSelectionModelChange}
+            filterModel={filterModel}
+            onFilterModelChange={setFilterModel}
             disableRowSelectionOnClick
             loading={loading}
             slots={{

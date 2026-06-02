@@ -5,6 +5,7 @@ import {
   Chip,
   Divider,
   FormControl,
+  FormLabel,
   IconButton,
   InputAdornment,
   ListItemText,
@@ -59,7 +60,14 @@ function RowActionsCell() {
   const [investigateOpen, setInvestigateOpen] = useState(false);
   const [timeWindow, setTimeWindow] = useState<string>(TIME_WINDOW_OPTIONS[0]);
   return (
-    <Box sx={{ display: "flex", gap: 1 }}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        height: "100%",
+      }}
+    >
       <IconButton
         size="small"
         aria-label="more options"
@@ -105,20 +113,20 @@ function RowActionsCell() {
           onClick: () => setInvestigateOpen(false),
         }}
       >
-        <TextField
-          select
-          fullWidth
-          size="small"
-          label="Time Window"
-          value={timeWindow}
-          onChange={(e) => setTimeWindow(e.target.value)}
-        >
-          {TIME_WINDOW_OPTIONS.map((opt) => (
-            <MenuItem key={opt} value={opt}>
-              {opt}
-            </MenuItem>
-          ))}
-        </TextField>
+        <FormControl fullWidth>
+          <FormLabel id="time-window-label">Time Window</FormLabel>
+          <Select
+            labelId="time-window-label"
+            value={timeWindow}
+            onChange={(e) => setTimeWindow(e.target.value)}
+          >
+            {TIME_WINDOW_OPTIONS.map((opt) => (
+              <MenuItem key={opt} value={opt}>
+                {opt}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Modal>
     </Box>
   );
