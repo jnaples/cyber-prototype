@@ -9,6 +9,9 @@ import {
 import type { ButtonProps, DialogProps } from "@mui/material";
 import type React from "react";
 
+// Default width of the modal paper. Override per-instance via the `width` prop.
+const DEFAULT_MODAL_WIDTH = 600;
+
 export interface ModalActionConfig {
   label: React.ReactNode;
   onClick?: () => void;
@@ -40,7 +43,7 @@ export interface ModalProps {
   /** Convenience prop for the left-aligned secondary action button. */
   secondaryAction?: ModalActionConfig;
 
-  /** Width of the dialog paper. Defaults to 600. */
+  /** Width of the dialog paper. Defaults to {@link DEFAULT_MODAL_WIDTH}. */
   width?: number | string;
 
   /** Pass-through overrides for the underlying MUI Dialog. */
@@ -59,7 +62,7 @@ export function Modal({
   actions,
   primaryAction,
   secondaryAction,
-  width = 600,
+  width = DEFAULT_MODAL_WIDTH,
   dialogProps,
   disableContentPadding = false,
 }: ModalProps) {
@@ -67,6 +70,10 @@ export function Modal({
     actions !== undefined ||
     primaryAction !== undefined ||
     secondaryAction !== undefined;
+
+  const callerPaperSlot = dialogProps?.slotProps?.paper as
+    | { sx?: object }
+    | undefined;
 
   return (
     <Dialog
@@ -77,12 +84,12 @@ export function Modal({
       slotProps={{
         ...(dialogProps?.slotProps ?? {}),
         paper: {
-          ...(dialogProps?.slotProps?.paper ?? {}),
+          ...(callerPaperSlot ?? {}),
           sx: {
-            borderRadius: "6px",
+            // `borderRadius: 1` resolves to theme.shape.borderRadius.
+            borderRadius: 1,
             width,
-            ...((dialogProps?.slotProps?.paper as { sx?: object } | undefined)
-              ?.sx ?? {}),
+            ...(callerPaperSlot?.sx ?? {}),
           },
         },
       }}
@@ -97,9 +104,8 @@ export function Modal({
       {children !== undefined && (
         <DialogContent
           sx={
-            disableContentPadding
-              ? { p: 0 }
-              : { pt: 0, px: 3, pb: "20px" }
+            // 2.5 * theme.spacing(1) = 20px (vs hardcoded "20px").
+            disableContentPadding ? { p: 0 } : { pt: 0, px: 3, pb: 2.5 }
           }
         >
           {children}
