@@ -542,6 +542,23 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Collapse>
           </Box>
 
+          {/* DNS Query Log Link */}
+          {withCollapsedTooltip(
+            "DNS Query Log",
+            <Box
+              sx={getItemStyles("dns-query-log")}
+              onClick={() => {
+                handleItemClick("dns-query-log");
+                navigate("/query-logs");
+              }}
+            >
+              <Icon name="format_list_bulleted" size={isExpanded ? 20 : 24} />
+              {isExpanded && (
+                <span style={{ margin: "4px 0" }}>DNS Query Log</span>
+              )}
+            </Box>,
+          )}
+
           {/* CyberSight Link with Dropdown */}
           <Box sx={getDropdownWrapperStyles("cybersight")}>
             {withCollapsedTooltip(
@@ -710,15 +727,6 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   onClick={() => handleItemClick("reporting-appaware")}
                 >
                   <span style={{ margin: "4px 0" }}>Appaware</span>
-                </Box>
-                <Box
-                  sx={getSubItemStyles("reporting-dns-query-log")}
-                  onClick={() => {
-                    handleItemClick("reporting-dns-query-log");
-                    navigate("/query-logs");
-                  }}
-                >
-                  <span style={{ margin: "4px 0" }}>DNS Query Log</span>
                 </Box>
                 <Box
                   sx={getSubItemStyles("reporting-scheduled-reports")}

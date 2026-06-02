@@ -197,9 +197,7 @@ function TimeRangeFilterInput(props: GridFilterInputValueProps) {
         size="small"
         variant="standard"
         value={start}
-        onChange={(e) =>
-          applyValue({ ...item, value: [e.target.value, end] })
-        }
+        onChange={(e) => applyValue({ ...item, value: [e.target.value, end] })}
         sx={sharedSx}
         slotProps={sharedSlotProps}
       />
@@ -697,6 +695,29 @@ export default function QueryLogsPage() {
       ? visibleRows.length - rowSelection.ids.size
       : rowSelection.ids.size;
 
+  // Snapshot of the filter selection the user most recently applied. When the
+  // current inputs match this snapshot by reference, Apply is disabled — the
+  // user must change something for the button to re-enable.
+  type FilterSnapshot = {
+    selectedOrg: string | null;
+    selectedSites: string[];
+    selectedClients: string[];
+    selectedUsers: string[];
+    timeRange: TimeRangeValue;
+    dateRange: CustomDateTimeRangePickerValue;
+  };
+  const [appliedSnapshot, setAppliedSnapshot] = useState<FilterSnapshot | null>(
+    null,
+  );
+  const isCurrentApplied =
+    appliedSnapshot !== null &&
+    appliedSnapshot.selectedOrg === selectedOrg &&
+    appliedSnapshot.selectedSites === selectedSites &&
+    appliedSnapshot.selectedClients === selectedClients &&
+    appliedSnapshot.selectedUsers === selectedUsers &&
+    appliedSnapshot.timeRange === timeRange &&
+    appliedSnapshot.dateRange === dateRange;
+
   const handleApply = () => {
     if (!selectedOrg) return;
     setIsFetching(true);
@@ -704,6 +725,14 @@ export default function QueryLogsPage() {
     window.setTimeout(() => {
       setAppliedOrg(selectedOrg);
       setIsFetching(false);
+      setAppliedSnapshot({
+        selectedOrg,
+        selectedSites,
+        selectedClients,
+        selectedUsers,
+        timeRange,
+        dateRange,
+      });
     }, FETCH_DELAY_MS);
   };
 
@@ -715,6 +744,7 @@ export default function QueryLogsPage() {
     setTimeRange("Last 15 minutes");
     setDateRange(getRangeForPreset("Last 15 minutes") ?? [null, null]);
     setRevertState(null);
+    setAppliedSnapshot(null);
   };
 
   return (
@@ -956,6 +986,7 @@ export default function QueryLogsPage() {
                           lineHeight: 1.5,
                           color: "text.secondary",
                           pt: 1,
+                          position: "static",
                         }}
                       >
                         Roaming Clients
@@ -980,6 +1011,7 @@ export default function QueryLogsPage() {
                           lineHeight: 1.5,
                           color: "text.secondary",
                           pt: 1,
+                          position: "static",
                         }}
                       >
                         Relays
@@ -1176,15 +1208,25 @@ export default function QueryLogsPage() {
               justifyContent: "space-between",
             }}
           >
-            <Button
-              variant="contained"
-              color="primary"
-              size="small"
-              disabled={!selectedOrg || isFetching}
-              onClick={handleApply}
+            <ArrowTooltip
+              title={
+                isCurrentApplied
+                  ? "Change your selection to apply a new filter."
+                  : ""
+              }
             >
-              Apply
-            </Button>
+              <span>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  disabled={!selectedOrg || isFetching || isCurrentApplied}
+                  onClick={handleApply}
+                >
+                  Apply
+                </Button>
+              </span>
+            </ArrowTooltip>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               {appliedOrg && (
                 <Button

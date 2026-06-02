@@ -154,7 +154,12 @@ function formatDateLike(d: Date, hasTime: boolean): string {
     day: "numeric",
     year: "numeric",
     ...(hasTime
-      ? { hour: "numeric", minute: "2-digit", hour12: true }
+      ? {
+          hour: "numeric",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        }
       : {}),
   });
 }

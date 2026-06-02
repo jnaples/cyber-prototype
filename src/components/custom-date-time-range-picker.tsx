@@ -256,7 +256,7 @@ export function CustomDateTimeRangePicker({
               }}
             >
               <StepperField
-                label="Start"
+                label="Start time"
                 value={draftStart}
                 onChange={setDraftStart}
               />
@@ -269,7 +269,7 @@ export function CustomDateTimeRangePicker({
                 </span>
               </Box>
               <StepperField
-                label="End"
+                label="End time"
                 value={draftEnd}
                 onChange={setDraftEnd}
               />
