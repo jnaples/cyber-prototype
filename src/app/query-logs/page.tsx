@@ -24,7 +24,7 @@ import type {
   GridFilterOperator,
   GridRowSelectionModel,
 } from "@mui/x-data-grid";
-import { getGridStringOperators } from "@mui/x-data-grid";
+import { getGridStringOperators, useGridApiContext } from "@mui/x-data-grid";
 import CancelIcon from "@mui/icons-material/Cancel";
 import SearchIcon from "@mui/icons-material/Search";
 import { endOfDay, startOfDay, subDays, subHours, subMinutes } from "date-fns";
@@ -60,11 +60,41 @@ const ROW_ACTION_ITEMS = [
 ];
 
 const TIME_WINDOW_OPTIONS = ["±5s", "±10s", "±15s"] as const;
+type TimeWindowOption = (typeof TIME_WINDOW_OPTIONS)[number];
 
-function RowActionsCell() {
+// Window selection → seconds on either side of the row's timestamp.
+const TIME_WINDOW_SECONDS: Record<TimeWindowOption, number> = {
+  "±5s": 5,
+  "±10s": 10,
+  "±15s": 15,
+};
+
+const INVESTIGATE_FILTER_ID = "investigate-query";
+
+function RowActionsCell({ row }: { row: QueryLogRow }) {
+  const apiRef = useGridApiContext();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [investigateOpen, setInvestigateOpen] = useState(false);
-  const [timeWindow, setTimeWindow] = useState<string>(TIME_WINDOW_OPTIONS[0]);
+  const [timeWindow, setTimeWindow] = useState<TimeWindowOption>(
+    TIME_WINDOW_OPTIONS[0],
+  );
+
+  const handleInvestigate = () => {
+    const windowMs = TIME_WINDOW_SECONDS[timeWindow] * 1000;
+    const startISO = new Date(row.timestampMs - windowMs).toISOString();
+    const endISO = new Date(row.timestampMs + windowMs).toISOString();
+    apiRef.current?.setFilterModel({
+      items: [
+        {
+          id: INVESTIGATE_FILTER_ID,
+          field: "time",
+          operator: "range",
+          value: [startISO, endISO],
+        },
+      ],
+    });
+    setInvestigateOpen(false);
+  };
   return (
     <Box
       sx={{
@@ -116,7 +146,7 @@ function RowActionsCell() {
         }}
         primaryAction={{
           label: "Submit",
-          onClick: () => setInvestigateOpen(false),
+          onClick: handleInvestigate,
         }}
       >
         <FormControl fullWidth>
@@ -285,7 +315,7 @@ const columns: GridColDef[] = [
     sortable: false,
     filterable: false,
     resizable: false,
-    renderCell: () => <RowActionsCell />,
+    renderCell: (params) => <RowActionsCell row={params.row as QueryLogRow} />,
   },
 ];
 
