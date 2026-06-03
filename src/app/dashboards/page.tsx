@@ -586,6 +586,7 @@ export default function DashboardsPage() {
         primaryAction={{
           label: "Remove",
           color: "error",
+          sx: { color: "common.white" },
           onClick: () => {
             if (pendingDelete) removeWidget(pendingDelete.id);
             setPendingDelete(null);
@@ -617,6 +618,7 @@ export default function DashboardsPage() {
         primaryAction={{
           label: "Delete dashboard",
           color: "error",
+          sx: { color: "common.white" },
           onClick: deleteDashboard,
         }}
       >

@@ -19,6 +19,7 @@ export interface ModalActionConfig {
   color?: ButtonProps["color"];
   variant?: ButtonProps["variant"];
   loading?: boolean;
+  sx?: ButtonProps["sx"];
 }
 
 export interface ModalProps {
@@ -133,6 +134,7 @@ export function Modal({
                   variant={secondaryAction.variant ?? "outlined"}
                   color={secondaryAction.color ?? "secondary"}
                   size="small"
+                  sx={secondaryAction.sx}
                 >
                   {secondaryAction.label}
                 </Button>
@@ -144,6 +146,7 @@ export function Modal({
                   variant={primaryAction.variant ?? "contained"}
                   color={primaryAction.color ?? "primary"}
                   size="small"
+                  sx={primaryAction.sx}
                 >
                   {primaryAction.label}
                 </Button>
