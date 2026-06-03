@@ -1,10 +1,18 @@
-import { Button, IconButton, Typography } from "@mui/material";
+import {
+  Button,
+  FormControl,
+  FormLabel,
+  IconButton,
+  OutlinedInput,
+  Typography,
+} from "@mui/material";
 import Box from "@mui/material/Box";
 import type { GridColDef } from "@mui/x-data-grid";
 import React, { useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
+import { Drawer } from "@/components/drawer";
 import { AndroidIcon } from "@/components/icons/os-icons";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
@@ -147,37 +155,75 @@ const columns: GridColDef[] = [
     sortable: false,
     filterable: false,
     resizable: false,
-    renderCell: () => (
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          height: "100%",
-        }}
-      >
-        <IconButton
-          size="small"
-          aria-label="edit"
-          sx={{ color: "text.primary" }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-            edit
-          </span>
-        </IconButton>
-        <IconButton
-          size="small"
-          aria-label="more options"
-          sx={{ color: "text.primary" }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-            more_horiz
-          </span>
-        </IconButton>
-      </Box>
-    ),
+    renderCell: () => <RowActionsCell />,
   },
 ];
+
+function RowActionsCell() {
+  const [editOpen, setEditOpen] = useState(false);
+  const [hostname, setHostname] = useState("");
+  const [notes, setNotes] = useState("");
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        height: "100%",
+      }}
+    >
+      <IconButton
+        size="small"
+        aria-label="edit"
+        sx={{ color: "text.primary" }}
+        onClick={() => setEditOpen(true)}
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+          edit
+        </span>
+      </IconButton>
+      <IconButton
+        size="small"
+        aria-label="more options"
+        sx={{ color: "text.primary" }}
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+          more_horiz
+        </span>
+      </IconButton>
+      <Drawer
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        title="Edit Roaming Client"
+        secondaryAction={{
+          label: "Cancel",
+          onClick: () => setEditOpen(false),
+        }}
+        primaryAction={{
+          label: "Save",
+          onClick: () => setEditOpen(false),
+        }}
+      >
+        <FormControl fullWidth>
+          <FormLabel>Hostname</FormLabel>
+          <OutlinedInput
+            placeholder="Enter hostname"
+            value={hostname}
+            onChange={(e) => setHostname(e.target.value)}
+          />
+        </FormControl>
+        <FormControl fullWidth>
+          <FormLabel>Notes</FormLabel>
+          <OutlinedInput
+            placeholder="Optional notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+        </FormControl>
+      </Drawer>
+    </Box>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Status tab configuration
