@@ -329,15 +329,13 @@ export default function DashboardsPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && setRenaming(false)}
-              sx={{
+              sx={(theme) => ({
                 "& .MuiOutlinedInput-input": {
-                  fontFamily: (t) => t.typography.fontSecondaryFamily,
-                  fontSize: 22,
-                  fontWeight: 600,
+                  ...theme.typography.pageTitle,
                   py: 0.5,
                   px: 1,
                 },
-              }}
+              })}
             />
           </ClickAwayListener>
         ) : (
@@ -356,15 +354,7 @@ export default function DashboardsPage() {
               userSelect: "none",
             }}
           >
-            <Typography
-              sx={{
-                fontFamily: (t) => t.typography.fontSecondaryFamily,
-                fontSize: 22,
-                fontWeight: 600,
-                color: "text.primary",
-                letterSpacing: "-0.3px",
-              }}
-            >
+            <Typography variant="pageTitle" sx={{ color: "text.primary" }}>
               {name}
             </Typography>
             <span
