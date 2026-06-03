@@ -234,9 +234,15 @@ export function CustomDateTimeRangePicker({
     setOpen(true);
   };
 
+  // While the popover is open, mirror the user's in-progress draft selection
+  // so the anchor input updates live as days/times are clicked. Cancel still
+  // reverts (drafts are discarded); Apply commits the draft to `value`.
   const displayValue = useMemo(
-    () => getDisplayValue(currentValue),
-    [currentValue],
+    () =>
+      open
+        ? getDisplayValue([draftStart, draftEnd])
+        : getDisplayValue(currentValue),
+    [open, draftStart, draftEnd, currentValue],
   );
 
   const handleApply = () => {

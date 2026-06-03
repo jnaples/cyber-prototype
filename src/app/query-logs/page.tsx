@@ -146,7 +146,7 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
           onClick: () => setInvestigateOpen(false),
         }}
         primaryAction={{
-          label: "Submit",
+          label: "Apply",
           onClick: handleInvestigate,
         }}
       >
