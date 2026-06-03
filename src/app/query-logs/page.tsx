@@ -29,7 +29,7 @@ import { getGridStringOperators, useGridApiContext } from "@mui/x-data-grid";
 import CancelIcon from "@mui/icons-material/Cancel";
 import SearchIcon from "@mui/icons-material/Search";
 import { endOfDay, startOfDay, subDays, subHours, subMinutes } from "date-fns";
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
@@ -72,8 +72,17 @@ const TIME_WINDOW_SECONDS: Record<TimeWindowOption, number> = {
 
 const INVESTIGATE_FILTER_ID = "investigate-query";
 
+// Exposes a setter so cell-renderers (rendered outside the page's React
+// subtree relative to setState closures) can switch the page-level
+// "Default View" selection. Provided by QueryLogsPage, consumed by
+// RowActionsCell when the user runs Investigate Query.
+const InvestigateContext = createContext<{
+  setDefaultView: (value: string) => void;
+} | null>(null);
+
 function RowActionsCell({ row }: { row: QueryLogRow }) {
   const apiRef = useGridApiContext();
+  const investigateCtx = useContext(InvestigateContext);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [investigateOpen, setInvestigateOpen] = useState(false);
   const [timeWindow, setTimeWindow] = useState<TimeWindowOption>(
@@ -94,6 +103,20 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
         },
       ],
     });
+    // Swap the visible columns to the "Investigative" preset so the user
+    // immediately sees the fields most relevant to forensic review. Also
+    // flip the page-level "Default View" selection so the toolbar label
+    // reflects the new state.
+    const investigativeFields = COLUMN_VIEW_PRESETS.investigative;
+    if (investigativeFields && apiRef.current) {
+      apiRef.current.setColumnVisibilityModel(
+        buildVisibilityModel(
+          columns.map((c) => c.field),
+          investigativeFields,
+        ),
+      );
+    }
+    investigateCtx?.setDefaultView("investigative");
     setInvestigateOpen(false);
   };
   return (
@@ -657,7 +680,9 @@ export default function QueryLogsPage() {
   const [columnVisibilityModel, setColumnVisibilityModel] = useState<
     Record<string, boolean>
   >({});
+  const [selectedView, setSelectedView] = useState<string>("default");
   const handleDefaultViewChange = (value: string) => {
+    setSelectedView(value);
     const preset = COLUMN_VIEW_PRESETS[value];
     setColumnVisibilityModel(
       buildVisibilityModel(
@@ -763,6 +788,9 @@ export default function QueryLogsPage() {
   };
 
   return (
+    <InvestigateContext.Provider
+      value={{ setDefaultView: handleDefaultViewChange }}
+    >
     <Box
       sx={{
         display: "flex",
@@ -1312,6 +1340,7 @@ export default function QueryLogsPage() {
             pinnedShadowFields={{ left: "time", right: "actions" }}
             columnVisibilityModel={columnVisibilityModel}
             onColumnVisibilityModelChange={setColumnVisibilityModel}
+            defaultView={selectedView}
             onDefaultViewChange={handleDefaultViewChange}
             rowSelectionModel={rowSelection}
             onRowSelectionModelChange={setRowSelection}
@@ -1345,5 +1374,6 @@ export default function QueryLogsPage() {
         </TabbedDataCard>
       </Box>
     </Box>
+    </InvestigateContext.Provider>
   );
 }

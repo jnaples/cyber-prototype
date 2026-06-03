@@ -591,6 +591,12 @@ export interface DataTableProps {
   showFilters?: boolean;
   showDefaultView?: boolean;
   defaultViewOptions?: DefaultViewOption[];
+  /**
+   * Controlled current view. When provided, the parent owns the selection
+   * and the DataTable will not maintain its own internal state — useful when
+   * external actions need to swap the view programmatically.
+   */
+  defaultView?: string;
   showPreferences?: boolean;
   showExport?: boolean;
   showRefresh?: boolean;
@@ -633,6 +639,7 @@ export function DataTable({
     { label: "Investigative", value: "investigative" },
     { label: "Compliance Audit", value: "compliance-audit" },
   ],
+  defaultView,
   showPreferences = true,
   showExport = true,
   showRefresh = true,
@@ -658,12 +665,18 @@ export function DataTable({
     useState<null | HTMLElement>(null);
   const [defaultViewAnchorEl, setDefaultViewAnchorEl] =
     useState<null | HTMLElement>(null);
-  const [selectedDefaultView, setSelectedDefaultView] = useState<string>(
+  const [internalDefaultView, setInternalDefaultView] = useState<string>(
     () =>
       defaultViewOptions.find((o) => o.value === "default")?.value ??
       defaultViewOptions[0]?.value ??
       "",
   );
+  const selectedDefaultView = defaultView ?? internalDefaultView;
+  const setSelectedDefaultView = (value: string) => {
+    // Only update internal state when uncontrolled; in controlled mode the
+    // parent drives the value via the `defaultView` prop.
+    if (defaultView === undefined) setInternalDefaultView(value);
+  };
   const selectedDefaultViewLabel =
     defaultViewOptions.find((o) => o.value === selectedDefaultView)?.label ??
     "";
