@@ -78,7 +78,7 @@ export function AddPanel({
             <Box key={cat}>
               <Typography
                 variant="overline"
-                sx={{ color: "text.secondary", mb: 1, display: "block" }}
+                sx={{ color: "text.secondary", display: "block" }}
               >
                 {cat}
               </Typography>

@@ -60,7 +60,7 @@ export function StatCard({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 1,
+        gap: 2,
         p: 1,
         height: "100%",
         textAlign: "center",
@@ -130,7 +130,7 @@ export function FractionCard({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 1,
+        gap: 2,
         p: 1,
         height: "100%",
         textAlign: "center",
@@ -225,7 +225,7 @@ export function LineChart({
             x={pad.l - 8}
             y={pad.t + ih - p * ih + 4}
             textAnchor="end"
-            fontFamily="Roboto Mono"
+            fontFamily="Inter, sans-serif"
             fontSize="10"
             fill={axisColor}
           >
@@ -321,7 +321,7 @@ export function BarChart({
             x={pad.l - 8}
             y={pad.t + ih - p * ih + 4}
             textAnchor="end"
-            fontFamily="Roboto Mono"
+            fontFamily="Inter, sans-serif"
             fontSize="10"
             fill={axisColor}
           >
@@ -565,12 +565,8 @@ export function Donut({
             }}
           >
             <Typography
-              sx={{
-                fontFamily: "Roboto Mono, monospace",
-                fontSize: 22,
-                fontWeight: 500,
-                color: "text.primary",
-              }}
+              variant="body2"
+              sx={{ fontSize: 22, fontWeight: 500, color: "text.primary" }}
             >
               {fmt(total)}
             </Typography>
@@ -609,15 +605,13 @@ export function Donut({
               }}
             />
             <Box sx={{ flex: 1 }}>{s.label}</Box>
-            <Box
-              sx={{
-                color: "text.disabled",
-                fontFamily: "Roboto Mono, monospace",
-                fontSize: 14,
-              }}
+            <Typography
+              variant="body2"
+              component="span"
+              sx={{ color: "text.disabled" }}
             >
               {Math.round((s.value / total) * 100)}%
-            </Box>
+            </Typography>
           </Box>
         ))}
       </Box>

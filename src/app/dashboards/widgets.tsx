@@ -1,14 +1,17 @@
 // Widget body renderer. Exposed as a component (`<WidgetBody>`) so this file
 // only exports components and stays within the react-refresh constraint.
 
+import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
+  InputAdornment,
   OutlinedInput,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  TextField,
   Typography,
 } from "@mui/material";
 
@@ -102,35 +105,21 @@ function DataTableWidget({
 }) {
   return (
     <Box sx={{ width: "100%" }}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          bgcolor: "transparent",
-          borderRadius: 1,
-          px: 1.5,
-          mb: 1,
-          border: "1px solid",
-          borderColor: "divider",
-          height: 36,
+      <TextField
+        size="small"
+        fullWidth
+        placeholder="Search..."
+        sx={{ mb: 1 }}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          },
         }}
-      >
-        <span
-          className="material-symbols-outlined"
-          style={{ fontSize: 16, color: "var(--dnsf-palette-text-disabled)" }}
-        >
-          search
-        </span>
-        <OutlinedInput
-          placeholder="Search"
-          sx={{
-            flex: 1,
-            "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-            "& input": { p: 0, fontSize: 14 },
-          }}
-        />
-      </Box>
+      />
       <Table size="small">
         <TableHead>
           <TableRow>
@@ -152,11 +141,10 @@ function DataTableWidget({
                 <TableCell
                   key={c.key}
                   align={ci ? "right" : "left"}
-                  sx={{
-                    fontSize: 14,
-                    fontFamily: ci ? "Roboto Mono, monospace" : undefined,
+                  sx={(theme) => ({
+                    ...theme.typography.body2,
                     color: ci ? "text.secondary" : "text.primary",
-                  }}
+                  })}
                 >
                   {ci === 0 ? (
                     <Box

@@ -174,15 +174,7 @@ export function DashCard({
       )}
 
       {!headerless && (
-        <Box
-          sx={{
-            px: 2.25,
-            pt: 1.75,
-            pb: 1.25,
-            borderBottom: "1px solid",
-            borderColor: "divider",
-          }}
-        >
+        <Box sx={{ p: 2 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Typography
               sx={{
@@ -193,15 +185,6 @@ export function DashCard({
             >
               {def?.name ?? widget.type}
             </Typography>
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: 14,
-                color: "var(--dnsf-palette-text-disabled)",
-              }}
-            >
-              info
-            </span>
           </Box>
           {legend && (
             <Box sx={{ mt: 1 }}>
@@ -213,7 +196,10 @@ export function DashCard({
 
       <Box
         sx={{
-          p: headerless ? 1.5 : `${pad}px`,
+          // For cards WITH a header, the header already provides top padding,
+          // so we don't double up with another `pt: pad`.
+          p: headerless ? 1.5 : pad,
+          pt: headerless ? 1.5 : 0,
           flex: 1,
           minWidth: 0,
           minHeight: headerless ? 120 : "auto",

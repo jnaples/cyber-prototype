@@ -45,18 +45,18 @@ const bumpUid = (ws: WidgetInstance[]) => {
 };
 
 const DEFAULT_LAYOUT = (): WidgetInstance[] => [
-  { id: uid(), type: "kpi-total",        span: 1 },
-  { id: uid(), type: "kpi-allowed",      span: 1 },
-  { id: uid(), type: "kpi-blocked",      span: 1 },
-  { id: uid(), type: "kpi-threats",      span: 1 },
-  { id: uid(), type: "status-sites",     span: 1 },
-  { id: uid(), type: "status-roaming",   span: 1 },
-  { id: uid(), type: "status-users",     span: 1 },
-  { id: uid(), type: "status-relays",    span: 1 },
+  { id: uid(), type: "kpi-total", span: 1 },
+  { id: uid(), type: "kpi-allowed", span: 1 },
+  { id: uid(), type: "kpi-blocked", span: 1 },
+  { id: uid(), type: "kpi-threats", span: 1 },
+  { id: uid(), type: "status-sites", span: 1 },
+  { id: uid(), type: "status-roaming", span: 1 },
+  { id: uid(), type: "status-users", span: 1 },
+  { id: uid(), type: "status-relays", span: 1 },
   { id: uid(), type: "request-activity", span: 4 },
-  { id: uid(), type: "cat-breakdown",    span: 2 },
-  { id: uid(), type: "top-domains",      span: 2 },
-  { id: uid(), type: "top-orgs",         span: 2 },
+  { id: uid(), type: "cat-breakdown", span: 2 },
+  { id: uid(), type: "top-domains", span: 2 },
+  { id: uid(), type: "top-orgs", span: 2 },
 ];
 
 // Keep only widgets whose type still exists in the catalog. De-duplicate IDs.
@@ -503,10 +503,7 @@ export default function DashboardsPage() {
             cursor: "pointer",
           }}
         >
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: 16 }}
-          >
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
             add
           </span>
           Quick filters
@@ -522,20 +519,14 @@ export default function DashboardsPage() {
             cursor: "pointer",
           }}
         >
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: 16 }}
-          >
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
             filter_alt
           </span>
           Advanced filters
         </Box>
         <Box sx={{ flex: 1 }} />
         <IconButton size="small" color="secondary" aria-label="refresh">
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: 18 }}
-          >
+          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
             refresh
           </span>
         </IconButton>
@@ -552,7 +543,7 @@ export default function DashboardsPage() {
             gap: 2,
             px: 3.5,
             py: 2.5,
-            pb: 5,
+            pb: 10,
             alignItems: "stretch",
           }}
         >
@@ -560,7 +551,7 @@ export default function DashboardsPage() {
             <DashCard
               key={w.id}
               widget={w}
-              pad={20}
+              pad={2}
               cols={COLS}
               dragging={dragId === w.id}
               onRemove={() => setPendingDelete(w)}
@@ -571,17 +562,6 @@ export default function DashboardsPage() {
           ))}
         </Box>
       )}
-
-      <Box
-        sx={{
-          textAlign: "center",
-          pb: 3,
-          fontSize: 14,
-          color: "text.disabled",
-        }}
-      >
-        Based on UTC −04:00
-      </Box>
 
       {/* Slide-out add content panel */}
       <AddPanel
@@ -616,8 +596,7 @@ export default function DashboardsPage() {
           <Box component="b" sx={{ color: "text.primary" }}>
             {(pendingDelete && CATALOG_BY_TYPE[pendingDelete.type]?.name) || ""}
           </Box>{" "}
-          will be removed from this dashboard. You can add it back any time
-          from{" "}
+          will be removed from this dashboard. You can add it back any time from{" "}
           <Box component="b" sx={{ color: "text.primary" }}>
             Add content
           </Box>
@@ -645,8 +624,8 @@ export default function DashboardsPage() {
           <Box component="b" sx={{ color: "text.primary" }}>
             {name}
           </Box>{" "}
-          and all of its widgets will be permanently deleted. This can&apos;t
-          be undone.
+          and all of its widgets will be permanently deleted. This can&apos;t be
+          undone.
         </Typography>
       </Modal>
 
@@ -674,4 +653,3 @@ export default function DashboardsPage() {
     </Box>
   );
 }
-
