@@ -48,11 +48,11 @@ const POPOVER_MIN_WIDTH = 660;
 
 // Format used in the read-only anchor TextField (what the user sees when
 // the popover is closed).
-const ANCHOR_DISPLAY_FORMAT = "MMM d, yyyy h:mm:ss a";
+const ANCHOR_DISPLAY_FORMAT = "MMM d, yyyy h:mm a";
 
 // Format used inside the popover by the editable Start / End TimeFields
 // (time-only; the date portion is selected from the calendar below).
-const STEPPER_TIME_FORMAT = "h:mm:ss a";
+const STEPPER_TIME_FORMAT = "h:mm a";
 
 // Formats we try when parsing text pasted into a TimeField. Listed
 // from most-specific to least so a more precise match wins first.
@@ -225,8 +225,7 @@ export function CustomDateTimeRangePicker({
 
   // Leftmost month after pressing the back arrow once.
   const prevDisabledOverride =
-    minDate !== undefined &&
-    endOfMonth(subMonths(visibleMonth, 2)) < minDate;
+    minDate !== undefined && endOfMonth(subMonths(visibleMonth, 2)) < minDate;
 
   const openPicker = () => {
     setDraftStart(currentValue[0] ?? null);
@@ -272,6 +271,21 @@ export function CustomDateTimeRangePicker({
     setDraftEnd(newEnd ? withTimeOf(newEnd, draftEnd) : null);
   };
 
+  // The DateRangeCalendar treats any value change as a potential date
+  // change and may re-position its visible months. Feeding it values
+  // normalized to start-of-day means a time-only edit (the steppers) no
+  // longer alters what it sees as the value, so the calendar stays put.
+  const startKey = draftStart ? startOfDay(draftStart).getTime() : 0;
+  const endKey = draftEnd ? startOfDay(draftEnd).getTime() : 0;
+  const calendarValue = useMemo<DateRange<Date>>(
+    () => [
+      draftStart ? startOfDay(draftStart) : null,
+      draftEnd ? startOfDay(draftEnd) : null,
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [startKey, endKey],
+  );
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <TextField
@@ -306,8 +320,27 @@ export function CustomDateTimeRangePicker({
         <ClickAwayListener onClickAway={() => open && handleCancel()}>
           <Paper
             elevation={8}
-            sx={{ p: 0, mt: 1, borderRadius: 1, minWidth: POPOVER_MIN_WIDTH }}
+            sx={{ p: 0, borderRadius: 1, minWidth: POPOVER_MIN_WIDTH }}
           >
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <DateRangeCalendar
+                key={resetKey}
+                value={calendarValue}
+                onChange={handleRangeChange}
+                onMonthChange={setVisibleMonth}
+                calendars={2}
+                minDate={minDate}
+                maxDate={maxDate}
+                currentMonthCalendarPosition={2}
+                disableAutoMonthSwitching
+                slotProps={
+                  prevDisabledOverride
+                    ? { previousIconButton: { disabled: true } }
+                    : undefined
+                }
+              />
+            </Box>
+
             <Box
               sx={{
                 display: "flex",
@@ -315,7 +348,7 @@ export function CustomDateTimeRangePicker({
                 gap: 2,
                 py: 2,
                 px: 2,
-                borderBottom: "1px solid",
+                borderTop: "1px solid",
                 borderColor: "divider",
               }}
             >
@@ -336,25 +369,6 @@ export function CustomDateTimeRangePicker({
                 label="End time"
                 value={draftEnd}
                 onChange={setDraftEnd}
-              />
-            </Box>
-
-            <Box sx={{ display: "flex", justifyContent: "center" }}>
-              <DateRangeCalendar
-                key={resetKey}
-                value={[draftStart, draftEnd]}
-                onChange={handleRangeChange}
-                onMonthChange={setVisibleMonth}
-                calendars={2}
-                minDate={minDate}
-                maxDate={maxDate}
-                currentMonthCalendarPosition={2}
-                disableAutoMonthSwitching
-                slotProps={
-                  prevDisabledOverride
-                    ? { previousIconButton: { disabled: true } }
-                    : undefined
-                }
               />
             </Box>
 
