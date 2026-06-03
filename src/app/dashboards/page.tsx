@@ -6,11 +6,14 @@
 // layout persists in localStorage.
 
 import {
+  Alert,
   Box,
   Button,
   ClickAwayListener,
+  IconButton,
   Menu,
   MenuItem,
+  Snackbar,
   TextField,
   Typography,
 } from "@mui/material";
@@ -195,6 +198,7 @@ export default function DashboardsPage() {
   const [switcherAnchor, setSwitcherAnchor] = useState<HTMLElement | null>(
     null,
   );
+  const [toast, setToast] = useState<string | null>(null);
 
   // Persist name + widgets.
   useEffect(() => {
@@ -212,6 +216,7 @@ export default function DashboardsPage() {
       ...ws,
       { id: uid(), type, span: clampSpan(def.span), note: "" },
     ]);
+    setToast(`${def.name} added`);
   };
   const removeWidget = (id: string) =>
     setWidgets((ws) => ws.filter((w) => w.id !== id));
@@ -516,7 +521,7 @@ export default function DashboardsPage() {
           </span>
           Quick filters
         </Box>
-        <Box sx={{ width: 1, height: 16, bgcolor: "divider" }} />
+        <Box sx={{ width: "1px", height: 16, bgcolor: "divider" }} />
         <Box
           sx={{
             display: "inline-flex",
@@ -536,23 +541,14 @@ export default function DashboardsPage() {
           Advanced filters
         </Box>
         <Box sx={{ flex: 1 }} />
-        <Box sx={{ color: "text.disabled" }}>
+        <IconButton size="small" color="secondary" aria-label="refresh">
           <span
             className="material-symbols-outlined"
-            style={{ fontSize: 16, verticalAlign: "middle" }}
+            style={{ fontSize: 18 }}
           >
             refresh
           </span>
-        </Box>
-        <Box sx={{ color: "text.disabled" }}>
-          Assigned:{" "}
-          <Box
-            component="span"
-            sx={{ color: "text.secondary", fontWeight: 500 }}
-          >
-            Everyone can edit
-          </Box>
-        </Box>
+        </IconButton>
       </Box>
 
       {/* Widget grid / empty state */}
@@ -663,6 +659,28 @@ export default function DashboardsPage() {
           be undone.
         </Typography>
       </Modal>
+
+      {/* Add/remove toast */}
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={3000}
+        onClose={() => setToast(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          severity="success"
+          variant="standard"
+          onClose={() => setToast(null)}
+          sx={{
+            alignItems: "center",
+            "& .MuiAlert-icon": { alignSelf: "center", py: 0 },
+            "& .MuiAlert-message": { py: 0 },
+            "& .MuiAlert-action": { alignSelf: "center", py: 0, pt: 0 },
+          }}
+        >
+          {toast}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

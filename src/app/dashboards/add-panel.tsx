@@ -1,11 +1,12 @@
 // Slide-out "Add content" drawer. Categorized list of all widgets in the
 // catalog with a search box and an "already added" count badge.
 
+import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Chip,
   InputAdornment,
-  OutlinedInput,
+  TextField,
   Typography,
 } from "@mui/material";
 import { useState } from "react";
@@ -38,27 +39,33 @@ export function AddPanel({
     (w.name + " " + w.desc).toLowerCase().includes(q.toLowerCase());
 
   return (
-    <Drawer open={open} onClose={onClose} width={380} title="Add content">
-      <Typography variant="body2" sx={{ color: "text.disabled", mb: 1 }}>
+    <Drawer open={open} onClose={onClose} width={380}>
+      <Typography
+        variant="cardTitle"
+        component="h2"
+        sx={{ color: "text.primary", mb: 0.5 }}
+      >
+        Add content
+      </Typography>
+      <Typography variant="body2" sx={{ color: "text.primary", mb: 1 }}>
         Pick a widget to add to your dashboard
       </Typography>
 
-      <OutlinedInput
+      <TextField
+        size="small"
         fullWidth
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Search widgets"
-        startAdornment={
-          <InputAdornment position="start">
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 18, color: "var(--dnsf-palette-text-disabled)" }}
-            >
-              search
-            </span>
-          </InputAdornment>
-        }
-        sx={{ bgcolor: "background.default" }}
+        placeholder="Search..."
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          },
+        }}
       />
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2.25 }}>
@@ -70,14 +77,8 @@ export function AddPanel({
           return (
             <Box key={cat}>
               <Typography
-                sx={{
-                  fontSize: 14,
-                  fontWeight: 600,
-                  letterSpacing: "0.6px",
-                  textTransform: "uppercase",
-                  color: "text.disabled",
-                  mb: 1,
-                }}
+                variant="overline"
+                sx={{ color: "text.secondary", mb: 1, display: "block" }}
               >
                 {cat}
               </Typography>

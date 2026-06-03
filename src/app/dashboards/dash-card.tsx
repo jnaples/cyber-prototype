@@ -6,6 +6,7 @@
 // - Bottom-right dotted "gripper" resizes the card 1..6 columns by dragging.
 // - Hover gives a primary-blue outline and elevated shadow.
 
+import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import { Box, IconButton, Paper, Typography, useTheme } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 
@@ -135,13 +136,11 @@ export function DashCard({
         gridColumn: `span ${clampSpan(widget.span, cols)}`,
         position: "relative",
         borderRadius: 1,
-        border: "1px solid",
-        borderColor: "divider",
         display: "flex",
         flexDirection: "column",
         opacity: dragging ? 0.55 : 1,
         transform: dragging ? "scale(1.01)" : "none",
-        outline: active ? "2px solid" : "none",
+        outline: active ? "1px solid" : "none",
         outlineColor: active ? "primary.main" : undefined,
         outlineOffset: "1px",
         cursor: dragging ? "grabbing" : hover ? "grab" : "default",
@@ -157,37 +156,21 @@ export function DashCard({
     >
       {/* hover toolbar (top-right) */}
       {active && (
-        <Paper
+        <IconButton
           className="dash-toolbar"
-          elevation={2}
+          size="small"
+          onClick={onRemove}
+          title="Remove"
           sx={{
             position: "absolute",
             top: 6,
             right: 6,
             zIndex: 7,
-            display: "flex",
-            alignItems: "center",
-            gap: 0.5,
-            borderRadius: 1,
-            p: "3px",
-            border: "1px solid",
-            borderColor: "divider",
+            color: "error.main",
           }}
         >
-          <IconButton
-            size="small"
-            onClick={onRemove}
-            title="Remove"
-            sx={{ color: "error.main", width: 28, height: 28 }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16 }}
-            >
-              delete
-            </span>
-          </IconButton>
-        </Paper>
+          <DeleteForeverOutlinedIcon fontSize="small" />
+        </IconButton>
       )}
 
       {!headerless && (
@@ -205,7 +188,7 @@ export function DashCard({
               sx={{
                 fontWeight: 600,
                 fontSize: 15,
-                color: "text.secondary",
+                color: "text.primary",
               }}
             >
               {def?.name ?? widget.type}
