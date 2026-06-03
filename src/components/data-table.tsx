@@ -37,7 +37,7 @@ import {
 } from "@mui/x-data-grid";
 import React, { useState } from "react";
 
-const DEFAULT_PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
+const DEFAULT_PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 // ---------------------------------------------------------------------------
 // Internal sub-components (not exported)
@@ -76,7 +76,12 @@ function CustomPagination({
         <Select
           size="small"
           value={pageSize}
-          onChange={(e) => apiRef.current.setPageSize(Number(e.target.value))}
+          onChange={(e) =>
+            apiRef.current?.setPaginationModel({
+              pageSize: Number(e.target.value),
+              page: 0,
+            })
+          }
           sx={{
             minWidth: 70,
             "& .MuiOutlinedInput-notchedOutline": {
@@ -1023,6 +1028,8 @@ export function DataTable({
             rows={filteredRows}
             columns={processedColumns}
             density={density}
+            pagination
+            paginationMode="client"
             initialState={{
               pagination: {
                 paginationModel: { pageSize: initialPageSize },
