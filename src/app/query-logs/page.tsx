@@ -567,6 +567,7 @@ const COLUMN_VIEW_PRESETS: Record<string, string[] | null> = {
     "resolvedIp",
     "queryType",
     "lookupType",
+    "actions",
   ],
 };
 
