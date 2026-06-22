@@ -59,7 +59,7 @@ function DashRow({
     <Box
       role="button"
       onClick={() => onPick(name)}
-      sx={{
+      sx={(theme) => ({
         display: "flex",
         alignItems: "center",
         gap: 1.25,
@@ -76,7 +76,11 @@ function DashRow({
         "&:hover": {
           bgcolor: selected ? "rgba(53,39,253,.08)" : "background.default",
         },
-      }}
+        ...(selected &&
+          theme.applyStyles("dark", {
+            color: theme.vars.palette.primary.light,
+          })),
+      })}
     >
       <span
         className="material-symbols-outlined"
@@ -99,7 +103,14 @@ function DashRow({
         size="small"
         onClick={(e) => onToggleFav(e, name)}
         title={isFav ? "Unfavorite" : "Add to favorites"}
-        sx={{ p: 0.25, color: isFav ? "warning.main" : "text.disabled" }}
+        sx={(theme) => ({
+          p: 0.25,
+          color: isFav ? "warning.main" : "text.disabled",
+          ...(isFav &&
+            theme.applyStyles("dark", {
+              color: theme.vars.palette.primary.light,
+            })),
+        })}
       >
         <span
           className="material-symbols-outlined"
@@ -250,7 +261,7 @@ export function DashSwitcher({
             <Box
               role="button"
               onClick={onCreate}
-              sx={{
+              sx={(theme) => ({
                 display: "flex",
                 alignItems: "center",
                 gap: 1.25,
@@ -264,7 +275,10 @@ export function DashSwitcher({
                 fontWeight: 600,
                 color: "primary.main",
                 "&:hover": { bgcolor: "rgba(53,39,253,.06)" },
-              }}
+                ...theme.applyStyles("dark", {
+                  color: theme.vars.palette.primary.light,
+                }),
+              })}
             >
               <span
                 className="material-symbols-outlined"

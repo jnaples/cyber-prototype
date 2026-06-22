@@ -307,7 +307,7 @@ export default function DashboardsPage() {
           bgcolor: "background.paper",
           borderBottom: "1px solid",
           borderColor: "divider",
-          px: 3.5,
+          px: 3,
           display: "flex",
           alignItems: "center",
           gap: 1.75,
@@ -432,6 +432,15 @@ export default function DashboardsPage() {
             </span>
             Rename
           </MenuItem>
+          <MenuItem onClick={() => setActionsAnchor(null)}>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 16, marginRight: 8, opacity: 0.7 }}
+            >
+              share
+            </span>
+            Share
+          </MenuItem>
           <MenuItem
             onClick={() => {
               setActionsAnchor(null);
@@ -449,20 +458,6 @@ export default function DashboardsPage() {
           </MenuItem>
         </Menu>
 
-        <Button
-          variant="outlined"
-          color="secondary"
-          startIcon={
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16 }}
-            >
-              share
-            </span>
-          }
-        >
-          Share
-        </Button>
         <Button
           variant="contained"
           color="primary"
@@ -486,10 +481,9 @@ export default function DashboardsPage() {
           display: "flex",
           alignItems: "center",
           gap: 2.25,
-          px: 3.5,
-          py: 1.5,
-          borderBottom: "1px solid",
-          borderColor: "divider",
+          px: 2,
+          pt: 1.5,
+          mb: 2,
           fontSize: 14,
         }}
       >
@@ -541,8 +535,7 @@ export default function DashboardsPage() {
             display: "grid",
             gridTemplateColumns: `repeat(${COLS}, 1fr)`,
             gap: 2,
-            px: 3.5,
-            py: 2.5,
+            px: 2,
             pb: 10,
             alignItems: "stretch",
           }}
