@@ -216,7 +216,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           {isExpanded ? (
             <Icon name="chevron_left" size={20} />
           ) : (
-            <Icon name="chevron_right" size={24} />
+            <Icon name="chevron_right" size={20} />
           )}
         </button>
 
