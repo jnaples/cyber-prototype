@@ -181,10 +181,27 @@ function OrderSummary({ quantities }: { quantities: Record<string, number> }) {
     setPromoCode("");
   };
 
-  const lineItems = PLANS.map((plan) => {
-    const added = quantities[plan.name] - baselineFor(plan);
-    return { plan, added, amount: added * plan.price };
-  }).filter((item) => item.added > 0);
+  // Plans and stepper add-ons are both billable: a line item per item whose
+  // quantity has been raised above its baseline.
+  const billables = [
+    ...PLANS.map((plan) => ({
+      name: plan.name,
+      price: plan.price,
+      baseline: baselineFor(plan),
+    })),
+    ...STEPPER_FEATURES.map((feature) => ({
+      name: feature.name,
+      price: feature.unitPrice,
+      baseline: feature.baseline,
+    })),
+  ];
+
+  const lineItems = billables
+    .map((item) => {
+      const added = (quantities[item.name] ?? item.baseline) - item.baseline;
+      return { ...item, added, amount: added * item.price };
+    })
+    .filter((item) => item.added > 0);
 
   const hasChanges = lineItems.length > 0;
 
@@ -217,8 +234,10 @@ function OrderSummary({ quantities }: { quantities: Record<string, number> }) {
   );
   const proratedToday = (netAnnualAdded * daysRemaining) / DAYS_IN_YEAR;
   const newAnnualRecurring =
-    PLANS.reduce((sum, plan) => sum + quantities[plan.name] * plan.price, 0) -
-    discountAnnual;
+    billables.reduce(
+      (sum, item) => sum + (quantities[item.name] ?? item.baseline) * item.price,
+      0,
+    ) - discountAnnual;
 
   return (
     <Box
@@ -265,11 +284,11 @@ function OrderSummary({ quantities }: { quantities: Record<string, number> }) {
 
       {/* Added line items */}
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        {lineItems.map(({ plan, added, amount }) => (
+        {lineItems.map(({ name, price, added, amount }) => (
           <SummaryLine
-            key={plan.name}
-            label={`${plan.name} +${added.toLocaleString()} licenses`}
-            caption={`${usd(plan.price)} per license / year`}
+            key={name}
+            label={`${name} +${added.toLocaleString()} licenses`}
+            caption={`${usd(price)} per license / year`}
             value={`${usd(amount)}/year`}
           />
         ))}
@@ -376,6 +395,10 @@ type Feature = {
   seats?: string;
   status?: "active" | "enterprise";
   action: "stepper" | "add" | "contact";
+  /** Numeric per-unit price and current count — required for stepper add-ons
+   * so they can feed the order summary. */
+  unitPrice?: number;
+  baseline?: number;
 };
 
 const FEATURES: Feature[] = [
@@ -389,6 +412,8 @@ const FEATURES: Feature[] = [
     unit: "per license / year",
     seats: "120 of 250 seats",
     action: "stepper",
+    unitPrice: 9,
+    baseline: 50,
   },
   {
     name: "Data Export",
@@ -436,6 +461,14 @@ const FEATURES: Feature[] = [
     action: "contact",
   },
 ];
+
+// Stepper add-ons (e.g. SecureTransit) are billable like plans — they feed the
+// order summary's line items and recurring total.
+type BillableFeature = Feature & { unitPrice: number; baseline: number };
+const STEPPER_FEATURES = FEATURES.filter(
+  (f): f is BillableFeature =>
+    f.action === "stepper" && f.unitPrice != null && f.baseline != null,
+);
 
 /** Status chip using the matching alert (success/warning) color tokens. */
 function StatusChip({ status }: { status: "active" | "enterprise" }) {
@@ -488,9 +521,15 @@ function PriceLine({ feature }: { feature: Feature }) {
   );
 }
 
-function FeatureRow({ feature }: { feature: Feature }) {
-  const [quantity, setQuantity] = useState(50);
-
+function FeatureRow({
+  feature,
+  quantity,
+  onQuantityChange,
+}: {
+  feature: Feature;
+  quantity?: number;
+  onQuantityChange?: (value: number) => void;
+}) {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Box sx={{ display: "flex", gap: 5, alignItems: "flex-start" }}>
@@ -527,8 +566,9 @@ function FeatureRow({ feature }: { feature: Feature }) {
 
         {feature.action === "stepper" && (
           <QuantityStepper
-            value={quantity}
-            onChange={setQuantity}
+            value={quantity ?? feature.baseline ?? 0}
+            min={feature.baseline ?? 0}
+            onChange={onQuantityChange ?? (() => {})}
             ariaLabel={`${feature.name} quantity`}
             sx={{ width: 126, flexShrink: 0 }}
           />
@@ -554,7 +594,13 @@ function FeatureRow({ feature }: { feature: Feature }) {
   );
 }
 
-function FeaturesCard() {
+function FeaturesCard({
+  quantities,
+  onQuantityChange,
+}: {
+  quantities: Record<string, number>;
+  onQuantityChange: (name: string, value: number) => void;
+}) {
   return (
     <Card>
       <CardHeader title="Features" />
@@ -563,7 +609,13 @@ function FeaturesCard() {
           <Fragment key={feature.name}>
             {index > 0 && <Divider />}
             <Box sx={{ pt: 3, pb: index === FEATURES.length - 1 ? 0 : 3 }}>
-              <FeatureRow feature={feature} />
+              <FeatureRow
+                feature={feature}
+                quantity={quantities[feature.name]}
+                onQuantityChange={(value) =>
+                  onQuantityChange(feature.name, value)
+                }
+              />
             </Box>
           </Fragment>
         ))}
@@ -577,9 +629,12 @@ function FeaturesCard() {
 // ---------------------------------------------------------------------------
 
 export default function PlansLicensesPage() {
-  const [quantities, setQuantities] = useState<Record<string, number>>(() =>
-    Object.fromEntries(PLANS.map((plan) => [plan.name, plan.initialQuantity])),
-  );
+  const [quantities, setQuantities] = useState<Record<string, number>>(() => ({
+    ...Object.fromEntries(
+      PLANS.map((plan) => [plan.name, plan.initialQuantity]),
+    ),
+    ...Object.fromEntries(STEPPER_FEATURES.map((f) => [f.name, f.baseline])),
+  }));
 
   const setQuantity = (name: string, value: number) =>
     setQuantities((prev) => ({ ...prev, [name]: value }));
@@ -629,7 +684,10 @@ export default function PlansLicensesPage() {
           </CardContent>
         </Card>
 
-        <FeaturesCard />
+        <FeaturesCard
+          quantities={quantities}
+          onQuantityChange={setQuantity}
+        />
       </Box>
 
       <Card sx={{ position: "sticky", top: 0 }}>
