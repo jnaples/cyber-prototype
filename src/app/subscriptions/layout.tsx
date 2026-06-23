@@ -1,4 +1,6 @@
-import { Chip, Divider, Tab, Tabs, Typography } from "@mui/material";
+import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
+import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
+import { Tab, Tabs } from "@mui/material";
 import Box from "@mui/material/Box";
 import type { Theme } from "@mui/material/styles";
 import React from "react";
@@ -12,11 +14,15 @@ import { PageShell } from "@/components/page-shell";
 // ---------------------------------------------------------------------------
 
 const TABS = [
-  { label: "Sites", icon: "location_on", path: "/deployments/sites" },
   {
-    label: "Roaming Clients",
-    icon: "devices",
-    path: "/deployments/roaming-clients",
+    label: "Billing",
+    icon: <CreditCardOutlinedIcon />,
+    path: "/subscriptions/billing",
+  },
+  {
+    label: "Plans & Licenses",
+    icon: <LayersOutlinedIcon />,
+    path: "/subscriptions/plans-licenses",
   },
 ] as const;
 
@@ -24,7 +30,7 @@ const TABS = [
 // Layout component
 // ---------------------------------------------------------------------------
 
-export default function DeploymentsLayout() {
+export default function SubscriptionsLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
@@ -53,40 +59,9 @@ export default function DeploymentsLayout() {
 
   return (
     <PageShell
+      maxWidth="lg"
       header={
-        <PageHeader
-          title="Deployments"
-          leftSlot={
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <Typography variant="body2" color="text.secondary">
-                All Organizations
-              </Typography>
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{ borderColor: "divider", mx: "8px" }}
-              />
-              <Chip
-                label="Managing 90 Organizations"
-                onClick={() => {}}
-                sx={{ borderRadius: "8px", fontSize: "14px" }}
-                deleteIcon={
-                  <span
-                    className="material-symbols-outlined"
-                    style={{
-                      fontSize: 18,
-                      color: "var(--mui-palette-text-primary)",
-                    }}
-                  >
-                    filter_list
-                  </span>
-                }
-                onDelete={() => {}}
-                size="small"
-              />
-            </div>
-          }
-        >
+        <PageHeader title="Subscriptions">
           <Box
             sx={{
               mb: -2,
@@ -111,21 +86,14 @@ export default function DeploymentsLayout() {
             <Tabs
               value={tabValue}
               onChange={handleTabChange}
-              aria-label="deployments tabs"
+              aria-label="subscriptions tabs"
               sx={{ px: 3 }}
             >
               {TABS.map((tab) => (
                 <Tab
                   key={tab.path}
                   label={tab.label}
-                  icon={
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: 20 }}
-                    >
-                      {tab.icon}
-                    </span>
-                  }
+                  icon={tab.icon}
                   sx={selectedTabSx}
                 />
               ))}

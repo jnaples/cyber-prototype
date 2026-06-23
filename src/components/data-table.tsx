@@ -1103,6 +1103,11 @@ export function DataTable({
               "& .MuiDataGrid-footerContainer": {
                 borderTop: "1px solid #E0E0E0 !important",
               },
+              // Hide the default "N rows selected" label in the footer; bulk
+              // selection is surfaced via the bulk-actions bar instead.
+              "& .MuiDataGrid-selectedRowCount": {
+                display: "none",
+              },
               '[data-mui-color-scheme="dark"] & .MuiDataGrid-footerContainer': {
                 borderTop: "1px solid var(--dnsf-palette-divider) !important",
               },

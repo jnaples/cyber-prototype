@@ -175,18 +175,13 @@ function RowActionsCell() {
       <IconButton
         size="small"
         aria-label="edit"
-        sx={{ color: "text.primary" }}
         onClick={() => setEditOpen(true)}
       >
         <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
           edit
         </span>
       </IconButton>
-      <IconButton
-        size="small"
-        aria-label="more options"
-        sx={{ color: "text.primary" }}
-      >
+      <IconButton size="small" aria-label="more options">
         <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
           more_horiz
         </span>

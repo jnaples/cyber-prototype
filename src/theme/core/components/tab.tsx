@@ -48,10 +48,11 @@ const MuiTab: Components<Theme>["MuiTab"] = {
       justifyContent: "center",
       marginRight: 0,
       color: "inherit",
-      // ensure svg inside respects the size and inherit color
+      // Tab icons are always 20px — no need to set fontSize per-instance.
       "& .MuiSvgIcon-root": {
         width: 20,
         height: 20,
+        fontSize: 20,
         color: "inherit",
       },
     }),
@@ -72,8 +73,9 @@ const MuiTabs: Components<Theme>["MuiTabs"] = {
       gap: theme.spacing(2),
     }),
     // ensure the inner list uses align-content: end
-    list: () => ({
+    list: ({ theme }) => ({
       alignContent: "flex-end",
+      gap: theme.spacing(2), // 16px gap between tabs
     }),
     indicator: ({ theme }) => ({
       // make the indicator sit inside the active tab at the very bottom

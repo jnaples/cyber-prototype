@@ -39,6 +39,7 @@ import type { CustomDateTimeRangePickerValue } from "@/components/custom-date-ti
 import { EmptyState } from "@/components/empty-state";
 import { Modal } from "@/components/modal";
 import { PageHeader } from "@/components/page-header";
+import { PageShell } from "@/components/page-shell";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 import {
@@ -132,7 +133,6 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
         size="small"
         aria-label="more options"
         onClick={(e) => setAnchorEl(e.currentTarget)}
-        sx={{ color: "text.primary" }}
       >
         <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
           more_horiz
@@ -792,539 +792,516 @@ export default function QueryLogsPage() {
     <InvestigateContext.Provider
       value={{ setDefaultView: handleDefaultViewChange }}
     >
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        flex: 1,
-        minWidth: 0,
-        minHeight: 0,
-        width: "100%",
-        height: "100%",
-        overflow: "hidden",
-      }}
-    >
-      <PageHeader title="Query Logs">
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            px: 3,
-          }}
-        >
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
-              gap: 2,
-            }}
-          >
-            <Autocomplete
-              size="small"
-              options={FILTER_OPTIONS.organization}
-              value={selectedOrg}
-              onChange={(_event, newValue) => setSelectedOrg(newValue)}
-              renderInput={(params) => (
-                <TextField {...params} placeholder="Select Organization" />
-              )}
-            />
-            <ArrowTooltip title={filtersDisabledTooltip}>
-              <Box
-                sx={{
-                  width: "100%",
-                  display: "flex",
-                  "& > *": { width: "100%" },
-                }}
-              >
-                <FormControl
-                  size="small"
-                  fullWidth
-                  disabled={filtersDisabled}
-                  sx={{
-                    position: "relative",
-                    "&:hover .select-clear, &:focus-within .select-clear": {
-                      visibility: "visible",
-                    },
-                  }}
-                >
-                  {selectedSites.length > 0 && (
-                    <IconButton
-                      size="small"
-                      className="select-clear"
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedSites([]);
-                      }}
-                      sx={{
-                        position: "absolute",
-                        right: 32,
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        visibility: "hidden",
-                        zIndex: 1,
-                      }}
-                    >
-                      <CancelIcon fontSize="small" />
-                    </IconButton>
-                  )}
-                  <Select
-                    multiple
-                    displayEmpty
-                    value={selectedSites}
-                    onChange={handleSitesChange}
-                    onClose={() => setSitesSearch("")}
-                    renderValue={(selected) => {
-                      if (selected.length === 0 || allSitesSelected) {
-                        return "All Sites";
-                      }
-                      if (selected.length === 1) return selected[0];
-                      return `${selected[0]} +${selected.length - 1}`;
-                    }}
-                    MenuProps={{
-                      autoFocus: false,
-                      slotProps: { paper: { sx: { maxHeight: 400 } } },
-                    }}
-                  >
-                    <ListSubheader sx={{ px: 2, py: 1 }}>
-                      <TextField
-                        size="small"
-                        autoFocus
-                        fullWidth
-                        placeholder="Search..."
-                        value={sitesSearch}
-                        onChange={(e) => setSitesSearch(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key !== "Escape") e.stopPropagation();
-                        }}
-                        slotProps={{
-                          input: {
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <SearchIcon fontSize="small" />
-                              </InputAdornment>
-                            ),
-                          },
-                        }}
-                      />
-                    </ListSubheader>
-                    <MenuItem value={SELECT_ALL_VALUE}>
-                      <Checkbox
-                        size="small"
-                        checked={allSitesSelected}
-                        indeterminate={someSitesSelected}
-                        sx={{ p: 0.5, mr: 1 }}
-                      />
-                      <ListItemText primary="Select all" />
-                    </MenuItem>
-                    <Divider />
-                    {filteredSites.map((name) => (
-                      <MenuItem key={name} value={name}>
-                        <Checkbox
-                          size="small"
-                          checked={selectedSites.includes(name)}
-                          sx={{ p: 0.5, mr: 1 }}
-                        />
-                        <ListItemText primary={name} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-            </ArrowTooltip>
-            <ArrowTooltip title={filtersDisabledTooltip}>
-              <Box
-                sx={{
-                  width: "100%",
-                  display: "flex",
-                  "& > *": { width: "100%" },
-                }}
-              >
-                <FormControl
-                  size="small"
-                  fullWidth
-                  disabled={filtersDisabled}
-                  sx={{
-                    position: "relative",
-                    "&:hover .select-clear, &:focus-within .select-clear": {
-                      visibility: "visible",
-                    },
-                  }}
-                >
-                  {selectedClients.length > 0 && (
-                    <IconButton
-                      size="small"
-                      className="select-clear"
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedClients([]);
-                      }}
-                      sx={{
-                        position: "absolute",
-                        right: 32,
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        visibility: "hidden",
-                        zIndex: 1,
-                      }}
-                    >
-                      <CancelIcon fontSize="small" />
-                    </IconButton>
-                  )}
-                  <Select
-                    multiple
-                    displayEmpty
-                    value={selectedClients}
-                    onChange={handleClientsChange}
-                    onClose={() => setClientsSearch("")}
-                    renderValue={(selected) => {
-                      if (selected.length === 0 || allSelected) {
-                        return "All Roaming Clients & Relays";
-                      }
-                      if (selected.length === 1) return selected[0];
-                      return `${selected[0]} +${selected.length - 1}`;
-                    }}
-                    MenuProps={{
-                      autoFocus: false,
-                      slotProps: { paper: { sx: { maxHeight: 400 } } },
-                    }}
-                  >
-                    <ListSubheader sx={{ px: 2, py: 1 }}>
-                      <TextField
-                        size="small"
-                        autoFocus
-                        fullWidth
-                        placeholder="Search..."
-                        value={clientsSearch}
-                        onChange={(e) => setClientsSearch(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key !== "Escape") e.stopPropagation();
-                        }}
-                        slotProps={{
-                          input: {
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <SearchIcon fontSize="small" />
-                              </InputAdornment>
-                            ),
-                          },
-                        }}
-                      />
-                    </ListSubheader>
-                    <MenuItem value={SELECT_ALL_VALUE}>
-                      <Checkbox
-                        size="small"
-                        checked={allSelected}
-                        indeterminate={someSelected}
-                        sx={{ p: 0.5, mr: 1 }}
-                      />
-                      <ListItemText primary="Select all" />
-                    </MenuItem>
-                    <Divider />
-                    {filteredRoamingClients.length > 0 && (
-                      <ListSubheader
-                        sx={{
-                          typography: "overline",
-                          lineHeight: 1.5,
-                          color: "text.secondary",
-                          pt: 1,
-                          position: "static",
-                        }}
-                      >
-                        Roaming Clients
-                      </ListSubheader>
-                    )}
-                    {filteredRoamingClients.map((name) => (
-                      <MenuItem key={name} value={name}>
-                        <Checkbox
-                          size="small"
-                          checked={selectedClients.includes(name)}
-                          sx={{ p: 0.5, mr: 1 }}
-                        />
-                        <ListItemText primary={name} />
-                      </MenuItem>
-                    ))}
-                    {filteredRoamingClients.length > 0 &&
-                      filteredRelays.length > 0 && <Divider />}
-                    {filteredRelays.length > 0 && (
-                      <ListSubheader
-                        sx={{
-                          typography: "overline",
-                          lineHeight: 1.5,
-                          color: "text.secondary",
-                          pt: 1,
-                          position: "static",
-                        }}
-                      >
-                        Relays
-                      </ListSubheader>
-                    )}
-                    {filteredRelays.map((name) => (
-                      <MenuItem key={name} value={name}>
-                        <Checkbox
-                          size="small"
-                          checked={selectedClients.includes(name)}
-                          sx={{ p: 0.5, mr: 1 }}
-                        />
-                        <ListItemText primary={name} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-            </ArrowTooltip>
-          </Box>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
-              gap: 2,
-            }}
-          >
-            <ArrowTooltip title={filtersDisabledTooltip}>
-              <Box
-                sx={{
-                  width: "100%",
-                  display: "flex",
-                  "& > *": { width: "100%" },
-                }}
-              >
-                <FormControl
-                  size="small"
-                  fullWidth
-                  disabled={filtersDisabled}
-                  sx={{
-                    position: "relative",
-                    "&:hover .select-clear, &:focus-within .select-clear": {
-                      visibility: "visible",
-                    },
-                  }}
-                >
-                  {selectedUsers.length > 0 && (
-                    <IconButton
-                      size="small"
-                      className="select-clear"
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedUsers([]);
-                      }}
-                      sx={{
-                        position: "absolute",
-                        right: 32,
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        visibility: "hidden",
-                        zIndex: 1,
-                      }}
-                    >
-                      <CancelIcon fontSize="small" />
-                    </IconButton>
-                  )}
-                  <Select
-                    multiple
-                    displayEmpty
-                    value={selectedUsers}
-                    onChange={handleUsersChange}
-                    onClose={() => setUsersSearch("")}
-                    renderValue={(selected) => {
-                      if (selected.length === 0 || allUsersSelected) {
-                        return "All Users";
-                      }
-                      if (selected.length === 1) return selected[0];
-                      return `${selected[0]} +${selected.length - 1}`;
-                    }}
-                    MenuProps={{
-                      autoFocus: false,
-                      slotProps: { paper: { sx: { maxHeight: 400 } } },
-                    }}
-                  >
-                    <ListSubheader sx={{ px: 2, py: 1 }}>
-                      <TextField
-                        size="small"
-                        autoFocus
-                        fullWidth
-                        placeholder="Search..."
-                        value={usersSearch}
-                        onChange={(e) => setUsersSearch(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key !== "Escape") e.stopPropagation();
-                        }}
-                        slotProps={{
-                          input: {
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <SearchIcon fontSize="small" />
-                              </InputAdornment>
-                            ),
-                          },
-                        }}
-                      />
-                    </ListSubheader>
-                    <MenuItem value={SELECT_ALL_VALUE}>
-                      <Checkbox
-                        size="small"
-                        checked={allUsersSelected}
-                        indeterminate={someUsersSelected}
-                        sx={{ p: 0.5, mr: 1 }}
-                      />
-                      <ListItemText primary="Select all" />
-                    </MenuItem>
-                    <Divider />
-                    {filteredUsers.map((name) => (
-                      <MenuItem key={name} value={name}>
-                        <Checkbox
-                          size="small"
-                          checked={selectedUsers.includes(name)}
-                          sx={{ p: 0.5, mr: 1 }}
-                        />
-                        <ListItemText primary={name} />
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-            </ArrowTooltip>
-            <ArrowTooltip title={filtersDisabledTooltip}>
-              <Box
-                sx={{
-                  width: "100%",
-                  display: "flex",
-                  "& > *": { width: "100%" },
-                }}
-              >
-                {timeRange === CUSTOM_TIME_RANGE ? (
-                  <CustomDateTimeRangePicker
-                    disabled={filtersDisabled}
-                    value={dateRange}
-                    onChange={setDateRange}
-                    minDate={startOfDay(subDays(new Date(), 8))}
-                    maxDate={endOfDay(new Date())}
-                    defaultOpen
-                    onCancel={handleCustomCancel}
-                  />
-                ) : (
-                  <TextField
-                    select
-                    size="small"
-                    value={timeRange}
-                    onChange={(e) =>
-                      handleTimeRangeChange(e.target.value as TimeRangeValue)
-                    }
-                    disabled={filtersDisabled}
-                    slotProps={{
-                      input: {
-                        startAdornment: (
-                          <InputAdornment position="start">
-                            <span
-                              className="material-symbols-outlined"
-                              style={{ fontSize: 20 }}
-                            >
-                              date_range
-                            </span>
-                          </InputAdornment>
-                        ),
-                      },
-                    }}
-                  >
-                    {TIME_RANGE_GROUPS.flatMap((group, groupIdx) => [
-                      ...group.map((preset) => (
-                        <MenuItem key={preset} value={preset}>
-                          {preset}
-                        </MenuItem>
-                      )),
-                      <Divider key={`divider-${groupIdx}`} />,
-                    ])}
-                    <MenuItem value={CUSTOM_TIME_RANGE}>
-                      {CUSTOM_TIME_RANGE}
-                    </MenuItem>
-                  </TextField>
-                )}
-              </Box>
-            </ArrowTooltip>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <ArrowTooltip
-              title={
-                isCurrentApplied
-                  ? "Change your selection to apply a new filter."
-                  : ""
-              }
+      <PageShell
+        header={
+          <PageHeader title="Query Logs">
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+                px: 3,
+              }}
             >
-              <span>
-                <Button
-                  variant="contained"
-                  color="primary"
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
+                  gap: 2,
+                }}
+              >
+                <Autocomplete
                   size="small"
-                  disabled={!selectedOrg || isFetching || isCurrentApplied}
-                  onClick={handleApply}
-                >
-                  Apply
-                </Button>
-              </span>
-            </ArrowTooltip>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              {appliedOrg && (
-                <Button
-                  variant="text"
-                  color="error"
-                  size="small"
-                  onClick={handleClear}
-                  startIcon={
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: 16 }}
+                  options={FILTER_OPTIONS.organization}
+                  value={selectedOrg}
+                  onChange={(_event, newValue) => setSelectedOrg(newValue)}
+                  renderInput={(params) => (
+                    <TextField {...params} placeholder="Select Organization" />
+                  )}
+                />
+                <ArrowTooltip title={filtersDisabledTooltip}>
+                  <Box
+                    sx={{
+                      width: "100%",
+                      display: "flex",
+                      "& > *": { width: "100%" },
+                    }}
+                  >
+                    <FormControl
+                      size="small"
+                      fullWidth
+                      disabled={filtersDisabled}
+                      sx={{
+                        position: "relative",
+                        "&:hover .select-clear, &:focus-within .select-clear": {
+                          visibility: "visible",
+                        },
+                      }}
                     >
-                      close
-                    </span>
+                      {selectedSites.length > 0 && (
+                        <IconButton
+                          size="small"
+                          className="select-clear"
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedSites([]);
+                          }}
+                          sx={{
+                            position: "absolute",
+                            right: 32,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            visibility: "hidden",
+                            zIndex: 1,
+                          }}
+                        >
+                          <CancelIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                      <Select
+                        multiple
+                        displayEmpty
+                        value={selectedSites}
+                        onChange={handleSitesChange}
+                        onClose={() => setSitesSearch("")}
+                        renderValue={(selected) => {
+                          if (selected.length === 0 || allSitesSelected) {
+                            return "All Sites";
+                          }
+                          if (selected.length === 1) return selected[0];
+                          return `${selected[0]} +${selected.length - 1}`;
+                        }}
+                        MenuProps={{
+                          autoFocus: false,
+                          slotProps: { paper: { sx: { maxHeight: 400 } } },
+                        }}
+                      >
+                        <ListSubheader sx={{ px: 2, py: 1 }}>
+                          <TextField
+                            size="small"
+                            autoFocus
+                            fullWidth
+                            placeholder="Search..."
+                            value={sitesSearch}
+                            onChange={(e) => setSitesSearch(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key !== "Escape") e.stopPropagation();
+                            }}
+                            slotProps={{
+                              input: {
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <SearchIcon fontSize="small" />
+                                  </InputAdornment>
+                                ),
+                              },
+                            }}
+                          />
+                        </ListSubheader>
+                        <MenuItem value={SELECT_ALL_VALUE}>
+                          <Checkbox
+                            size="small"
+                            checked={allSitesSelected}
+                            indeterminate={someSitesSelected}
+                            sx={{ p: 0.5, mr: 1 }}
+                          />
+                          <ListItemText primary="Select all" />
+                        </MenuItem>
+                        <Divider />
+                        {filteredSites.map((name) => (
+                          <MenuItem key={name} value={name}>
+                            <Checkbox
+                              size="small"
+                              checked={selectedSites.includes(name)}
+                              sx={{ p: 0.5, mr: 1 }}
+                            />
+                            <ListItemText primary={name} />
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                </ArrowTooltip>
+                <ArrowTooltip title={filtersDisabledTooltip}>
+                  <Box
+                    sx={{
+                      width: "100%",
+                      display: "flex",
+                      "& > *": { width: "100%" },
+                    }}
+                  >
+                    <FormControl
+                      size="small"
+                      fullWidth
+                      disabled={filtersDisabled}
+                      sx={{
+                        position: "relative",
+                        "&:hover .select-clear, &:focus-within .select-clear": {
+                          visibility: "visible",
+                        },
+                      }}
+                    >
+                      {selectedClients.length > 0 && (
+                        <IconButton
+                          size="small"
+                          className="select-clear"
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedClients([]);
+                          }}
+                          sx={{
+                            position: "absolute",
+                            right: 32,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            visibility: "hidden",
+                            zIndex: 1,
+                          }}
+                        >
+                          <CancelIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                      <Select
+                        multiple
+                        displayEmpty
+                        value={selectedClients}
+                        onChange={handleClientsChange}
+                        onClose={() => setClientsSearch("")}
+                        renderValue={(selected) => {
+                          if (selected.length === 0 || allSelected) {
+                            return "All Roaming Clients & Relays";
+                          }
+                          if (selected.length === 1) return selected[0];
+                          return `${selected[0]} +${selected.length - 1}`;
+                        }}
+                        MenuProps={{
+                          autoFocus: false,
+                          slotProps: { paper: { sx: { maxHeight: 400 } } },
+                        }}
+                      >
+                        <ListSubheader sx={{ px: 2, py: 1 }}>
+                          <TextField
+                            size="small"
+                            autoFocus
+                            fullWidth
+                            placeholder="Search..."
+                            value={clientsSearch}
+                            onChange={(e) => setClientsSearch(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key !== "Escape") e.stopPropagation();
+                            }}
+                            slotProps={{
+                              input: {
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <SearchIcon fontSize="small" />
+                                  </InputAdornment>
+                                ),
+                              },
+                            }}
+                          />
+                        </ListSubheader>
+                        <MenuItem value={SELECT_ALL_VALUE}>
+                          <Checkbox
+                            size="small"
+                            checked={allSelected}
+                            indeterminate={someSelected}
+                            sx={{ p: 0.5, mr: 1 }}
+                          />
+                          <ListItemText primary="Select all" />
+                        </MenuItem>
+                        <Divider />
+                        {filteredRoamingClients.length > 0 && (
+                          <ListSubheader
+                            sx={{
+                              typography: "overline",
+                              lineHeight: 1.5,
+                              color: "text.secondary",
+                              pt: 1,
+                              position: "static",
+                            }}
+                          >
+                            Roaming Clients
+                          </ListSubheader>
+                        )}
+                        {filteredRoamingClients.map((name) => (
+                          <MenuItem key={name} value={name}>
+                            <Checkbox
+                              size="small"
+                              checked={selectedClients.includes(name)}
+                              sx={{ p: 0.5, mr: 1 }}
+                            />
+                            <ListItemText primary={name} />
+                          </MenuItem>
+                        ))}
+                        {filteredRoamingClients.length > 0 &&
+                          filteredRelays.length > 0 && <Divider />}
+                        {filteredRelays.length > 0 && (
+                          <ListSubheader
+                            sx={{
+                              typography: "overline",
+                              lineHeight: 1.5,
+                              color: "text.secondary",
+                              pt: 1,
+                              position: "static",
+                            }}
+                          >
+                            Relays
+                          </ListSubheader>
+                        )}
+                        {filteredRelays.map((name) => (
+                          <MenuItem key={name} value={name}>
+                            <Checkbox
+                              size="small"
+                              checked={selectedClients.includes(name)}
+                              sx={{ p: 0.5, mr: 1 }}
+                            />
+                            <ListItemText primary={name} />
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                </ArrowTooltip>
+              </Box>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
+                  gap: 2,
+                }}
+              >
+                <ArrowTooltip title={filtersDisabledTooltip}>
+                  <Box
+                    sx={{
+                      width: "100%",
+                      display: "flex",
+                      "& > *": { width: "100%" },
+                    }}
+                  >
+                    <FormControl
+                      size="small"
+                      fullWidth
+                      disabled={filtersDisabled}
+                      sx={{
+                        position: "relative",
+                        "&:hover .select-clear, &:focus-within .select-clear": {
+                          visibility: "visible",
+                        },
+                      }}
+                    >
+                      {selectedUsers.length > 0 && (
+                        <IconButton
+                          size="small"
+                          className="select-clear"
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedUsers([]);
+                          }}
+                          sx={{
+                            position: "absolute",
+                            right: 32,
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            visibility: "hidden",
+                            zIndex: 1,
+                          }}
+                        >
+                          <CancelIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                      <Select
+                        multiple
+                        displayEmpty
+                        value={selectedUsers}
+                        onChange={handleUsersChange}
+                        onClose={() => setUsersSearch("")}
+                        renderValue={(selected) => {
+                          if (selected.length === 0 || allUsersSelected) {
+                            return "All Users";
+                          }
+                          if (selected.length === 1) return selected[0];
+                          return `${selected[0]} +${selected.length - 1}`;
+                        }}
+                        MenuProps={{
+                          autoFocus: false,
+                          slotProps: { paper: { sx: { maxHeight: 400 } } },
+                        }}
+                      >
+                        <ListSubheader sx={{ px: 2, py: 1 }}>
+                          <TextField
+                            size="small"
+                            autoFocus
+                            fullWidth
+                            placeholder="Search..."
+                            value={usersSearch}
+                            onChange={(e) => setUsersSearch(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key !== "Escape") e.stopPropagation();
+                            }}
+                            slotProps={{
+                              input: {
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <SearchIcon fontSize="small" />
+                                  </InputAdornment>
+                                ),
+                              },
+                            }}
+                          />
+                        </ListSubheader>
+                        <MenuItem value={SELECT_ALL_VALUE}>
+                          <Checkbox
+                            size="small"
+                            checked={allUsersSelected}
+                            indeterminate={someUsersSelected}
+                            sx={{ p: 0.5, mr: 1 }}
+                          />
+                          <ListItemText primary="Select all" />
+                        </MenuItem>
+                        <Divider />
+                        {filteredUsers.map((name) => (
+                          <MenuItem key={name} value={name}>
+                            <Checkbox
+                              size="small"
+                              checked={selectedUsers.includes(name)}
+                              sx={{ p: 0.5, mr: 1 }}
+                            />
+                            <ListItemText primary={name} />
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+                </ArrowTooltip>
+                <ArrowTooltip title={filtersDisabledTooltip}>
+                  <Box
+                    sx={{
+                      width: "100%",
+                      display: "flex",
+                      "& > *": { width: "100%" },
+                    }}
+                  >
+                    {timeRange === CUSTOM_TIME_RANGE ? (
+                      <CustomDateTimeRangePicker
+                        disabled={filtersDisabled}
+                        value={dateRange}
+                        onChange={setDateRange}
+                        minDate={startOfDay(subDays(new Date(), 8))}
+                        maxDate={endOfDay(new Date())}
+                        defaultOpen
+                        onCancel={handleCustomCancel}
+                      />
+                    ) : (
+                      <TextField
+                        select
+                        size="small"
+                        value={timeRange}
+                        onChange={(e) =>
+                          handleTimeRangeChange(
+                            e.target.value as TimeRangeValue,
+                          )
+                        }
+                        disabled={filtersDisabled}
+                        slotProps={{
+                          input: {
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <span
+                                  className="material-symbols-outlined"
+                                  style={{ fontSize: 20 }}
+                                >
+                                  date_range
+                                </span>
+                              </InputAdornment>
+                            ),
+                          },
+                        }}
+                      >
+                        {TIME_RANGE_GROUPS.flatMap((group, groupIdx) => [
+                          ...group.map((preset) => (
+                            <MenuItem key={preset} value={preset}>
+                              {preset}
+                            </MenuItem>
+                          )),
+                          <Divider key={`divider-${groupIdx}`} />,
+                        ])}
+                        <MenuItem value={CUSTOM_TIME_RANGE}>
+                          {CUSTOM_TIME_RANGE}
+                        </MenuItem>
+                      </TextField>
+                    )}
+                  </Box>
+                </ArrowTooltip>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <ArrowTooltip
+                  title={
+                    isCurrentApplied
+                      ? "Change your selection to apply a new filter."
+                      : ""
                   }
                 >
-                  Clear
-                </Button>
-              )}
-              <Button
-                variant="outlined"
-                color="secondary"
-                size="small"
-                startIcon={
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: 16 }}
-                  >
-                    refresh
+                  <span>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      disabled={!selectedOrg || isFetching || isCurrentApplied}
+                      onClick={handleApply}
+                    >
+                      Apply
+                    </Button>
                   </span>
-                }
-              >
-                Refresh
-              </Button>
+                </ArrowTooltip>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  {appliedOrg && (
+                    <Button
+                      variant="text"
+                      color="error"
+                      size="small"
+                      onClick={handleClear}
+                      startIcon={
+                        <span
+                          className="material-symbols-outlined"
+                          style={{ fontSize: 16 }}
+                        >
+                          close
+                        </span>
+                      }
+                    >
+                      Clear
+                    </Button>
+                  )}
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    size="small"
+                    startIcon={
+                      <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: 16 }}
+                      >
+                        refresh
+                      </span>
+                    }
+                  >
+                    Refresh
+                  </Button>
+                </Box>
+              </Box>
             </Box>
-          </Box>
-        </Box>
-      </PageHeader>
-      <Box
-        sx={{
-          px: 2,
-          pt: 2,
-          pb: 8,
-          minWidth: 0,
-          minHeight: 0,
-          flex: 1,
-          maxWidth: "100%",
-          overflow: "auto",
-          color: (
-            theme: Theme & {
-              vars?: { palette?: { text?: { primary?: string } } };
-            },
-          ) => theme.vars?.palette?.text?.primary ?? theme.palette.text.primary,
-        }}
+          </PageHeader>
+        }
       >
         <TabbedDataCard
           tabs={tabsConfig}
@@ -1373,8 +1350,7 @@ export default function QueryLogsPage() {
             }
           />
         </TabbedDataCard>
-      </Box>
-    </Box>
+      </PageShell>
     </InvestigateContext.Provider>
   );
 }

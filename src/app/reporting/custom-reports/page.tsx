@@ -157,15 +157,10 @@ function ReportsList({
               e.stopPropagation();
               onOpen(params.row);
             }}
-            sx={{ color: "text.primary" }}
           >
             <Icon name="edit" />
           </IconButton>
-          <IconButton
-            size="small"
-            aria-label="more options"
-            sx={{ color: "text.primary" }}
-          >
+          <IconButton size="small" aria-label="more options">
             <Icon name="more_horiz" />
           </IconButton>
         </Box>

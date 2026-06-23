@@ -41,6 +41,11 @@ const MuiDataGrid: Components<Theme>["MuiDataGrid"] = {
         {
           backgroundColor: theme.vars.palette.background.gridHeader,
         },
+      // Action-column buttons (e.g. the row ellipsis) always use the secondary
+      // text button color, wherever an "actions" column appears.
+      "& .MuiDataGrid-cell[data-field='actions'] .MuiIconButton-root": {
+        color: theme.vars.palette.secondary.main,
+      },
     }),
   },
 };

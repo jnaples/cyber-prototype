@@ -18,7 +18,10 @@ import HomePage from "@/app/page";
 import QueryLogsPage from "@/app/query-logs/page";
 import CustomReportsPage from "@/app/reporting/custom-reports/page";
 import SettingsPage from "@/app/settings/page";
-import SubscriptionsPage from "@/app/subscriptions/page";
+import SubscriptionsLayout from "@/app/subscriptions/layout";
+import SubscriptionsIndexPage from "@/app/subscriptions/page";
+import BillingPage from "@/app/subscriptions/billing/page";
+import PlansLicensesPage from "@/app/subscriptions/plans-licenses/page";
 
 function App() {
   return (
@@ -33,7 +36,12 @@ function App() {
           <Route path="custom-reports" element={<CustomReportsPage />} />
         </Route>
         <Route path="settings" element={<SettingsPage />} />
-        <Route path="subscriptions" element={<SubscriptionsPage />} />
+
+        <Route path="subscriptions" element={<SubscriptionsLayout />}>
+          <Route index element={<SubscriptionsIndexPage />} />
+          <Route path="billing" element={<BillingPage />} />
+          <Route path="plans-licenses" element={<PlansLicensesPage />} />
+        </Route>
 
         <Route path="deployments" element={<DeploymentsLayout />}>
           <Route index element={<DeploymentsIndexPage />} />
