@@ -1,6 +1,7 @@
 import { autocomplete } from "./autocomplete";
 import { button } from "./button";
 import { card } from "./card";
+import { chip } from "./chip";
 import { circularProgress } from "./circular-progress";
 import { dataGrid } from "./data-grid";
 import { form } from "./form";
@@ -22,6 +23,7 @@ export const components = {
   ...formLabel,
   ...formHelperText,
   ...card,
+  ...chip,
   ...tab,
   ...global,
   ...tooltip,

@@ -38,6 +38,7 @@ import { CustomDateTimeRangePicker } from "@/components/custom-date-time-range-p
 import type { CustomDateTimeRangePickerValue } from "@/components/custom-date-time-range-picker";
 import { EmptyState } from "@/components/empty-state";
 import { Modal } from "@/components/modal";
+import { PILL_CHIP_RADIUS } from "@/theme/core/components/chip";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
@@ -308,7 +309,7 @@ const columns: GridColDef[] = [
               </span>
             }
             label={params.value}
-            sx={{ borderRadius: 999 }}
+            sx={{ borderRadius: PILL_CHIP_RADIUS }}
           />
         </Box>
       );
@@ -591,6 +592,10 @@ export default function QueryLogsPage() {
   const [cardTab, setCardTab] = useState(0);
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
   const [appliedOrg, setAppliedOrg] = useState<string | null>(null);
+  // The date range the grid actually filters by — only updated on Apply, so
+  // changing the time window doesn't refilter the grid until re-applied.
+  const [appliedDateRange, setAppliedDateRange] =
+    useState<CustomDateTimeRangePickerValue>([null, null]);
   const [isFetching, setIsFetching] = useState(false);
   const [timeRange, setTimeRange] = useState<TimeRangeValue>("Last 15 minutes");
   const [dateRange, setDateRange] = useState<CustomDateTimeRangePickerValue>(
@@ -712,7 +717,7 @@ export default function QueryLogsPage() {
     : "";
 
   const hasData = appliedOrg !== null && !isFetching;
-  const [startDate, endDate] = dateRange;
+  const [startDate, endDate] = appliedDateRange;
   const startMs = startDate?.getTime() ?? 0;
   const endMs = endDate?.getTime() ?? Number.POSITIVE_INFINITY;
   const rowsInRange = hasData
@@ -765,6 +770,7 @@ export default function QueryLogsPage() {
     setCardTab(0);
     window.setTimeout(() => {
       setAppliedOrg(selectedOrg);
+      setAppliedDateRange(dateRange);
       setIsFetching(false);
       setAppliedSnapshot({
         selectedOrg,
@@ -780,6 +786,7 @@ export default function QueryLogsPage() {
   const handleClear = () => {
     setSelectedOrg(null);
     setAppliedOrg(null);
+    setAppliedDateRange([null, null]);
     setIsFetching(false);
     setCardTab(0);
     setTimeRange("Last 15 minutes");

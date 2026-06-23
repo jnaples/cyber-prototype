@@ -4,6 +4,7 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Chip,
   Divider,
   Link,
   TextField,
@@ -53,9 +54,10 @@ type PlanRowProps = {
   plan: Plan;
   quantity: number;
   onQuantityChange: (value: number) => void;
+  isLast?: boolean;
 };
 
-function PlanRow({ plan, quantity, onQuantityChange }: PlanRowProps) {
+function PlanRow({ plan, quantity, onQuantityChange, isLast }: PlanRowProps) {
   return (
     <Box
       sx={{
@@ -63,7 +65,8 @@ function PlanRow({ plan, quantity, onQuantityChange }: PlanRowProps) {
         alignItems: "flex-start",
         justifyContent: "space-between",
         gap: 2,
-        py: 3,
+        pt: 3,
+        pb: isLast ? 0 : 3,
       }}
     >
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -361,6 +364,215 @@ function OrderSummary({ quantities }: { quantities: Record<string, number> }) {
 }
 
 // ---------------------------------------------------------------------------
+// Features
+// ---------------------------------------------------------------------------
+
+type Feature = {
+  name: string;
+  category?: string;
+  description: string;
+  price: string;
+  unit: string;
+  seats?: string;
+  status?: "active" | "enterprise";
+  action: "stepper" | "add" | "contact";
+};
+
+const FEATURES: Feature[] = [
+  {
+    name: "SecureTransit",
+    category: "VPN add-on",
+    status: "active",
+    description:
+      "Always-on encrypted tunneling for Roaming Clients. Routes all device traffic through DNSFilter's secure network with split-tunnel and kill-switch support.",
+    price: "$9.00",
+    unit: "per license / year",
+    seats: "120 of 250 seats",
+    action: "stepper",
+  },
+  {
+    name: "Data Export",
+    category: "Data feature",
+    description:
+      "Stream DNS query logs, audit events, and policy changes to S3, Datadog, Splunk, or any S3-compatible bucket. Includes scheduled CSV exports and webhooks.",
+    price: "$1,188.00",
+    unit: "flat rate / year",
+    action: "add",
+  },
+  {
+    name: "Guest Wi-Fi Access Points",
+    category: "Network feature",
+    description:
+      "Extend DNS filtering to guest Wi-Fi networks via dedicated access point profiles. Each access point counts as a billable unit.",
+    price: "$24.00",
+    unit: "per access point / yr",
+    action: "add",
+  },
+  {
+    name: "CyberSight™",
+    category: "AI threat feature",
+    description:
+      "AI-powered threat intelligence layer that identifies zero-day domains, phishing campaigns, and malware infrastructure in real time.",
+    price: "$9.00",
+    unit: "per license / yr",
+    action: "add",
+  },
+  {
+    name: "Advanced Reporting",
+    category: "Reporting feature",
+    description:
+      "Executive-level dashboards, scheduled PDF reports, anomaly alerting, and 2-year log retention. Integrates with SIEM tools.",
+    price: "$588.00",
+    unit: "flat rate / yr",
+    action: "add",
+  },
+  {
+    name: "MSP Portal",
+    status: "enterprise",
+    description:
+      "Multi-tenant management console for managed service providers. Provision, configure, and report across all customer accounts from a single pane of glass.",
+    price: "$1,788.00",
+    unit: "flat rate / yr",
+    action: "contact",
+  },
+];
+
+/** Status chip using the matching alert (success/warning) color tokens. */
+function StatusChip({ status }: { status: "active" | "enterprise" }) {
+  const config =
+    status === "active"
+      ? { label: "Active", icon: "check", severity: "success" as const }
+      : {
+          label: "Requires Enterprise",
+          icon: "lock",
+          severity: "warning" as const,
+        };
+
+  return (
+    <Chip
+      size="small"
+      icon={
+        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+          {config.icon}
+        </span>
+      }
+      label={config.label}
+      sx={(theme) => ({
+        bgcolor: theme.vars.palette.Alert[`${config.severity}StandardBg`],
+        color: theme.vars.palette.Alert[`${config.severity}Color`],
+        "& .MuiChip-icon": { color: "inherit", ml: 0.5 },
+        "& .MuiChip-label": { color: "inherit" },
+      })}
+    />
+  );
+}
+
+function PriceLine({ feature }: { feature: Feature }) {
+  return (
+    <Box>
+      <Typography variant="body2" sx={{ color: "text.secondary" }}>
+        <Box
+          component="span"
+          sx={{ fontWeight: 600, fontSize: 16, color: "text.primary" }}
+        >
+          {feature.price}
+        </Box>{" "}
+        {feature.unit}
+      </Typography>
+      {feature.seats && (
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          {feature.seats}
+        </Typography>
+      )}
+    </Box>
+  );
+}
+
+function FeatureRow({ feature }: { feature: Feature }) {
+  const [quantity, setQuantity] = useState(50);
+
+  return (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box sx={{ display: "flex", gap: 5, alignItems: "flex-start" }}>
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              flexWrap: "wrap",
+            }}
+          >
+            <Typography sx={{ fontWeight: 600, fontSize: 16 }}>
+              {feature.name}
+            </Typography>
+            {feature.category && (
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                {feature.category}
+              </Typography>
+            )}
+            {feature.status && <StatusChip status={feature.status} />}
+          </Box>
+          <Typography variant="body2">{feature.description}</Typography>
+          <PriceLine feature={feature} />
+        </Box>
+
+        {feature.action === "stepper" && (
+          <QuantityStepper
+            value={quantity}
+            onChange={setQuantity}
+            ariaLabel={`${feature.name} quantity`}
+            sx={{ width: 126, flexShrink: 0 }}
+          />
+        )}
+      </Box>
+
+      {feature.action === "add" && (
+        <Button
+          variant="outlined"
+          color="secondary"
+          size="small"
+          sx={{ alignSelf: "flex-start" }}
+        >
+          Add to Plan
+        </Button>
+      )}
+      {feature.action === "contact" && (
+        <Link href="#" underline="none" variant="body2">
+          Contact sales to upgrade.
+        </Link>
+      )}
+    </Box>
+  );
+}
+
+function FeaturesCard() {
+  return (
+    <Card>
+      <CardHeader title="Features" />
+      <CardContent sx={{ pt: 0 }}>
+        {FEATURES.map((feature, index) => (
+          <Fragment key={feature.name}>
+            {index > 0 && <Divider />}
+            <Box sx={{ pt: 3, pb: index === FEATURES.length - 1 ? 0 : 3 }}>
+              <FeatureRow feature={feature} />
+            </Box>
+          </Fragment>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
@@ -381,32 +593,44 @@ export default function PlansLicensesPage() {
         alignItems: "start",
       }}
     >
-      <Card sx={{ gridColumn: "span 2" }}>
-        <CardHeader title="Plans" />
-        <CardContent>
-          <Typography variant="body1">
-            Add licenses to active plans or activate a new plan. Charges are
-            prorated for the current billing period. Need to reduce your license
-            count?{" "}
-            <Link href="#" underline="none">
-              Contact sales.
-            </Link>
-          </Typography>
+      <Box
+        sx={{
+          gridColumn: "span 2",
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        <Card>
+          <CardHeader title="Plans" />
+          <CardContent>
+            <Typography variant="body1">
+              Add licenses to active plans or activate a new plan. Charges are
+              prorated for the current billing period. Need to reduce your
+              license count?{" "}
+              <Link href="#" underline="none">
+                Contact sales.
+              </Link>
+            </Typography>
 
-          <Box sx={{ mt: 1 }}>
-            {PLANS.map((plan, index) => (
-              <Fragment key={plan.name}>
-                {index > 0 && <Divider />}
-                <PlanRow
-                  plan={plan}
-                  quantity={quantities[plan.name]}
-                  onQuantityChange={(value) => setQuantity(plan.name, value)}
-                />
-              </Fragment>
-            ))}
-          </Box>
-        </CardContent>
-      </Card>
+            <Box sx={{ mt: 1 }}>
+              {PLANS.map((plan, index) => (
+                <Fragment key={plan.name}>
+                  {index > 0 && <Divider />}
+                  <PlanRow
+                    plan={plan}
+                    quantity={quantities[plan.name]}
+                    onQuantityChange={(value) => setQuantity(plan.name, value)}
+                    isLast={index === PLANS.length - 1}
+                  />
+                </Fragment>
+              ))}
+            </Box>
+          </CardContent>
+        </Card>
+
+        <FeaturesCard />
+      </Box>
 
       <Card sx={{ position: "sticky", top: 0 }}>
         <CardHeader title="Order Summary" />

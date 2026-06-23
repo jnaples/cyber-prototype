@@ -248,6 +248,12 @@ function pickDomainForDept(dept: Department): DomainSeed {
 // are weighted toward "today" (more recent activity) and skip weekends for
 // the bulk of traffic.
 function pickTimestamp(now: Date): Date {
+  // A steady stream of very recent activity so the default short windows
+  // (Last 5/15/30 minutes) always show data when logs first load. Biased
+  // toward the most recent minutes within the last 15.
+  if (rng() < 0.15) {
+    return new Date(now.getTime() - Math.pow(rng(), 1.5) * 15 * 60 * 1000);
+  }
   const offHours = rng() < 0.06;
   if (offHours) {
     // Anywhere in the last 7 days, any time — represents the few outliers
@@ -263,10 +269,10 @@ function pickTimestamp(now: Date): Date {
   while (target.getDay() === 0 || target.getDay() === 6) {
     target.setDate(target.getDate() - 1);
   }
-  // Bell curve around 1 PM (hour 13). Average of two uniforms gives a
-  // triangle distribution centered on 0.5, scaled into 9-17.
+  // Bell curve around early afternoon. Average of two uniforms gives a
+  // triangle distribution centered on 0.5, scaled into business hours.
   const blended = (rng() + rng()) / 2;
-  const hour = 9 + Math.floor(blended * 8); // 9-16 inclusive
+  const hour = 9 + Math.floor(blended * 9); // 9 AM - 6 PM (hours 9-17)
   const minute = Math.floor(rng() * 60);
   const second = Math.floor(rng() * 60);
   const ms = Math.floor(rng() * 1000);
