@@ -69,6 +69,21 @@ function PriceText({ price, unit }: { price: string; unit: string }) {
   );
 }
 
+/** Bold "+N" / "−N" pending-change badge — success green for increases, error
+ * red for decreases. Renders nothing when there's no change. */
+function DeltaBadge({ delta }: { delta: number }) {
+  if (delta === 0) return null;
+  return (
+    <Box
+      component="span"
+      sx={{ fontWeight: 600, color: delta > 0 ? "success.main" : "error.main" }}
+    >
+      {delta > 0 ? "+" : "−"}
+      {Math.abs(delta).toLocaleString()}
+    </Box>
+  );
+}
+
 /** Renders items in a vertical list with dividers between them and 24px
  * vertical padding per row (no bottom padding on the last row). */
 function DividedList<T>({
@@ -119,29 +134,22 @@ function PlanRow({ plan, owned, quantity, onQuantityChange }: PlanRowProps) {
       }}
     >
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        <Typography variant="body1">
-          <Box component="span" sx={{ fontWeight: 600 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            flexWrap: "wrap",
+          }}
+        >
+          <Typography variant="body1" sx={{ fontWeight: 600 }}>
             {plan.name}
-          </Box>{" "}
-          <Box component="span" sx={{ color: "text.secondary" }}>
+          </Typography>
+          <Typography variant="body1" sx={{ color: "text.secondary" }}>
             {owned.toLocaleString()} licenses
-          </Box>
-          {added !== 0 && (
-            <>
-              {" "}
-              <Box
-                component="span"
-                sx={{
-                  fontWeight: 600,
-                  color: added > 0 ? "success.main" : "error.main",
-                }}
-              >
-                {added > 0 ? "+" : "−"}
-                {Math.abs(added).toLocaleString()}
-              </Box>
-            </>
-          )}
-        </Typography>
+          </Typography>
+          <DeltaBadge delta={added} />
+        </Box>
         <PriceText price={usd(plan.price)} unit="per license / year" />
       </Box>
 
@@ -677,13 +685,16 @@ function PriceLine({ feature }: { feature: Feature }) {
 
 function FeatureRow({
   feature,
+  owned,
   quantity,
   onQuantityChange,
 }: {
   feature: Feature;
+  owned?: number;
   quantity?: number;
   onQuantityChange?: (value: number) => void;
 }) {
+  const added = (quantity ?? 0) - (owned ?? 0);
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Box sx={{ display: "flex", gap: 5, alignItems: "flex-start" }}>
@@ -713,6 +724,7 @@ function FeatureRow({
               </Typography>
             )}
             {feature.status && <StatusChip status={feature.status} />}
+            <DeltaBadge delta={added} />
           </Box>
           <Typography variant="body2">{feature.description}</Typography>
           <PriceLine feature={feature} />
@@ -750,9 +762,11 @@ function FeatureRow({
 
 function FeaturesCard({
   quantities,
+  owned,
   onQuantityChange,
 }: {
   quantities: Record<string, number>;
+  owned: Record<string, number>;
   onQuantityChange: (name: string, value: number) => void;
 }) {
   return (
@@ -765,6 +779,7 @@ function FeaturesCard({
           renderItem={(feature) => (
             <FeatureRow
               feature={feature}
+              owned={owned[feature.name]}
               quantity={quantities[feature.name]}
               onQuantityChange={(value) => onQuantityChange(feature.name, value)}
             />
@@ -843,7 +858,11 @@ export default function PlansLicensesPage() {
           </CardContent>
         </Card>
 
-        <FeaturesCard quantities={quantities} onQuantityChange={setQuantity} />
+        <FeaturesCard
+          quantities={quantities}
+          owned={owned}
+          onQuantityChange={setQuantity}
+        />
       </Box>
 
       <Card sx={{ position: { md: "sticky" }, top: { md: 0 } }}>

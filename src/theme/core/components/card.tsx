@@ -36,6 +36,13 @@ const MuiCardHeader: Components<Theme>["MuiCardHeader"] = {
     // titleTypographyProps API is ignored in this version).
     slotProps: { title: { variant: "cardTitle" } },
   },
+  styleOverrides: {
+    // 12px top/bottom padding on every card title (horizontal stays default).
+    root: ({ theme }) => ({
+      paddingTop: theme.spacing(1.5),
+      paddingBottom: theme.spacing(1.5),
+    }),
+  },
 };
 
 export const card: Components<Theme> = {
