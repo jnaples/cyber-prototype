@@ -5,6 +5,7 @@ import {
   CardContent,
   CardHeader,
   Chip,
+  CircularProgress,
   Divider,
   Link,
   TextField,
@@ -41,10 +42,7 @@ const DAYS_REMAINING = Math.max(
   Math.ceil((RENEWAL_DATE.getTime() - Date.now()) / MS_PER_DAY),
 );
 
-/** Baseline licenses for a plan (the floor that additions are measured from). */
-const baselineFor = (plan: Plan) => plan.minimum ?? plan.initialQuantity;
-
-const usd = (value: number, options?: Intl.NumberFormatOptions) =>
+const usd =(value: number, options?: Intl.NumberFormatOptions) =>
   value.toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
@@ -71,18 +69,46 @@ function PriceText({ price, unit }: { price: string; unit: string }) {
   );
 }
 
+/** Renders items in a vertical list with dividers between them and 24px
+ * vertical padding per row (no bottom padding on the last row). */
+function DividedList<T>({
+  items,
+  keyFor,
+  renderItem,
+}: {
+  items: T[];
+  keyFor: (item: T, index: number) => string;
+  renderItem: (item: T, index: number) => React.ReactNode;
+}) {
+  return (
+    <>
+      {items.map((item, index) => (
+        <Fragment key={keyFor(item, index)}>
+          {index > 0 && <Divider />}
+          <Box sx={{ pt: 3, pb: index === items.length - 1 ? 0 : 3 }}>
+            {renderItem(item, index)}
+          </Box>
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Plan row
 // ---------------------------------------------------------------------------
 
 type PlanRowProps = {
   plan: Plan;
+  /** Currently owned/committed licenses (shown on the left). */
+  owned: number;
+  /** Proposed total in the stepper. */
   quantity: number;
   onQuantityChange: (value: number) => void;
-  isLast?: boolean;
 };
 
-function PlanRow({ plan, quantity, onQuantityChange, isLast }: PlanRowProps) {
+function PlanRow({ plan, owned, quantity, onQuantityChange }: PlanRowProps) {
+  const added = quantity - owned;
   return (
     <Box
       sx={{
@@ -90,8 +116,6 @@ function PlanRow({ plan, quantity, onQuantityChange, isLast }: PlanRowProps) {
         alignItems: "flex-start",
         justifyContent: "space-between",
         gap: 2,
-        pt: 3,
-        pb: isLast ? 0 : 3,
       }}
     >
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -100,8 +124,23 @@ function PlanRow({ plan, quantity, onQuantityChange, isLast }: PlanRowProps) {
             {plan.name}
           </Box>{" "}
           <Box component="span" sx={{ color: "text.secondary" }}>
-            {quantity.toLocaleString()} licenses
+            {owned.toLocaleString()} licenses
           </Box>
+          {added !== 0 && (
+            <>
+              {" "}
+              <Box
+                component="span"
+                sx={{
+                  fontWeight: 600,
+                  color: added > 0 ? "success.main" : "error.main",
+                }}
+              >
+                {added > 0 ? "+" : "−"}
+                {Math.abs(added).toLocaleString()}
+              </Box>
+            </>
+          )}
         </Typography>
         <PriceText price={usd(plan.price)} unit="per license / year" />
       </Box>
@@ -179,12 +218,64 @@ function SummaryLine({
   );
 }
 
-function OrderSummary({ quantities }: { quantities: Record<string, number> }) {
+/** "New annual recurring" row with the renewal-date caption beneath. Shared by
+ * the live summary and the post-payment success view. */
+function RecurringLine({ amount }: { amount: number }) {
+  return (
+    <Box>
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+        <Typography variant="body2" sx={{ minWidth: 0, wordBreak: "break-word" }}>
+          New annual recurring
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            fontWeight: 600,
+            textAlign: "right",
+            flexShrink: 0,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {usd(amount, { maximumFractionDigits: 0 })} / yr
+        </Typography>
+      </Box>
+      <Typography
+        variant="caption"
+        sx={{ display: "block", mt: 0.25, color: "text.secondary" }}
+      >
+        Renews every year starting{" "}
+        {RENEWAL_DATE.toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })}
+      </Typography>
+    </Box>
+  );
+}
+
+function OrderSummary({
+  quantities,
+  owned,
+  onCommit,
+}: {
+  quantities: Record<string, number>;
+  owned: Record<string, number>;
+  /** Commit the purchase: the page sets owned = quantities. */
+  onCommit: () => void;
+}) {
   const [showPromo, setShowPromo] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<{
     code: string;
     rate: number;
+  } | null>(null);
+  const [status, setStatus] = useState<"idle" | "processing" | "paid">("idle");
+  // Snapshot of the charged/recurring figures at purchase time, so the success
+  // view stays correct after the purchase commits (owned = quantities).
+  const [paidSummary, setPaidSummary] = useState<{
+    charged: number;
+    recurring: number;
   } | null>(null);
 
   const applyPromo = () => {
@@ -198,29 +289,45 @@ function OrderSummary({ quantities }: { quantities: Record<string, number> }) {
     setPromoCode("");
   };
 
-  // Plans and stepper add-ons are both billable: a line item per item whose
-  // quantity has been raised above its baseline.
+  // Plans and stepper add-ons are both billable. Additions are measured from
+  // the currently owned count, not a static baseline.
   const billables = [
-    ...PLANS.map((plan) => ({
-      name: plan.name,
-      price: plan.price,
-      baseline: baselineFor(plan),
-    })),
+    ...PLANS.map((plan) => ({ name: plan.name, price: plan.price })),
     ...STEPPER_FEATURES.map((feature) => ({
       name: feature.name,
       price: feature.unitPrice,
-      baseline: feature.baseline,
     })),
   ];
 
   const lineItems = billables
     .map((item) => {
-      const added = (quantities[item.name] ?? item.baseline) - item.baseline;
+      const added = (quantities[item.name] ?? 0) - (owned[item.name] ?? 0);
       return { ...item, added, amount: added * item.price };
     })
     .filter((item) => item.added > 0);
 
   const hasChanges = lineItems.length > 0;
+
+  const annualAmountAdded = lineItems.reduce((sum, i) => sum + i.amount, 0);
+  const discountAnnual = annualAmountAdded * (appliedPromo?.rate ?? 0);
+  const netAnnualAdded = annualAmountAdded - discountAnnual;
+  const daysRemaining = DAYS_REMAINING;
+  const proratedToday = (netAnnualAdded * daysRemaining) / DAYS_IN_YEAR;
+  const newAnnualRecurring =
+    billables.reduce(
+      (sum, item) => sum + (quantities[item.name] ?? 0) * item.price,
+      0,
+    ) - discountAnnual;
+
+  const handleBuyNow = () => {
+    setPaidSummary({ charged: proratedToday, recurring: newAnnualRecurring });
+    setStatus("processing");
+    // Simulate a real charge, then commit the purchase and show success.
+    window.setTimeout(() => {
+      onCommit();
+      setStatus("paid");
+    }, 3000);
+  };
 
   // Neutral surface in light mode; the darker default surface in dark mode so
   // the box recedes against the card.
@@ -240,19 +347,83 @@ function OrderSummary({ quantities }: { quantities: Record<string, number> }) {
     </Box>
   );
 
-  if (!hasChanges) return emptyState;
+  if (status === "paid" && paidSummary) {
+    return (
+      <Box
+        sx={[
+          {
+            borderRadius: 1.5,
+            p: 2,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          },
+          surfaceSx,
+        ]}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 1,
+            pb: 2,
+            borderBottom: 1,
+            borderColor: "divider",
+          }}
+        >
+          <Box
+            sx={(theme) => ({
+              width: 40,
+              height: 40,
+              borderRadius: "999px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              bgcolor: theme.vars.palette.Alert.successStandardBg,
+              color: theme.vars.palette.Alert.successColor,
+            })}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: 24 }}>
+              check
+            </span>
+          </Box>
+          <Typography sx={{ fontWeight: 600, fontSize: 16 }}>
+            Payment successful
+          </Typography>
+          <Typography variant="body2" sx={{ textAlign: "center" }}>
+            {usd(paidSummary.charged)} charged to Visa **** 4242
+          </Typography>
+        </Box>
 
-  const annualAmountAdded = lineItems.reduce((sum, i) => sum + i.amount, 0);
-  const discountAnnual = annualAmountAdded * (appliedPromo?.rate ?? 0);
-  const netAnnualAdded = annualAmountAdded - discountAnnual;
-  const daysRemaining = DAYS_REMAINING;
-  const proratedToday = (netAnnualAdded * daysRemaining) / DAYS_IN_YEAR;
-  const newAnnualRecurring =
-    billables.reduce(
-      (sum, item) =>
-        sum + (quantities[item.name] ?? item.baseline) * item.price,
-      0,
-    ) - discountAnnual;
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16 }}>
+            Plan updated
+          </Typography>
+          <RecurringLine amount={paidSummary.recurring} />
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 1.5 }}>
+          <Button variant="outlined" color="secondary" size="small">
+            View Invoice
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="small"
+            onClick={() => {
+              setStatus("idle");
+              setPaidSummary(null);
+            }}
+          >
+            Done
+          </Button>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (!hasChanges) return emptyState;
 
   return (
     <Box
@@ -360,44 +531,21 @@ function OrderSummary({ quantities }: { quantities: Record<string, number> }) {
           </Typography>
           <Typography variant="h5">{usd(proratedToday)}</Typography>
         </Box>
-        <Box>
-          <Box
-            sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}
-          >
-            <Typography
-              variant="body2"
-              sx={{ minWidth: 0, wordBreak: "break-word" }}
-            >
-              New annual recurring
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                fontWeight: 600,
-                textAlign: "right",
-                flexShrink: 0,
-                whiteSpace: "nowrap",
-              }}
-            >
-              {usd(newAnnualRecurring, { maximumFractionDigits: 0 })} / yr
-            </Typography>
-          </Box>
-          <Typography
-            variant="caption"
-            sx={{ display: "block", mt: 0.25, color: "text.secondary" }}
-          >
-            Renews every year starting{" "}
-            {RENEWAL_DATE.toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </Typography>
-        </Box>
+        <RecurringLine amount={newAnnualRecurring} />
       </Box>
 
-      <Button variant="contained" sx={{ alignSelf: "flex-start" }}>
-        Buy Now
+      <Button
+        variant="contained"
+        onClick={handleBuyNow}
+        disabled={status === "processing"}
+        startIcon={
+          status === "processing" ? (
+            <CircularProgress size={16} color="inherit" />
+          ) : undefined
+        }
+        sx={{ alignSelf: "flex-start" }}
+      >
+        {status === "processing" ? "Processing" : "Buy Now"}
       </Button>
     </Box>
   );
@@ -434,7 +582,7 @@ const FEATURES: Feature[] = [
     seats: "120 of 250 seats",
     action: "stepper",
     unitPrice: 9,
-    baseline: 50,
+    baseline: 120,
   },
   {
     name: "Data Export",
@@ -454,15 +602,6 @@ const FEATURES: Feature[] = [
       "Extend DNS filtering to guest Wi-Fi networks via dedicated access point profiles. Each access point counts as a billable unit.",
     price: "$24.00",
     unit: "per access point / yr",
-    action: "add",
-  },
-  {
-    name: "CyberSight™",
-    category: "AI threat feature",
-    description:
-      "AI-powered threat intelligence layer that identifies zero-day domains, phishing campaigns, and malware infrastructure in real time.",
-    price: "$9.00",
-    unit: "per license / yr",
     action: "add",
   },
   {
@@ -582,7 +721,7 @@ function FeatureRow({
         {feature.action === "stepper" && (
           <QuantityStepper
             value={quantity ?? feature.baseline ?? 0}
-            min={feature.baseline ?? 0}
+            min={0}
             onChange={onQuantityChange ?? (() => {})}
             ariaLabel={`${feature.name} quantity`}
             sx={{ flexShrink: 0 }}
@@ -620,20 +759,17 @@ function FeaturesCard({
     <Card>
       <CardHeader title="Features" />
       <CardContent sx={{ pt: 0 }}>
-        {FEATURES.map((feature, index) => (
-          <Fragment key={feature.name}>
-            {index > 0 && <Divider />}
-            <Box sx={{ pt: 3, pb: index === FEATURES.length - 1 ? 0 : 3 }}>
-              <FeatureRow
-                feature={feature}
-                quantity={quantities[feature.name]}
-                onQuantityChange={(value) =>
-                  onQuantityChange(feature.name, value)
-                }
-              />
-            </Box>
-          </Fragment>
-        ))}
+        <DividedList
+          items={FEATURES}
+          keyFor={(feature) => feature.name}
+          renderItem={(feature) => (
+            <FeatureRow
+              feature={feature}
+              quantity={quantities[feature.name]}
+              onQuantityChange={(value) => onQuantityChange(feature.name, value)}
+            />
+          )}
+        />
       </CardContent>
     </Card>
   );
@@ -644,12 +780,17 @@ function FeaturesCard({
 // ---------------------------------------------------------------------------
 
 export default function PlansLicensesPage() {
-  const [quantities, setQuantities] = useState<Record<string, number>>(() => ({
+  const defaultQuantities = (): Record<string, number> => ({
     ...Object.fromEntries(
       PLANS.map((plan) => [plan.name, plan.initialQuantity]),
     ),
     ...Object.fromEntries(STEPPER_FEATURES.map((f) => [f.name, f.baseline])),
-  }));
+  });
+  // `owned` is the committed license count; `quantities` is the proposed total
+  // edited in the steppers. A purchase commits owned = quantities.
+  const [owned, setOwned] = useState<Record<string, number>>(defaultQuantities);
+  const [quantities, setQuantities] =
+    useState<Record<string, number>>(defaultQuantities);
 
   const setQuantity = (name: string, value: number) =>
     setQuantities((prev) => ({ ...prev, [name]: value }));
@@ -686,17 +827,18 @@ export default function PlansLicensesPage() {
             </Typography>
 
             <Box sx={{ mt: 1 }}>
-              {PLANS.map((plan, index) => (
-                <Fragment key={plan.name}>
-                  {index > 0 && <Divider />}
+              <DividedList
+                items={PLANS}
+                keyFor={(plan) => plan.name}
+                renderItem={(plan) => (
                   <PlanRow
                     plan={plan}
+                    owned={owned[plan.name]}
                     quantity={quantities[plan.name]}
                     onQuantityChange={(value) => setQuantity(plan.name, value)}
-                    isLast={index === PLANS.length - 1}
                   />
-                </Fragment>
-              ))}
+                )}
+              />
             </Box>
           </CardContent>
         </Card>
@@ -707,7 +849,11 @@ export default function PlansLicensesPage() {
       <Card sx={{ position: { md: "sticky" }, top: { md: 0 } }}>
         <CardHeader title="Order Summary" />
         <CardContent>
-          <OrderSummary quantities={quantities} />
+          <OrderSummary
+            quantities={quantities}
+            owned={owned}
+            onCommit={() => setOwned({ ...quantities })}
+          />
         </CardContent>
       </Card>
     </Box>

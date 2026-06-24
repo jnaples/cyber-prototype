@@ -446,6 +446,9 @@ export default function DashboardsPage() {
           anchorEl={actionsAnchor}
           open={Boolean(actionsAnchor)}
           onClose={() => setActionsAnchor(null)}
+          // Don't return focus to the anchor on close, so Rename's autoFocused
+          // text field keeps the cursor.
+          disableRestoreFocus
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           transformOrigin={{ vertical: "top", horizontal: "right" }}
         >
@@ -703,6 +706,7 @@ export default function DashboardsPage() {
         <Alert
           severity="success"
           variant="standard"
+          elevation={8}
           onClose={() => setToast(null)}
           sx={{
             alignItems: "center",
