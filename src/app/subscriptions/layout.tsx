@@ -61,7 +61,7 @@ export default function SubscriptionsLayout() {
     <PageShell
       maxWidth="lg"
       header={
-        <PageHeader title="Subscriptions">
+        <PageHeader title="Billing & Subscriptions">
           <Box
             sx={{
               mb: -2,

@@ -53,7 +53,6 @@ export type WidgetInstance = {
   id: string;
   type: string;
   span: number;
-  note?: string;
 };
 
 // ---------------------------------------------------------------------------
@@ -67,7 +66,7 @@ export const WIDGET_CATALOG: WidgetDef[] = [
   { type: "kpi-threats", name: "Threats",          desc: "KPI counter", icon: "skull",                cat: "KPIs", span: 1 },
 
   { type: "status-sites",   name: "Sites Protected",          desc: "Status fraction", icon: "location_on", cat: "Status", span: 1 },
-  { type: "status-roaming", name: "Roaming Clients Protected",desc: "Status fraction", icon: "smartphone",  cat: "Status", span: 1 },
+  { type: "status-roaming", name: "Roaming Clients Protected",desc: "Status fraction", icon: "devices",  cat: "Status", span: 1 },
   { type: "status-users",   name: "Users",                    desc: "Status fraction", icon: "person",      cat: "Status", span: 1 },
   { type: "status-relays",  name: "Relays",                   desc: "Status fraction", icon: "device_hub",  cat: "Status", span: 1 },
 
@@ -81,8 +80,6 @@ export const WIDGET_CATALOG: WidgetDef[] = [
 
   { type: "top-domains", name: "Top Domains",       desc: "Most-requested domains",   icon: "list",     cat: "Tables", span: 2 },
   { type: "top-orgs",    name: "Top Organizations", desc: "Requests by organization", icon: "business", cat: "Tables", span: 2 },
-
-  { type: "notes", name: "Notes", desc: "Free-text note widget", icon: "sticky_note_2", cat: "Other", span: 2 },
 ];
 
 export const CATALOG_BY_TYPE: Record<string, WidgetDef> = Object.fromEntries(

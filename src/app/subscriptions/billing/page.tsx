@@ -8,6 +8,8 @@ type SummaryStat = {
   label: string;
   value: string;
   caption: React.ReactNode;
+  /** Optional extra line rendered below the caption in the success color. */
+  extra?: React.ReactNode;
 };
 
 type InvoiceRow = {
@@ -107,6 +109,7 @@ const SUMMARY_STATS: SummaryStat[] = [
         Renews <strong>July 1, 2026</strong>
       </>
     ),
+    extra: "Annual savings $225 / yr",
   },
   {
     label: "Active plans",
@@ -148,6 +151,11 @@ export default function BillingPage() {
               <Typography variant="body2" sx={{ color: "text.secondary" }}>
                 {stat.caption}
               </Typography>
+              {stat.extra && (
+                <Typography variant="body2" sx={{ color: "success.main" }}>
+                  {stat.extra}
+                </Typography>
+              )}
             </Box>
           ))}
         </Box>

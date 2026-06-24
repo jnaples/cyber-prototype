@@ -85,11 +85,16 @@ export function Modal({
       slotProps={{
         ...(dialogProps?.slotProps ?? {}),
         paper: {
+          // Match a Card's surface: Dialog's default elevation (24) brightens
+          // the dark-mode paper far past our card color. Elevation 1 + the
+          // paper background yields the same overlay a Card uses.
+          elevation: 1,
           ...(callerPaperSlot ?? {}),
           sx: {
             // `borderRadius: 1` resolves to theme.shape.borderRadius.
             borderRadius: 1,
             width,
+            bgcolor: "background.paper",
             ...(callerPaperSlot?.sx ?? {}),
           },
         },

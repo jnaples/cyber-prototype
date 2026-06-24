@@ -4,7 +4,7 @@
 //   don't trigger a drag).
 // - Top-right toolbar exposes a delete button.
 // - Bottom-right dotted "gripper" resizes the card 1..6 columns by dragging.
-// - Hover gives a primary-blue outline and elevated shadow.
+// - Hover gives a primary-blue border and elevated shadow.
 
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import { Box, IconButton, Paper, Typography, useTheme } from "@mui/material";
@@ -52,7 +52,6 @@ export function DashCard({
   dragging,
   onRemove,
   onSpan,
-  onNote,
   onBeginDrag,
 }: {
   widget: WidgetInstance;
@@ -61,7 +60,6 @@ export function DashCard({
   dragging: boolean;
   onRemove: () => void;
   onSpan: (s: number) => void;
-  onNote: (v: string) => void;
   onBeginDrag: (
     e: React.PointerEvent<HTMLDivElement>,
     id: string,
@@ -140,9 +138,8 @@ export function DashCard({
         flexDirection: "column",
         opacity: dragging ? 0.55 : 1,
         transform: dragging ? "scale(1.01)" : "none",
-        outline: active ? "1px solid" : "none",
-        outlineColor: active ? "primary.main" : undefined,
-        outlineOffset: "1px",
+        border: "2px solid",
+        borderColor: active ? "primary.main" : "transparent",
         cursor: dragging ? "grabbing" : hover ? "grab" : "default",
         transition: dragging
           ? "none"
@@ -208,7 +205,7 @@ export function DashCard({
           justifyContent: headerless ? "center" : "flex-start",
         }}
       >
-        <WidgetBody type={widget.type} widget={widget} onNote={onNote} />
+        <WidgetBody type={widget.type} />
       </Box>
 
       {/* bottom-right resize gripper */}

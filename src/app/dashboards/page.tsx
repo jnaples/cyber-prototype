@@ -9,6 +9,7 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   ClickAwayListener,
   IconButton,
   Menu,
@@ -22,6 +23,14 @@ import { useCallback, useEffect, useState } from "react";
 import { Modal } from "@/components/modal";
 
 import { AddPanel } from "./add-panel";
+import {
+  DEFAULT_FILTERS,
+  DashboardFactorContext,
+  TIME_RANGE_OPTIONS,
+  filterFactor,
+  type DashboardFilters,
+} from "./dashboard-filters";
+import { QuickFilters } from "./quick-filters";
 import { DashCard } from "./dash-card";
 import { DashSwitcher } from "./dash-switcher";
 import { CATALOG_BY_TYPE, type WidgetInstance } from "./lib";
@@ -65,7 +74,7 @@ function sanitize(arr: unknown): WidgetInstance[] | null {
   const seen = new Set<string>();
   return arr
     .filter(
-      (w): w is { id?: string; type?: string; span?: number; note?: string } =>
+      (w): w is { id?: string; type?: string; span?: number } =>
         Boolean(w) &&
         typeof w === "object" &&
         typeof (w as { type?: unknown }).type === "string" &&
@@ -79,7 +88,6 @@ function sanitize(arr: unknown): WidgetInstance[] | null {
         id,
         type: w.type as string,
         span: clampSpan(w.span ?? 1),
-        note: w.note ?? "",
       };
     });
 }
@@ -199,6 +207,33 @@ export default function DashboardsPage() {
     null,
   );
   const [toast, setToast] = useState<string | null>(null);
+  const [quickFiltersOpen, setQuickFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState<DashboardFilters>(DEFAULT_FILTERS);
+
+  // Active (non-default) filters as removable chips.
+  const filterChips: { label: string; onDelete: () => void }[] = [];
+  if (filters.timeRange !== DEFAULT_FILTERS.timeRange) {
+    filterChips.push({
+      label:
+        TIME_RANGE_OPTIONS.find((o) => o.value === filters.timeRange)?.label ??
+        filters.timeRange,
+      onDelete: () =>
+        setFilters((f) => ({ ...f, timeRange: DEFAULT_FILTERS.timeRange })),
+    });
+  }
+  (["results", "sites", "deploymentTypes", "categories"] as const).forEach(
+    (key) =>
+      filters[key].forEach((value) =>
+        filterChips.push({
+          label: value,
+          onDelete: () =>
+            setFilters((f) => ({
+              ...f,
+              [key]: f[key].filter((v) => v !== value),
+            })),
+        }),
+      ),
+  );
 
   // Persist name + widgets.
   useEffect(() => {
@@ -214,9 +249,8 @@ export default function DashboardsPage() {
     if (!def) return;
     setWidgets((ws) => [
       ...ws,
-      { id: uid(), type, span: clampSpan(def.span), note: "" },
+      { id: uid(), type, span: clampSpan(def.span) },
     ]);
-    setToast(`${def.name} added`);
   };
   const removeWidget = (id: string) =>
     setWidgets((ws) => ws.filter((w) => w.id !== id));
@@ -224,8 +258,6 @@ export default function DashboardsPage() {
     setWidgets((ws) =>
       ws.map((w) => (w.id === id ? { ...w, span: clampSpan(span) } : w)),
     );
-  const setNote = (id: string, note: string) =>
-    setWidgets((ws) => ws.map((w) => (w.id === id ? { ...w, note } : w)));
 
   const deleteDashboard = () => {
     const others = [
@@ -488,6 +520,8 @@ export default function DashboardsPage() {
         }}
       >
         <Box
+          role="button"
+          onClick={() => setQuickFiltersOpen(true)}
           sx={{
             display: "inline-flex",
             alignItems: "center",
@@ -518,9 +552,29 @@ export default function DashboardsPage() {
           </span>
           Advanced filters
         </Box>
+        {filterChips.length > 0 && (
+          <Box sx={{ width: "1px", height: 16, bgcolor: "divider" }} />
+        )}
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 0.75,
+            alignItems: "center",
+          }}
+        >
+          {filterChips.map((chip) => (
+            <Chip
+              key={chip.label}
+              size="small"
+              label={chip.label}
+              onDelete={chip.onDelete}
+            />
+          ))}
+        </Box>
         <Box sx={{ flex: 1 }} />
         <IconButton size="small" color="secondary" aria-label="refresh">
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
             refresh
           </span>
         </IconButton>
@@ -530,40 +584,50 @@ export default function DashboardsPage() {
       {widgets.length === 0 ? (
         <EmptyState onAdd={() => setAddOpen(true)} />
       ) : (
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${COLS}, 1fr)`,
-            gap: 2,
-            px: 2,
-            pb: 10,
-            alignItems: "stretch",
-          }}
-        >
-          {widgets.map((w) => (
-            <DashCard
-              key={w.id}
-              widget={w}
-              pad={2}
-              cols={COLS}
-              dragging={dragId === w.id}
-              onRemove={() => setPendingDelete(w)}
-              onSpan={(s) => setSpan(w.id, s)}
-              onNote={(v) => setNote(w.id, v)}
-              onBeginDrag={beginDrag}
-            />
-          ))}
-        </Box>
+        <DashboardFactorContext.Provider value={filterFactor(filters)}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${COLS}, 1fr)`,
+              gap: 2,
+              px: 2,
+              pb: 10,
+              alignItems: "stretch",
+            }}
+          >
+            {widgets.map((w) => (
+              <DashCard
+                key={w.id}
+                widget={w}
+                pad={2}
+                cols={COLS}
+                dragging={dragId === w.id}
+                onRemove={() => setPendingDelete(w)}
+                onSpan={(s) => setSpan(w.id, s)}
+                onBeginDrag={beginDrag}
+              />
+            ))}
+          </Box>
+        </DashboardFactorContext.Provider>
       )}
 
       {/* Slide-out add content panel */}
       <AddPanel
         open={addOpen}
         onClose={() => setAddOpen(false)}
-        onAdd={(t) => {
-          addWidget(t);
+        onApply={(types) => {
+          types.forEach((t) => addWidget(t));
+          setToast(
+            `${types.length} widget${types.length === 1 ? "" : "s"} added`,
+          );
         }}
-        present={widgets.map((w) => w.type)}
+      />
+
+      <QuickFilters
+        open={quickFiltersOpen}
+        onClose={() => setQuickFiltersOpen(false)}
+        filters={filters}
+        onApply={setFilters}
       />
 
       {/* Widget delete confirmation */}
@@ -581,7 +645,11 @@ export default function DashboardsPage() {
           color: "error",
           sx: { color: "common.white" },
           onClick: () => {
-            if (pendingDelete) removeWidget(pendingDelete.id);
+            if (pendingDelete) {
+              removeWidget(pendingDelete.id);
+              const name = CATALOG_BY_TYPE[pendingDelete.type]?.name ?? "Widget";
+              setToast(`${name} removed`);
+            }
             setPendingDelete(null);
           },
         }}
@@ -590,11 +658,12 @@ export default function DashboardsPage() {
           <Box component="b" sx={{ color: "text.primary" }}>
             {(pendingDelete && CATALOG_BY_TYPE[pendingDelete.type]?.name) || ""}
           </Box>{" "}
-          will be removed from this dashboard. You can add it back any time from{" "}
+          will be removed from this dashboard. You can add it back anytime by
+          clicking the{" "}
           <Box component="b" sx={{ color: "text.primary" }}>
-            Add content
-          </Box>
-          .
+            ADD CONTENT
+          </Box>{" "}
+          button.
         </Typography>
       </Modal>
 

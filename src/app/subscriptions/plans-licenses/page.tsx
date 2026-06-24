@@ -35,6 +35,11 @@ const PLANS: Plan[] = [
 const RENEWAL_DATE = new Date(2026, 6, 1); // July 1, 2026
 const DAYS_IN_YEAR = 365;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+// Computed once at load (not during render — Date.now() is impure).
+const DAYS_REMAINING = Math.max(
+  0,
+  Math.ceil((RENEWAL_DATE.getTime() - Date.now()) / MS_PER_DAY),
+);
 
 /** Baseline licenses for a plan (the floor that additions are measured from). */
 const baselineFor = (plan: Plan) => plan.minimum ?? plan.initialQuantity;
@@ -228,10 +233,7 @@ function OrderSummary({ quantities }: { quantities: Record<string, number> }) {
   const annualAmountAdded = lineItems.reduce((sum, i) => sum + i.amount, 0);
   const discountAnnual = annualAmountAdded * (appliedPromo?.rate ?? 0);
   const netAnnualAdded = annualAmountAdded - discountAnnual;
-  const daysRemaining = Math.max(
-    0,
-    Math.ceil((RENEWAL_DATE.getTime() - Date.now()) / MS_PER_DAY),
-  );
+  const daysRemaining = DAYS_REMAINING;
   const proratedToday = (netAnnualAdded * daysRemaining) / DAYS_IN_YEAR;
   const newAnnualRecurring =
     billables.reduce(

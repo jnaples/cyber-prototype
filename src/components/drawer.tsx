@@ -29,6 +29,9 @@ export interface DrawerProps {
   /** Header content. Pass a string or a custom node. Omit to hide the header. */
   title?: React.ReactNode;
 
+  /** Optional secondary line below the title (e.g. a selection count). */
+  subheader?: React.ReactNode;
+
   /** Body content. Rendered in the scrollable middle section. */
   children?: React.ReactNode;
 
@@ -62,6 +65,7 @@ export function Drawer({
   open,
   onClose,
   title,
+  subheader,
   children,
   actions,
   primaryAction,
@@ -128,6 +132,17 @@ export function Drawer({
                 }}
               >
                 {title}
+              </Typography>
+            </Box>
+            <Divider />
+          </>
+        )}
+
+        {subheader !== undefined && (
+          <>
+            <Box sx={{ bgcolor: "background.paper", px: 2, py: 0.5 }}>
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                {subheader}
               </Typography>
             </Box>
             <Divider />

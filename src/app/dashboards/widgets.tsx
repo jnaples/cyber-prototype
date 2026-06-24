@@ -5,7 +5,6 @@ import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   InputAdornment,
-  OutlinedInput,
   Table,
   TableBody,
   TableCell,
@@ -23,10 +22,12 @@ import {
   LineChart,
   StatCard,
 } from "./charts";
+import { useDashboardFactor } from "./dashboard-filters";
 import {
   catSlices,
   eventCats,
   eventStacks,
+  fmt,
   ownerRows,
   ownerSegs,
   PAL,
@@ -36,6 +37,9 @@ import {
   threatSlices,
   topDomains,
   topOrgs,
+  type DonutSlice,
+  type Series,
+  type StackedSeries,
 } from "./lib";
 
 // ---- standalone body components ------------------------------------------
@@ -74,25 +78,6 @@ function GeoMap() {
         Set a site location to populate the activity map.
       </Typography>
     </Box>
-  );
-}
-
-function NotesBody({
-  value,
-  onChange,
-}: {
-  value?: string;
-  onChange?: (v: string) => void;
-}) {
-  return (
-    <OutlinedInput
-      multiline
-      minRows={6}
-      value={value ?? ""}
-      onChange={(e) => onChange?.(e.target.value)}
-      placeholder="Add a note for your team…"
-      sx={{ width: "100%", bgcolor: "background.default" }}
-    />
   );
 }
 
@@ -181,15 +166,15 @@ function DataTableWidget({
 
 // ---- entry point ---------------------------------------------------------
 
-export function WidgetBody({
-  type,
-  widget,
-  onNote,
-}: {
-  type: string;
-  widget: { note?: string };
-  onNote: (v: string) => void;
-}) {
+export function WidgetBody({ type }: { type: string }) {
+  // Active Quick Filters scale every widget's numbers so the page responds.
+  const factor = useDashboardFactor();
+  const scale = (n: number) => Math.round(n * factor);
+  const scaleSeries = <T extends Series | StackedSeries>(series: T[]): T[] =>
+    series.map((s) => ({ ...s, data: s.data.map((d) => scale(d)) }));
+  const scaleSlices = (slices: DonutSlice[]): DonutSlice[] =>
+    slices.map((s) => ({ ...s, value: scale(s.value) }));
+
   switch (type) {
     case "kpi-total":
       return (
@@ -197,7 +182,7 @@ export function WidgetBody({
           icon="radio_button_checked"
           color={PAL.primary}
           label="Total Requests"
-          value="24.04K"
+          value={fmt(scale(24040))}
         />
       );
     case "kpi-allowed":
@@ -206,7 +191,7 @@ export function WidgetBody({
           icon="check"
           color={PAL.secure}
           label="Allowed Requests"
-          value="19.11K"
+          value={fmt(scale(19110))}
         />
       );
     case "kpi-blocked":
@@ -215,12 +200,17 @@ export function WidgetBody({
           icon="block"
           color={PAL.ink}
           label="Blocked Requests"
-          value="4.93K"
+          value={fmt(scale(4930))}
         />
       );
     case "kpi-threats":
       return (
-        <StatCard icon="skull" color={PAL.magenta} label="Threats" value="39" />
+        <StatCard
+          icon="skull"
+          color={PAL.magenta}
+          label="Threats"
+          value={fmt(scale(39))}
+        />
       );
 
     case "status-sites":
@@ -236,7 +226,7 @@ export function WidgetBody({
     case "status-roaming":
       return (
         <FractionCard
-          icon="smartphone"
+          icon="devices"
           color={PAL.magenta}
           num={6}
           denom={9}
@@ -265,22 +255,40 @@ export function WidgetBody({
       );
 
     case "request-activity":
-      return <LineChart series={reqSeries} labels={reqLabels} height={250} />;
+      return (
+        <LineChart
+          series={scaleSeries(reqSeries)}
+          labels={reqLabels}
+          height={250}
+        />
+      );
     case "threats-time":
-      return <LineChart series={threatSeries} labels={reqLabels} height={230} />;
+      return (
+        <LineChart
+          series={scaleSeries(threatSeries)}
+          labels={reqLabels}
+          height={230}
+        />
+      );
 
     case "requests-bar":
       return (
-        <BarChart categories={eventCats} stacks={eventStacks} height={250} />
+        <BarChart
+          categories={eventCats}
+          stacks={scaleSeries(eventStacks)}
+          height={250}
+        />
       );
 
     case "activity-owner":
       return <HBarChart rows={ownerRows} segments={ownerSegs} />;
 
     case "cat-breakdown":
-      return <Donut slices={catSlices} donut size={170} label="domains" />;
+      return (
+        <Donut slices={scaleSlices(catSlices)} donut size={170} label="domains" />
+      );
     case "threat-breakdown":
-      return <Donut slices={threatSlices} size={170} />;
+      return <Donut slices={scaleSlices(threatSlices)} size={170} />;
 
     case "geo-activity":
       return <GeoMap />;
@@ -305,9 +313,6 @@ export function WidgetBody({
           rows={topOrgs}
         />
       );
-
-    case "notes":
-      return <NotesBody value={widget.note} onChange={onNote} />;
 
     default:
       return <Box sx={{ p: 2, color: "text.disabled" }}>Unknown widget</Box>;
