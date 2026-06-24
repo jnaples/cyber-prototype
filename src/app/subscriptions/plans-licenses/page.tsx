@@ -235,7 +235,8 @@ function OrderSummary({ quantities }: { quantities: Record<string, number> }) {
   const proratedToday = (netAnnualAdded * daysRemaining) / DAYS_IN_YEAR;
   const newAnnualRecurring =
     billables.reduce(
-      (sum, item) => sum + (quantities[item.name] ?? item.baseline) * item.price,
+      (sum, item) =>
+        sum + (quantities[item.name] ?? item.baseline) * item.price,
       0,
     ) - discountAnnual;
 
@@ -289,14 +290,20 @@ function OrderSummary({ quantities }: { quantities: Record<string, number> }) {
             key={name}
             label={`${name} +${added.toLocaleString()} licenses`}
             caption={`${usd(price)} per license / year`}
-            value={`${usd(amount)}/year`}
+            value={`${usd(amount)} / year`}
           />
         ))}
         {appliedPromo && (
-          <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+          <Box
+            sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}
+          >
             <Typography
               variant="body2"
-              sx={{ color: "success.main", minWidth: 0, wordBreak: "break-word" }}
+              sx={{
+                color: "success.main",
+                minWidth: 0,
+                wordBreak: "break-word",
+              }}
             >
               Promo discount ({appliedPromo.code})
             </Typography>
@@ -304,7 +311,7 @@ function OrderSummary({ quantities }: { quantities: Record<string, number> }) {
               variant="body2"
               sx={{ color: "success.main", textAlign: "right", flexShrink: 0 }}
             >
-              −{usd(discountAnnual)}/year
+              −{usd(discountAnnual)} / year
             </Typography>
           </Box>
         )}
@@ -318,7 +325,7 @@ function OrderSummary({ quantities }: { quantities: Record<string, number> }) {
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <SummaryLine
             label="Annual amount added"
-            value={`${usd(annualAmountAdded)}/year`}
+            value={`${usd(annualAmountAdded)} / year`}
           />
           <SummaryLine
             label={`Prorated for ${daysRemaining} ${
@@ -421,7 +428,7 @@ const FEATURES: Feature[] = [
     description:
       "Stream DNS query logs, audit events, and policy changes to S3, Datadog, Splunk, or any S3-compatible bucket. Includes scheduled CSV exports and webhooks.",
     price: "$1,188.00",
-    unit: "flat rate / year",
+    unit: " / year",
     action: "add",
   },
   {
@@ -448,7 +455,7 @@ const FEATURES: Feature[] = [
     description:
       "Executive-level dashboards, scheduled PDF reports, anomaly alerting, and 2-year log retention. Integrates with SIEM tools.",
     price: "$588.00",
-    unit: "flat rate / yr",
+    unit: " / yr",
     action: "add",
   },
   {
@@ -457,7 +464,7 @@ const FEATURES: Feature[] = [
     description:
       "Multi-tenant management console for managed service providers. Provision, configure, and report across all customer accounts from a single pane of glass.",
     price: "$1,788.00",
-    unit: "flat rate / yr",
+    unit: " / yr",
     action: "contact",
   },
 ];
@@ -684,10 +691,7 @@ export default function PlansLicensesPage() {
           </CardContent>
         </Card>
 
-        <FeaturesCard
-          quantities={quantities}
-          onQuantityChange={setQuantity}
-        />
+        <FeaturesCard quantities={quantities} onQuantityChange={setQuantity} />
       </Box>
 
       <Card sx={{ position: "sticky", top: 0 }}>
