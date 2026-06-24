@@ -292,7 +292,7 @@ function ActiveFiltersBar({
         flexWrap: "wrap",
         gap: 1.5,
         mx: 2,
-        mb: 1,
+        my: 1,
       }}
     >
       <Typography
