@@ -5,6 +5,8 @@ import {
   Collapse,
   Divider,
   IconButton,
+  Menu,
+  MenuItem,
   Stack,
   Typography,
 } from "@mui/material";
@@ -29,6 +31,32 @@ type InvoiceRow = {
   status: "Paid";
   total: string;
 };
+
+function InvoiceActionsCell() {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  return (
+    <>
+      <IconButton
+        size="small"
+        aria-label="more options"
+        onClick={(e) => setAnchorEl(e.currentTarget)}
+      >
+        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+          more_horiz
+        </span>
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <MenuItem onClick={() => setAnchorEl(null)}>View invoice</MenuItem>
+      </Menu>
+    </>
+  );
+}
 
 const MONTHS = [
   "January",
@@ -100,13 +128,7 @@ const INVOICE_COLUMNS: GridColDef[] = [
     resizable: false,
     align: "center",
     headerAlign: "center",
-    renderCell: () => (
-      <IconButton size="small">
-        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-          more_horiz
-        </span>
-      </IconButton>
-    ),
+    renderCell: () => <InvoiceActionsCell />,
   },
 ];
 
@@ -306,7 +328,7 @@ function SummaryDetails() {
           </Typography>
         </Box>
         <Box
-          sx={{
+          sx={(theme) => ({
             bgcolor: "background.neutral",
             borderRadius: 1,
             px: 2,
@@ -314,7 +336,11 @@ function SummaryDetails() {
             display: "flex",
             flexDirection: "column",
             gap: 1,
-          }}
+            // Match the Order Summary surface: darker default in dark mode.
+            ...theme.applyStyles("dark", {
+              bgcolor: theme.vars.palette.background.default,
+            }),
+          })}
         >
           {DISCOUNTS.map((discount) => (
             <DiscountRow key={discount.label} discount={discount} />
