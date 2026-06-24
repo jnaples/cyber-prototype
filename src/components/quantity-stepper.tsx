@@ -53,14 +53,20 @@ export function QuantityStepper({
 
   const display = draft ?? String(value);
 
-  const buttonSx = {
+  // Buttons sit a touch darker than the input field. In light mode that's the
+  // neutral grey over white; in dark mode `neutral` is lighter than the paper
+  // field (looks inverted), so drop to the darker default surface instead.
+  const buttonSx = (theme: Theme) => ({
     width: 36,
     height: "100%",
     borderRadius: 0,
     bgcolor: "background.neutral",
     color: "text.primary",
     "& .MuiSvgIcon-root": { fontSize: 16 },
-  } as const;
+    ...theme.applyStyles("dark", {
+      bgcolor: theme.vars.palette.background.default,
+    }),
+  });
 
   return (
     <Box
@@ -81,7 +87,7 @@ export function QuantityStepper({
         aria-label="Decrease"
         disabled={value <= min}
         onClick={() => onChange(clamp(value - step))}
-        sx={{ ...buttonSx, borderRight: 1, borderColor: "divider" }}
+        sx={[buttonSx, { borderRight: 1, borderColor: "divider" }]}
       >
         <RemoveIcon />
       </IconButton>
@@ -102,7 +108,7 @@ export function QuantityStepper({
         aria-label="Increase"
         disabled={value >= max}
         onClick={() => onChange(clamp(value + step))}
-        sx={{ ...buttonSx, borderLeft: 1, borderColor: "divider" }}
+        sx={[buttonSx, { borderLeft: 1, borderColor: "divider" }]}
       >
         <AddIcon />
       </IconButton>

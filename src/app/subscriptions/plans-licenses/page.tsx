@@ -429,9 +429,11 @@ const FEATURES: Feature[] = [
     category: "Data feature",
     description:
       "Stream DNS query logs, audit events, and policy changes to S3, Datadog, Splunk, or any S3-compatible bucket. Includes scheduled CSV exports and webhooks.",
-    price: "$1,188.00",
-    unit: " / year",
-    action: "add",
+    price: "$0.25",
+    unit: "per license / year",
+    action: "stepper",
+    unitPrice: 0.25,
+    baseline: 0,
   },
   {
     name: "Guest Wi-Fi Access Points",
@@ -579,7 +581,7 @@ function FeatureRow({
             min={feature.baseline ?? 0}
             onChange={onQuantityChange ?? (() => {})}
             ariaLabel={`${feature.name} quantity`}
-            sx={{ width: 126, flexShrink: 0 }}
+            sx={{ flexShrink: 0 }}
           />
         )}
       </Box>
@@ -652,14 +654,16 @@ export default function PlansLicensesPage() {
     <Box
       sx={{
         display: "grid",
-        gridTemplateColumns: "repeat(3, 1fr)",
+        // Stacked single column on iPad portrait / phones; 3-up side-by-side
+        // (Plans+Features span 2, Order Summary in the third) on wider screens.
+        gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
         gap: 2,
         alignItems: "start",
       }}
     >
       <Box
         sx={{
-          gridColumn: "span 2",
+          gridColumn: { md: "span 2" },
           display: "flex",
           flexDirection: "column",
           gap: 2,
@@ -696,7 +700,7 @@ export default function PlansLicensesPage() {
         <FeaturesCard quantities={quantities} onQuantityChange={setQuantity} />
       </Box>
 
-      <Card sx={{ position: "sticky", top: 0 }}>
+      <Card sx={{ position: { md: "sticky" }, top: { md: 0 } }}>
         <CardHeader title="Order Summary" />
         <CardContent>
           <OrderSummary quantities={quantities} />

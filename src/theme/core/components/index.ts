@@ -3,6 +3,7 @@ import { button } from "./button";
 import { card } from "./card";
 import { chip } from "./chip";
 import { circularProgress } from "./circular-progress";
+import { container } from "./container";
 import { dataGrid } from "./data-grid";
 import { form } from "./form";
 import { formHelperText } from "./form-helper-text";
@@ -24,6 +25,7 @@ export const components = {
   ...formHelperText,
   ...card,
   ...chip,
+  ...container,
   ...tab,
   ...global,
   ...tooltip,
