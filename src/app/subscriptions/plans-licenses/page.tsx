@@ -52,6 +52,26 @@ const usd = (value: number, options?: Intl.NumberFormatOptions) =>
   });
 
 // ---------------------------------------------------------------------------
+// Shared
+// ---------------------------------------------------------------------------
+
+/** "$X.XX unit" — bold primary price followed by secondary unit text. Used by
+ * both plan rows and feature rows. */
+function PriceText({ price, unit }: { price: string; unit: string }) {
+  return (
+    <Typography variant="body2" sx={{ color: "text.secondary" }}>
+      <Box
+        component="span"
+        sx={{ fontWeight: 600, fontSize: 16, color: "text.primary" }}
+      >
+        {price}
+      </Box>{" "}
+      {unit}
+    </Typography>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Plan row
 // ---------------------------------------------------------------------------
 
@@ -83,15 +103,7 @@ function PlanRow({ plan, quantity, onQuantityChange, isLast }: PlanRowProps) {
             {quantity.toLocaleString()} licenses
           </Box>
         </Typography>
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          <Box
-            component="span"
-            sx={{ fontWeight: 600, fontSize: 16, color: "text.primary" }}
-          >
-            {usd(plan.price)}
-          </Box>{" "}
-          per license / year
-        </Typography>
+        <PriceText price={usd(plan.price)} unit="per license / year" />
       </Box>
 
       <Box
@@ -514,15 +526,7 @@ function StatusChip({ status }: { status: "active" | "enterprise" }) {
 function PriceLine({ feature }: { feature: Feature }) {
   return (
     <Box>
-      <Typography variant="body2" sx={{ color: "text.secondary" }}>
-        <Box
-          component="span"
-          sx={{ fontWeight: 600, fontSize: 16, color: "text.primary" }}
-        >
-          {feature.price}
-        </Box>{" "}
-        {feature.unit}
-      </Typography>
+      <PriceText price={feature.price} unit={feature.unit} />
       {feature.seats && (
         <Typography variant="body2" sx={{ color: "text.secondary" }}>
           {feature.seats}
