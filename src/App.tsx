@@ -18,6 +18,10 @@ import HomePage from "@/app/page";
 import QueryLogsPage from "@/app/query-logs/page";
 import CustomReportsPage from "@/app/reporting/custom-reports/page";
 import SettingsPage from "@/app/settings/page";
+import UnblockRequestsLayout from "@/app/unblock-requests/layout";
+import UnblockRequestsIndexPage from "@/app/unblock-requests/page";
+import ActiveRequestsPage from "@/app/unblock-requests/active-requests/page";
+import RequestHistoryPage from "@/app/unblock-requests/request-history/page";
 import SubscriptionsLayout from "@/app/subscriptions/layout";
 import SubscriptionsIndexPage from "@/app/subscriptions/page";
 import BillingPage from "@/app/subscriptions/billing/page";
@@ -47,6 +51,12 @@ function App() {
           <Route index element={<DeploymentsIndexPage />} />
           <Route path="sites" element={<SitesPage />} />
           <Route path="roaming-clients" element={<RoamingClientsPage />} />
+        </Route>
+
+        <Route path="unblock-requests" element={<UnblockRequestsLayout />}>
+          <Route index element={<UnblockRequestsIndexPage />} />
+          <Route path="active" element={<ActiveRequestsPage />} />
+          <Route path="history" element={<RequestHistoryPage />} />
         </Route>
 
         <Route path="design-system">

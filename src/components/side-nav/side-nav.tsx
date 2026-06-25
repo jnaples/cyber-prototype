@@ -1,5 +1,5 @@
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Box, Collapse, MenuItem, Select } from "@mui/material";
+import { Badge, Box, Collapse, MenuItem, Select } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
 import React, { useState } from "react";
@@ -378,6 +378,17 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                         {/* Added ml for some spacing */}
                         <span>Policies</span>
                       </Box>
+                      {/* Pink dot signifying a nested badge (Unblock Requests). */}
+                      <Box
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: "999px",
+                          bgcolor: "tertiary.main",
+                          mx: 1,
+                          flexShrink: 0,
+                        }}
+                      />
                     </div>
 
                     {/* Expand/Collapse Icon */}
@@ -435,6 +446,30 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   onClick={() => handleItemClick("policies-block-pages")}
                 >
                   <span style={{ margin: "4px 0" }}>Block Pages</span>
+                </Box>
+                <Box
+                  sx={{
+                    ...getSubItemStyles("policies-unblock-requests"),
+                    gap: 0,
+                  }}
+                  onClick={() => {
+                    handleItemClick("policies-unblock-requests");
+                    navigate("/unblock-requests");
+                  }}
+                >
+                  <span style={{ margin: "4px 0" }}>Unblock Requests</span>
+                  <Badge
+                    badgeContent={10}
+                    sx={{
+                      mx: 1,
+                      "& .MuiBadge-badge": {
+                        position: "static",
+                        transform: "none",
+                        bgcolor: "tertiary.main",
+                        color: "tertiary.contrastText",
+                      },
+                    }}
+                  />
                 </Box>
               </Box>
             </Collapse>
