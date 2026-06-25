@@ -148,12 +148,6 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        {ROW_ACTION_ITEMS.map((label) => (
-          <MenuItem key={label} onClick={() => setAnchorEl(null)}>
-            {label}
-          </MenuItem>
-        ))}
-        <Divider />
         <MenuItem
           onClick={() => {
             setAnchorEl(null);
@@ -162,6 +156,12 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
         >
           Investigate Query
         </MenuItem>
+        <Divider />
+        {ROW_ACTION_ITEMS.map((label) => (
+          <MenuItem key={label} onClick={() => setAnchorEl(null)}>
+            {label}
+          </MenuItem>
+        ))}
       </Menu>
       <Modal
         open={investigateOpen}
