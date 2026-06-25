@@ -47,25 +47,13 @@ export function StatCard({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 2,
         p: 1,
         height: "100%",
         textAlign: "center",
       }}
     >
-      <Box
-        sx={{
-          width: 52,
-          height: 52,
-          borderRadius: 1,
-          bgcolor: color + "14",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color,
-        }}
-      >
-        <span className="material-symbols-outlined" style={{ fontSize: 26 }}>
+      <Box sx={{ display: "flex", color }}>
+        <span className="material-symbols-outlined" style={{ fontSize: 40 }}>
           {icon}
         </span>
       </Box>
@@ -77,6 +65,8 @@ export function StatCard({
           lineHeight: 1,
           letterSpacing: "-0.5px",
           color: "text.primary",
+          mt: 2,
+          mb: 1,
         }}
       >
         {typeof value === "number" ? fmt(value) : value}
@@ -117,14 +107,13 @@ export function FractionCard({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 2,
         p: 1,
         height: "100%",
         textAlign: "center",
       }}
     >
-      <Box sx={{ color }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 30 }}>
+      <Box sx={{ display: "flex", color }}>
+        <span className="material-symbols-outlined" style={{ fontSize: 40 }}>
           {icon}
         </span>
       </Box>
@@ -132,10 +121,12 @@ export function FractionCard({
         sx={{
           fontFamily: (t) => t.typography.fontSecondaryFamily,
           fontWeight: 700,
-          fontSize: 28,
+          fontSize: 24,
           lineHeight: 1,
           letterSpacing: "-0.5px",
           color: "text.primary",
+          mt: 2,
+          mb: 1,
         }}
       >
         {num}
