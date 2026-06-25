@@ -396,7 +396,7 @@ export default function DashboardsPage() {
                 color: "var(--dnsf-palette-text-disabled)",
               }}
             >
-              expand_more
+              {switcherAnchor ? "expand_less" : "expand_more"}
             </span>
           </Box>
         )}
@@ -532,7 +532,7 @@ export default function DashboardsPage() {
               className="material-symbols-outlined"
               style={{ fontSize: 16 }}
             >
-              add
+              filter_alt
             </span>
           }
         >
@@ -548,7 +548,7 @@ export default function DashboardsPage() {
               className="material-symbols-outlined"
               style={{ fontSize: 16 }}
             >
-              filter_alt
+              tune
             </span>
           }
         >

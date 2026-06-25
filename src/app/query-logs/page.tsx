@@ -487,9 +487,40 @@ const FETCH_DELAY_MS = 700;
 function QueryLogsEmptyOverlay() {
   return (
     <EmptyState
+      illustration="/searching.svg"
       title="Select an Organization"
       description="Choose an Organization to view its DNS Query Logs."
     />
+  );
+}
+
+// Shown when an Organization is applied but filters/search return no rows.
+function QueryLogsNoResultsOverlay() {
+  return (
+    <Box
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 0.5,
+        p: 3,
+        textAlign: "center",
+        color: "text.primary",
+      }}
+    >
+      <Typography
+        sx={{
+          fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
+          fontWeight: 600,
+          fontSize: 18,
+        }}
+      >
+        No query log data to display
+      </Typography>
+      <Typography variant="body1">Adjust filters to load results.</Typography>
+    </Box>
   );
 }
 
@@ -1330,7 +1361,11 @@ export default function QueryLogsPage() {
             rows={visibleRows}
             columns={columns}
             loading={isFetching}
-            noRowsOverlay={QueryLogsEmptyOverlay}
+            noRowsOverlay={
+              appliedOrg === null
+                ? QueryLogsEmptyOverlay
+                : QueryLogsNoResultsOverlay
+            }
             showSearch={false}
             timeRangeField="time"
             pinnedShadowFields={{ left: "time", right: "actions" }}
