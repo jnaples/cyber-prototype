@@ -80,6 +80,7 @@ const INVESTIGATE_FILTER_ID = "investigate-query";
 // RowActionsCell when the user runs Investigate Query.
 const InvestigateContext = createContext<{
   setDefaultView: (value: string) => void;
+  setInvestigatedRow: (id: string | number) => void;
 } | null>(null);
 
 function RowActionsCell({ row }: { row: QueryLogRow }) {
@@ -119,6 +120,7 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
       );
     }
     investigateCtx?.setDefaultView("investigative");
+    investigateCtx?.setInvestigatedRow(row.id);
     setInvestigateOpen(false);
   };
   return (
@@ -687,6 +689,11 @@ export default function QueryLogsPage() {
     Record<string, boolean>
   >({});
   const [selectedView, setSelectedView] = useState<string>("default");
+  // Row most recently acted on via "Investigate Query" — highlighted like a
+  // selected row until the time-window filter is cleared.
+  const [investigatedRowId, setInvestigatedRowId] = useState<
+    string | number | null
+  >(null);
   const handleDefaultViewChange = (value: string) => {
     setSelectedView(value);
     const preset = COLUMN_VIEW_PRESETS[value];
@@ -797,7 +804,10 @@ export default function QueryLogsPage() {
 
   return (
     <InvestigateContext.Provider
-      value={{ setDefaultView: handleDefaultViewChange }}
+      value={{
+        setDefaultView: handleDefaultViewChange,
+        setInvestigatedRow: setInvestigatedRowId,
+      }}
     >
       <PageShell
         header={
@@ -1329,6 +1339,18 @@ export default function QueryLogsPage() {
             onDefaultViewChange={handleDefaultViewChange}
             rowSelectionModel={rowSelection}
             onRowSelectionModelChange={setRowSelection}
+            getRowClassName={(params) =>
+              params.id === investigatedRowId ? "Mui-selected" : ""
+            }
+            onFilterModelChange={(model) => {
+              // Clearing the (time-window) filter removes the investigate
+              // highlight too.
+              if (
+                !model.items.some((it) => it.id === INVESTIGATE_FILTER_ID)
+              ) {
+                setInvestigatedRowId(null);
+              }
+            }}
             bulkActions={
               selectedRowCount > 0 && (
                 <DataTableBulkActions

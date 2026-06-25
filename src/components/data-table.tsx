@@ -623,6 +623,9 @@ export interface DataTableProps {
   onColumnVisibilityModelChange?: (model: Record<string, boolean>) => void;
   rowSelectionModel?: DataGridProps["rowSelectionModel"];
   onRowSelectionModelChange?: DataGridProps["onRowSelectionModelChange"];
+  getRowClassName?: DataGridProps["getRowClassName"];
+  /** Notified whenever the grid's filter model changes (add/edit/clear). */
+  onFilterModelChange?: (model: GridFilterModel) => void;
   bulkActions?: React.ReactNode;
   pinnedShadowFields?: { left?: string; right?: string };
   sx?: DataGridProps["sx"];
@@ -660,6 +663,8 @@ export function DataTable({
   onColumnVisibilityModelChange,
   rowSelectionModel,
   onRowSelectionModelChange,
+  getRowClassName,
+  onFilterModelChange,
   bulkActions,
   pinnedShadowFields,
   sx: sxOverrides,
@@ -1041,8 +1046,12 @@ export function DataTable({
             onColumnVisibilityModelChange={onColumnVisibilityModelChange}
             rowSelectionModel={rowSelectionModel}
             onRowSelectionModelChange={onRowSelectionModelChange}
+            getRowClassName={getRowClassName}
             filterModel={filterModel}
-            onFilterModelChange={setFilterModel}
+            onFilterModelChange={(model) => {
+              setFilterModel(model);
+              onFilterModelChange?.(model);
+            }}
             disableRowSelectionOnClick
             loading={loading}
             slots={{
