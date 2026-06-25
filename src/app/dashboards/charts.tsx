@@ -73,7 +73,7 @@ export function StatCard({
         sx={{
           fontFamily: (t) => t.typography.fontSecondaryFamily,
           fontWeight: 700,
-          fontSize: 32,
+          fontSize: 24,
           lineHeight: 1,
           letterSpacing: "-0.5px",
           color: "text.primary",

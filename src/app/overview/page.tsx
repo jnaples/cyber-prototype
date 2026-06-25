@@ -105,6 +105,7 @@ export default function Page() {
           <Card sx={{ height: "100%" }}>
             <CardContent
               sx={{
+                p: 2,
                 display: "flex",
                 flexDirection: "column",
                 height: "100%",
@@ -265,6 +266,7 @@ export default function Page() {
           <Card sx={{ height: "100%" }}>
             <CardContent
               sx={{
+                p: 2,
                 display: "flex",
                 flexDirection: "column",
                 height: "100%",
