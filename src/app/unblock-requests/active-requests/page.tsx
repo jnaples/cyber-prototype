@@ -1,15 +1,16 @@
 import {
+  Box,
   IconButton,
   ListItemIcon,
   Menu,
   MenuItem,
+  Typography,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import { format as fnsFormat } from "date-fns";
 import { useState } from "react";
 
 import { DataTable } from "@/components/data-table";
-import { EmptyState } from "@/components/empty-state";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
 // ---------------------------------------------------------------------------
@@ -244,13 +245,22 @@ const rows = REQUESTS.map((request, i) => {
   };
 });
 
+// The table always has rows, so the no-rows overlay only appears when a search
+// filters everything out.
 function ActiveRequestsEmptyOverlay() {
   return (
-    <EmptyState
-      illustration="/unblock-requests.svg"
-      title="No active requests"
-      description="Unblock requests awaiting review will appear here."
-    />
+    <Box
+      sx={{
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Typography variant="body2" sx={{ color: "text.primary" }}>
+        No results found.
+      </Typography>
+    </Box>
   );
 }
 
@@ -261,7 +271,6 @@ export default function ActiveRequestsPage() {
         rows={rows}
         columns={columns}
         checkboxSelection={false}
-        showFilters={false}
         showDefaultView={false}
         noRowsOverlay={ActiveRequestsEmptyOverlay}
       />

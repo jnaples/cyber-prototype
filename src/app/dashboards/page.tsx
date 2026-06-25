@@ -515,46 +515,45 @@ export default function DashboardsPage() {
         sx={{
           display: "flex",
           alignItems: "center",
-          gap: 2.25,
+          gap: 1,
           px: 2,
           pt: 1.5,
           mb: 2,
           fontSize: 14,
         }}
       >
-        <Box
-          role="button"
+        <Button
+          variant="text"
+          color="secondary"
+          size="small"
           onClick={() => setQuickFiltersOpen(true)}
-          sx={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 0.75,
-            color: "text.secondary",
-            fontWeight: 500,
-            cursor: "pointer",
-          }}
+          startIcon={
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 16 }}
+            >
+              add
+            </span>
+          }
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-            add
-          </span>
           Quick filters
-        </Box>
+        </Button>
         <Box sx={{ width: "1px", height: 16, bgcolor: "divider" }} />
-        <Box
-          sx={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 0.75,
-            color: "text.secondary",
-            fontWeight: 500,
-            cursor: "pointer",
-          }}
+        <Button
+          variant="text"
+          color="secondary"
+          size="small"
+          startIcon={
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 16 }}
+            >
+              filter_alt
+            </span>
+          }
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-            filter_alt
-          </span>
           Advanced filters
-        </Box>
+        </Button>
         {filterChips.length > 0 && (
           <Box sx={{ width: "1px", height: 16, bgcolor: "divider" }} />
         )}

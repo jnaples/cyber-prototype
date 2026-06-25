@@ -128,10 +128,20 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
       sx={{
         display: "flex",
         alignItems: "center",
-        gap: 1,
         height: "100%",
       }}
     >
+      <ArrowTooltip title="Investigate Query Log">
+        <IconButton
+          size="small"
+          aria-label="Investigate Query Log"
+          onClick={() => setInvestigateOpen(true)}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+            manage_search
+          </span>
+        </IconButton>
+      </ArrowTooltip>
       <IconButton
         size="small"
         aria-label="more options"
@@ -148,15 +158,6 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <MenuItem
-          onClick={() => {
-            setAnchorEl(null);
-            setInvestigateOpen(true);
-          }}
-        >
-          Investigate Query
-        </MenuItem>
-        <Divider />
         {ROW_ACTION_ITEMS.map((label) => (
           <MenuItem key={label} onClick={() => setAnchorEl(null)}>
             {label}
@@ -362,7 +363,7 @@ const columns: GridColDef[] = [
   {
     field: "actions",
     headerName: "Actions",
-    width: 80,
+    width: 104,
     sortable: false,
     filterable: false,
     resizable: false,

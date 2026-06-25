@@ -837,7 +837,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           {/* Organization Link */}
           <Box sx={getDropdownWrapperStyles("organization")}>
             {withCollapsedTooltip(
-              "Organization",
+              "MSP",
               <Box
                 sx={getItemStyles(
                   "organization",
@@ -858,9 +858,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                     {/* Container for the BusinessOutlined icon and Organization span */}
                     <div style={{ display: "flex", alignItems: "center" }}>
                       <Icon name="business" />
-                      <span style={{ margin: "4px 0 4px 8px" }}>
-                        Organization
-                      </span>
+                      <span style={{ margin: "4px 0 4px 8px" }}>MSP</span>
                     </div>
 
                     {/* Expand/Collapse Icon */}

@@ -2,9 +2,7 @@
 // (checkboxes inside) for the other dimensions. Selections stage in a draft
 // and commit to the page on Apply.
 
-import DevicesOutlinedIcon from "@mui/icons-material/DevicesOutlined";
 import {
-  Box,
   Checkbox,
   FormControl,
   FormLabel,
@@ -14,7 +12,6 @@ import {
   Typography,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
-import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
@@ -37,13 +34,11 @@ function MultiSelect({
   options,
   selected,
   onChange,
-  iconFor,
 }: {
   label: string;
   options: string[];
   selected: string[];
   onChange: (values: string[]) => void;
-  iconFor?: (option: string) => ReactNode;
 }) {
   const handleChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value;
@@ -72,30 +67,15 @@ function MultiSelect({
           )
         }
       >
-        {options.map((option) => {
-          const icon = iconFor?.(option);
-          return (
-            <MenuItem key={option} value={option}>
-              <Checkbox size="small" checked={selected.includes(option)} />
-              {icon && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    mr: 1,
-                    color: "text.secondary",
-                    "& .MuiSvgIcon-root": { fontSize: 20 },
-                  }}
-                >
-                  {icon}
-                </Box>
-              )}
-              <ListItemText
-                primary={option}
-                slotProps={{ primary: { variant: "body2" } }}
-              />
-            </MenuItem>
-          );
-        })}
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            <Checkbox size="small" checked={selected.includes(option)} />
+            <ListItemText
+              primary={option}
+              slotProps={{ primary: { variant: "body2" } }}
+            />
+          </MenuItem>
+        ))}
       </Select>
     </FormControl>
   );
@@ -175,9 +155,6 @@ export function QuickFilters({
         options={DEPLOYMENT_TYPE_OPTIONS}
         selected={draft.deploymentTypes}
         onChange={(v) => setGroup("deploymentTypes", v)}
-        iconFor={(option) =>
-          option === "Roaming Clients" ? <DevicesOutlinedIcon /> : null
-        }
       />
       <MultiSelect
         label="Top categories"
