@@ -1,6 +1,7 @@
 import {
   Alert,
   Box,
+  Button,
   IconButton,
   ListItemIcon,
   Menu,
@@ -114,6 +115,24 @@ export default function ManageDashboardsPage() {
         />
       }
     >
+      <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/dashboards")}
+          startIcon={
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 20 }}
+            >
+              add
+            </span>
+          }
+        >
+          Create Dashboard
+        </Button>
+      </Box>
+
       <TabbedDataCard
         tabs={tabs}
         activeTab={activeTab}
