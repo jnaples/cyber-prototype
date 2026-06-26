@@ -3,7 +3,9 @@
 
 import {
   Box,
+  Button,
   ClickAwayListener,
+  Divider,
   IconButton,
   InputAdornment,
   Paper,
@@ -13,27 +15,20 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
-const ALL_DASHBOARDS = [
-  "FilterDNS Overview",
-  "Security Summary",
-  "MSP Client Health",
-  "Events – 2025",
-  "Threat Activity",
-  "Client Health – MSP",
-  "Roaming Clients",
-  "Weekly Executive Summary",
-];
+import { DASHBOARD_NAMES } from "./lib";
+
+const ALL_DASHBOARDS = DASHBOARD_NAMES;
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <Typography
+      variant="overline"
       sx={{
-        fontSize: 14,
-        fontWeight: 700,
-        color: "text.primary",
+        display: "block",
+        color: "text.secondary",
         px: 1.25,
         pt: 1.25,
-        pb: 0.75,
+        pb: 0,
       }}
     >
       {children}
@@ -59,7 +54,7 @@ function DashRow({
     <Box
       role="button"
       onClick={() => onPick(name)}
-      sx={(theme) => ({
+      sx={{
         display: "flex",
         alignItems: "center",
         gap: 1.25,
@@ -72,22 +67,12 @@ function DashRow({
         py: 1,
         fontSize: 14,
         fontWeight: 500,
-        color: selected ? "primary.main" : "text.primary",
+        color: "text.primary",
         "&:hover": {
-          bgcolor: selected ? "rgba(53,39,253,.08)" : "background.default",
+          bgcolor: selected ? "rgba(53,39,253,.08)" : "action.hover",
         },
-        ...(selected &&
-          theme.applyStyles("dark", {
-            color: theme.vars.palette.primary.light,
-          })),
-      })}
+      }}
     >
-      <span
-        className="material-symbols-outlined"
-        style={{ fontSize: 16, opacity: selected ? 1 : 0.45, flexShrink: 0 }}
-      >
-        {selected ? "check" : "dashboard"}
-      </span>
       <Box
         sx={{
           flex: 1,
@@ -132,6 +117,7 @@ export function DashSwitcher({
   current,
   onPick,
   onCreate,
+  onManage,
   onClose,
 }: {
   anchorEl: HTMLElement | null;
@@ -139,6 +125,7 @@ export function DashSwitcher({
   current: string;
   onPick: (name: string) => void;
   onCreate: () => void;
+  onManage: () => void;
   onClose: () => void;
 }) {
   const [q, setQ] = useState("");
@@ -227,6 +214,7 @@ export function DashSwitcher({
                 ))}
               </>
             )}
+            {favList.length > 0 && otherList.length > 0 && <Divider />}
             {otherList.length > 0 && (
               <>
                 <SectionLabel>Other dashboards</SectionLabel>
@@ -257,37 +245,51 @@ export function DashSwitcher({
             )}
           </Box>
 
-          <Box sx={{ borderTop: "1px solid", borderColor: "divider", p: 0.75 }}>
-            <Box
-              role="button"
+          <Box
+            sx={{
+              borderTop: "1px solid",
+              borderColor: "divider",
+              px: 0.75,
+              py: 1,
+              display: "flex",
+              flexDirection: "column",
+              gap: 1,
+            }}
+          >
+            <Button
+              variant="text"
+              color="secondary"
+              fullWidth
               onClick={onCreate}
-              sx={(theme) => ({
-                display: "flex",
-                alignItems: "center",
-                gap: 1.25,
-                width: "100%",
-                textAlign: "left",
-                cursor: "pointer",
-                borderRadius: 1,
-                px: 1.25,
-                py: 1.25,
-                fontSize: 14,
-                fontWeight: 600,
-                color: "primary.main",
-                "&:hover": { bgcolor: "rgba(53,39,253,.06)" },
-                ...theme.applyStyles("dark", {
-                  color: theme.vars.palette.primary.light,
-                }),
-              })}
+              startIcon={
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 16 }}
+                >
+                  add
+                </span>
+              }
+              sx={{ justifyContent: "flex-start" }}
             >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 16 }}
-              >
-                add
-              </span>
               Create dashboard
-            </Box>
+            </Button>
+            <Button
+              variant="text"
+              color="secondary"
+              fullWidth
+              onClick={onManage}
+              startIcon={
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 16 }}
+                >
+                  dashboard
+                </span>
+              }
+              sx={{ justifyContent: "flex-start" }}
+            >
+              Manage Dashboards
+            </Button>
           </Box>
         </Paper>
       </ClickAwayListener>

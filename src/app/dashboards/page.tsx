@@ -19,6 +19,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 
 import { Modal } from "@/components/modal";
 
@@ -29,7 +30,7 @@ import {
   TIME_RANGE_OPTIONS,
   filterFactor,
   type DashboardFilters,
-} from "./dashboard-filters";
+} from "./dashboard-filters";on 
 import { QuickFilters } from "./quick-filters";
 import { DashCard } from "./dash-card";
 import { DashSwitcher } from "./dash-switcher";
@@ -104,61 +105,66 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        py: 11,
-        px: 2,
         gap: 2,
+        px: 2,
+        py: 3,
         textAlign: "center",
       }}
     >
+      <Box component="img" src="/dashboard.svg" alt="" sx={{ width: 80, height: 80 }} />
       <Box
         sx={{
-          width: 76,
-          height: 76,
-          borderRadius: 2,
-          bgcolor: "rgba(53,39,253,.08)",
-          color: "primary.main",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          gap: 2,
+          px: 2,
         }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 36 }}>
-          dashboard
-        </span>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <Typography
+            sx={{
+              fontFamily: (t) => t.typography.fontSecondaryFamily,
+              fontWeight: 600,
+              fontSize: 18,
+              lineHeight: 1.33,
+              color: "text.primary",
+            }}
+          >
+            Build your dashboard
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: 14,
+              lineHeight: 1.34,
+              color: "text.primary",
+              maxWidth: 360,
+              textAlign: "center",
+            }}
+          >
+            This dashboard is empty. Add KPI counters, charts, maps, and tables
+            to track exactly what matters to you.
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          onClick={onAdd}
+          startIcon={
+            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+              add
+            </span>
+          }
+        >
+          Add your first widget
+        </Button>
       </Box>
-      <Typography
-        sx={{
-          fontFamily: (t) => t.typography.fontSecondaryFamily,
-          fontWeight: 600,
-          fontSize: 22,
-          color: "text.primary",
-        }}
-      >
-        Build your dashboard
-      </Typography>
-      <Typography
-        sx={{
-          fontSize: 14,
-          color: "text.secondary",
-          opacity: 0.8,
-          maxWidth: 360,
-          lineHeight: 1.5,
-        }}
-      >
-        This dashboard is empty. Add KPI counters, charts, maps, and tables to
-        track exactly what matters to you.
-      </Typography>
-      <Button
-        variant="contained"
-        onClick={onAdd}
-        startIcon={
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-            add
-          </span>
-        }
-      >
-        Add your first widget
-      </Button>
     </Box>
   );
 }
@@ -189,6 +195,7 @@ function readPersisted(): { name?: string; widgets?: WidgetInstance[] } {
 }
 
 export default function DashboardsPage() {
+  const navigate = useNavigate();
   const persisted = readPersisted();
   const [name, setName] = useState(persisted.name ?? "FilterDNS Overview");
   const [widgets, setWidgets] = useState<WidgetInstance[]>(
@@ -207,6 +214,7 @@ export default function DashboardsPage() {
     null,
   );
   const [toast, setToast] = useState<string | null>(null);
+  const [favorited, setFavorited] = useState(false);
   const [quickFiltersOpen, setQuickFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<DashboardFilters>(DEFAULT_FILTERS);
 
@@ -342,16 +350,32 @@ export default function DashboardsPage() {
           px: 3,
           display: "flex",
           alignItems: "center",
-          gap: 1.75,
+          gap: 1,
           height: 60,
         }}
       >
-        <span
-          className="material-symbols-outlined"
-          style={{ fontSize: 18, color: "var(--dnsf-palette-text-disabled)" }}
+        <IconButton
+          size="small"
+          aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
+          aria-pressed={favorited}
+          onClick={() => {
+            setFavorited((prev) => !prev);
+            setToast(favorited ? "Removed from favorites" : "Added to favorites");
+          }}
         >
-          star
-        </span>
+          <span
+            className="material-symbols-outlined"
+            style={{
+              fontSize: 18,
+              color: favorited
+                ? "var(--dnsf-palette-warning-main)"
+                : "var(--dnsf-palette-text-disabled)",
+              fontVariationSettings: favorited ? '"FILL" 1' : '"FILL" 0',
+            }}
+          >
+            star
+          </span>
+        </IconButton>
 
         {renaming ? (
           <ClickAwayListener onClickAway={() => setRenaming(false)}>
@@ -412,6 +436,10 @@ export default function DashboardsPage() {
             setSwitcherAnchor(null);
             setName("New Dashboard");
             setWidgets([]);
+          }}
+          onManage={() => {
+            setSwitcherAnchor(null);
+            navigate("/dashboards/manage");
           }}
           onClose={() => setSwitcherAnchor(null)}
         />
@@ -575,11 +603,21 @@ export default function DashboardsPage() {
           ))}
         </Box>
         <Box sx={{ flex: 1 }} />
-        <IconButton size="small" color="secondary" aria-label="refresh">
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-            refresh
-          </span>
-        </IconButton>
+        <Button
+          variant="text"
+          color="secondary"
+          size="small"
+          startIcon={
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 20 }}
+            >
+              refresh
+            </span>
+          }
+        >
+          Refresh
+        </Button>
       </Box>
 
       {/* Widget grid / empty state */}

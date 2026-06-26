@@ -40,6 +40,18 @@ export type DonutSlice = { label: string; value: number; color: string };
 export type HBarRow = { label: string; values: Record<string, number> };
 export type HBarSegment = { key: string; color: string; label: string };
 
+// Dashboards shown in the switcher and the Manage Dashboards page.
+export const DASHBOARD_NAMES = [
+  "FilterDNS Overview",
+  "Security Summary",
+  "MSP Client Health",
+  "Events – 2025",
+  "Threat Activity",
+  "Client Health – MSP",
+  "Roaming Clients",
+  "Weekly Executive Summary",
+];
+
 export type WidgetCategory = "KPIs" | "Status" | "Charts" | "Tables" | "Other";
 export type WidgetDef = {
   type: string;

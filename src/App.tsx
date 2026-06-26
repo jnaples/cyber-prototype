@@ -14,6 +14,7 @@ import PageHeaderDocsPage from "@/app/design-system/page-header/page";
 import TypographyDocsPage from "@/app/design-system/typography/page";
 import OverviewPage from "@/app/overview/page";
 import DashboardsPage from "@/app/dashboards/page";
+import ManageDashboardsPage from "@/app/dashboards/manage/page";
 import HomePage from "@/app/page";
 import QueryLogsPage from "@/app/query-logs/page";
 import CustomReportsPage from "@/app/reporting/custom-reports/page";
@@ -34,6 +35,7 @@ function App() {
       <Route element={<RootLayout />}>
         <Route path="overview" element={<OverviewPage />} />
         <Route path="dashboards" element={<DashboardsPage />} />
+        <Route path="dashboards/manage" element={<ManageDashboardsPage />} />
         <Route path="cybersight" element={<CybersightPage />} />
         <Route path="query-logs" element={<QueryLogsPage />} />
         <Route path="reporting">
