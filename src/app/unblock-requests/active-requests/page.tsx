@@ -10,6 +10,7 @@ import type { GridColDef } from "@mui/x-data-grid";
 import { format as fnsFormat } from "date-fns";
 import { useState } from "react";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
@@ -17,9 +18,14 @@ import { TabbedDataCard } from "@/components/tabbed-data-card";
 // Row actions
 // ---------------------------------------------------------------------------
 
-const ACTION_ITEMS: { label: string; icon: string }[] = [
+// Inline quick actions to the left of the overflow menu.
+const QUICK_ACTIONS: { label: string; icon: string }[] = [
   { label: "Allow", icon: "check" },
   { label: "Block", icon: "block" },
+];
+
+// Items kept in the overflow menu.
+const MENU_ACTIONS: { label: string; icon: string }[] = [
   { label: "Report miscategorization", icon: "flag" },
 ];
 
@@ -27,7 +33,19 @@ function RowActionsCell() {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const close = () => setAnchorEl(null);
   return (
-    <>
+    <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+      {QUICK_ACTIONS.map(({ label, icon }) => (
+        <ArrowTooltip key={label} title={label}>
+          <IconButton size="small" aria-label={label}>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 20 }}
+            >
+              {icon}
+            </span>
+          </IconButton>
+        </ArrowTooltip>
+      ))}
       <IconButton
         size="small"
         aria-label="more options"
@@ -44,7 +62,7 @@ function RowActionsCell() {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        {ACTION_ITEMS.map(({ label, icon }) => (
+        {MENU_ACTIONS.map(({ label, icon }) => (
           <MenuItem key={label} onClick={close}>
             <ListItemIcon>
               <span
@@ -58,7 +76,7 @@ function RowActionsCell() {
           </MenuItem>
         ))}
       </Menu>
-    </>
+    </Box>
   );
 }
 
@@ -68,43 +86,32 @@ function RowActionsCell() {
 
 const columns: GridColDef[] = [
   { field: "organization", headerName: "Organization", flex: 1, minWidth: 160 },
+  { field: "site", headerName: "Site", flex: 1, minWidth: 150 },
+  { field: "policy", headerName: "Policy", flex: 1, minWidth: 150 },
+  { field: "category", headerName: "Category", flex: 1, minWidth: 160 },
   {
-    field: "deploymentType",
-    headerName: "Deployment Type",
+    field: "timeOfAttempt",
+    headerName: "Time of Attempt",
+    flex: 1,
+    minWidth: 180,
+  },
+  {
+    field: "loggedInUser",
+    headerName: "Logged In User",
     flex: 1,
     minWidth: 150,
   },
-  {
-    field: "localUserName",
-    headerName: "Local User Name",
-    flex: 1,
-    minWidth: 150,
-  },
-  {
-    field: "policySchedule",
-    headerName: "Policy/Schedule",
-    flex: 1,
-    minWidth: 150,
-  },
-  { field: "domain", headerName: "Domain", flex: 1, minWidth: 160 },
-  { field: "blockReason", headerName: "Block reason", flex: 1, minWidth: 150 },
-  { field: "categories", headerName: "Categories", flex: 1, minWidth: 180 },
+  { field: "email", headerName: "Email", flex: 1, minWidth: 220 },
   {
     field: "requestReason",
-    headerName: "Request reason",
+    headerName: "Request Reason",
     flex: 1.5,
     minWidth: 260,
   },
   {
-    field: "requestedDate",
-    headerName: "Requested date",
-    flex: 1,
-    minWidth: 170,
-  },
-  {
     field: "actions",
     headerName: "Actions",
-    width: 80,
+    width: 130,
     sortable: false,
     filterable: false,
     resizable: false,
@@ -115,124 +122,113 @@ const columns: GridColDef[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Mock data — legitimate work sites that got policy-blocked
+// Mock data — legitimate sites that got policy-blocked across MSP clients
 // ---------------------------------------------------------------------------
 
 type ActiveRequest = {
   organization: string;
-  deploymentType: string;
-  localUserName: string;
-  policySchedule: string;
-  domain: string;
-  blockReason: string;
-  categories: string;
+  site: string;
+  policy: string;
+  category: string;
+  loggedInUser: string;
+  email: string;
   requestReason: string;
 };
 
 const REQUESTS: ActiveRequest[] = [
   {
     organization: "Northwind Traders",
-    deploymentType: "Roaming Clients",
-    localUserName: "schen-mbp",
-    policySchedule: "Standard Policy",
-    domain: "linkedin.com",
-    blockReason: "Social Networking",
-    categories: "Social Networking, Business",
-    requestReason: "Need it for recruiting and sales outreach",
+    site: "Seattle HQ",
+    policy: "Standard Policy",
+    category: "Social Networking",
+    loggedInUser: "Sarah Chen",
+    email: "sarah.chen@northwind.com",
+    requestReason: "Need LinkedIn for recruiting and sales outreach",
   },
   {
     organization: "Globex Manufacturing",
-    deploymentType: "Sites",
-    localUserName: "mthompson-win11",
-    policySchedule: "Default Filtering",
-    domain: "youtube.com",
-    blockReason: "Streaming Media",
-    categories: "Streaming Media, Video",
+    site: "Detroit Plant",
+    policy: "Default Filtering",
+    category: "Streaming Media",
+    loggedInUser: "Marcus Thompson",
+    email: "marcus.thompson@globex.com",
     requestReason: "Vendor posted required machine-training videos",
   },
   {
     organization: "Contoso Health",
-    deploymentType: "Roaming Clients",
-    localUserName: "ppatel-mbp",
-    policySchedule: "HIPAA Strict",
-    domain: "dropbox.com",
-    blockReason: "File Sharing",
-    categories: "File Sharing, Cloud Storage",
+    site: "Austin Clinic",
+    policy: "HIPAA Strict",
+    category: "File Sharing",
+    loggedInUser: "Priya Patel",
+    email: "priya.patel@contosohealth.com",
     requestReason: "Referring clinic shared patient records here",
   },
   {
     organization: "Initech Legal",
-    deploymentType: "Collections",
-    localUserName: "dpark-mbp",
-    policySchedule: "Standard Policy",
-    domain: "github.com",
-    blockReason: "Proxy / Anonymizer",
-    categories: "Proxy / Anonymizer, Technology",
+    site: "Chicago Office",
+    policy: "Standard Policy",
+    category: "Proxy / Anonymizer",
+    loggedInUser: "David Park",
+    email: "david.park@initechlegal.com",
     requestReason: "Miscategorized — needed for internal dev tooling",
   },
   {
     organization: "Umbrella Retail",
-    deploymentType: "Sites",
-    localUserName: "lwang-win11",
-    policySchedule: "Marketing Policy",
-    domain: "canva.com",
-    blockReason: "Personal Storage",
-    categories: "Personal Storage, Productivity",
+    site: "Phoenix HQ",
+    policy: "Marketing Policy",
+    category: "Personal Storage",
+    loggedInUser: "Lisa Wang",
+    email: "lisa.wang@umbrellaretail.com",
     requestReason: "Designing this quarter's promo graphics",
   },
   {
     organization: "Northwind Traders",
-    deploymentType: "Roaming Clients",
-    localUserName: "dsilva-mbp",
-    policySchedule: "Support Policy",
-    domain: "reddit.com",
-    blockReason: "Forums",
-    categories: "Forums, Social Networking",
+    site: "Portland DC",
+    policy: "Support Policy",
+    category: "Forums",
+    loggedInUser: "Diego Silva",
+    email: "diego.silva@northwind.com",
     requestReason: "Customer reported a bug discussed in a thread",
   },
   {
     organization: "Contoso Health",
-    deploymentType: "Sites",
-    localUserName: "nvolkov-win11",
-    policySchedule: "Finance Policy",
-    domain: "wetransfer.com",
-    blockReason: "File Sharing",
-    categories: "File Sharing",
+    site: "Dallas Hospital",
+    policy: "Finance Policy",
+    category: "File Sharing",
+    loggedInUser: "Nina Volkov",
+    email: "nina.volkov@contosohealth.com",
     requestReason: "Auditor is sending large year-end documents",
   },
   {
     organization: "Globex Manufacturing",
-    deploymentType: "Collections",
-    localUserName: "kobrien-mbp",
-    policySchedule: "Engineering Policy",
-    domain: "chatgpt.com",
-    blockReason: "AI Tools",
-    categories: "AI Tools, Technology",
+    site: "Cincinnati HQ",
+    policy: "Engineering Policy",
+    category: "AI Tools",
+    loggedInUser: "Kevin O'Brien",
+    email: "kevin.obrien@globex.com",
     requestReason: "Approved for debugging production code",
   },
   {
     organization: "Umbrella Retail",
-    deploymentType: "Roaming Clients",
-    localUserName: "hlee-mbp",
-    policySchedule: "Marketing Policy",
-    domain: "vimeo.com",
-    blockReason: "Streaming Media",
-    categories: "Streaming Media",
+    site: "Tucson Store",
+    policy: "Marketing Policy",
+    category: "Streaming Media",
+    loggedInUser: "Hannah Lee",
+    email: "hannah.lee@umbrellaretail.com",
     requestReason: "Embedded product demo for the landing page",
   },
   {
     organization: "Initech Legal",
-    deploymentType: "Sites",
-    localUserName: "tbradley-win11",
-    policySchedule: "Standard Policy",
-    domain: "wsj.com",
-    blockReason: "News",
-    categories: "News, Business",
+    site: "NYC Office",
+    policy: "Standard Policy",
+    category: "News",
+    loggedInUser: "Tom Bradley",
+    email: "tom.bradley@initechlegal.com",
     requestReason: "Industry research for an active client matter",
   },
 ];
 
-// Spread requests across the last few business days during 9-5 hours.
+// Spread attempts across the last few business days during 9-5 hours.
 const NOW = new Date();
 const rows = REQUESTS.map((request, i) => {
   const date = new Date(NOW);
@@ -241,7 +237,7 @@ const rows = REQUESTS.map((request, i) => {
   return {
     id: i + 1,
     ...request,
-    requestedDate: fnsFormat(date, "MMM d, yyyy h:mm a"),
+    timeOfAttempt: fnsFormat(date, "MMM d, yyyy h:mm a"),
   };
 });
 
