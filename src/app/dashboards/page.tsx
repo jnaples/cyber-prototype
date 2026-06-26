@@ -30,7 +30,7 @@ import {
   TIME_RANGE_OPTIONS,
   filterFactor,
   type DashboardFilters,
-} from "./dashboard-filters";on 
+} from "./dashboard-filters";
 import { QuickFilters } from "./quick-filters";
 import { DashCard } from "./dash-card";
 import { DashSwitcher } from "./dash-switcher";
