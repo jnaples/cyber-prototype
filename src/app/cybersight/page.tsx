@@ -437,7 +437,20 @@ export default function CyberSightPage() {
         </Box>
       </Box>
 
-      {/* Activity summary grid */}
+      {/* Tab content */}
+      {activeTab === 2 ? (
+        <Box sx={{ p: 3 }}>
+          <Typography
+            sx={{
+              fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
+              fontWeight: 600,
+              fontSize: 18,
+            }}
+          >
+            Threat Trends
+          </Typography>
+        </Box>
+      ) : (
       <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
         <Box
           sx={{
@@ -573,6 +586,7 @@ export default function CyberSightPage() {
           </CardContent>
         </Card>
       </Box>
+      )}
     </Box>
   );
 }
