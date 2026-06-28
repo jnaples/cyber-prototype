@@ -7,25 +7,22 @@
 // clean run and one that escalates into a blocked threat.
 
 import {
+  Autocomplete,
   Box,
   Button,
-  FormControl,
   IconButton,
-  Menu,
-  MenuItem,
   Popover,
-  Select,
+  TextField,
   Typography,
 } from "@mui/material";
-import type { SelectChangeEvent } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { PageHeader } from "@/components/page-header";
+import { sites as SITE_OPTIONS } from "@/data/query-logs";
 
 import {
   CLIENTS,
-  DATE_PRESETS,
-  DEFAULT_DATE_LABEL,
   GAP_X,
   LEGEND,
   NODE_H,
@@ -62,9 +59,54 @@ const C_FAINT = "var(--dnsf-palette-text-disabled)";
 
 const PAN_IGNORE = ".ss-node,.ss-ui";
 
+// Header filter options. The Roaming Client choice drives which session the
+// canvas renders; Organization/Site/User are contextual scoping selectors.
+const ORG_OPTIONS = ["Acme Inc.", "Globex", "Initech"];
+const ROAMING_CLIENT_OPTIONS = CLIENTS.map((c) => c.name);
+const SCENARIO_BY_CLIENT: Record<string, ScenarioId> = Object.fromEntries(
+  CLIENTS.map((c) => [c.name, c.id]),
+);
+const FILTERS_DISABLED_TOOLTIP = "Select an Organization to enable this filter.";
+
 type NodeState = "done" | "active" | "pending";
 
 const sevIcon = (sev: Severity) => SEV_COLORS[sev];
+
+// ---------------------------------------------------------------------------
+// Header filter field — a single-select dropdown that disables (with a tooltip)
+// until an Organization is chosen, mirroring the Query Logs filter bar.
+// ---------------------------------------------------------------------------
+
+function FilterField({
+  placeholder,
+  options,
+  value,
+  onChange,
+  disabled,
+}: {
+  placeholder: string;
+  options: string[];
+  value: string | null;
+  onChange: (value: string | null) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <ArrowTooltip title={disabled ? FILTERS_DISABLED_TOOLTIP : ""}>
+      <Box sx={{ width: "100%", display: "flex", "& > *": { width: "100%" } }}>
+        <Autocomplete
+          size="small"
+          disabled={disabled}
+          options={options}
+          value={value}
+          onChange={(_event, newValue) => onChange(newValue)}
+          renderInput={(params) => (
+            <TextField {...params} placeholder={placeholder} />
+          )}
+        />
+      </Box>
+    </ArrowTooltip>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Icon helper
@@ -339,14 +381,24 @@ function NodeDetail({
 // ---------------------------------------------------------------------------
 
 export default function SecureShieldPage() {
-  const [scenario, setScenario] = useState<ScenarioId>("benign");
+  // Default to the threat ("blocked") session for demo purposes.
+  const [scenario, setScenario] = useState<ScenarioId>("rogue");
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [view, setView] = useState({ scale: 0.72, tx: 40, ty: 150 });
   const [selected, setSelected] = useState<number | null>(null);
   const [popAnchor, setPopAnchor] = useState<HTMLElement | null>(null);
-  const [dateLabel, setDateLabel] = useState(DEFAULT_DATE_LABEL);
-  const [dateAnchor, setDateAnchor] = useState<HTMLElement | null>(null);
+
+  // Header filter drafts. Site/Roaming Client/User stay disabled until an
+  // Organization is chosen; the selection only takes effect on Apply.
+  const [org, setOrg] = useState<string | null>(null);
+  const [site, setSite] = useState<string | null>(null);
+  const [client, setClient] = useState<string | null>(null);
+  const [applied, setApplied] = useState<{
+    org: string | null;
+    site: string | null;
+    client: string | null;
+  } | null>(null);
 
   const stageRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef(view);
@@ -535,14 +587,32 @@ export default function SecureShieldPage() {
     setPopAnchor(el);
   };
 
-  // ---- scenario switch ----
-  const changeScenario = (e: SelectChangeEvent) => {
-    pause();
-    const id = e.target.value as ScenarioId;
-    scenarioRef.current = id;
-    setStepBoth(0);
-    closePop();
-    setScenario(id);
+  // ---- header filters ----
+  const filtersDisabled = !org;
+  const isCurrentApplied =
+    applied !== null &&
+    applied.org === org &&
+    applied.site === site &&
+    applied.client === client;
+
+  const applyFilters = () => {
+    if (!org) return;
+    setApplied({ org, site, client });
+    const next = client ? SCENARIO_BY_CLIENT[client] : scenario;
+    if (next !== scenario) {
+      pause();
+      scenarioRef.current = next;
+      setStepBoth(0);
+      closePop();
+      setScenario(next);
+    }
+  };
+
+  const clearFilters = () => {
+    setOrg(null);
+    setSite(null);
+    setClient(null);
+    setApplied(null);
   };
 
   // ---- wheel + drag listeners (native, so wheel can preventDefault) ----
@@ -642,120 +712,87 @@ export default function SecureShieldPage() {
       }}
     >
       <PageHeader title="Secure Shield">
-        <Box sx={{ display: "flex", alignItems: "flex-end", gap: 2.5, px: 3 }}>
-          {/* Roaming Clients */}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-            <Typography
-              sx={{
-                fontSize: 12,
-                fontWeight: 600,
-                letterSpacing: ".3px",
-                color: "text.secondary",
-              }}
-            >
-              Roaming Clients
-            </Typography>
-            <FormControl size="small" sx={{ minWidth: 268 }}>
-              <Select
-                value={scenario}
-                onChange={changeScenario}
-                renderValue={(val) => {
-                  const c = CLIENTS.find((x) => x.id === val)!;
-                  return (
-                    <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 1.25 }}
-                    >
-                      <Box
-                        sx={{
-                          width: 9,
-                          height: 9,
-                          borderRadius: "999px",
-                          flexShrink: 0,
-                          bgcolor:
-                            c.tone === "ok"
-                              ? SEV_COLORS.success
-                              : SEV_COLORS.threat,
-                        }}
-                      />
-                      <span>{c.name}</span>
-                    </Box>
-                  );
-                }}
-              >
-                {CLIENTS.map((c) => (
-                  <MenuItem key={c.id} value={c.id}>
-                    <Box
-                      sx={{
-                        width: 9,
-                        height: 9,
-                        borderRadius: "999px",
-                        flexShrink: 0,
-                        mr: 1.25,
-                        bgcolor:
-                          c.tone === "ok"
-                            ? SEV_COLORS.success
-                            : SEV_COLORS.threat,
-                      }}
-                    />
-                    <Box sx={{ minWidth: 0 }}>
-                      <Box sx={{ fontSize: 13, fontWeight: 600 }}>{c.name}</Box>
-                      <Box sx={{ fontSize: 11, color: "text.secondary" }}>
-                        {c.user} · {c.status}
-                      </Box>
-                    </Box>
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            px: 3,
+          }}
+        >
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "repeat(2, 1fr)",
+                md: "repeat(3, 1fr)",
+              },
+              gap: 2,
+            }}
+          >
+            <Autocomplete
+              size="small"
+              options={ORG_OPTIONS}
+              value={org}
+              onChange={(_event, newValue) => setOrg(newValue)}
+              renderInput={(params) => (
+                <TextField {...params} placeholder="Select Organization" />
+              )}
+            />
+            <FilterField
+              placeholder="Select Site"
+              options={SITE_OPTIONS}
+              value={site}
+              onChange={setSite}
+              disabled={filtersDisabled}
+            />
+            <FilterField
+              placeholder="Select Roaming Client"
+              options={ROAMING_CLIENT_OPTIONS}
+              value={client}
+              onChange={setClient}
+              disabled={filtersDisabled}
+            />
           </Box>
 
-          {/* Date & time range */}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-            <Typography
-              sx={{
-                fontSize: 12,
-                fontWeight: 600,
-                letterSpacing: ".3px",
-                color: "text.secondary",
-              }}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <ArrowTooltip
+              title={
+                isCurrentApplied
+                  ? "Change your selection to apply a new filter."
+                  : ""
+              }
             >
-              Date &amp; time range
-            </Typography>
-            <Button
-              variant="outlined"
-              color="inherit"
-              onClick={(e) => setDateAnchor(e.currentTarget)}
-              startIcon={<Ico name="date_range" size={20} />}
-              endIcon={<Ico name="expand_more" size={20} />}
-              sx={{
-                height: 40,
-                justifyContent: "space-between",
-                textTransform: "none",
-                fontWeight: 500,
-                color: "text.primary",
-                borderColor: C_BORDER,
-              }}
-            >
-              {dateLabel}
-            </Button>
-            <Menu
-              anchorEl={dateAnchor}
-              open={Boolean(dateAnchor)}
-              onClose={() => setDateAnchor(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-            >
-              {DATE_PRESETS.map((label) => (
-                <MenuItem
-                  key={label}
-                  onClick={() => {
-                    if (label !== "Custom range…") setDateLabel(label);
-                    setDateAnchor(null);
-                  }}
+              <span>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  disabled={filtersDisabled || isCurrentApplied}
+                  onClick={applyFilters}
                 >
-                  {label}
-                </MenuItem>
-              ))}
-            </Menu>
+                  Apply
+                </Button>
+              </span>
+            </ArrowTooltip>
+            {applied && (
+              <Button
+                variant="text"
+                color="error"
+                size="small"
+                onClick={clearFilters}
+                startIcon={<Ico name="close" size={16} />}
+              >
+                Clear
+              </Button>
+            )}
           </Box>
         </Box>
       </PageHeader>

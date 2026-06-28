@@ -1,6 +1,8 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 
+import { GeoActivityGlobe } from "./geo-activity-globe";
+
 type MaterialSymbolProps = {
   icon: string;
   size?: number;
@@ -123,42 +125,8 @@ export default function Page() {
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   Geo Activity
                 </Typography>
-                <Typography sx={{ fontSize: 12 }} color="text.secondary">
-                  Showing top 100 sites
-                </Typography>
               </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  bgcolor: "background.default",
-                  borderRadius: 1,
-                  flex: 1,
-                  gap: 1.5,
-                }}
-              >
-                <Box
-                  component="span"
-                  className="material-symbols-outlined"
-                  sx={{ fontSize: 40, color: "text.primary" }}
-                >
-                  map
-                </Box>
-                <Typography
-                  sx={{
-                    fontWeight: 700,
-                    color: "text.primary",
-                    textAlign: "center",
-                    fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
-                  }}
-                >
-                  You haven&apos;t set a site
-                  <br />
-                  location yet
-                </Typography>
-              </Box>
+              <GeoActivityGlobe />
             </CardContent>
           </Card>
 
