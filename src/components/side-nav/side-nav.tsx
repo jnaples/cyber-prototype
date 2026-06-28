@@ -693,6 +693,37 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Collapse>
           </Box>
 
+          {/* SecureShield Link */}
+          {withCollapsedTooltip(
+            "SecureShield",
+            <Box
+              sx={getItemStyles("secureshield")}
+              onClick={() => {
+                handleItemClick("secureshield");
+                navigate("/secureshield");
+              }}
+            >
+              <Icon name="shield" size={isExpanded ? 20 : 24} />
+              {isExpanded && (
+                <>
+                  <span style={{ margin: "4px 0" }}>SecureShield</span>
+                  <Badge
+                    badgeContent="NEW"
+                    sx={{
+                      mx: 1,
+                      "& .MuiBadge-badge": {
+                        position: "static",
+                        transform: "none",
+                        bgcolor: "tertiary.main",
+                        color: "tertiary.contrastText",
+                      },
+                    }}
+                  />
+                </>
+              )}
+            </Box>,
+          )}
+
           {/* Reporting Link with Dropdown */}
           <Box sx={getDropdownWrapperStyles("reporting")}>
             {withCollapsedTooltip(

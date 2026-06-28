@@ -31,6 +31,7 @@ import {
   filterFactor,
   type DashboardFilters,
 } from "./dashboard-filters";
+import { AdvancedFilters } from "./advanced-filters";
 import { QuickFilters } from "./quick-filters";
 import { DashCard } from "./dash-card";
 import { DashSwitcher } from "./dash-switcher";
@@ -216,6 +217,7 @@ export default function DashboardsPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [favorited, setFavorited] = useState(false);
   const [quickFiltersOpen, setQuickFiltersOpen] = useState(false);
+  const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<DashboardFilters>(DEFAULT_FILTERS);
 
   // Active (non-default) filters as removable chips.
@@ -495,6 +497,34 @@ export default function DashboardsPage() {
             </span>
             Rename
           </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setActionsAnchor(null);
+              setToast(`${name} set as default`);
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 16, marginRight: 8, opacity: 0.7 }}
+            >
+              check_circle
+            </span>
+            Set as Default
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setActionsAnchor(null);
+              setToast(`${name} duplicated`);
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 16, marginRight: 8, opacity: 0.7 }}
+            >
+              content_copy
+            </span>
+            Duplicate
+          </MenuItem>
           <MenuItem onClick={() => setActionsAnchor(null)}>
             <span
               className="material-symbols-outlined"
@@ -571,6 +601,7 @@ export default function DashboardsPage() {
           variant="text"
           color="secondary"
           size="small"
+          onClick={() => setAdvancedFiltersOpen(true)}
           startIcon={
             <span
               className="material-symbols-outlined"
@@ -668,6 +699,11 @@ export default function DashboardsPage() {
         onClose={() => setQuickFiltersOpen(false)}
         filters={filters}
         onApply={setFilters}
+      />
+
+      <AdvancedFilters
+        open={advancedFiltersOpen}
+        onClose={() => setAdvancedFiltersOpen(false)}
       />
 
       {/* Widget delete confirmation */}

@@ -1,12 +1,16 @@
 import { Box } from "@mui/material";
 import { useState } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 
 import Footer from "@/components/footer";
 import Sidebar from "@/components/side-nav/side-nav";
 
 export default function RootLayout() {
   const [isExpanded, setIsExpanded] = useState(true);
+  const { pathname } = useLocation();
+
+  // Secure Shield is a full-canvas page — the global footer would overlap it.
+  const hideFooter = pathname.startsWith("/secureshield");
 
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded);
@@ -26,7 +30,7 @@ export default function RootLayout() {
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Outlet />
       </Box>
-      <Footer sidebarWidth={isExpanded ? 280 : 72} />
+      {!hideFooter && <Footer sidebarWidth={isExpanded ? 280 : 72} />}
     </Box>
   );
 }
