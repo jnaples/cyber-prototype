@@ -4,7 +4,7 @@
 // colored by verdict (allowed / category block / threat block). Built on
 // globe.gl (three.js) and driven imperatively from an effect.
 
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useColorScheme } from "@mui/material/styles";
 import Globe, { type GlobeInstance } from "globe.gl";
 import { useEffect, useRef, useState } from "react";
@@ -320,15 +320,12 @@ export function GeoActivityGlobe() {
           ] as const
         ).map((s) => (
           <Box key={s.label}>
-            <Box
+            <Typography
+              variant="overline"
               sx={{
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: "1.2px",
-                textTransform: "uppercase",
                 color: t.label,
               }}
             >
@@ -343,20 +340,17 @@ export function GeoActivityGlobe() {
                 />
               )}
               {s.label}
-            </Box>
-            <Box
+            </Typography>
+            <Typography
+              variant="body1"
               sx={{
-                fontFamily: "Montserrat, sans-serif",
                 fontWeight: 600,
-                fontSize: 24,
-                lineHeight: 1.05,
-                mt: 0.5,
                 fontVariantNumeric: "tabular-nums",
                 color: s.color,
               }}
             >
               {Math.round(s.value).toLocaleString("en-US")}
-            </Box>
+            </Typography>
           </Box>
         ))}
       </Box>
