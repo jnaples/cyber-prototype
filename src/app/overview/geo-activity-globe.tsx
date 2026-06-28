@@ -5,6 +5,7 @@
 // globe.gl (three.js) and driven imperatively from an effect.
 
 import { Box } from "@mui/material";
+import { useColorScheme } from "@mui/material/styles";
 import Globe, { type GlobeInstance } from "globe.gl";
 import { useEffect, useRef, useState } from "react";
 import { feature } from "topojson-client";
@@ -17,11 +18,38 @@ const VERDICT_COLORS = {
   threat: "#E5189E",
 } as const;
 
-// Lighter tints used for the live counter numbers (from the design).
-const VERDICT_TEXT = {
-  allowed: "#7FD0FF",
-  category: "#FFD37A",
-  threat: "#FF6FCB",
+// Scheme-aware palette. Dark mode is the original "space" globe; light mode is
+// an inverted "day" globe — light sky/sphere with darker dots and readable
+// counter colors. The arc/ring verdict hues stay the same in both.
+const THEMES = {
+  dark: {
+    stageBg:
+      "radial-gradient(120% 90% at 50% 38%, #0c1b33 0%, #060d1c 55%, #03070f 100%)",
+    globeColor: "#0a1729",
+    atmosphere: "#2BA6E8",
+    hex: "rgba(95,158,235,0.5)",
+    label: "#7890B4",
+    totalText: "#E6EEFB",
+    legendText: "#C3D2EC",
+    liveText: "#A9BCDA",
+    liveBg: "rgba(255,255,255,.04)",
+    liveBorder: "rgba(124,168,255,.18)",
+    num: { allowed: "#7FD0FF", category: "#FFD37A", threat: "#FF6FCB" },
+  },
+  light: {
+    stageBg:
+      "radial-gradient(120% 90% at 50% 38%, #f4f8ff 0%, #dde8f7 55%, #c4d4ea 100%)",
+    globeColor: "#e8eefa",
+    atmosphere: "#2BA6E8",
+    hex: "rgba(53,39,253,0.40)",
+    label: "#5B6E8C",
+    totalText: "#0c1b33",
+    legendText: "#3C5974",
+    liveText: "#3C5974",
+    liveBg: "rgba(12,27,51,.05)",
+    liveBorder: "rgba(53,39,253,.20)",
+    num: { allowed: "#1E84C4", category: "#B7791F", threat: "#C20E84" },
+  },
 } as const;
 
 const LEGEND = [
@@ -82,9 +110,14 @@ export function GeoActivityGlobe() {
     threat: 1254400,
   });
 
+  const { mode, systemMode } = useColorScheme();
+  const isDark = (mode === "system" ? systemMode : mode) === "dark";
+  const t = isDark ? THEMES.dark : THEMES.light;
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
+    const pal = isDark ? THEMES.dark : THEMES.light;
 
     let destroyed = false;
     let globe: GlobeInstance | null = null;
@@ -150,14 +183,14 @@ export function GeoActivityGlobe() {
       const g = new Globe(containerRef.current)
         .backgroundColor("rgba(0,0,0,0)")
         .showAtmosphere(true)
-        .atmosphereColor("#2BA6E8")
+        .atmosphereColor(pal.atmosphere)
         .atmosphereAltitude(0.16)
         .hexPolygonsData(countries)
         .hexPolygonResolution(3)
         .hexPolygonMargin(0.34)
         .hexPolygonUseDots(true)
         .hexPolygonAltitude(0.006)
-        .hexPolygonColor(() => "rgba(95,158,235,0.5)")
+        .hexPolygonColor(() => pal.hex)
         .arcColor("color")
         .arcAltitudeAutoScale(0.45)
         .arcStroke(0.55)
@@ -175,7 +208,7 @@ export function GeoActivityGlobe() {
 
       try {
         (g.globeMaterial() as { color: { set: (c: string) => void } }).color.set(
-          "#0a1729",
+          pal.globeColor,
         );
       } catch {
         /* material not ready */
@@ -235,7 +268,8 @@ export function GeoActivityGlobe() {
       const withDestructor = globe as { _destructor?: () => void } | null;
       withDestructor?._destructor?.();
     };
-  }, []);
+    // Re-init the globe when the color scheme changes so it picks up the palette.
+  }, [isDark]);
 
   return (
     <Box
@@ -245,8 +279,7 @@ export function GeoActivityGlobe() {
         minHeight: 280,
         borderRadius: 1,
         overflow: "hidden",
-        background:
-          "radial-gradient(120% 90% at 50% 38%, #0c1b33 0%, #060d1c 55%, #03070f 100%)",
+        background: t.stageBg,
       }}
     >
       <Box ref={containerRef} sx={{ position: "absolute", inset: 0 }} />
@@ -265,23 +298,23 @@ export function GeoActivityGlobe() {
       >
         {(
           [
-            { label: "Total Requests", value: stats.total, color: "#E6EEFB" },
+            { label: "Total Requests", value: stats.total, color: t.totalText },
             {
               label: "Allowed",
               value: stats.allowed,
-              color: VERDICT_TEXT.allowed,
+              color: t.num.allowed,
               swatch: VERDICT_COLORS.allowed,
             },
             {
               label: "Category Blocked",
               value: stats.category,
-              color: VERDICT_TEXT.category,
+              color: t.num.category,
               swatch: VERDICT_COLORS.category,
             },
             {
               label: "Threats Blocked",
               value: stats.threat,
-              color: VERDICT_TEXT.threat,
+              color: t.num.threat,
               swatch: VERDICT_COLORS.threat,
             },
           ] as const
@@ -296,7 +329,7 @@ export function GeoActivityGlobe() {
                 fontWeight: 600,
                 letterSpacing: "1.2px",
                 textTransform: "uppercase",
-                color: "#7890B4",
+                color: t.label,
               }}
             >
               {"swatch" in s && (
@@ -343,9 +376,9 @@ export function GeoActivityGlobe() {
           fontSize: 11,
           fontWeight: 600,
           letterSpacing: ".4px",
-          color: "#A9BCDA",
-          bgcolor: "rgba(255,255,255,.04)",
-          border: "1px solid rgba(124,168,255,.18)",
+          color: t.liveText,
+          bgcolor: t.liveBg,
+          border: `1px solid ${t.liveBorder}`,
           pointerEvents: "none",
         }}
       >
@@ -389,7 +422,7 @@ export function GeoActivityGlobe() {
               gap: 0.75,
               fontSize: 12,
               fontWeight: 500,
-              color: "#C3D2EC",
+              color: t.legendText,
             }}
           >
             <Box
