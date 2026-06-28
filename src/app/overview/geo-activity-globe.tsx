@@ -299,46 +299,21 @@ export function GeoActivityGlobe() {
         {(
           [
             { label: "Total Requests", value: stats.total, color: t.totalText },
-            {
-              label: "Allowed",
-              value: stats.allowed,
-              color: t.num.allowed,
-              swatch: VERDICT_COLORS.allowed,
-            },
+            { label: "Allowed", value: stats.allowed, color: t.num.allowed },
             {
               label: "Category Blocked",
               value: stats.category,
               color: t.num.category,
-              swatch: VERDICT_COLORS.category,
             },
             {
               label: "Threats Blocked",
               value: stats.threat,
               color: t.num.threat,
-              swatch: VERDICT_COLORS.threat,
             },
           ] as const
         ).map((s) => (
           <Box key={s.label}>
-            <Typography
-              variant="overline"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                color: t.label,
-              }}
-            >
-              {"swatch" in s && (
-                <Box
-                  sx={{
-                    width: 9,
-                    height: 9,
-                    borderRadius: "2px",
-                    bgcolor: s.swatch,
-                  }}
-                />
-              )}
+            <Typography variant="body2" sx={{ color: t.label }}>
               {s.label}
             </Typography>
             <Typography
