@@ -37,8 +37,6 @@ import {
 } from "./data";
 
 // Material elevation shadows, matching the design tokens.
-const SHADOW_1 =
-  "0 2px 1px -1px rgba(0,0,0,.2),0 1px 1px rgba(0,0,0,.14),0 1px 3px rgba(0,0,0,.12)";
 const SHADOW_2 =
   "0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px rgba(0,0,0,.14),0 1px 5px rgba(0,0,0,.12)";
 const SHADOW_4 =
@@ -162,11 +160,10 @@ function EventNode({
         width: NODE_W,
         height: NODE_H,
         bgcolor: C_PAPER,
-        border: `1px solid ${C_BORDER}`,
         borderLeft: `4px solid ${accent}`,
         borderRadius: "8px",
         boxShadow:
-          state === "active" ? `0 0 0 3px ${accent}, ${SHADOW_4}` : SHADOW_1,
+          state === "active" ? `0 0 0 2px ${accent}, ${SHADOW_4}` : SHADOW_2,
         opacity: state === "pending" ? 0.4 : 1,
         transform: state === "active" ? "scale(1.02)" : "none",
         display: "flex",
@@ -228,14 +225,14 @@ function EventNode({
           }}
         >
           <Ico name="schedule" size={14} />
-          <span style={{ fontFamily: "'Roboto Mono', monospace" }}>
+          <span style={{ fontFamily: "Inter, sans-serif" }}>
             {event.time}
           </span>
         </Box>
       </Box>
       <Box
         sx={{
-          fontFamily: "'Roboto Mono', monospace",
+          fontFamily: "Inter, sans-serif",
           fontSize: 11,
           color: C_FAINT,
           alignSelf: "flex-start",
@@ -271,29 +268,16 @@ function NodeDetail({
             justifyContent: "space-between",
           }}
         >
-          <Box
-            sx={{
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: ".7px",
-              textTransform: "uppercase",
-              color: C_MUTED,
-            }}
-          >
+          <Typography variant="overline" sx={{ color: C_MUTED }}>
             {event.cat}
-          </Box>
+          </Typography>
           <IconButton size="small" onClick={onClose} aria-label="Close details">
             <Ico name="close" size={20} />
           </IconButton>
         </Box>
         <Typography
-          sx={{
-            fontFamily: "Montserrat, sans-serif",
-            fontSize: 17,
-            fontWeight: 600,
-            mt: 0.5,
-            lineHeight: 1.25,
-          }}
+          variant="body1"
+          sx={{ fontWeight: 600, mt: 0.5, lineHeight: 1.25 }}
         >
           {event.title}
         </Typography>
@@ -302,15 +286,14 @@ function NodeDetail({
             display: "flex",
             alignItems: "center",
             gap: 0.75,
-            fontSize: 11,
             color: C_MUTED,
             mt: 0.75,
           }}
         >
           <Ico name="schedule" size={14} />
-          <span style={{ fontFamily: "'Roboto Mono', monospace" }}>
+          <Typography variant="body2" component="span">
             {event.time}
-          </span>
+          </Typography>
           {event.threat && (
             <Box
               sx={{
@@ -331,9 +314,9 @@ function NodeDetail({
           )}
         </Box>
       </Box>
-      <Box
+      <Typography
+        variant="body2"
         sx={{
-          fontSize: 13,
           lineHeight: 1.5,
           px: 2,
           pb: 1.5,
@@ -341,7 +324,7 @@ function NodeDetail({
         }}
       >
         {event.summary}
-      </Box>
+      </Typography>
       <Box sx={{ p: "8px 16px 14px" }}>
         {event.rows.map((row) => (
           <Box
@@ -352,23 +335,24 @@ function NodeDetail({
               gap: 1.75,
               py: 0.75,
               borderBottom: `1px solid ${C_BORDER}`,
-              fontSize: 12,
             }}
           >
-            <Box sx={{ color: C_MUTED, flexShrink: 0 }}>{row.k}</Box>
-            <Box
+            <Typography
+              variant="body2"
+              sx={{ color: C_MUTED, flexShrink: 0 }}
+            >
+              {row.k}
+            </Typography>
+            <Typography
+              variant="body2"
               sx={{
                 fontWeight: 500,
                 textAlign: "right",
-                ...(row.mono && {
-                  fontFamily: "'Roboto Mono', monospace",
-                  fontSize: 11,
-                  wordBreak: "break-all",
-                }),
+                ...(row.mono && { wordBreak: "break-all" }),
               }}
             >
               {row.v}
-            </Box>
+            </Typography>
           </Box>
         ))}
       </Box>
@@ -879,18 +863,12 @@ export default function SecureShieldPage() {
             color: C_INK,
           }}
         >
-          <Box
-            sx={{
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: ".6px",
-              textTransform: "uppercase",
-              color: C_MUTED,
-              mb: 0.875,
-            }}
+          <Typography
+            variant="overline"
+            sx={{ display: "block", color: C_MUTED, mb: 0.875 }}
           >
             Event verdict
-          </Box>
+          </Typography>
           {LEGEND.map((l) => (
             <Box
               key={l.label}
@@ -898,7 +876,6 @@ export default function SecureShieldPage() {
                 display: "flex",
                 alignItems: "center",
                 gap: 0.875,
-                fontSize: 11,
                 mt: 0.625,
               }}
             >
@@ -911,7 +888,7 @@ export default function SecureShieldPage() {
                   bgcolor: SEV_COLORS[l.sev],
                 }}
               />
-              {l.label}
+              <Typography variant="body2">{l.label}</Typography>
             </Box>
           ))}
         </Box>
@@ -970,25 +947,15 @@ export default function SecureShieldPage() {
               color: C_INK,
             }}
           >
-            <Box
-              sx={{
-                fontSize: 14,
-                fontWeight: 600,
-                fontFamily: "'Roboto Mono', monospace",
-              }}
+            <Typography
+              variant="body1"
+              sx={{ fontWeight: 600, fontFamily: "Inter, sans-serif" }}
             >
               {step + 1} / {events.length}
-            </Box>
-            <Box
-              sx={{
-                fontSize: 9,
-                letterSpacing: ".5px",
-                textTransform: "uppercase",
-                color: C_MUTED,
-              }}
-            >
-              events
-            </Box>
+            </Typography>
+            <Typography variant="body2" sx={{ color: C_MUTED }}>
+              Events
+            </Typography>
           </Box>
         </Box>
 
@@ -1016,17 +983,17 @@ export default function SecureShieldPage() {
           >
             <Ico name="add" size={20} />
           </IconButton>
-          <Box
+          <Typography
+            variant="caption"
             sx={{
-              fontSize: 11,
               fontWeight: 600,
               color: C_MUTED,
-              py: 0.375,
-              fontFamily: "'Roboto Mono', monospace",
+              p: 0.5,
+              fontFamily: "Inter, sans-serif",
             }}
           >
             {Math.round(view.scale * 100)}%
-          </Box>
+          </Typography>
           <IconButton
             onClick={() => zoomBy(0.83)}
             aria-label="Zoom out"
@@ -1056,7 +1023,6 @@ export default function SecureShieldPage() {
               sx: {
                 ml: 1.75,
                 borderRadius: "8px",
-                border: `1px solid ${C_BORDER}`,
                 boxShadow: SHADOW_24,
                 overflow: "hidden",
               },
