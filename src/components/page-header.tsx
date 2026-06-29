@@ -45,7 +45,7 @@ export function PageHeader({
           sx={{
             flexDirection: "row",
             alignItems: "center",
-            gap: 2,
+            gap: 1,
             minWidth: 0,
             flex: 1,
             px: 3,
@@ -53,7 +53,7 @@ export function PageHeader({
         >
           {onBack && (
             <IconButton onClick={onBack} aria-label="Go back" size="small">
-              <ChevronLeftIcon />
+              <ChevronLeftIcon sx={{ fontSize: 20 }} />
             </IconButton>
           )}
 

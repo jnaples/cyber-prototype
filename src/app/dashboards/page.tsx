@@ -405,13 +405,12 @@ export default function DashboardsPage() {
           top: 0,
           zIndex: 4,
           bgcolor: "background.paper",
-          borderBottom: "1px solid",
-          borderColor: "divider",
+          boxShadow: 1,
           px: 3,
+          py: 2,
           display: "flex",
           alignItems: "center",
           gap: 1,
-          height: 60,
         }}
       >
         <IconButton
