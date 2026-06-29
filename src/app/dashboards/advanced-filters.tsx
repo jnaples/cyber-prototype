@@ -318,7 +318,7 @@ export function AdvancedFilters({
           </Button>
           <Button
             variant="text"
-            color="primary"
+            color="error"
             onClick={removeAll}
             startIcon={
               <span

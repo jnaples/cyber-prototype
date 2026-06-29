@@ -57,7 +57,7 @@ function MultiSelect({
           sel.length === 0 ? (
             <Typography
               component="span"
-              variant="body2"
+              variant="body1"
               sx={{ color: "text.secondary" }}
             >
               All

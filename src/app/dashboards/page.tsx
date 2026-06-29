@@ -659,7 +659,7 @@ export default function DashboardsPage() {
           gap: 1,
           px: 2,
           pt: 1.5,
-          mb: 2,
+          mb: filterChips.length > 0 ? 1 : 2,
           fontSize: 14,
         }}
       >
@@ -696,26 +696,6 @@ export default function DashboardsPage() {
         >
           Advanced filters
         </Button>
-        {filterChips.length > 0 && (
-          <Box sx={{ width: "1px", height: 16, bgcolor: "divider" }} />
-        )}
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 0.75,
-            alignItems: "center",
-          }}
-        >
-          {filterChips.map((chip) => (
-            <Chip
-              key={chip.label}
-              size="small"
-              label={chip.label}
-              onDelete={chip.onDelete}
-            />
-          ))}
-        </Box>
         <Box sx={{ flex: 1 }} />
         {autosave !== "idle" && (
           <Box
@@ -758,6 +738,51 @@ export default function DashboardsPage() {
           Refresh
         </Button>
       </Box>
+
+      {/* Active filters */}
+      {filterChips.length > 0 && (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 1,
+            px: 2,
+            mb: 2,
+          }}
+        >
+          <Typography variant="caption" sx={{ fontWeight: 700 }}>
+            Active Filters:
+          </Typography>
+          {filterChips.map((chip) => (
+            <Chip
+              key={chip.label}
+              size="small"
+              label={chip.label}
+              onDelete={chip.onDelete}
+            />
+          ))}
+          <Button
+            variant="text"
+            color="error"
+            size="small"
+            onClick={() => {
+              setFilters(DEFAULT_FILTERS);
+              triggerAutosave();
+            }}
+            startIcon={
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: 16 }}
+              >
+                delete
+              </span>
+            }
+          >
+            Clear
+          </Button>
+        </Box>
+      )}
 
       {/* Widget grid / empty state */}
       {widgets.length === 0 ? (
