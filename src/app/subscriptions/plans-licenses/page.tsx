@@ -752,8 +752,12 @@ function FeatureRow({
         </Button>
       )}
       {feature.action === "contact" && (
-        <Link href="#" underline="none" variant="body2">
-          Contact sales to upgrade.
+        <Link
+          href="mailto:sales@dnsfilter.com?subject=Enterprise%20upgrade%20request"
+          underline="none"
+          variant="body1"
+        >
+          Contact sales to upgrade
         </Link>
       )}
     </Box>
@@ -836,8 +840,11 @@ export default function PlansLicensesPage() {
               Add licenses to active plans or activate a new plan. Charges are
               prorated for the current billing period. Need to reduce your
               license count?{" "}
-              <Link href="#" underline="none">
-                Contact sales.
+              <Link
+                href="mailto:sales@dnsfilter.com?subject=License%20reduction%20request"
+                underline="none"
+              >
+                Contact sales
               </Link>
             </Typography>
 
