@@ -72,7 +72,7 @@ const FILTER_COLUMNS: FilterColumn[] = [
     label: "Deployment Type",
     options: DEPLOYMENT_TYPE_OPTIONS,
   },
-  { field: "domain", label: "Domains", options: DOMAIN_OPTIONS },
+  { field: "domain", label: "Domain", options: DOMAIN_OPTIONS },
   { field: "policy", label: "Policy Applied", options: POLICY_OPTIONS },
   { field: "threatType", label: "Threat Type", options: THREAT_TYPE_OPTIONS },
   {
