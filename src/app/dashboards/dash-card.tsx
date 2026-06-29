@@ -49,14 +49,19 @@ export function DashCard({
   widget,
   pad,
   cols,
+  colStart,
+  rowIndex,
   dragging,
   onRemove,
   onSpan,
   onBeginDrag,
+  onResizingChange,
 }: {
   widget: WidgetInstance;
   pad: number;
   cols: number;
+  colStart: number;
+  rowIndex: number;
   dragging: boolean;
   onRemove: () => void;
   onSpan: (s: number) => void;
@@ -64,6 +69,7 @@ export function DashCard({
     e: React.PointerEvent<HTMLDivElement>,
     id: string,
   ) => void;
+  onResizingChange?: (resizing: boolean) => void;
 }) {
   const def = CATALOG_BY_TYPE[widget.type];
   const headerless = HEADERLESS(widget.type);
@@ -84,6 +90,7 @@ export function DashCard({
     const startSpan = clampSpan(widget.span, cols);
     const unit = card.getBoundingClientRect().width / startSpan;
     setResizing(true);
+    onResizingChange?.(true);
     document.body.style.userSelect = "none";
     document.body.style.cursor = "nwse-resize";
     const move = (ev: PointerEvent) =>
@@ -95,6 +102,7 @@ export function DashCard({
       );
     const up = () => {
       setResizing(false);
+      onResizingChange?.(false);
       document.body.style.userSelect = "";
       document.body.style.cursor = "";
       window.removeEventListener("pointermove", move);
@@ -131,7 +139,8 @@ export function DashCard({
       onPointerDown={onCardPointerDown}
       elevation={active ? 8 : 1}
       sx={{
-        gridColumn: `span ${clampSpan(widget.span, cols)}`,
+        gridColumn: `${colStart + 1} / span ${clampSpan(widget.span, cols)}`,
+        gridRow: rowIndex + 1,
         position: "relative",
         borderRadius: 1,
         display: "flex",

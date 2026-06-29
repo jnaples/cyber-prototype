@@ -351,7 +351,7 @@ export function Donut({
             <Typography
               variant="body2"
               component="span"
-              sx={{ color: "text.disabled" }}
+              sx={{ color: "text.secondary" }}
             >
               {Math.round((s.value / total) * 100)}%
             </Typography>

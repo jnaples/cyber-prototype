@@ -1,5 +1,6 @@
 // Dashboard switcher dropdown — search at top, Favorites section, Other
-// dashboards section, and a "Manage Dashboards" action pinned at the bottom.
+// dashboards section, with "Create dashboard" and "Manage Dashboards" actions
+// pinned at the bottom.
 
 import {
   Box,
@@ -116,6 +117,7 @@ export function DashSwitcher({
   open,
   current,
   onPick,
+  onCreate,
   onManage,
   onClose,
 }: {
@@ -123,6 +125,7 @@ export function DashSwitcher({
   open: boolean;
   current: string;
   onPick: (name: string) => void;
+  onCreate: () => void;
   onManage: () => void;
   onClose: () => void;
 }) {
@@ -254,6 +257,23 @@ export function DashSwitcher({
               gap: 1,
             }}
           >
+            <Button
+              variant="text"
+              color="secondary"
+              fullWidth
+              onClick={onCreate}
+              startIcon={
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 16 }}
+                >
+                  add
+                </span>
+              }
+              sx={{ justifyContent: "flex-start" }}
+            >
+              Create dashboard
+            </Button>
             <Button
               variant="text"
               color="secondary"

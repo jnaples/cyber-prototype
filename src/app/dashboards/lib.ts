@@ -10,16 +10,23 @@ import type { ReactNode } from "react";
 // Palette + formatting
 // ---------------------------------------------------------------------------
 
+// Chart palette — all values are brand-ramp colors (detectBlue/secureBlue/
+// threatMagenta/teal/purple/rose/orange/green). `lightBlue` and `mint` are the
+// light categorical tints (detectBlue 200 / green 200) used for extra
+// stack/segment colors, kept on-brand.
 export const PAL = {
-  primary: "#3527FD",
-  secure: "#2BADF5",
-  magenta: "#CE008E",
-  teal: "#05C6C6",
-  purple: "#9435EC",
-  rose: "#D63258",
-  orange: "#EF6C00",
-  green: "#05864A",
-  ink: "#031625",
+  primary: "#3527FD", // detectBlue 600
+  secure: "#2BADF5", // secureBlue 500
+  magenta: "#CE008E", // threatMagenta 700
+  teal: "#05C6C6", // teal 500
+  purple: "#9435EC", // purple 400
+  rose: "#D63258", // rose 500
+  orange: "#EF6C00", // orange 800
+  info: "#238CD2", // secureBlue 700 (info.main)
+  green: "#05864A", // green 800
+  lightBlue: "#989CFF", // detectBlue 200
+  mint: "#87FFD1", // green 200
+  ink: "#031625", // blueGrey 900
 } as const;
 
 export function fmt(n: number | string): string {
@@ -129,10 +136,10 @@ export const threatSeries: Series[] = [
 
 export const eventCats = ["CP Summit", "Right of Boom", "TruPeer", "XChange", "Zero Trust"];
 export const eventStacks: StackedSeries[] = [
-  { name: "50-300",   color: PAL.orange, data: [18, 7, 8, 7, 9] },
-  { name: "301-500",  color: PAL.teal,   data: [7, 3, 5, 3, 7] },
-  { name: "501-1000", color: PAL.purple, data: [4, 2, 3, 2, 7] },
-  { name: "1001+",    color: "#FFD38A",  data: [3, 1, 2, 2, 7] },
+  { name: "50-300",   color: PAL.info,      data: [18, 7, 8, 7, 9] },
+  { name: "301-500",  color: PAL.teal,      data: [7, 3, 5, 3, 7] },
+  { name: "501-1000", color: PAL.purple,    data: [4, 2, 3, 2, 7] },
+  { name: "1001+",    color: PAL.lightBlue, data: [3, 1, 2, 2, 7] },
 ];
 
 export const topDomains: Record<string, string>[] = [
@@ -174,12 +181,12 @@ export const ownerRows: HBarRow[] = [
   { label: "Blaise V.",    values: { call: 280, email: 220, msg: 160, meeting: 180, note: 200, task: 210 } },
 ];
 export const ownerSegs: HBarSegment[] = [
-  { key: "call",    color: PAL.secure, label: "Call" },
-  { key: "email",   color: PAL.teal,   label: "Email" },
-  { key: "msg",     color: PAL.purple, label: "Message" },
-  { key: "meeting", color: "#FFD38A",  label: "Meeting" },
-  { key: "note",    color: "#9FE3C0",  label: "Note" },
-  { key: "task",    color: PAL.orange, label: "Task" },
+  { key: "call",    color: PAL.secure,    label: "Call" },
+  { key: "email",   color: PAL.teal,      label: "Email" },
+  { key: "msg",     color: PAL.purple,    label: "Message" },
+  { key: "meeting", color: PAL.lightBlue, label: "Meeting" },
+  { key: "note",    color: PAL.mint,      label: "Note" },
+  { key: "task",    color: PAL.info,      label: "Task" },
 ];
 
 // ---------------------------------------------------------------------------

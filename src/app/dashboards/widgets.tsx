@@ -227,10 +227,10 @@ export function WidgetBody({ type }: { type: string }) {
       return (
         <FractionCard
           icon="devices"
-          color={PAL.magenta}
+          color={PAL.rose}
           num={6}
           denom={9}
-          label="Roaming Clients"
+          label="Roaming Clients Protected"
         />
       );
     case "status-users":

@@ -122,7 +122,7 @@ export default function Page() {
                   mb: 2,
                 }}
               >
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>
                   Geo Activity
                 </Typography>
               </Box>
@@ -249,13 +249,8 @@ export default function Page() {
                   mb: 2,
                 }}
               >
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
-                  }}
-                >
-                  <Box component="span" sx={{ fontWeight: 700 }}>
+                <Typography variant="body1">
+                  <Box component="span" sx={{ fontWeight: 600 }}>
                     Request Activity:
                   </Box>
                   <Box component="span" sx={{ fontWeight: 400 }}>

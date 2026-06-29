@@ -6,12 +6,15 @@
 // layout persists in localStorage.
 
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
+import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import {
   Alert,
   Box,
   Button,
   Chip,
+  CircularProgress,
   ClickAwayListener,
+  Divider,
   IconButton,
   Menu,
   MenuItem,
@@ -19,7 +22,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { Modal } from "@/components/modal";
@@ -46,6 +49,38 @@ const COLS = 6;
 const LS_KEY = "dnsf_custom_dash_v4";
 
 const clampSpan = (s: number) => Math.min(COLS, Math.max(1, Number(s) || 1));
+
+// Simulate the grid's row-flow packing so each widget gets an explicit
+// (row, column) and we can find the empty cells the user can resize/drag into.
+function packLayout(widgets: WidgetInstance[]) {
+  const placements: Record<string, { row: number; col: number }> = {};
+  let row = 0;
+  let col = 0;
+  for (const w of widgets) {
+    const span = clampSpan(w.span);
+    if (col + span > COLS) {
+      row++;
+      col = 0;
+    }
+    placements[w.id] = { row, col };
+    col += span;
+  }
+  const rows = widgets.length
+    ? Math.max(...widgets.map((w) => placements[w.id].row)) + 1
+    : 0;
+  const occupied = new Set<string>();
+  for (const w of widgets) {
+    const { row: r, col: c } = placements[w.id];
+    for (let i = c; i < c + clampSpan(w.span); i++) occupied.add(`${r}:${i}`);
+  }
+  const emptyCells: { row: number; col: number }[] = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (!occupied.has(`${r}:${c}`)) emptyCells.push({ row: r, col: c });
+    }
+  }
+  return { placements, emptyCells };
+}
 
 let _uid = 100;
 const uid = () => "w" + ++_uid;
@@ -207,11 +242,13 @@ export default function DashboardsPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
   const [dragId, setDragId] = useState<string | null>(null);
+  const [resizing, setResizing] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<WidgetInstance | null>(
     null,
   );
   const [actionsAnchor, setActionsAnchor] = useState<HTMLElement | null>(null);
   const [dashDeleteOpen, setDashDeleteOpen] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
   const [switcherAnchor, setSwitcherAnchor] = useState<HTMLElement | null>(
     null,
   );
@@ -220,6 +257,19 @@ export default function DashboardsPage() {
   const [quickFiltersOpen, setQuickFiltersOpen] = useState(false);
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<DashboardFilters>(DEFAULT_FILTERS);
+
+  // Autosave indicator: any layout/filter change shows a spinner ("Autosaving")
+  // for 1.5s, then a check ("Autosaved"), simulating a real save round-trip.
+  const [autosave, setAutosave] = useState<"idle" | "saving" | "saved">("idle");
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+  const triggerAutosave = useCallback(() => {
+    setAutosave("saving");
+    clearTimeout(autosaveTimer.current);
+    autosaveTimer.current = setTimeout(() => setAutosave("saved"), 1500);
+  }, []);
+  useEffect(() => () => clearTimeout(autosaveTimer.current), []);
 
   // Active (non-default) filters as removable chips.
   const filterChips: { label: string; onDelete: () => void }[] = [];
@@ -262,13 +312,16 @@ export default function DashboardsPage() {
       ...ws,
       { id: uid(), type, span: clampSpan(def.span) },
     ]);
+    triggerAutosave();
   };
   const removeWidget = (id: string) =>
     setWidgets((ws) => ws.filter((w) => w.id !== id));
-  const setSpan = (id: string, span: number) =>
+  const setSpan = (id: string, span: number) => {
     setWidgets((ws) =>
       ws.map((w) => (w.id === id ? { ...w, span: clampSpan(span) } : w)),
     );
+    triggerAutosave();
+  };
 
   const deleteDashboard = () => {
     const others = [
@@ -321,6 +374,7 @@ export default function DashboardsPage() {
           setDragId(null);
           document.body.style.userSelect = "";
           document.body.style.cursor = "";
+          triggerAutosave();
         }
         window.removeEventListener("pointermove", move);
         window.removeEventListener("pointerup", up);
@@ -328,8 +382,11 @@ export default function DashboardsPage() {
       window.addEventListener("pointermove", move);
       window.addEventListener("pointerup", up);
     },
-    [],
+    [triggerAutosave],
   );
+
+  // Packed layout (explicit row/col per widget + the empty cells in between).
+  const layout = packLayout(widgets);
 
   return (
     <Box
@@ -435,6 +492,11 @@ export default function DashboardsPage() {
             setName(n);
             setSwitcherAnchor(null);
           }}
+          onCreate={() => {
+            setSwitcherAnchor(null);
+            setName("New Dashboard");
+            setWidgets([]);
+          }}
           onManage={() => {
             setSwitcherAnchor(null);
             navigate("/dashboards/manage");
@@ -443,18 +505,6 @@ export default function DashboardsPage() {
         />
 
         <Box sx={{ flex: 1 }} />
-
-        {/* Create Dashboard */}
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={() => {
-            setName("New Dashboard");
-            setWidgets([]);
-          }}
-        >
-          Create Dashboard
-        </Button>
 
         {/* Actions */}
         <Button
@@ -475,6 +525,7 @@ export default function DashboardsPage() {
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           transformOrigin={{ vertical: "top", horizontal: "right" }}
         >
+          {/* Edit-this-dashboard cluster */}
           <MenuItem
             onClick={() => {
               setActionsAnchor(null);
@@ -493,20 +544,6 @@ export default function DashboardsPage() {
           <MenuItem
             onClick={() => {
               setActionsAnchor(null);
-              setToast(`${name} set as default`);
-            }}
-          >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16, marginRight: 8, opacity: 0.7 }}
-            >
-              check_circle
-            </span>
-            Set as Default
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              setActionsAnchor(null);
               setToast(`${name} duplicated`);
             }}
           >
@@ -518,6 +555,39 @@ export default function DashboardsPage() {
             </span>
             Duplicate
           </MenuItem>
+
+          <Divider />
+
+          {/* Defaults cluster */}
+          <MenuItem
+            onClick={() => {
+              setActionsAnchor(null);
+              setToast(`${name} set as default`);
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 16, marginRight: 8, opacity: 0.7 }}
+            >
+              check_circle
+            </span>
+            Set as default
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setActionsAnchor(null);
+              setToast(`${name} set as org default`);
+            }}
+          >
+            <AssignmentTurnedInOutlinedIcon
+              sx={{ fontSize: 16, mr: 1, opacity: 0.7 }}
+            />
+            Set as org default
+          </MenuItem>
+
+          <Divider />
+
+          {/* Share band */}
           <MenuItem onClick={() => setActionsAnchor(null)}>
             <span
               className="material-symbols-outlined"
@@ -527,6 +597,27 @@ export default function DashboardsPage() {
             </span>
             Share
           </MenuItem>
+
+          <Divider />
+
+          <MenuItem
+            onClick={() => {
+              setActionsAnchor(null);
+              setResetOpen(true);
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 16, marginRight: 8, opacity: 0.7 }}
+            >
+              restart_alt
+            </span>
+            Reset to app default
+          </MenuItem>
+
+          <Divider />
+
+          {/* Destructive */}
           <MenuItem
             onClick={() => {
               setActionsAnchor(null);
@@ -627,6 +718,31 @@ export default function DashboardsPage() {
           ))}
         </Box>
         <Box sx={{ flex: 1 }} />
+        {autosave !== "idle" && (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 0.75,
+              color: "text.secondary",
+              mr: 0.5,
+            }}
+          >
+            {autosave === "saving" ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: 20 }}
+              >
+                check
+              </span>
+            )}
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              {autosave === "saving" ? "Autosaving" : "Autosaved"}
+            </Typography>
+          </Box>
+        )}
         <Button
           variant="text"
           color="secondary"
@@ -659,16 +775,35 @@ export default function DashboardsPage() {
               alignItems: "stretch",
             }}
           >
+            {/* Empty-cell guides — revealed while dragging/resizing so the user
+                sees exactly which open cells the widget can occupy. Placed as
+                real grid items so each one matches its row's height. */}
+            {(resizing || dragId !== null) &&
+              layout.emptyCells.map((cell) => (
+                <Box
+                  key={`${cell.row}:${cell.col}`}
+                  aria-hidden
+                  sx={{
+                    gridColumn: cell.col + 1,
+                    gridRow: cell.row + 1,
+                    bgcolor: "action.hover",
+                    borderRadius: 1,
+                  }}
+                />
+              ))}
             {widgets.map((w) => (
               <DashCard
                 key={w.id}
                 widget={w}
                 pad={2}
                 cols={COLS}
+                colStart={layout.placements[w.id].col}
+                rowIndex={layout.placements[w.id].row}
                 dragging={dragId === w.id}
                 onRemove={() => setPendingDelete(w)}
                 onSpan={(s) => setSpan(w.id, s)}
                 onBeginDrag={beginDrag}
+                onResizingChange={setResizing}
               />
             ))}
           </Box>
@@ -691,7 +826,10 @@ export default function DashboardsPage() {
         open={quickFiltersOpen}
         onClose={() => setQuickFiltersOpen(false)}
         filters={filters}
-        onApply={setFilters}
+        onApply={(next) => {
+          setFilters(next);
+          triggerAutosave();
+        }}
       />
 
       <AdvancedFilters
@@ -758,6 +896,35 @@ export default function DashboardsPage() {
             {name}
           </Box>{" "}
           and all of its widgets will be permanently deleted. This can&apos;t be
+          undone.
+        </Typography>
+      </Modal>
+
+      {/* Reset-to-default confirmation */}
+      <Modal
+        open={resetOpen}
+        onClose={() => setResetOpen(false)}
+        title="Reset to app default?"
+        width={420}
+        secondaryAction={{
+          label: "Cancel",
+          onClick: () => setResetOpen(false),
+        }}
+        primaryAction={{
+          label: "Reset to app default",
+          onClick: () => {
+            setWidgets(DEFAULT_LAYOUT());
+            triggerAutosave();
+            setResetOpen(false);
+          },
+        }}
+      >
+        <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
+          <Box component="b" sx={{ color: "text.primary" }}>
+            {name}
+          </Box>{" "}
+          will be restored to the default layout. Your current widget selection
+          and arrangement on this dashboard will be replaced. This can&apos;t be
           undone.
         </Typography>
       </Modal>
