@@ -225,6 +225,7 @@ export function AdvancedFilters({
     <Drawer
       open={open}
       onClose={onClose}
+      size="large"
       title="Advanced Filters"
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{ label: "Apply", onClick: onClose }}

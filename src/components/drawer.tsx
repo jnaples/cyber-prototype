@@ -9,9 +9,15 @@ import type { ButtonProps, DrawerProps as MuiDrawerProps } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import type React from "react";
 
-// Width of the drawer paper. Matches the Figma spec; override per-instance
-// via the `width` prop.
-const DEFAULT_DRAWER_WIDTH = 432;
+// Preset drawer-paper widths. Choose with the `size` prop, or override with an
+// explicit `width`. "default" matches the Figma spec; "large" is the wide
+// variant used for denser content like the advanced filter builder.
+const DRAWER_SIZES = {
+  default: 432,
+  large: 864,
+} as const;
+
+type DrawerSize = keyof typeof DRAWER_SIZES;
 
 export interface DrawerActionConfig {
   label: React.ReactNode;
@@ -46,7 +52,10 @@ export interface DrawerProps {
   /** Convenience prop for the left-aligned secondary action button. */
   secondaryAction?: DrawerActionConfig;
 
-  /** Width of the drawer paper. Defaults to {@link DEFAULT_DRAWER_WIDTH}. */
+  /** Preset paper width. Defaults to `"default"` (432px); `"large"` is 864px. */
+  size?: DrawerSize;
+
+  /** Explicit paper width. Overrides `size` when provided. */
   width?: number | string;
 
   /** Edge of the viewport to anchor to. Defaults to `"right"`. */
@@ -70,11 +79,13 @@ export function Drawer({
   actions,
   primaryAction,
   secondaryAction,
-  width = DEFAULT_DRAWER_WIDTH,
+  size = "default",
+  width,
   anchor = "right",
   drawerProps,
   disableContentPadding = false,
 }: DrawerProps) {
+  const paperWidth = width ?? DRAWER_SIZES[size];
   const hasActions =
     actions !== undefined ||
     primaryAction !== undefined ||
@@ -99,7 +110,8 @@ export function Drawer({
           // stand out against the scrolling body. Dark mode swaps to paper
           // and lets the elevation-1 overlay produce the card-like color.
           sx: (theme: Theme) => ({
-            width,
+            width: paperWidth,
+            maxWidth: "100vw",
             bgcolor: "background.neutral",
             ...theme.applyStyles("dark", {
               backgroundColor: theme.vars.palette.background.paper,

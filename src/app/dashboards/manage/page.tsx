@@ -383,7 +383,7 @@ function ActionsCell({
           <ListItemIcon>
             <AssignmentTurnedInOutlinedIcon sx={{ fontSize: 20, opacity: 0.7 }} />
           </ListItemIcon>
-          Set as Org Default
+          Set as org default
         </MenuItem>
         <Divider />
         <MenuItem
