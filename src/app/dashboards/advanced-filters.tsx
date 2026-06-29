@@ -6,122 +6,159 @@ import {
   Box,
   Button,
   Divider,
+  FormLabel,
   IconButton,
   MenuItem,
   TextField,
   Tooltip,
 } from "@mui/material";
-import { useRef, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 
-import {
-  CustomDateTimeRangePicker,
-  type CustomDateTimeRangePickerValue,
-} from "@/components/custom-date-time-range-picker";
 import { Drawer } from "@/components/drawer";
 
 import {
-  CATEGORY_OPTIONS,
   DEPLOYMENT_TYPE_OPTIONS,
   RESULT_OPTIONS,
   SITE_OPTIONS,
 } from "./dashboard-filters";
 
 // ---------------------------------------------------------------------------
-// Filterable dashboard columns
+// Filterable dashboard columns (all single-select)
 // ---------------------------------------------------------------------------
 
-type ColumnType = "singleSelect" | "dateTime";
+const DOMAIN_OPTIONS = [
+  "google.com",
+  "youtube.com",
+  "facebook.com",
+  "dropbox.com",
+  "tiktok.com",
+  "chatgpt.com",
+];
+const POLICY_OPTIONS = [
+  "Standard Policy",
+  "Default Filtering",
+  "HIPAA Strict",
+  "Marketing Policy",
+  "Engineering Policy",
+];
+const THREAT_TYPE_OPTIONS = [
+  "Malware",
+  "Phishing",
+  "Botnet",
+  "C2",
+  "Cryptomining",
+  "Spyware",
+];
+const CATEGORY_TYPE_OPTIONS = [
+  "Social Networking",
+  "Streaming Media",
+  "Adult Content",
+  "Gambling",
+  "AI Tools",
+  "File Sharing",
+];
 
 type FilterColumn = {
   field: string;
   label: string;
-  type: ColumnType;
-  options?: string[];
+  options: string[];
 };
 
 const FILTER_COLUMNS: FilterColumn[] = [
-  { field: "time", label: "Time", type: "dateTime" },
-  { field: "result", label: "Result", type: "singleSelect", options: RESULT_OPTIONS },
-  {
-    field: "site",
-    label: "Site / Network",
-    type: "singleSelect",
-    options: SITE_OPTIONS,
-  },
+  { field: "result", label: "Result", options: RESULT_OPTIONS },
+  { field: "site", label: "Site / Network", options: SITE_OPTIONS },
   {
     field: "deploymentType",
     label: "Deployment Type",
-    type: "singleSelect",
     options: DEPLOYMENT_TYPE_OPTIONS,
   },
+  { field: "domain", label: "Domains", options: DOMAIN_OPTIONS },
+  { field: "policy", label: "Policy Applied", options: POLICY_OPTIONS },
+  { field: "threatType", label: "Threat Type", options: THREAT_TYPE_OPTIONS },
   {
-    field: "category",
-    label: "Category",
-    type: "singleSelect",
-    options: CATEGORY_OPTIONS,
+    field: "categoryType",
+    label: "Category Type",
+    options: CATEGORY_TYPE_OPTIONS,
   },
 ];
 
-const SELECT_OPERATORS = [
-  { value: "is", label: "is" },
-  { value: "isNot", label: "is not" },
+const OPERATORS = [
+  { value: "contains", label: "contains" },
+  { value: "notContains", label: "does not contain" },
 ];
-const DATE_OPERATORS = [{ value: "range", label: "range" }];
 
 function columnByField(field: string) {
   return FILTER_COLUMNS.find((c) => c.field === field) ?? FILTER_COLUMNS[0];
-}
-
-function operatorsFor(column: FilterColumn) {
-  return column.type === "dateTime" ? DATE_OPERATORS : SELECT_OPERATORS;
 }
 
 // ---------------------------------------------------------------------------
 // Filter rows
 // ---------------------------------------------------------------------------
 
+type Conjunction = "And" | "Or";
+
 type FilterItem = {
   id: number;
   field: string;
   operator: string;
-  value: string; // single-select value
-  range: CustomDateTimeRangePickerValue; // date/time range value
+  value: string;
+  conjunction: Conjunction; // how this row joins the previous (rows after the first)
 };
 
 function makeItem(id: number, field = FILTER_COLUMNS[0].field): FilterItem {
-  const column = columnByField(field);
   return {
     id,
     field,
-    operator: operatorsFor(column)[0].value,
+    operator: OPERATORS[0].value,
     value: "",
-    range: [null, null],
+    conjunction: "And",
   };
+}
+
+// Width reserved for the And/Or conjunction dropdown so columns line up across
+// rows (the first row leaves it empty).
+const CONJ_WIDTH = 96;
+
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <Box
+      sx={{ flex: 1, minWidth: 120, display: "flex", flexDirection: "column", gap: 0.5 }}
+    >
+      <FormLabel>{label}</FormLabel>
+      {children}
+    </Box>
+  );
 }
 
 function FilterRow({
   item,
+  index,
+  multi,
   onChange,
   onRemove,
 }: {
   item: FilterItem;
+  index: number;
+  multi: boolean;
   onChange: (next: FilterItem) => void;
   onRemove: () => void;
 }) {
   const column = columnByField(item.field);
-  const operators = operatorsFor(column);
 
   const handleField = (field: string) => {
-    const next = columnByField(field);
-    // Reset operator + values when the column changes, like the grid does.
-    onChange({
-      ...makeItem(item.id, field),
-      operator: operatorsFor(next)[0].value,
-    });
+    // Reset operator + value when the column changes, like the grid does
+    // (preserve the conjunction so the row keeps its And/Or).
+    onChange({ ...makeItem(item.id, field), conjunction: item.conjunction });
   };
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+    <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1.5 }}>
       <Tooltip title="Remove filter">
         <IconButton size="small" aria-label="remove filter" onClick={onRemove}>
           <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
@@ -130,59 +167,70 @@ function FilterRow({
         </IconButton>
       </Tooltip>
 
-      <TextField
-        select
-        size="small"
-        label="Columns"
-        value={item.field}
-        onChange={(e) => handleField(e.target.value)}
-        sx={{ minWidth: 120, flex: 1 }}
-      >
-        {FILTER_COLUMNS.map((c) => (
-          <MenuItem key={c.field} value={c.field}>
-            {c.label}
-          </MenuItem>
+      {/* And/Or conjunction — only when filters are stacked. The first row
+          reserves the space so columns stay aligned across rows. */}
+      {multi &&
+        (index === 0 ? (
+          <Box sx={{ width: CONJ_WIDTH, flexShrink: 0 }} />
+        ) : (
+          <TextField
+            select
+            size="small"
+            value={item.conjunction}
+            onChange={(e) =>
+              onChange({ ...item, conjunction: e.target.value as Conjunction })
+            }
+            sx={{ width: CONJ_WIDTH, flexShrink: 0 }}
+          >
+            <MenuItem value="And">And</MenuItem>
+            <MenuItem value="Or">Or</MenuItem>
+          </TextField>
         ))}
-      </TextField>
 
-      <TextField
-        select
-        size="small"
-        label="Operator"
-        value={item.operator}
-        onChange={(e) => onChange({ ...item, operator: e.target.value })}
-        sx={{ minWidth: 100, flex: 1 }}
-      >
-        {operators.map((op) => (
-          <MenuItem key={op.value} value={op.value}>
-            {op.label}
-          </MenuItem>
-        ))}
-      </TextField>
-
-      {column.type === "singleSelect" ? (
+      <Field label="Filter by:">
         <TextField
           select
           size="small"
-          label="Value"
+          value={item.field}
+          onChange={(e) => handleField(e.target.value)}
+        >
+          {FILTER_COLUMNS.map((c) => (
+            <MenuItem key={c.field} value={c.field}>
+              {c.label}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Field>
+
+      <Field label="Operator">
+        <TextField
+          select
+          size="small"
+          value={item.operator}
+          onChange={(e) => onChange({ ...item, operator: e.target.value })}
+        >
+          {OPERATORS.map((op) => (
+            <MenuItem key={op.value} value={op.value}>
+              {op.label}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Field>
+
+      <Field label="Value">
+        <TextField
+          select
+          size="small"
           value={item.value}
           onChange={(e) => onChange({ ...item, value: e.target.value })}
-          sx={{ minWidth: 120, flex: 1 }}
         >
-          {(column.options ?? []).map((opt) => (
+          {column.options.map((opt) => (
             <MenuItem key={opt} value={opt}>
               {opt}
             </MenuItem>
           ))}
         </TextField>
-      ) : (
-        <Box sx={{ display: "flex", flex: 1.5, minWidth: 200 }}>
-          <CustomDateTimeRangePicker
-            value={item.range}
-            onChange={(range) => onChange({ ...item, range })}
-          />
-        </Box>
-      )}
+      </Field>
     </Box>
   );
 }
@@ -232,10 +280,12 @@ export function AdvancedFilters({
     >
       <Box>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {items.map((item) => (
+          {items.map((item, index) => (
             <FilterRow
               key={item.id}
               item={item}
+              index={index}
+              multi={items.length > 1}
               onChange={(next) => updateItem(item.id, next)}
               onRemove={() => removeItem(item.id)}
             />
@@ -244,37 +294,43 @@ export function AdvancedFilters({
 
         <Divider sx={{ my: 2 }} />
 
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Button
-          variant="text"
-          color="primary"
-          onClick={addFilter}
-          startIcon={
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-              add
-            </span>
-          }
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
         >
-          Add Filter
-        </Button>
-        <Button
-          variant="text"
-          color="primary"
-          onClick={removeAll}
-          startIcon={
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-              delete
-            </span>
-          }
-        >
-          Remove All
-        </Button>
+          <Button
+            variant="text"
+            color="primary"
+            onClick={addFilter}
+            startIcon={
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: 20 }}
+              >
+                add
+              </span>
+            }
+          >
+            Add Filter
+          </Button>
+          <Button
+            variant="text"
+            color="primary"
+            onClick={removeAll}
+            startIcon={
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: 20 }}
+              >
+                delete
+              </span>
+            }
+          >
+            Remove All
+          </Button>
         </Box>
       </Box>
     </Drawer>
