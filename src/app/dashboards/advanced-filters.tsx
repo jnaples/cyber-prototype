@@ -5,6 +5,7 @@
 import {
   Box,
   Button,
+  Divider,
   IconButton,
   MenuItem,
   TextField,
@@ -12,6 +13,10 @@ import {
 } from "@mui/material";
 import { useRef, useState } from "react";
 
+import {
+  CustomDateTimeRangePicker,
+  type CustomDateTimeRangePickerValue,
+} from "@/components/custom-date-time-range-picker";
 import { Drawer } from "@/components/drawer";
 
 import {
@@ -61,11 +66,7 @@ const SELECT_OPERATORS = [
   { value: "is", label: "is" },
   { value: "isNot", label: "is not" },
 ];
-const DATE_OPERATORS = [
-  { value: "range", label: "range" },
-  { value: "after", label: "is after" },
-  { value: "before", label: "is before" },
-];
+const DATE_OPERATORS = [{ value: "range", label: "range" }];
 
 function columnByField(field: string) {
   return FILTER_COLUMNS.find((c) => c.field === field) ?? FILTER_COLUMNS[0];
@@ -83,8 +84,8 @@ type FilterItem = {
   id: number;
   field: string;
   operator: string;
-  value: string;
-  valueEnd: string;
+  value: string; // single-select value
+  range: CustomDateTimeRangePickerValue; // date/time range value
 };
 
 function makeItem(id: number, field = FILTER_COLUMNS[0].field): FilterItem {
@@ -94,7 +95,7 @@ function makeItem(id: number, field = FILTER_COLUMNS[0].field): FilterItem {
     field,
     operator: operatorsFor(column)[0].value,
     value: "",
-    valueEnd: "",
+    range: [null, null],
   };
 }
 
@@ -109,7 +110,6 @@ function FilterRow({
 }) {
   const column = columnByField(item.field);
   const operators = operatorsFor(column);
-  const isRange = column.type === "dateTime" && item.operator === "range";
 
   const handleField = (field: string) => {
     const next = columnByField(field);
@@ -132,7 +132,6 @@ function FilterRow({
 
       <TextField
         select
-        variant="standard"
         size="small"
         label="Columns"
         value={item.field}
@@ -148,7 +147,6 @@ function FilterRow({
 
       <TextField
         select
-        variant="standard"
         size="small"
         label="Operator"
         value={item.operator}
@@ -165,7 +163,6 @@ function FilterRow({
       {column.type === "singleSelect" ? (
         <TextField
           select
-          variant="standard"
           size="small"
           label="Value"
           value={item.value}
@@ -178,40 +175,13 @@ function FilterRow({
             </MenuItem>
           ))}
         </TextField>
-      ) : isRange ? (
-        <>
-          <TextField
-            type="datetime-local"
-            variant="standard"
-            size="small"
-            label="Start"
-            value={item.value}
-            onChange={(e) => onChange({ ...item, value: e.target.value })}
-            slotProps={{ inputLabel: { shrink: true } }}
-            sx={{ minWidth: 120, flex: 1 }}
-          />
-          <TextField
-            type="datetime-local"
-            variant="standard"
-            size="small"
-            label="End"
-            value={item.valueEnd}
-            onChange={(e) => onChange({ ...item, valueEnd: e.target.value })}
-            slotProps={{ inputLabel: { shrink: true } }}
-            sx={{ minWidth: 120, flex: 1 }}
-          />
-        </>
       ) : (
-        <TextField
-          type="datetime-local"
-          variant="standard"
-          size="small"
-          label="Value"
-          value={item.value}
-          onChange={(e) => onChange({ ...item, value: e.target.value })}
-          slotProps={{ inputLabel: { shrink: true } }}
-          sx={{ minWidth: 120, flex: 1 }}
-        />
+        <Box sx={{ display: "flex", flex: 1.5, minWidth: 200 }}>
+          <CustomDateTimeRangePicker
+            value={item.range}
+            onChange={(range) => onChange({ ...item, range })}
+          />
+        </Box>
       )}
     </Box>
   );
@@ -259,23 +229,25 @@ export function AdvancedFilters({
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{ label: "Apply", onClick: onClose }}
     >
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {items.map((item) => (
-          <FilterRow
-            key={item.id}
-            item={item}
-            onChange={(next) => updateItem(item.id, next)}
-            onRemove={() => removeItem(item.id)}
-          />
-        ))}
-      </Box>
+      <Box>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {items.map((item) => (
+            <FilterRow
+              key={item.id}
+              item={item}
+              onChange={(next) => updateItem(item.id, next)}
+              onRemove={() => removeItem(item.id)}
+            />
+          ))}
+        </Box>
+
+        <Divider sx={{ my: 2 }} />
 
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          mt: items.length ? 2 : 0,
         }}
       >
         <Button
@@ -302,6 +274,7 @@ export function AdvancedFilters({
         >
           Remove All
         </Button>
+        </Box>
       </Box>
     </Drawer>
   );

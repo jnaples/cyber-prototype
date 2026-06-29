@@ -2,6 +2,8 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
+  Divider,
   IconButton,
   ListItemIcon,
   Menu,
@@ -32,13 +34,22 @@ const INITIAL_ROWS: DashboardRow[] = DASHBOARD_NAMES.map((name) => ({
 
 const INITIAL_FAVORITES = ["FilterDNS Overview", "Security Summary"];
 
+// The dashboard currently set as the default landing dashboard.
+const DEFAULT_DASHBOARD = "FilterDNS Overview";
+
 export default function ManageDashboardsPage() {
   const navigate = useNavigate();
   const [rows, setRows] = useState<DashboardRow[]>(INITIAL_ROWS);
   const [favorites, setFavorites] = useState<string[]>(INITIAL_FAVORITES);
   const [activeTab, setActiveTab] = useState(0);
   const [pendingDelete, setPendingDelete] = useState<DashboardRow | null>(null);
+  const [defaultDashboard, setDefaultDashboard] = useState(DEFAULT_DASHBOARD);
   const [toast, setToast] = useState<string | null>(null);
+
+  const setAsDefault = (name: string) => {
+    setDefaultDashboard(name);
+    setToast(`${name} set as default`);
+  };
 
   const favoriteRows = rows.filter((row) => favorites.includes(row.name));
   const otherRows = rows.filter((row) => !favorites.includes(row.name));
@@ -85,7 +96,22 @@ export default function ManageDashboardsPage() {
     setRows((prev) => prev.filter((row) => row.id !== id));
 
   const columns: GridColDef<DashboardRow>[] = [
-    { field: "name", headerName: "Dashboard", flex: 1, minWidth: 240 },
+    {
+      field: "name",
+      headerName: "Dashboard",
+      flex: 1,
+      minWidth: 240,
+      renderCell: (params) => (
+        <Box
+          sx={{ display: "flex", alignItems: "center", gap: 1, height: "100%" }}
+        >
+          <span>{params.row.name}</span>
+          {params.row.name === defaultDashboard && (
+            <Chip label="Default" size="small" />
+          )}
+        </Box>
+      ),
+    },
     {
       field: "actions",
       headerName: "Actions",
@@ -99,7 +125,9 @@ export default function ManageDashboardsPage() {
         <ActionsCell
           name={params.row.name}
           isFavorite={favorites.includes(params.row.name)}
+          isDefault={params.row.name === defaultDashboard}
           onToggleFavorite={() => toggleFavorite(params.row.name)}
+          onSetDefault={() => setAsDefault(params.row.name)}
           onDelete={() => setPendingDelete(params.row)}
         />
       ),
@@ -231,12 +259,16 @@ function ManageDashboardsEmptyOverlay() {
 
 function ActionsCell({
   isFavorite,
+  isDefault,
   onToggleFavorite,
+  onSetDefault,
   onDelete,
 }: {
   name: string;
   isFavorite: boolean;
+  isDefault: boolean;
   onToggleFavorite: () => void;
+  onSetDefault: () => void;
   onDelete: () => void;
 }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -285,6 +317,24 @@ function ActionsCell({
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
+        <MenuItem
+          disabled={isDefault}
+          onClick={() => {
+            onSetDefault();
+            close();
+          }}
+        >
+          <ListItemIcon>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 20, opacity: 0.7 }}
+            >
+              check_circle
+            </span>
+          </ListItemIcon>
+          Set as default
+        </MenuItem>
+        <Divider />
         <MenuItem
           onClick={() => {
             onDelete();

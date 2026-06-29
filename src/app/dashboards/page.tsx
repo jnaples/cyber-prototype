@@ -5,6 +5,7 @@
 // switcher, Actions menu (Rename / Delete), Share, and Add content. The
 // layout persists in localStorage.
 
+import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
 import {
   Alert,
   Box,
@@ -368,7 +369,7 @@ export default function DashboardsPage() {
           <span
             className="material-symbols-outlined"
             style={{
-              fontSize: 18,
+              fontSize: 20,
               color: favorited
                 ? "var(--dnsf-palette-warning-main)"
                 : "var(--dnsf-palette-text-disabled)",
@@ -434,11 +435,6 @@ export default function DashboardsPage() {
             setName(n);
             setSwitcherAnchor(null);
           }}
-          onCreate={() => {
-            setSwitcherAnchor(null);
-            setName("New Dashboard");
-            setWidgets([]);
-          }}
           onManage={() => {
             setSwitcherAnchor(null);
             navigate("/dashboards/manage");
@@ -448,27 +444,24 @@ export default function DashboardsPage() {
 
         <Box sx={{ flex: 1 }} />
 
+        {/* Create Dashboard */}
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={() => {
+            setName("New Dashboard");
+            setWidgets([]);
+          }}
+        >
+          Create Dashboard
+        </Button>
+
         {/* Actions */}
         <Button
           variant="outlined"
           color="secondary"
           onClick={(e) => setActionsAnchor(e.currentTarget)}
-          startIcon={
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16 }}
-            >
-              tune
-            </span>
-          }
-          endIcon={
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16, opacity: 0.6 }}
-            >
-              expand_more
-            </span>
-          }
+          endIcon={<ArrowDropDownOutlinedIcon sx={{ opacity: 0.6 }} />}
         >
           Actions
         </Button>
