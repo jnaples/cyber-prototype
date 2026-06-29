@@ -38,6 +38,7 @@ import { CustomDateTimeRangePicker } from "@/components/custom-date-time-range-p
 import type { CustomDateTimeRangePickerValue } from "@/components/custom-date-time-range-picker";
 import { EmptyState } from "@/components/empty-state";
 import { Modal } from "@/components/modal";
+import { NoResultsOverlay } from "@/components/no-results-overlay";
 import { PILL_CHIP_RADIUS } from "@/theme/core/components/chip";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
@@ -495,36 +496,7 @@ function QueryLogsEmptyOverlay() {
 }
 
 // Shown when an Organization is applied but filters/search return no rows.
-function QueryLogsNoResultsOverlay() {
-  return (
-    <Box
-      sx={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 0.5,
-        p: 3,
-        textAlign: "center",
-        color: "text.primary",
-      }}
-    >
-      <Typography
-        sx={{
-          fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
-          fontWeight: 600,
-          fontSize: 18,
-        }}
-      >
-        No results found
-      </Typography>
-      <Typography variant="body2">
-        Adjust the filters or search terms to see results.
-      </Typography>
-    </Box>
-  );
-}
+// Uses the shared NoResultsOverlay component.
 
 const SELECT_ALL_VALUE = "__select_all__";
 const ALL_ROAMING_CLIENTS_AND_RELAYS = [...roamingClients, ...relays];
@@ -1366,7 +1338,7 @@ export default function QueryLogsPage() {
             noRowsOverlay={
               appliedOrg === null
                 ? QueryLogsEmptyOverlay
-                : QueryLogsNoResultsOverlay
+                : NoResultsOverlay
             }
             showSearch={false}
             timeRangeField="time"

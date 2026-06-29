@@ -3,6 +3,7 @@ import {
   Button,
   Divider,
   Drawer as MuiDrawer,
+  IconButton,
   Typography,
 } from "@mui/material";
 import type { ButtonProps, DrawerProps as MuiDrawerProps } from "@mui/material";
@@ -132,7 +133,17 @@ export function Drawer({
       >
         {title !== undefined && (
           <>
-            <Box sx={{ bgcolor: "background.paper", px: 2, py: 1 }}>
+            <Box
+              sx={{
+                bgcolor: "background.paper",
+                px: 2,
+                py: 1,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 1,
+              }}
+            >
               <Typography
                 component="h2"
                 sx={{
@@ -145,6 +156,19 @@ export function Drawer({
               >
                 {title}
               </Typography>
+              <IconButton
+                size="small"
+                aria-label="Close"
+                onClick={onClose}
+                sx={{ flexShrink: 0 }}
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 20 }}
+                >
+                  close
+                </span>
+              </IconButton>
             </Box>
             <Divider />
           </>

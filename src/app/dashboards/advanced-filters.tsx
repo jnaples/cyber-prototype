@@ -242,9 +242,12 @@ function FilterRow({
 export function AdvancedFilters({
   open,
   onClose,
+  onApply,
 }: {
   open: boolean;
   onClose: () => void;
+  /** Called on Apply with whether any filter row has a value selected. */
+  onApply?: (hasActiveFilters: boolean) => void;
 }) {
   // Row ids: the seed row reuses id 0 (rows are cleared between opens), while
   // Add Filter pulls fresh ids from a ref counter inside the event handler.
@@ -269,6 +272,11 @@ export function AdvancedFilters({
 
   const removeAll = () => setItems([]);
 
+  const handleApply = () => {
+    onApply?.(items.some((it) => it.value !== ""));
+    onClose();
+  };
+
   return (
     <Drawer
       open={open}
@@ -276,7 +284,7 @@ export function AdvancedFilters({
       size="large"
       title="Advanced Filters"
       secondaryAction={{ label: "Cancel", onClick: onClose }}
-      primaryAction={{ label: "Apply", onClick: onClose }}
+      primaryAction={{ label: "Apply", onClick: handleApply }}
     >
       <Box>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>

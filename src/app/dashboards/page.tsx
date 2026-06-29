@@ -243,6 +243,9 @@ export default function DashboardsPage() {
   const [renaming, setRenaming] = useState(false);
   const [dragId, setDragId] = useState<string | null>(null);
   const [resizing, setResizing] = useState(false);
+  // True when applied filters match no data — each widget shows a no-results
+  // overlay instead of its content.
+  const [noResults, setNoResults] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<WidgetInstance | null>(
     null,
   );
@@ -768,6 +771,7 @@ export default function DashboardsPage() {
             size="small"
             onClick={() => {
               setFilters(DEFAULT_FILTERS);
+              setNoResults(false);
               triggerAutosave();
             }}
             startIcon={
@@ -824,6 +828,7 @@ export default function DashboardsPage() {
                 colStart={layout.placements[w.id].col}
                 rowIndex={layout.placements[w.id].row}
                 dragging={dragId === w.id}
+                noResults={noResults}
                 onRemove={() => setPendingDelete(w)}
                 onSpan={(s) => setSpan(w.id, s)}
                 onBeginDrag={beginDrag}
@@ -852,6 +857,7 @@ export default function DashboardsPage() {
         filters={filters}
         onApply={(next) => {
           setFilters(next);
+          setNoResults(false);
           triggerAutosave();
         }}
       />
@@ -859,6 +865,7 @@ export default function DashboardsPage() {
       <AdvancedFilters
         open={advancedFiltersOpen}
         onClose={() => setAdvancedFiltersOpen(false)}
+        onApply={(hasActiveFilters) => setNoResults(hasActiveFilters)}
       />
 
       {/* Widget delete confirmation */}

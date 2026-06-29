@@ -18,6 +18,8 @@ import {
   widgetLegend,
   type WidgetInstance,
 } from "./lib";
+import { NoResultsOverlay } from "@/components/no-results-overlay";
+
 import { WidgetBody } from "./widgets";
 
 export type { WidgetInstance } from "./lib";
@@ -52,6 +54,7 @@ export function DashCard({
   colStart,
   rowIndex,
   dragging,
+  noResults = false,
   onRemove,
   onSpan,
   onBeginDrag,
@@ -63,6 +66,7 @@ export function DashCard({
   colStart: number;
   rowIndex: number;
   dragging: boolean;
+  noResults?: boolean;
   onRemove: () => void;
   onSpan: (s: number) => void;
   onBeginDrag: (
@@ -214,7 +218,11 @@ export function DashCard({
           justifyContent: headerless ? "center" : "flex-start",
         }}
       >
-        <WidgetBody type={widget.type} />
+        {noResults ? (
+          <NoResultsOverlay />
+        ) : (
+          <WidgetBody type={widget.type} />
+        )}
       </Box>
 
       {/* bottom-right resize gripper */}
