@@ -517,9 +517,11 @@ function QueryLogsNoResultsOverlay() {
           fontSize: 18,
         }}
       >
-        No query log data to display
+        No results found
       </Typography>
-      <Typography variant="body1">Adjust filters to load results.</Typography>
+      <Typography variant="body2">
+        Adjust the filters or search terms to see results.
+      </Typography>
     </Box>
   );
 }

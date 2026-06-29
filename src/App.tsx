@@ -26,6 +26,7 @@ import ActiveRequestsPage from "@/app/unblock-requests/active-requests/page";
 import RequestHistoryPage from "@/app/unblock-requests/request-history/page";
 import SubscriptionsLayout from "@/app/subscriptions/layout";
 import SubscriptionsIndexPage from "@/app/subscriptions/page";
+import SubscriptionsManagePage from "@/app/subscriptions/manage/page";
 import BillingPage from "@/app/subscriptions/billing/page";
 import PlansLicensesPage from "@/app/subscriptions/plans-licenses/page";
 
@@ -47,6 +48,7 @@ function App() {
 
         <Route path="subscriptions" element={<SubscriptionsLayout />}>
           <Route index element={<SubscriptionsIndexPage />} />
+          <Route path="manage" element={<SubscriptionsManagePage />} />
           <Route path="billing" element={<BillingPage />} />
           <Route path="plans-licenses" element={<PlansLicensesPage />} />
         </Route>

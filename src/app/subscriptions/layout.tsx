@@ -1,3 +1,4 @@
+import BusinessOutlinedIcon from "@mui/icons-material/BusinessOutlined";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 import { Tab, Tabs } from "@mui/material";
@@ -14,6 +15,11 @@ import { PageShell } from "@/components/page-shell";
 // ---------------------------------------------------------------------------
 
 const TABS = [
+  {
+    label: "Organizations",
+    icon: <BusinessOutlinedIcon />,
+    path: "/subscriptions/manage",
+  },
   {
     label: "Billing",
     icon: <CreditCardOutlinedIcon />,
@@ -37,6 +43,10 @@ export default function SubscriptionsLayout() {
   const activeTab = TABS.findIndex((tab) => pathname.startsWith(tab.path));
   const tabValue = activeTab === -1 ? 0 : activeTab;
 
+  // The Subscriptions tab holds a wide table, so it renders full-bleed rather
+  // than inside the constrained container the other tabs use.
+  const isSubscriptionsTab = pathname.startsWith("/subscriptions/manage");
+
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     navigate(TABS[newValue].path);
   };
@@ -59,7 +69,7 @@ export default function SubscriptionsLayout() {
 
   return (
     <PageShell
-      maxWidth="lg"
+      maxWidth={isSubscriptionsTab ? undefined : "lg"}
       header={
         <PageHeader title="Billing & Subscriptions">
           <Box

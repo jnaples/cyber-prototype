@@ -628,6 +628,8 @@ export interface DataTableProps {
   onFilterModelChange?: (model: GridFilterModel) => void;
   bulkActions?: React.ReactNode;
   pinnedShadowFields?: { left?: string; right?: string };
+  /** Grouped column headers (e.g. spanning header over several columns). */
+  columnGroupingModel?: DataGridProps["columnGroupingModel"];
   sx?: DataGridProps["sx"];
 }
 
@@ -667,6 +669,7 @@ export function DataTable({
   onFilterModelChange,
   bulkActions,
   pinnedShadowFields,
+  columnGroupingModel,
   sx: sxOverrides,
 }: DataTableProps) {
   const apiRef = useGridApiRef();
@@ -1032,6 +1035,7 @@ export function DataTable({
             apiRef={apiRef}
             rows={filteredRows}
             columns={processedColumns}
+            columnGroupingModel={columnGroupingModel}
             density={density}
             pagination
             paginationMode="client"
@@ -1059,7 +1063,13 @@ export function DataTable({
               columnsManagement: CustomColumnsPanel,
               filterPanel: StandardFilterPanel,
               loadingOverlay: LoadingOverlay,
-              ...(noRowsOverlay ? { noRowsOverlay } : {}),
+              // Use the same overlay whether the grid has no data at all
+              // (noRowsOverlay) or filtering removed everything
+              // (noResultsOverlay) — otherwise the grid falls back to its
+              // default "No results found." text on column filters.
+              ...(noRowsOverlay
+                ? { noRowsOverlay, noResultsOverlay: noRowsOverlay }
+                : {}),
             }}
             slotProps={{
               pagination: { pageSizeOptions } as never,
