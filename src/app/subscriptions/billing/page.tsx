@@ -382,7 +382,10 @@ export default function BillingPage() {
                 {stat.caption}
               </Typography>
               {stat.extra && (
-                <Typography variant="body2" sx={{ color: "success.main" }}>
+                <Typography
+                  variant="body2"
+                  sx={{ color: "success.main", fontWeight: 600 }}
+                >
                   {stat.extra}
                 </Typography>
               )}
@@ -400,12 +403,18 @@ export default function BillingPage() {
             gap: 0.5,
             cursor: "pointer",
             color: "text.primary",
-            fontWeight: 500,
+            fontWeight: 600,
             fontSize: 14,
           }}
         >
           {detailsOpen ? "Hide details" : "View details"}
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
+          <span
+            className="material-symbols-outlined"
+            style={{
+              fontSize: 18,
+              color: "var(--dnsf-palette-text-secondary)",
+            }}
+          >
             {detailsOpen ? "expand_less" : "expand_more"}
           </span>
         </Box>
