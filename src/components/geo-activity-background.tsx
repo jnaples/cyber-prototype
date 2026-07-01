@@ -28,7 +28,7 @@ const THEMES = {
       "radial-gradient(80% 80% at 50% 45%, transparent 55%, rgba(215,227,241,.65) 100%)",
     blue: { stroke: "#238CD2", dot: "#1E7FB8", glow: "rgba(35,140,210,.5)" },
     yellow: { stroke: "#F57C00", dot: "#D96C00", glow: "rgba(245,124,0,.45)" },
-    pink: { stroke: "#CE008E", dot: "#B0007A", glow: "rgba(206,0,142,.45)" },
+    pink: { stroke: "#CE008E", dot: "#CE008E", glow: "rgba(206,0,142,.5)" },
   },
 } as const;
 
