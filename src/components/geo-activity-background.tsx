@@ -37,9 +37,12 @@ const HOTSPOTS: [number, number, number][] = [
   [-74, 40.7, 9], [-118.2, 34, 13], [-87.6, 41.8, 5], [-95.4, 29.8, 4],
   // California cluster (SF, San Jose, LA, San Diego, Sacramento)
   [-122.3, 37.6, 13], [-121.9, 37.3, 8], [-117.2, 32.7, 8], [-121.5, 38.6, 4],
+  // Texas (Houston above, + Dallas, Austin, San Antonio)
+  [-96.8, 32.8, 6], [-97.7, 30.3, 5], [-98.5, 29.4, 4],
   // Rest of the US
-  [-122.3, 47.6, 6], [-104.99, 39.7, 5], [-96.8, 32.8, 5], [-112.07, 33.45, 4],
-  [-80.2, 25.8, 4], [-84.4, 33.7, 4], [-77, 38.9, 5], [-71.06, 42.36, 4],
+  [-122.3, 47.6, 6], [-122.7, 45.5, 4], [-104.99, 39.7, 5], [-112.07, 33.45, 4],
+  [-115.1, 36.2, 4], [-93.3, 45, 4], [-80.2, 25.8, 4], [-84.4, 33.7, 4],
+  [-77, 38.9, 5], [-71.06, 42.36, 4], [-75.16, 39.95, 3],
   [-79.4, 43.7, 3], [-99.1, 19.4, 4], [-46.6, -23.5, 4],
   [-58.4, -34.6, 2], [-77, -12, 2], [-74.1, 4.7, 2],
   [-0.1, 51.5, 8], [2.35, 48.85, 6], [13.4, 52.5, 5], [-3.7, 40.4, 3],
@@ -53,10 +56,13 @@ const HOTSPOTS: [number, number, number][] = [
 ];
 const WSUM = HOTSPOTS.reduce((s, h) => s + h[2], 0);
 
-// Equirectangular projection into the map SVG's 1052.4 × 580 viewBox.
+// Equirectangular projection into the map SVG's 1052.4 × 580 viewBox. The
+// source map's landmasses sit a bit higher than a naive 90..-90 mapping, so
+// LAT_OFFSET nudges every marker south to line up with the geography.
+const LAT_OFFSET = 13;
 const proj = (lon: number, lat: number): [number, number] => [
   ((lon + 180) / 360) * 1052.4,
-  ((90 - lat) / 180) * 580,
+  ((90 - (lat - LAT_OFFSET)) / 180) * 580,
 ];
 
 const NS = "http://www.w3.org/2000/svg";
@@ -182,16 +188,18 @@ export function GeoActivityBackground() {
         }}
       />
 
-      {/* World map + blink overlay — 2/3 of the width on desktop, but 90% on
-          mobile / iPad (below the lg breakpoint) so it stays legible. */}
+      {/* World map + blink overlay. The wrapper carries the map's exact aspect
+          ratio and both the mask (map) and the overlay fill it 1:1, so blink
+          coordinates line up with the geography. 70% wide on desktop, 90% on
+          mobile / iPad. */}
       <Box
         sx={{
           position: "absolute",
-          top: 0,
-          bottom: 0,
+          top: "50%",
           left: "50%",
-          transform: "translateX(-50%)",
+          transform: "translate(-50%, -50%)",
           width: { xs: "90%", lg: "70%" },
+          aspectRatio: "1052.4 / 580",
         }}
       >
         <Box
@@ -204,16 +212,14 @@ export function GeoActivityBackground() {
             WebkitMaskImage: "url(/world-map.svg)",
             maskRepeat: "no-repeat",
             WebkitMaskRepeat: "no-repeat",
-            maskPosition: "center",
-            WebkitMaskPosition: "center",
-            maskSize: "contain",
-            WebkitMaskSize: "contain",
+            maskSize: "100% 100%",
+            WebkitMaskSize: "100% 100%",
           }}
         />
         <Box
           component="svg"
           viewBox="0 0 1052.4 580"
-          preserveAspectRatio="xMidYMid meet"
+          preserveAspectRatio="none"
           sx={{
             position: "absolute",
             inset: 0,
