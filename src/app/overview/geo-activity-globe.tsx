@@ -86,13 +86,7 @@ const CITIES: { lat: number; lng: number }[] = [
   { lat: -37.81, lng: 144.96 }, { lat: -36.85, lng: 174.76 },
 ];
 
-type ArcDatum = {
-  startLat: number;
-  startLng: number;
-  endLat: number;
-  endLng: number;
-  color: [string, string];
-};
+type PointDatum = { lat: number; lng: number; color: string };
 type RingDatum = { lat: number; lng: number; color: string; maxR: number };
 
 function hexRgba(hex: string, a: number) {
@@ -121,7 +115,7 @@ export function GeoActivityGlobe() {
 
     let destroyed = false;
     let globe: GlobeInstance | null = null;
-    let arcs: ArcDatum[] = [];
+    let points: PointDatum[] = [];
     let rings: RingDatum[] = [];
     const timers: ReturnType<typeof setInterval>[] = [];
     let resizeObserver: ResizeObserver | null = null;
@@ -134,36 +128,33 @@ export function GeoActivityGlobe() {
       const type = r < 0.7 ? "allowed" : r < 0.88 ? "category" : "threat";
       const base = VERDICT_COLORS[type];
 
-      const a = pick();
-      let b = pick();
-      let guard = 0;
-      while (b === a && guard++ < 5) b = pick();
+      // Each request is a blink at the single location it came in from — a
+      // point marker plus an expanding ring (no city-to-city arcs). Jitter
+      // around the seed metro so blinks scatter across each continent.
+      const src = pick();
+      const jitter = () => (Math.random() - 0.5) * 18;
+      const lat = Math.max(-58, Math.min(72, src.lat + jitter()));
+      const lng = src.lng + jitter();
 
-      const arc: ArcDatum = {
-        startLat: a.lat,
-        startLng: a.lng,
-        endLat: b.lat,
-        endLng: b.lng,
-        color: [hexRgba(base, 0), base],
-      };
-      arcs.push(arc);
-      if (arcs.length > 60) arcs.shift();
-      globe.arcsData(arcs.slice());
+      const point: PointDatum = { lat, lng, color: base };
+      points.push(point);
+      if (points.length > 60) points.shift();
+      globe.pointsData(points.slice());
 
       const ring: RingDatum = {
-        lat: b.lat,
-        lng: b.lng,
+        lat,
+        lng,
         color: base,
-        maxR: type === "threat" ? 5.5 : type === "category" ? 4 : 3,
+        maxR: type === "threat" ? 9 : type === "category" ? 7 : 5.5,
       };
       rings.push(ring);
-      if (rings.length > 40) rings.shift();
+      if (rings.length > 60) rings.shift();
       globe.ringsData(rings.slice());
 
       setTimeout(() => {
-        arcs = arcs.filter((x) => x !== arc);
-        globe?.arcsData(arcs.slice());
-      }, 2200);
+        points = points.filter((x) => x !== point);
+        globe?.pointsData(points.slice());
+      }, 1600);
       setTimeout(() => {
         rings = rings.filter((x) => x !== ring);
         globe?.ringsData(rings.slice());
@@ -191,13 +182,12 @@ export function GeoActivityGlobe() {
         .hexPolygonUseDots(true)
         .hexPolygonAltitude(0.006)
         .hexPolygonColor(() => pal.hex)
-        .arcColor("color")
-        .arcAltitudeAutoScale(0.45)
-        .arcStroke(0.55)
-        .arcDashLength(0.45)
-        .arcDashGap(1.4)
-        .arcDashInitialGap(() => Math.random())
-        .arcDashAnimateTime(2000)
+        .pointsData([])
+        .pointLat((d: object) => (d as PointDatum).lat)
+        .pointLng((d: object) => (d as PointDatum).lng)
+        .pointColor((d: object) => (d as PointDatum).color)
+        .pointAltitude(0.01)
+        .pointRadius(0.55)
         .ringColor((d: object) => (t: number) =>
           hexRgba((d as RingDatum).color, 1 - t),
         )
@@ -240,10 +230,11 @@ export function GeoActivityGlobe() {
       timers.push(
         setInterval(() => {
           spawn();
-          if (Math.random() < 0.5) spawn();
-        }, 380),
+          spawn();
+          if (Math.random() < 0.6) spawn();
+        }, 220),
       );
-      for (let i = 0; i < 6; i++) setTimeout(spawn, i * 120);
+      for (let i = 0; i < 10; i++) setTimeout(spawn, i * 90);
     };
 
     (async () => {

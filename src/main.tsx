@@ -18,7 +18,7 @@ const theme = createTheme();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <MuiThemeProvider theme={theme}>
+    <MuiThemeProvider theme={theme} defaultMode="system">
       <CssBaseline />
       <BrowserRouter>
         <App />

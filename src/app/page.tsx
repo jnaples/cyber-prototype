@@ -16,9 +16,11 @@ import {
 import { useColorScheme } from "@mui/material/styles";
 import { useNavigate } from "react-router";
 
+import { GeoActivityBackground } from "@/components/geo-activity-background";
+
 function ThemeToggle() {
-  const { mode, setMode } = useColorScheme();
-  const isDark = mode === "dark";
+  const { mode, systemMode, setMode } = useColorScheme();
+  const isDark = (mode === "system" ? systemMode : mode) === "dark";
   return (
     <Tooltip title={isDark ? "Switch to light mode" : "Switch to dark mode"}>
       <IconButton
@@ -179,17 +181,13 @@ export default function LoginPage() {
         display: "flex",
         flexDirection: "column",
         bgcolor: "background.default",
-        backgroundImage: "url(/map_bg_light.svg)",
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
-        backgroundSize: "auto",
-        '[data-mui-color-scheme="dark"] &': {
-          backgroundImage: "url(/map_bg_dark.svg)",
-        },
       }}
     >
+      {/* Animated Geo Activity backdrop */}
+      <GeoActivityBackground />
+
       {/* Theme toggle — top right, 24px from each edge */}
-      <Box sx={{ position: "absolute", top: 24, right: 24, zIndex: 1 }}>
+      <Box sx={{ position: "absolute", top: 24, right: 24, zIndex: 1000 }}>
         <ThemeToggle />
       </Box>
 
@@ -201,6 +199,8 @@ export default function LoginPage() {
           alignItems: "center",
           justifyContent: "center",
           px: 2,
+          position: "relative",
+          zIndex: 1,
         }}
       >
         <Stack
@@ -289,7 +289,7 @@ export default function LoginPage() {
         </Stack>
       </Box>
 
-      <Box sx={{ textAlign: "center", py: 3 }}>
+      <Box sx={{ textAlign: "center", py: 3, position: "relative", zIndex: 1 }}>
         <Typography variant="caption" sx={{ color: "text.secondary" }}>
           © 2026 DNSFilter, Inc. All rights reserved.
         </Typography>
