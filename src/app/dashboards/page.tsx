@@ -6,7 +6,6 @@
 // layout persists in localStorage.
 
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
-import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import {
   Alert,
   Box,
@@ -574,17 +573,6 @@ export default function DashboardsPage() {
               check_circle
             </span>
             Set as default
-          </MenuItem>
-          <MenuItem
-            onClick={() => {
-              setActionsAnchor(null);
-              setToast(`${name} set as org default`);
-            }}
-          >
-            <AssignmentTurnedInOutlinedIcon
-              sx={{ fontSize: 16, mr: 1, opacity: 0.7 }}
-            />
-            Set as org default
           </MenuItem>
 
           <Divider />

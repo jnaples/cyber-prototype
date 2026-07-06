@@ -1,4 +1,3 @@
-import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import {
   Alert,
   Box,
@@ -45,19 +44,11 @@ export default function ManageDashboardsPage() {
   const [activeTab, setActiveTab] = useState(0);
   const [pendingDelete, setPendingDelete] = useState<DashboardRow | null>(null);
   const [defaultDashboard, setDefaultDashboard] = useState(DEFAULT_DASHBOARD);
-  const [orgDefaultDashboard, setOrgDefaultDashboard] = useState<string | null>(
-    null,
-  );
   const [toast, setToast] = useState<string | null>(null);
 
   const setAsDefault = (name: string) => {
     setDefaultDashboard(name);
     setToast(`${name} set as default`);
-  };
-
-  const setAsOrgDefault = (name: string) => {
-    setOrgDefaultDashboard(name);
-    setToast(`${name} set as org default`);
   };
 
   const favoriteRows = rows.filter((row) => favorites.includes(row.name));
@@ -118,18 +109,6 @@ export default function ManageDashboardsPage() {
           {params.row.name === defaultDashboard && (
             <Chip label="Default" size="small" />
           )}
-          {params.row.name === orgDefaultDashboard && (
-            <Chip
-              label="Org Default"
-              size="small"
-              // Match the standard info Alert background (scheme-aware tokens).
-              sx={(theme) => ({
-                bgcolor: theme.vars.palette.Alert.infoStandardBg,
-                color: theme.vars.palette.Alert.infoColor,
-                "& .MuiChip-label": { color: "inherit" },
-              })}
-            />
-          )}
         </Box>
       ),
     },
@@ -147,10 +126,8 @@ export default function ManageDashboardsPage() {
           name={params.row.name}
           isFavorite={favorites.includes(params.row.name)}
           isDefault={params.row.name === defaultDashboard}
-          isOrgDefault={params.row.name === orgDefaultDashboard}
           onToggleFavorite={() => toggleFavorite(params.row.name)}
           onSetDefault={() => setAsDefault(params.row.name)}
-          onSetOrgDefault={() => setAsOrgDefault(params.row.name)}
           onDelete={() => setPendingDelete(params.row)}
         />
       ),
@@ -283,19 +260,15 @@ function ManageDashboardsEmptyOverlay() {
 function ActionsCell({
   isFavorite,
   isDefault,
-  isOrgDefault,
   onToggleFavorite,
   onSetDefault,
-  onSetOrgDefault,
   onDelete,
 }: {
   name: string;
   isFavorite: boolean;
   isDefault: boolean;
-  isOrgDefault: boolean;
   onToggleFavorite: () => void;
   onSetDefault: () => void;
-  onSetOrgDefault: () => void;
   onDelete: () => void;
 }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -366,24 +339,6 @@ function ActionsCell({
             </span>
           </ListItemIcon>
           Set as default
-        </MenuItem>
-        <MenuItem
-          disabled={isOrgDefault}
-          onClick={() => {
-            onSetOrgDefault();
-            close();
-          }}
-          sx={{
-            "&.Mui-disabled": {
-              pointerEvents: "auto",
-              cursor: "not-allowed",
-            },
-          }}
-        >
-          <ListItemIcon>
-            <AssignmentTurnedInOutlinedIcon sx={{ fontSize: 20, opacity: 0.7 }} />
-          </ListItemIcon>
-          Set as org default
         </MenuItem>
         <Divider />
         <MenuItem
