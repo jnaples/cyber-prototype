@@ -416,6 +416,7 @@ export default function DashboardsPage() {
       ...ws,
       { id: uid(), type, span: clampSpan(def.span) },
     ]);
+    triggerAutosave();
   };
   const removeWidget = (id: string) =>
     setWidgets((ws) => ws.filter((w) => w.id !== id));
