@@ -19,6 +19,7 @@ import { Drawer } from "@/components/drawer";
 import {
   CATEGORY_OPTIONS,
   DEPLOYMENT_TYPE_OPTIONS,
+  ORGANIZATION_OPTIONS,
   RESULT_OPTIONS,
   SITE_OPTIONS,
   TIME_RANGE_OPTIONS,
@@ -119,6 +120,40 @@ export function QuickFilters({
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{ label: "Apply", onClick: handleApply }}
     >
+      <FormControl fullWidth size="small">
+        <FormLabel sx={{ mb: 0.5 }}>Organization</FormLabel>
+        <Select
+          displayEmpty
+          value={draft.organization ?? ""}
+          onChange={(e) =>
+            setDraft((d) => ({
+              ...d,
+              organization: e.target.value ? e.target.value : null,
+            }))
+          }
+          renderValue={(value) =>
+            value ? (
+              (value as string)
+            ) : (
+              <Typography
+                component="span"
+                variant="body1"
+                sx={{ color: "text.secondary" }}
+              >
+                All Organizations
+              </Typography>
+            )
+          }
+        >
+          <MenuItem value="">All Organizations</MenuItem>
+          {ORGANIZATION_OPTIONS.map((org) => (
+            <MenuItem key={org} value={org}>
+              {org}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
       <FormControl fullWidth size="small">
         <FormLabel sx={{ mb: 0.5 }}>Time range</FormLabel>
         <Select

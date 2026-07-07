@@ -565,7 +565,6 @@ function OrderSummary({
 
 type Feature = {
   name: string;
-  category?: string;
   description: string;
   price: string;
   unit: string;
@@ -581,7 +580,6 @@ type Feature = {
 const FEATURES: Feature[] = [
   {
     name: "SecureTransit",
-    category: "VPN add-on",
     status: "active",
     description:
       "Always-on encrypted tunneling for Roaming Clients. Routes all device traffic through DNSFilter's secure network with split-tunnel and kill-switch support.",
@@ -594,7 +592,6 @@ const FEATURES: Feature[] = [
   },
   {
     name: "Data Export",
-    category: "Data feature",
     description:
       "Stream DNS query logs, audit events, and policy changes to S3, Datadog, Splunk, or any S3-compatible bucket. Includes scheduled CSV exports and webhooks.",
     price: "$0.25",
@@ -605,7 +602,6 @@ const FEATURES: Feature[] = [
   },
   {
     name: "Guest Wi-Fi Access Points",
-    category: "Network feature",
     description:
       "Extend DNS filtering to guest Wi-Fi networks via dedicated access point profiles. Each access point counts as a billable unit.",
     price: "$24.00",
@@ -614,7 +610,6 @@ const FEATURES: Feature[] = [
   },
   {
     name: "Advanced Reporting",
-    category: "Reporting feature",
     description:
       "Executive-level dashboards, scheduled PDF reports, anomaly alerting, and 2-year log retention. Integrates with SIEM tools.",
     price: "$588.00",
@@ -718,11 +713,6 @@ function FeatureRow({
             <Typography sx={{ fontWeight: 600, fontSize: 16 }}>
               {feature.name}
             </Typography>
-            {feature.category && (
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                {feature.category}
-              </Typography>
-            )}
             {feature.status && <StatusChip status={feature.status} />}
             <DeltaBadge delta={added} />
           </Box>

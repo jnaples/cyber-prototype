@@ -275,6 +275,12 @@ export default function DashboardsPage() {
 
   // Active (non-default) filters as removable chips.
   const filterChips: { label: string; onDelete: () => void }[] = [];
+  if (filters.organization) {
+    filterChips.push({
+      label: filters.organization,
+      onDelete: () => setFilters((f) => ({ ...f, organization: null })),
+    });
+  }
   if (filters.timeRange !== DEFAULT_FILTERS.timeRange) {
     filterChips.push({
       label:

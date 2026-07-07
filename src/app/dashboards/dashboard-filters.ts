@@ -7,12 +7,16 @@ import { createContext, useContext } from "react";
 export type TimeRangeKey = "24h" | "yesterday" | "7d" | "30d" | "custom";
 
 export type DashboardFilters = {
+  organization: string | null;
   timeRange: TimeRangeKey;
   results: string[];
   sites: string[];
   deploymentTypes: string[];
   categories: string[];
 };
+
+// Organizations — mirrors the Query Logs organization selector.
+export const ORGANIZATION_OPTIONS = ["Acme Inc.", "Globex", "Initech"];
 
 export const TIME_RANGE_OPTIONS: { value: TimeRangeKey; label: string }[] = [
   { value: "24h", label: "Last 24 hours" },
@@ -43,6 +47,7 @@ export const CATEGORY_OPTIONS = [
 ];
 
 export const DEFAULT_FILTERS: DashboardFilters = {
+  organization: null,
   timeRange: "7d",
   results: [],
   sites: [],
@@ -62,6 +67,7 @@ const TIME_FACTOR: Record<TimeRangeKey, number> = {
  * visibly reflects the active filters (prototype stand-in for real slicing). */
 export function filterFactor(f: DashboardFilters): number {
   let factor = TIME_FACTOR[f.timeRange];
+  if (f.organization) factor *= 0.5;
   if (f.results.length) {
     factor *= f.results.length / RESULT_OPTIONS.length;
   }
@@ -76,6 +82,7 @@ export function filterFactor(f: DashboardFilters): number {
 /** Human-readable chips for the active (non-default) filters. */
 export function activeFilterChips(f: DashboardFilters): string[] {
   const chips: string[] = [];
+  if (f.organization) chips.push(f.organization);
   if (f.timeRange !== DEFAULT_FILTERS.timeRange) {
     const label = TIME_RANGE_OPTIONS.find((o) => o.value === f.timeRange)?.label;
     if (label) chips.push(label);

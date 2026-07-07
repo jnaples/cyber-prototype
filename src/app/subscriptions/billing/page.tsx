@@ -440,9 +440,14 @@ export default function BillingPage() {
           </Box>
         </Box>
 
-        <Button variant="outlined" color="secondary" sx={{ mt: 3 }}>
-          Update Payment Method
-        </Button>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 3 }}>
+          <Button variant="outlined" color="secondary" sx={{ minWidth: 0 }}>
+            Edit
+          </Button>
+          <Button variant="outlined" color="secondary">
+            Add / Manage Cards
+          </Button>
+        </Box>
       </CollapsibleCard>
 
       <CollapsibleCard title="Billing Information">
