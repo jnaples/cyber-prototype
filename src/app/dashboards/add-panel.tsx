@@ -61,7 +61,7 @@ export function AddPanel({
         disabled: pending.length === 0,
       }}
     >
-      <Typography variant="body2" sx={{ color: "text.primary", mb: 1 }}>
+      <Typography variant="body2" sx={{ color: "text.primary" }}>
         Pick a widget to add to your dashboard.
       </Typography>
 
@@ -171,11 +171,6 @@ export function AddPanel({
                           }}
                         >
                           {w.name}
-                        </Typography>
-                        <Typography
-                          sx={{ fontSize: 14, color: "text.disabled" }}
-                        >
-                          {w.desc}
                         </Typography>
                       </Box>
                     </Box>
