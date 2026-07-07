@@ -212,19 +212,36 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 
 // Read the persisted layout once at module load so React's initial state can
 // be primed without a setState-in-effect.
-function readPersisted(): { name?: string; widgets?: WidgetInstance[] } {
+function readPersisted(): {
+  name?: string;
+  widgets?: WidgetInstance[];
+  filters?: DashboardFilters;
+  advancedFilters?: AppliedAdvancedFilter[];
+} {
   try {
     const raw = localStorage.getItem(LS_KEY);
     if (!raw) return {};
     const parsed = JSON.parse(raw) as {
       name?: unknown;
       widgets?: unknown;
+      filters?: unknown;
+      advancedFilters?: unknown;
     };
     const widgets = sanitize(parsed.widgets) ?? undefined;
     if (widgets) bumpUid(widgets);
     return {
       name: typeof parsed.name === "string" ? parsed.name : undefined,
       widgets: widgets && widgets.length > 0 ? widgets : undefined,
+      filters:
+        parsed.filters && typeof parsed.filters === "object"
+          ? ({
+              ...DEFAULT_FILTERS,
+              ...(parsed.filters as Partial<DashboardFilters>),
+            } as DashboardFilters)
+          : undefined,
+      advancedFilters: Array.isArray(parsed.advancedFilters)
+        ? (parsed.advancedFilters as AppliedAdvancedFilter[])
+        : undefined,
     };
   } catch {
     return {};
@@ -259,13 +276,20 @@ export default function DashboardsPage() {
     null,
   );
   const [toast, setToast] = useState<string | null>(null);
+  // Snapshot of the filters cleared by the Clear button, so the toast can undo.
+  const [clearedFilters, setClearedFilters] = useState<{
+    filters: DashboardFilters;
+    advancedFilters: AppliedAdvancedFilter[];
+  } | null>(null);
   const [favorited, setFavorited] = useState(false);
   const [quickFiltersOpen, setQuickFiltersOpen] = useState(false);
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState<DashboardFilters>(DEFAULT_FILTERS);
+  const [filters, setFilters] = useState<DashboardFilters>(
+    persisted.filters ?? DEFAULT_FILTERS,
+  );
   const [advancedFilters, setAdvancedFilters] = useState<
     AppliedAdvancedFilter[]
-  >([]);
+  >(persisted.advancedFilters ?? []);
 
   // Autosave indicator — shown only when filters change (apply/clear). Spins
   // "Autosaving" for 1.5s, then settles on "Autosaved".
@@ -296,20 +320,9 @@ export default function DashboardsPage() {
     valueLabel: string;
     onRemove: () => void;
   }[] = [];
-  if (filters.timeRange !== DEFAULT_FILTERS.timeRange) {
-    activeFilters.push({
-      key: "timeRange",
-      fieldLabel: "Time range",
-      valueLabel:
-        TIME_RANGE_OPTIONS.find((o) => o.value === filters.timeRange)?.label ??
-        filters.timeRange,
-      onRemove: () =>
-        setFilters((f) => ({ ...f, timeRange: DEFAULT_FILTERS.timeRange })),
-    });
-  }
-  (
-    ["organizations", "results", "sites", "deploymentTypes", "categories"] as const
-  ).forEach((key) =>
+  const pushDim = (
+    key: "organizations" | "results" | "sites" | "deploymentTypes" | "categories",
+  ) =>
     filters[key].forEach((value) =>
       activeFilters.push({
         key: `${key}-${value}`,
@@ -321,8 +334,25 @@ export default function DashboardsPage() {
             [key]: f[key].filter((v) => v !== value),
           })),
       }),
-    ),
-  );
+    );
+  // Order mirrors the Quick Filters drawer: Organizations, Time range, Result,
+  // Site / Network, Deployment type, Top categories.
+  pushDim("organizations");
+  if (filters.timeRange !== DEFAULT_FILTERS.timeRange) {
+    activeFilters.push({
+      key: "timeRange",
+      fieldLabel: "Time range",
+      valueLabel:
+        TIME_RANGE_OPTIONS.find((o) => o.value === filters.timeRange)?.label ??
+        filters.timeRange,
+      onRemove: () =>
+        setFilters((f) => ({ ...f, timeRange: DEFAULT_FILTERS.timeRange })),
+    });
+  }
+  pushDim("results");
+  pushDim("sites");
+  pushDim("deploymentTypes");
+  pushDim("categories");
   advancedFilters.forEach((af) =>
     activeFilters.push({
       key: `adv-${af.id}`,
@@ -350,20 +380,34 @@ export default function DashboardsPage() {
   }
 
   const clearAllFilters = () => {
+    setClearedFilters({ filters, advancedFilters });
     setFilters(DEFAULT_FILTERS);
     setAdvancedFilters([]);
     setNoResults(false);
     triggerAutosave();
+    setToast("Filters cleared.");
   };
 
-  // Persist name + widgets.
+  const undoClearFilters = () => {
+    if (!clearedFilters) return;
+    setFilters(clearedFilters.filters);
+    setAdvancedFilters(clearedFilters.advancedFilters);
+    setNoResults(clearedFilters.advancedFilters.length > 0);
+    setClearedFilters(null);
+    setToast(null);
+  };
+
+  // Persist name + widgets + filters to the browser.
   useEffect(() => {
     try {
-      localStorage.setItem(LS_KEY, JSON.stringify({ name, widgets }));
+      localStorage.setItem(
+        LS_KEY,
+        JSON.stringify({ name, widgets, filters, advancedFilters }),
+      );
     } catch {
       /* noop */
     }
-  }, [name, widgets]);
+  }, [name, widgets, filters, advancedFilters]);
 
   const addWidget = (type: string) => {
     const def = CATALOG_BY_TYPE[type];
@@ -954,6 +998,7 @@ export default function DashboardsPage() {
       <AddPanel
         open={addOpen}
         onClose={() => setAddOpen(false)}
+        existingTypes={widgets.map((w) => w.type)}
         onApply={(types) => {
           types.forEach((t) => addWidget(t));
           setToast(
@@ -1077,15 +1122,29 @@ export default function DashboardsPage() {
       {/* Add/remove toast */}
       <Snackbar
         open={Boolean(toast)}
-        autoHideDuration={3000}
-        onClose={() => setToast(null)}
+        // The "Filters cleared" toast lingers longer so Undo is reachable.
+        autoHideDuration={clearedFilters ? 8000 : 3000}
+        onClose={() => {
+          setToast(null);
+          setClearedFilters(null);
+        }}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           severity="success"
           variant="standard"
           elevation={8}
-          onClose={() => setToast(null)}
+          onClose={() => {
+            setToast(null);
+            setClearedFilters(null);
+          }}
+          action={
+            clearedFilters ? (
+              <Button color="inherit" size="small" onClick={undoClearFilters}>
+                Undo
+              </Button>
+            ) : undefined
+          }
           sx={{
             alignItems: "center",
             "& .MuiAlert-icon": { alignSelf: "center", py: 0 },

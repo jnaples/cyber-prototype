@@ -10,6 +10,8 @@ import type { ButtonProps, DrawerProps as MuiDrawerProps } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import type React from "react";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
+
 // Preset drawer-paper widths. Choose with the `size` prop, or override with an
 // explicit `width`. "default" matches the Figma spec; "large" is the wide
 // variant used for denser content like the advanced filter builder.
@@ -27,6 +29,8 @@ export interface DrawerActionConfig {
   color?: ButtonProps["color"];
   variant?: ButtonProps["variant"];
   loading?: boolean;
+  /** Tooltip shown on hover — works even while the button is disabled. */
+  tooltip?: string;
 }
 
 export interface DrawerProps {
@@ -69,6 +73,32 @@ export interface DrawerProps {
 
   /** Remove default content padding (useful when children manage their own layout). */
   disableContentPadding?: boolean;
+}
+
+// Render a footer action button, wrapping it in a tooltip (via a span so the
+// tooltip still fires while the button is disabled) when `tooltip` is set.
+function renderAction(
+  cfg: DrawerActionConfig,
+  defaultVariant: ButtonProps["variant"],
+  defaultColor: ButtonProps["color"],
+) {
+  const button = (
+    <Button
+      onClick={cfg.onClick}
+      disabled={cfg.disabled || cfg.loading}
+      variant={cfg.variant ?? defaultVariant}
+      color={cfg.color ?? defaultColor}
+      size="small"
+    >
+      {cfg.label}
+    </Button>
+  );
+  if (!cfg.tooltip) return button;
+  return (
+    <ArrowTooltip title={cfg.tooltip}>
+      <span style={{ display: "inline-flex" }}>{button}</span>
+    </ArrowTooltip>
+  );
 }
 
 export function Drawer({
@@ -222,30 +252,10 @@ export function Drawer({
             >
               {actions ?? (
                 <>
-                  {secondaryAction && (
-                    <Button
-                      onClick={secondaryAction.onClick}
-                      disabled={
-                        secondaryAction.disabled || secondaryAction.loading
-                      }
-                      variant={secondaryAction.variant ?? "outlined"}
-                      color={secondaryAction.color ?? "secondary"}
-                      size="small"
-                    >
-                      {secondaryAction.label}
-                    </Button>
-                  )}
-                  {primaryAction && (
-                    <Button
-                      onClick={primaryAction.onClick}
-                      disabled={primaryAction.disabled || primaryAction.loading}
-                      variant={primaryAction.variant ?? "contained"}
-                      color={primaryAction.color ?? "primary"}
-                      size="small"
-                    >
-                      {primaryAction.label}
-                    </Button>
-                  )}
+                  {secondaryAction &&
+                    renderAction(secondaryAction, "outlined", "secondary")}
+                  {primaryAction &&
+                    renderAction(primaryAction, "contained", "primary")}
                 </>
               )}
             </Box>

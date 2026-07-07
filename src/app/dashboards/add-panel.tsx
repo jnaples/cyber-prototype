@@ -2,7 +2,7 @@
 // catalog with a search box and an "already added" count badge.
 
 import SearchIcon from "@mui/icons-material/Search";
-import { Box, InputAdornment, TextField, Typography } from "@mui/material";
+import { Box, Chip, InputAdornment, TextField, Typography } from "@mui/material";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
@@ -21,10 +21,13 @@ export function AddPanel({
   open,
   onClose,
   onApply,
+  existingTypes = [],
 }: {
   open: boolean;
   onClose: () => void;
   onApply: (types: string[]) => void;
+  /** Widget types already on the dashboard — shown as "Added" and disabled. */
+  existingTypes?: string[];
 }) {
   const [q, setQ] = useState("");
   // Widgets staged to add; only committed (via onAdd) when Apply is clicked.
@@ -59,6 +62,8 @@ export function AddPanel({
         label: "Apply",
         onClick: handleApply,
         disabled: pending.length === 0,
+        tooltip:
+          pending.length === 0 ? "Select a widget to add first" : undefined,
       }}
     >
       <Typography variant="body2" sx={{ color: "text.primary" }}>
@@ -98,18 +103,23 @@ export function AddPanel({
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                 {items.map((w) => {
+                  const added = existingTypes.includes(w.type);
                   const selected = pending.includes(w.type);
                   return (
                     <Box
                       key={w.type}
                       role="button"
                       aria-pressed={selected}
-                      onClick={() =>
-                        setPending((prev) =>
-                          prev.includes(w.type)
-                            ? prev.filter((t) => t !== w.type)
-                            : [...prev, w.type],
-                        )
+                      aria-disabled={added || undefined}
+                      onClick={
+                        added
+                          ? undefined
+                          : () =>
+                              setPending((prev) =>
+                                prev.includes(w.type)
+                                  ? prev.filter((t) => t !== w.type)
+                                  : [...prev, w.type],
+                              )
                       }
                       sx={(theme) => ({
                         display: "flex",
@@ -122,20 +132,25 @@ export function AddPanel({
                         bgcolor: "background.paper",
                         borderRadius: 1,
                         p: 1.25,
-                        cursor: "pointer",
+                        cursor: added ? "not-allowed" : "pointer",
+                        opacity: added ? 0.6 : 1,
                         transition: "border-color 120ms, background 120ms",
-                        "&:hover": {
-                          borderColor: "primary.main",
-                          bgcolor: "rgba(53,39,253,.04)",
-                        },
+                        ...(!added && {
+                          "&:hover": {
+                            borderColor: "primary.main",
+                            bgcolor: "rgba(53,39,253,.04)",
+                          },
+                        }),
                         ...theme.applyStyles("dark", {
                           borderColor: selected
                             ? theme.vars.palette.primary.light
                             : theme.vars.palette.divider,
-                          "&:hover": {
-                            borderColor: theme.vars.palette.primary.light,
-                            bgcolor: "rgba(53,39,253,.04)",
-                          },
+                          ...(!added && {
+                            "&:hover": {
+                              borderColor: theme.vars.palette.primary.light,
+                              bgcolor: "rgba(53,39,253,.04)",
+                            },
+                          }),
                         }),
                       })}
                     >
@@ -173,6 +188,21 @@ export function AddPanel({
                           {w.name}
                         </Typography>
                       </Box>
+                      {added && (
+                        <Chip
+                          size="small"
+                          label="Added"
+                          icon={
+                            <span
+                              className="material-symbols-outlined"
+                              style={{ fontSize: 16 }}
+                            >
+                              check
+                            </span>
+                          }
+                          sx={{ flexShrink: 0 }}
+                        />
+                      )}
                     </Box>
                   );
                 })}
