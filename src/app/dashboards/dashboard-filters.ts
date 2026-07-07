@@ -7,7 +7,7 @@ import { createContext, useContext } from "react";
 export type TimeRangeKey = "24h" | "yesterday" | "7d" | "30d" | "custom";
 
 export type DashboardFilters = {
-  organization: string | null;
+  organizations: string[];
   timeRange: TimeRangeKey;
   results: string[];
   sites: string[];
@@ -47,7 +47,7 @@ export const CATEGORY_OPTIONS = [
 ];
 
 export const DEFAULT_FILTERS: DashboardFilters = {
-  organization: null,
+  organizations: [],
   timeRange: "7d",
   results: [],
   sites: [],
@@ -67,7 +67,7 @@ const TIME_FACTOR: Record<TimeRangeKey, number> = {
  * visibly reflects the active filters (prototype stand-in for real slicing). */
 export function filterFactor(f: DashboardFilters): number {
   let factor = TIME_FACTOR[f.timeRange];
-  if (f.organization) factor *= 0.5;
+  if (f.organizations.length) factor *= 0.5;
   if (f.results.length) {
     factor *= f.results.length / RESULT_OPTIONS.length;
   }
@@ -82,12 +82,12 @@ export function filterFactor(f: DashboardFilters): number {
 /** Human-readable chips for the active (non-default) filters. */
 export function activeFilterChips(f: DashboardFilters): string[] {
   const chips: string[] = [];
-  if (f.organization) chips.push(f.organization);
   if (f.timeRange !== DEFAULT_FILTERS.timeRange) {
     const label = TIME_RANGE_OPTIONS.find((o) => o.value === f.timeRange)?.label;
     if (label) chips.push(label);
   }
   return [
+    ...f.organizations,
     ...chips,
     ...f.results,
     ...f.sites,

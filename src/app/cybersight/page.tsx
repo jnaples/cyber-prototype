@@ -1,3 +1,4 @@
+import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import {
   Autocomplete,
   Box,
@@ -372,7 +373,7 @@ export default function CyberSightPage() {
                 variant="text"
                 color="error"
                 size="small"
-                startIcon={<MaterialIcon name="close" size={16} />}
+                startIcon={<DeleteForeverOutlinedIcon sx={{ fontSize: 16 }} />}
               >
                 Clear
               </Button>

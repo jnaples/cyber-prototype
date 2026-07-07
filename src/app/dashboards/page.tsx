@@ -6,6 +6,7 @@
 // layout persists in localStorage.
 
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
+import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import {
   Alert,
   Box,
@@ -34,7 +35,7 @@ import {
   filterFactor,
   type DashboardFilters,
 } from "./dashboard-filters";
-import { AdvancedFilters } from "./advanced-filters";
+import { AdvancedFilters, type AppliedAdvancedFilter } from "./advanced-filters";
 import { QuickFilters } from "./quick-filters";
 import { DashCard } from "./dash-card";
 import { DashSwitcher } from "./dash-switcher";
@@ -259,6 +260,9 @@ export default function DashboardsPage() {
   const [quickFiltersOpen, setQuickFiltersOpen] = useState(false);
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<DashboardFilters>(DEFAULT_FILTERS);
+  const [advancedFilters, setAdvancedFilters] = useState<
+    AppliedAdvancedFilter[]
+  >([]);
 
   // Autosave indicator: any layout/filter change shows a spinner ("Autosaving")
   // for 1.5s, then a check ("Autosaved"), simulating a real save round-trip.
@@ -273,36 +277,81 @@ export default function DashboardsPage() {
   }, []);
   useEffect(() => () => clearTimeout(autosaveTimer.current), []);
 
-  // Active (non-default) filters as removable chips.
-  const filterChips: { label: string; onDelete: () => void }[] = [];
-  if (filters.organization) {
-    filterChips.push({
-      label: filters.organization,
-      onDelete: () => setFilters((f) => ({ ...f, organization: null })),
-    });
-  }
+  // Active filters, modeled like the Query Logs bar: each is a "{Field}: {value}"
+  // dashed chip. Quick filters contribute per-value entries; applied Advanced
+  // filters contribute "{Column}: {operator value}" entries.
+  const QUICK_FILTER_LABELS: Record<string, string> = {
+    organizations: "Organizations",
+    results: "Result",
+    sites: "Site / Network",
+    deploymentTypes: "Deployment type",
+    categories: "Top categories",
+  };
+  const activeFilters: {
+    key: string;
+    fieldLabel: string;
+    valueLabel: string;
+    onRemove: () => void;
+  }[] = [];
   if (filters.timeRange !== DEFAULT_FILTERS.timeRange) {
-    filterChips.push({
-      label:
+    activeFilters.push({
+      key: "timeRange",
+      fieldLabel: "Time range",
+      valueLabel:
         TIME_RANGE_OPTIONS.find((o) => o.value === filters.timeRange)?.label ??
         filters.timeRange,
-      onDelete: () =>
+      onRemove: () =>
         setFilters((f) => ({ ...f, timeRange: DEFAULT_FILTERS.timeRange })),
     });
   }
-  (["results", "sites", "deploymentTypes", "categories"] as const).forEach(
-    (key) =>
-      filters[key].forEach((value) =>
-        filterChips.push({
-          label: value,
-          onDelete: () =>
-            setFilters((f) => ({
-              ...f,
-              [key]: f[key].filter((v) => v !== value),
-            })),
-        }),
-      ),
+  (
+    ["organizations", "results", "sites", "deploymentTypes", "categories"] as const
+  ).forEach((key) =>
+    filters[key].forEach((value) =>
+      activeFilters.push({
+        key: `${key}-${value}`,
+        fieldLabel: QUICK_FILTER_LABELS[key],
+        valueLabel: value,
+        onRemove: () =>
+          setFilters((f) => ({
+            ...f,
+            [key]: f[key].filter((v) => v !== value),
+          })),
+      }),
+    ),
   );
+  advancedFilters.forEach((af) =>
+    activeFilters.push({
+      key: `adv-${af.id}`,
+      fieldLabel: af.fieldLabel,
+      valueLabel: `${af.operatorLabel} ${af.value}`,
+      onRemove: () =>
+        setAdvancedFilters((prev) => {
+          const next = prev.filter((x) => x.id !== af.id);
+          if (next.length === 0) setNoResults(false);
+          return next;
+        }),
+    }),
+  );
+
+  // Group active filters by field so multiple values of the same field (e.g.
+  // several Organizations) sit together in one dashed chip.
+  const activeFilterGroups: {
+    fieldLabel: string;
+    items: typeof activeFilters;
+  }[] = [];
+  for (const f of activeFilters) {
+    const group = activeFilterGroups.find((g) => g.fieldLabel === f.fieldLabel);
+    if (group) group.items.push(f);
+    else activeFilterGroups.push({ fieldLabel: f.fieldLabel, items: [f] });
+  }
+
+  const clearAllFilters = () => {
+    setFilters(DEFAULT_FILTERS);
+    setAdvancedFilters([]);
+    setNoResults(false);
+    triggerAutosave();
+  };
 
   // Persist name + widgets.
   useEffect(() => {
@@ -491,6 +540,16 @@ export default function DashboardsPage() {
             </span>
           </Box>
         )}
+
+        {/* Metadata — the active organization context, to the right of name */}
+        <Typography variant="body2" sx={{ color: "text.secondary", ml: 1 }}>
+          {filters.organizations.length === 0
+            ? "All Organizations"
+            : filters.organizations.length === 1
+              ? filters.organizations[0]
+              : `${filters.organizations.length} Organizations`}
+        </Typography>
+
         <DashSwitcher
           anchorEl={switcherAnchor}
           open={Boolean(switcherAnchor)}
@@ -551,7 +610,7 @@ export default function DashboardsPage() {
           <MenuItem
             onClick={() => {
               setActionsAnchor(null);
-              setToast(`${name} duplicated`);
+              setToast(`${name} cloned`);
             }}
           >
             <span
@@ -560,7 +619,7 @@ export default function DashboardsPage() {
             >
               content_copy
             </span>
-            Duplicate
+            Clone
           </MenuItem>
 
           <Divider />
@@ -655,8 +714,8 @@ export default function DashboardsPage() {
           alignItems: "center",
           gap: 1,
           px: 2,
-          pt: 1.5,
-          mb: filterChips.length > 0 ? 1 : 2,
+          pt: 2,
+          mb: activeFilters.length > 0 ? 1 : 2,
           fontSize: 14,
         }}
       >
@@ -736,46 +795,62 @@ export default function DashboardsPage() {
         </Button>
       </Box>
 
-      {/* Active filters */}
-      {filterChips.length > 0 && (
+      {/* Active filters — modeled like the Query Logs bar */}
+      {activeFilters.length > 0 && (
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
             flexWrap: "wrap",
-            gap: 1,
+            gap: 1.5,
             px: 2,
             mb: 2,
           }}
         >
-          <Typography variant="caption" sx={{ fontWeight: 700 }}>
+          <Typography
+            variant="caption"
+            sx={{ fontWeight: 700, color: "text.primary" }}
+          >
             Active Filters:
           </Typography>
-          {filterChips.map((chip) => (
-            <Chip
-              key={chip.label}
-              size="small"
-              label={chip.label}
-              onDelete={chip.onDelete}
-            />
+          {activeFilterGroups.map((group) => (
+            <Box
+              key={group.fieldLabel}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 0.75,
+                px: 1,
+                py: 0.5,
+                border: "1px dashed",
+                borderColor: "divider",
+                borderRadius: 2,
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{ fontWeight: 700, color: "text.primary" }}
+              >
+                {group.fieldLabel}:
+              </Typography>
+              {group.items.map((f) => (
+                <Chip
+                  key={f.key}
+                  size="small"
+                  label={f.valueLabel}
+                  onDelete={f.onRemove}
+                  sx={{ borderRadius: (t) => t.spacing(1) }}
+                />
+              ))}
+            </Box>
           ))}
           <Button
             variant="text"
             color="error"
             size="small"
-            onClick={() => {
-              setFilters(DEFAULT_FILTERS);
-              setNoResults(false);
-              triggerAutosave();
-            }}
-            startIcon={
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 16 }}
-              >
-                delete
-              </span>
-            }
+            onClick={clearAllFilters}
+            startIcon={<DeleteForeverOutlinedIcon sx={{ fontSize: 16 }} />}
           >
             Clear
           </Button>
@@ -859,7 +934,10 @@ export default function DashboardsPage() {
       <AdvancedFilters
         open={advancedFiltersOpen}
         onClose={() => setAdvancedFiltersOpen(false)}
-        onApply={(hasActiveFilters) => setNoResults(hasActiveFilters)}
+        onApply={(applied) => {
+          setAdvancedFilters(applied);
+          setNoResults(applied.length > 0);
+        }}
       />
 
       {/* Widget delete confirmation */}

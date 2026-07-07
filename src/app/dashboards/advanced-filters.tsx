@@ -239,6 +239,14 @@ function FilterRow({
 // Drawer
 // ---------------------------------------------------------------------------
 
+// One applied advanced filter, surfaced to the page's Active Filters bar.
+export type AppliedAdvancedFilter = {
+  id: number;
+  fieldLabel: string;
+  operatorLabel: string;
+  value: string;
+};
+
 export function AdvancedFilters({
   open,
   onClose,
@@ -246,8 +254,8 @@ export function AdvancedFilters({
 }: {
   open: boolean;
   onClose: () => void;
-  /** Called on Apply with whether any filter row has a value selected. */
-  onApply?: (hasActiveFilters: boolean) => void;
+  /** Called on Apply with the filter rows that have a value selected. */
+  onApply?: (applied: AppliedAdvancedFilter[]) => void;
 }) {
   // Row ids: the seed row reuses id 0 (rows are cleared between opens), while
   // Add Filter pulls fresh ids from a ref counter inside the event handler.
@@ -273,7 +281,16 @@ export function AdvancedFilters({
   const removeAll = () => setItems([]);
 
   const handleApply = () => {
-    onApply?.(items.some((it) => it.value !== ""));
+    const applied = items
+      .filter((it) => it.value !== "")
+      .map((it) => ({
+        id: it.id,
+        fieldLabel: columnByField(it.field).label,
+        operatorLabel:
+          OPERATORS.find((o) => o.value === it.operator)?.label ?? it.operator,
+        value: it.value,
+      }));
+    onApply?.(applied);
     onClose();
   };
 

@@ -6,6 +6,7 @@
 // node opens a detail popover. The Roaming Clients selector switches between a
 // clean run and one that escalates into a blocked threat.
 
+import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import {
   Autocomplete,
   Box,
@@ -772,7 +773,7 @@ export default function SecureShieldPage() {
                 color="error"
                 size="small"
                 onClick={clearFilters}
-                startIcon={<Ico name="close" size={16} />}
+                startIcon={<DeleteForeverOutlinedIcon sx={{ fontSize: 16 }} />}
               >
                 Clear
               </Button>

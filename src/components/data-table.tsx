@@ -1,3 +1,4 @@
+import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import {
   Button,
   Chip,
@@ -344,11 +345,7 @@ function ActiveFiltersBar({
         color="error"
         size="small"
         onClick={onClearAll}
-        startIcon={
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-            close
-          </span>
-        }
+        startIcon={<DeleteForeverOutlinedIcon sx={{ fontSize: 18 }} />}
       >
         Clear
       </Button>

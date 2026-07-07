@@ -27,6 +27,7 @@ import type {
 } from "@mui/x-data-grid";
 import { getGridStringOperators, useGridApiContext } from "@mui/x-data-grid";
 import CancelIcon from "@mui/icons-material/Cancel";
+import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import { endOfDay, startOfDay, subDays, subHours, subMinutes } from "date-fns";
 import { createContext, useContext, useState } from "react";
@@ -1293,14 +1294,7 @@ export default function QueryLogsPage() {
                       color="error"
                       size="small"
                       onClick={handleClear}
-                      startIcon={
-                        <span
-                          className="material-symbols-outlined"
-                          style={{ fontSize: 16 }}
-                        >
-                          close
-                        </span>
-                      }
+                      startIcon={<DeleteForeverOutlinedIcon sx={{ fontSize: 16 }} />}
                     >
                       Clear
                     </Button>

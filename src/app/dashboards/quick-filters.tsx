@@ -28,7 +28,12 @@ import {
 } from "./dashboard-filters";
 
 // Checkbox-group keys (everything except the single-select time range).
-type GroupKey = "results" | "sites" | "deploymentTypes" | "categories";
+type GroupKey =
+  | "organizations"
+  | "results"
+  | "sites"
+  | "deploymentTypes"
+  | "categories";
 
 function MultiSelect({
   label,
@@ -120,39 +125,12 @@ export function QuickFilters({
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{ label: "Apply", onClick: handleApply }}
     >
-      <FormControl fullWidth size="small">
-        <FormLabel sx={{ mb: 0.5 }}>Organization</FormLabel>
-        <Select
-          displayEmpty
-          value={draft.organization ?? ""}
-          onChange={(e) =>
-            setDraft((d) => ({
-              ...d,
-              organization: e.target.value ? e.target.value : null,
-            }))
-          }
-          renderValue={(value) =>
-            value ? (
-              (value as string)
-            ) : (
-              <Typography
-                component="span"
-                variant="body1"
-                sx={{ color: "text.secondary" }}
-              >
-                All Organizations
-              </Typography>
-            )
-          }
-        >
-          <MenuItem value="">All Organizations</MenuItem>
-          {ORGANIZATION_OPTIONS.map((org) => (
-            <MenuItem key={org} value={org}>
-              {org}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <MultiSelect
+        label="Organizations"
+        options={ORGANIZATION_OPTIONS}
+        selected={draft.organizations}
+        onChange={(v) => setGroup("organizations", v)}
+      />
 
       <FormControl fullWidth size="small">
         <FormLabel sx={{ mb: 0.5 }}>Time range</FormLabel>
