@@ -48,7 +48,7 @@ export function AddPanel({
       open={open}
       onClose={handleClose}
       width={380}
-      title="Add content"
+      title="Add widget"
       subheader={
         pending.length > 0
           ? `${pending.length} widget${pending.length === 1 ? "" : "s"} selected`

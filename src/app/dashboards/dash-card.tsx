@@ -55,6 +55,7 @@ export function DashCard({
   rowIndex,
   dragging,
   noResults = false,
+  editing = false,
   onRemove,
   onSpan,
   onBeginDrag,
@@ -67,6 +68,7 @@ export function DashCard({
   rowIndex: number;
   dragging: boolean;
   noResults?: boolean;
+  editing?: boolean;
   onRemove: () => void;
   onSpan: (s: number) => void;
   onBeginDrag: (
@@ -81,7 +83,9 @@ export function DashCard({
   const [hover, setHover] = useState(false);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [resizing, setResizing] = useState(false);
-  const active = hover || dragging || resizing;
+  // Editing affordances (drag/remove/resize handles + accent border) only show
+  // in edit mode (or mid drag/resize), not on plain hover.
+  const active = editing || dragging || resizing;
 
   // Bottom-right corner: drag horizontally to resize 1..cols columns.
   const startResize = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -116,8 +120,10 @@ export function DashCard({
     window.addEventListener("pointerup", up);
   };
 
-  // Press anywhere on the card (except interactive elements) to drag-reorder.
+  // Press anywhere on the card (except interactive elements) to drag-reorder —
+  // only while in edit mode.
   const onCardPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!editing) return;
     const target = e.target as HTMLElement;
     if (
       target.closest(
@@ -141,19 +147,23 @@ export function DashCard({
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       onPointerDown={onCardPointerDown}
-      elevation={active ? 8 : 1}
+      elevation={dragging ? 8 : hover ? (editing ? 5 : 4) : editing ? 3 : 1}
       sx={{
         gridColumn: `${colStart + 1} / span ${clampSpan(widget.span, cols)}`,
         gridRow: rowIndex + 1,
         position: "relative",
+        // Own stacking context so the toolbar icons (zIndex 7) stay contained
+        // within the card and don't paint over the sticky header.
+        isolation: "isolate",
         borderRadius: 1,
         display: "flex",
         flexDirection: "column",
         opacity: dragging ? 0.55 : 1,
         transform: dragging ? "scale(1.01)" : "none",
-        border: "2px solid",
+        borderWidth: 2,
+        borderStyle: editing ? "dashed" : "solid",
         borderColor: active ? "primary.main" : "transparent",
-        cursor: dragging ? "grabbing" : hover ? "grab" : "default",
+        cursor: editing ? (dragging ? "grabbing" : "grab") : "pointer",
         transition: dragging
           ? "none"
           : "box-shadow 140ms, opacity 120ms, transform 120ms",
@@ -164,23 +174,44 @@ export function DashCard({
         "& button, & a, & [role='button']": { cursor: "pointer" },
       }}
     >
-      {/* hover toolbar (top-right) */}
+      {/* hover / edit toolbar (top-right) */}
       {active && (
-        <IconButton
-          className="dash-toolbar"
-          size="small"
-          onClick={onRemove}
-          title="Remove"
-          sx={{
-            position: "absolute",
-            top: 6,
-            right: 6,
-            zIndex: 7,
-            color: "error.main",
-          }}
-        >
-          <DeleteForeverOutlinedIcon fontSize="small" />
-        </IconButton>
+        <>
+          <Box
+            title="Drag to move"
+            sx={{
+              position: "absolute",
+              top: 6,
+              left: 6,
+              zIndex: 7,
+              display: "flex",
+              color: "text.disabled",
+              cursor: "grab",
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 20 }}
+            >
+              drag_indicator
+            </span>
+          </Box>
+          <IconButton
+            className="dash-toolbar"
+            size="small"
+            onClick={onRemove}
+            title="Remove"
+            sx={{
+              position: "absolute",
+              top: 6,
+              right: 6,
+              zIndex: 7,
+              color: "error.main",
+            }}
+          >
+            <DeleteForeverOutlinedIcon fontSize="small" />
+          </IconButton>
+        </>
       )}
 
       {!headerless && (

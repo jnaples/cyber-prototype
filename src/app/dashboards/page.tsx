@@ -246,6 +246,9 @@ export default function DashboardsPage() {
   // True when applied filters match no data — each widget shows a no-results
   // overlay instead of its content.
   const [noResults, setNoResults] = useState(false);
+  // Edit mode — widgets become editable (dashed outline, drag/remove handles,
+  // cell guides) and the header shows Cancel/Save instead of Actions/Add.
+  const [editMode, setEditMode] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<WidgetInstance | null>(
     null,
   );
@@ -264,8 +267,8 @@ export default function DashboardsPage() {
     AppliedAdvancedFilter[]
   >([]);
 
-  // Autosave indicator: any layout/filter change shows a spinner ("Autosaving")
-  // for 1.5s, then a check ("Autosaved"), simulating a real save round-trip.
+  // Autosave indicator — shown only when filters change (apply/clear). Spins
+  // "Autosaving" for 1.5s, then settles on "Autosaved".
   const [autosave, setAutosave] = useState<"idle" | "saving" | "saved">("idle");
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
@@ -369,7 +372,6 @@ export default function DashboardsPage() {
       ...ws,
       { id: uid(), type, span: clampSpan(def.span) },
     ]);
-    triggerAutosave();
   };
   const removeWidget = (id: string) =>
     setWidgets((ws) => ws.filter((w) => w.id !== id));
@@ -377,7 +379,6 @@ export default function DashboardsPage() {
     setWidgets((ws) =>
       ws.map((w) => (w.id === id ? { ...w, span: clampSpan(span) } : w)),
     );
-    triggerAutosave();
   };
 
   const deleteDashboard = () => {
@@ -431,7 +432,6 @@ export default function DashboardsPage() {
           setDragId(null);
           document.body.style.userSelect = "";
           document.body.style.cursor = "";
-          triggerAutosave();
         }
         window.removeEventListener("pointermove", move);
         window.removeEventListener("pointerup", up);
@@ -439,7 +439,7 @@ export default function DashboardsPage() {
       window.addEventListener("pointermove", move);
       window.addEventListener("pointerup", up);
     },
-    [triggerAutosave],
+    [],
   );
 
   // Packed layout (explicit row/col per widget + the empty cells in between).
@@ -573,14 +573,16 @@ export default function DashboardsPage() {
         <Box sx={{ flex: 1 }} />
 
         {/* Actions */}
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={(e) => setActionsAnchor(e.currentTarget)}
-          endIcon={<ArrowDropDownOutlinedIcon sx={{ opacity: 0.6 }} />}
-        >
-          Actions
-        </Button>
+        {!editMode && (
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={(e) => setActionsAnchor(e.currentTarget)}
+            endIcon={<ArrowDropDownOutlinedIcon sx={{ opacity: 0.6 }} />}
+          >
+            Actions
+          </Button>
+        )}
         <Menu
           anchorEl={actionsAnchor}
           open={Boolean(actionsAnchor)}
@@ -690,21 +692,60 @@ export default function DashboardsPage() {
           </MenuItem>
         </Menu>
 
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => setAddOpen(true)}
-          startIcon={
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16 }}
+        {editMode ? (
+          <>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setEditMode(false)}
             >
-              add
-            </span>
-          }
-        >
-          Add content
-        </Button>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                setEditMode(false);
+                setToast(`${name} saved`);
+              }}
+            >
+              Save
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => setEditMode(true)}
+              startIcon={
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 16 }}
+                >
+                  edit
+                </span>
+              }
+            >
+              Edit
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setAddOpen(true)}
+              startIcon={
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: 16 }}
+                >
+                  add
+                </span>
+              }
+            >
+              Add widget
+            </Button>
+          </>
+        )}
       </Box>
 
       {/* Filter strip */}
@@ -875,7 +916,7 @@ export default function DashboardsPage() {
             {/* Empty-cell guides — revealed while dragging/resizing so the user
                 sees exactly which open cells the widget can occupy. Placed as
                 real grid items so each one matches its row's height. */}
-            {(resizing || dragId !== null) &&
+            {(resizing || dragId !== null || editMode) &&
               layout.emptyCells.map((cell) => (
                 <Box
                   key={`${cell.row}:${cell.col}`}
@@ -898,6 +939,7 @@ export default function DashboardsPage() {
                 rowIndex={layout.placements[w.id].row}
                 dragging={dragId === w.id}
                 noResults={noResults}
+                editing={editMode}
                 onRemove={() => setPendingDelete(w)}
                 onSpan={(s) => setSpan(w.id, s)}
                 onBeginDrag={beginDrag}
@@ -908,7 +950,7 @@ export default function DashboardsPage() {
         </DashboardFactorContext.Provider>
       )}
 
-      {/* Slide-out add content panel */}
+      {/* Slide-out add widget panel */}
       <AddPanel
         open={addOpen}
         onClose={() => setAddOpen(false)}
@@ -937,6 +979,7 @@ export default function DashboardsPage() {
         onApply={(applied) => {
           setAdvancedFilters(applied);
           setNoResults(applied.length > 0);
+          triggerAutosave();
         }}
       />
 
@@ -971,7 +1014,7 @@ export default function DashboardsPage() {
           will be removed from this dashboard. You can add it back anytime by
           clicking the{" "}
           <Box component="b" sx={{ color: "text.primary" }}>
-            ADD CONTENT
+            ADD WIDGET
           </Box>{" "}
           button.
         </Typography>
@@ -1017,7 +1060,6 @@ export default function DashboardsPage() {
           label: "Reset to app default",
           onClick: () => {
             setWidgets(DEFAULT_LAYOUT());
-            triggerAutosave();
             setResetOpen(false);
           },
         }}
