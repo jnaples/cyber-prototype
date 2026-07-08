@@ -7,6 +7,7 @@
 
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
+import LibraryAddOutlinedIcon from "@mui/icons-material/LibraryAddOutlined";
 import {
   Alert,
   Box,
@@ -657,16 +658,13 @@ export default function DashboardsPage() {
           <MenuItem
             onClick={() => {
               setActionsAnchor(null);
-              setToast(`${name} cloned`);
+              setToast(`${name} duplicated`);
             }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16, marginRight: 8, opacity: 0.7 }}
-            >
-              content_copy
-            </span>
-            Clone
+            <LibraryAddOutlinedIcon
+              sx={{ fontSize: 16, mr: 1, opacity: 0.7 }}
+            />
+            Duplicate
           </MenuItem>
 
           <Divider />
