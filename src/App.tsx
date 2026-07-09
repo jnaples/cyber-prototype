@@ -19,6 +19,7 @@ import DashboardsPage from "@/app/dashboards/page";
 import ManageDashboardsPage from "@/app/dashboards/manage/page";
 import HomePage from "@/app/page";
 import QueryLogsPage from "@/app/query-logs/page";
+import QueryLogsV2Page from "@/app/query-logs-v2/page";
 import CustomReportsPage from "@/app/reporting/custom-reports/page";
 import SettingsPage from "@/app/settings/page";
 import UnblockRequestsLayout from "@/app/unblock-requests/layout";
@@ -43,6 +44,7 @@ function App() {
         <Route path="cybersight" element={<CybersightPage />} />
         <Route path="secureshield" element={<SecureShieldPage />} />
         <Route path="query-logs" element={<QueryLogsPage />} />
+        <Route path="query-logs-v2" element={<QueryLogsV2Page />} />
         <Route path="reporting">
           <Route path="custom-reports" element={<CustomReportsPage />} />
         </Route>

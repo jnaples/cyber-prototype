@@ -75,6 +75,16 @@ export function WidgetPreview({
             flexDirection: "column",
             maxHeight: "calc(100vh - 24px)",
             boxShadow: theme.shadows[8],
+            // Grow-in: scale + fade from the edge nearest the drawer. Runs once
+            // the card is measured/positioned (`ready`).
+            transformOrigin: "right center",
+            "@keyframes widgetPreviewGrowIn": {
+              from: { opacity: 0, transform: "scale(0.9)" },
+              to: { opacity: 1, transform: "scale(1)" },
+            },
+            animation: ready
+              ? "widgetPreviewGrowIn 200ms ease-out both"
+              : "none",
             ...(compact && { aspectRatio: "1 / 1" }),
           })}
         >

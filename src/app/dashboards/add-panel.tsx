@@ -5,7 +5,7 @@
 import SearchIcon from "@mui/icons-material/Search";
 import { Box, Chip, InputAdornment, TextField, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { Drawer } from "@/components/drawer";
 import { MaterialSymbol } from "@/components/material-symbol";
@@ -20,6 +20,9 @@ const CATEGORY_ORDER: WidgetCategory[] = [
   "Tables",
   "Other",
 ];
+
+// How long the pointer must dwell on an item before its preview appears.
+const HOVER_DELAY_MS = 150;
 
 type HoverProps = {
   onMouseEnter: (e: React.MouseEvent<HTMLElement>) => void;
@@ -135,6 +138,14 @@ export function AddPanel({
   const [hovered, setHovered] = useState<{ type: string; anchorY: number } | null>(
     null,
   );
+  const hoverTimer = useRef<number | null>(null);
+
+  const clearHoverTimer = () => {
+    if (hoverTimer.current !== null) {
+      window.clearTimeout(hoverTimer.current);
+      hoverTimer.current = null;
+    }
+  };
 
   const matches = (w: { name: string; desc: string }) =>
     (w.name + " " + w.desc).toLowerCase().includes(q.toLowerCase());
@@ -142,9 +153,16 @@ export function AddPanel({
   const hoverProps = (type: string): HoverProps => ({
     onMouseEnter: (e) => {
       const rect = e.currentTarget.getBoundingClientRect();
-      setHovered({ type, anchorY: rect.top + rect.height / 2 });
+      const anchorY = rect.top + rect.height / 2;
+      clearHoverTimer();
+      hoverTimer.current = window.setTimeout(() => {
+        setHovered({ type, anchorY });
+      }, HOVER_DELAY_MS);
     },
-    onMouseLeave: () => setHovered(null),
+    onMouseLeave: () => {
+      clearHoverTimer();
+      setHovered(null);
+    },
   });
 
   const toggle = (type: string) =>
@@ -153,6 +171,7 @@ export function AddPanel({
     );
 
   const handleClose = () => {
+    clearHoverTimer();
     setPending([]);
     setQ("");
     setHovered(null);
