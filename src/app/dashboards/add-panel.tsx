@@ -1,13 +1,17 @@
-// Slide-out "Add content" drawer. Categorized list of all widgets in the
-// catalog with a search box and an "already added" count badge.
+// Slide-out "Add widget" drawer. Categorized list of all widgets in the
+// catalog with a search box, an "already added" state, and a floating preview
+// (see WidgetPreview) shown on hover.
 
 import SearchIcon from "@mui/icons-material/Search";
 import { Box, Chip, InputAdornment, TextField, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
+import { MaterialSymbol } from "@/components/material-symbol";
 
-import { WIDGET_CATALOG, type WidgetCategory } from "./lib";
+import { WIDGET_CATALOG, type WidgetCategory, type WidgetDef } from "./lib";
+import { WidgetPreview } from "./widget-preview";
 
 const CATEGORY_ORDER: WidgetCategory[] = [
   "KPIs",
@@ -16,6 +20,101 @@ const CATEGORY_ORDER: WidgetCategory[] = [
   "Tables",
   "Other",
 ];
+
+type HoverProps = {
+  onMouseEnter: (e: React.MouseEvent<HTMLElement>) => void;
+  onMouseLeave: () => void;
+};
+
+function WidgetListItem({
+  widget,
+  added,
+  selected,
+  onToggle,
+  hoverProps,
+}: {
+  widget: WidgetDef;
+  added: boolean;
+  selected: boolean;
+  onToggle: () => void;
+  hoverProps: HoverProps;
+}) {
+  return (
+    <Box
+      role="button"
+      aria-pressed={selected}
+      aria-disabled={added || undefined}
+      {...hoverProps}
+      onClick={added ? undefined : onToggle}
+      sx={(theme) => ({
+        display: "flex",
+        alignItems: "center",
+        gap: 1.5,
+        textAlign: "left",
+        width: "100%",
+        border: "1px solid",
+        borderColor: selected ? "primary.main" : "divider",
+        bgcolor: "background.paper",
+        borderRadius: 1,
+        p: 1.25,
+        cursor: added ? "not-allowed" : "pointer",
+        opacity: added ? 0.6 : 1,
+        transition: "border-color 120ms, background 120ms",
+        ...(!added && {
+          "&:hover": {
+            borderColor: "primary.main",
+            bgcolor: alpha(theme.palette.primary.main, 0.04),
+          },
+        }),
+        ...theme.applyStyles("dark", {
+          borderColor: selected
+            ? theme.vars.palette.primary.light
+            : theme.vars.palette.divider,
+          ...(!added && {
+            "&:hover": {
+              borderColor: theme.vars.palette.primary.light,
+              bgcolor: alpha(theme.palette.primary.main, 0.04),
+            },
+          }),
+        }),
+      })}
+    >
+      <Box
+        sx={(theme) => ({
+          width: 36,
+          height: 36,
+          borderRadius: 1,
+          bgcolor: alpha(theme.palette.primary.main, 0.1),
+          color: "primary.main",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          ...theme.applyStyles("dark", {
+            color: theme.vars.palette.primary.light,
+          }),
+        })}
+      >
+        <MaterialSymbol name={widget.icon} size={18} />
+      </Box>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography
+          sx={{ fontWeight: 600, fontSize: 14, color: "text.primary" }}
+        >
+          {widget.name}
+        </Typography>
+      </Box>
+      {added && (
+        <Chip
+          size="small"
+          label="Added"
+          icon={<MaterialSymbol name="check" size={16} />}
+          sx={{ flexShrink: 0 }}
+        />
+      )}
+    </Box>
+  );
+}
 
 export function AddPanel({
   open,
@@ -30,14 +129,33 @@ export function AddPanel({
   existingTypes?: string[];
 }) {
   const [q, setQ] = useState("");
-  // Widgets staged to add; only committed (via onAdd) when Apply is clicked.
+  // Widgets staged to add; only committed (via onApply) when Apply is clicked.
   const [pending, setPending] = useState<string[]>([]);
+  // Currently hovered widget (drives the floating preview).
+  const [hovered, setHovered] = useState<{ type: string; anchorY: number } | null>(
+    null,
+  );
+
   const matches = (w: { name: string; desc: string }) =>
     (w.name + " " + w.desc).toLowerCase().includes(q.toLowerCase());
+
+  const hoverProps = (type: string): HoverProps => ({
+    onMouseEnter: (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setHovered({ type, anchorY: rect.top + rect.height / 2 });
+    },
+    onMouseLeave: () => setHovered(null),
+  });
+
+  const toggle = (type: string) =>
+    setPending((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+    );
 
   const handleClose = () => {
     setPending([]);
     setQ("");
+    setHovered(null);
     onClose();
   };
 
@@ -102,115 +220,29 @@ export function AddPanel({
                 {cat}
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                {items.map((w) => {
-                  const added = existingTypes.includes(w.type);
-                  const selected = pending.includes(w.type);
-                  return (
-                    <Box
-                      key={w.type}
-                      role="button"
-                      aria-pressed={selected}
-                      aria-disabled={added || undefined}
-                      onClick={
-                        added
-                          ? undefined
-                          : () =>
-                              setPending((prev) =>
-                                prev.includes(w.type)
-                                  ? prev.filter((t) => t !== w.type)
-                                  : [...prev, w.type],
-                              )
-                      }
-                      sx={(theme) => ({
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1.5,
-                        textAlign: "left",
-                        width: "100%",
-                        border: "1px solid",
-                        borderColor: selected ? "primary.main" : "divider",
-                        bgcolor: "background.paper",
-                        borderRadius: 1,
-                        p: 1.25,
-                        cursor: added ? "not-allowed" : "pointer",
-                        opacity: added ? 0.6 : 1,
-                        transition: "border-color 120ms, background 120ms",
-                        ...(!added && {
-                          "&:hover": {
-                            borderColor: "primary.main",
-                            bgcolor: "rgba(53,39,253,.04)",
-                          },
-                        }),
-                        ...theme.applyStyles("dark", {
-                          borderColor: selected
-                            ? theme.vars.palette.primary.light
-                            : theme.vars.palette.divider,
-                          ...(!added && {
-                            "&:hover": {
-                              borderColor: theme.vars.palette.primary.light,
-                              bgcolor: "rgba(53,39,253,.04)",
-                            },
-                          }),
-                        }),
-                      })}
-                    >
-                      <Box
-                        sx={(theme) => ({
-                          width: 36,
-                          height: 36,
-                          borderRadius: 1,
-                          bgcolor: "rgba(53,39,253,.1)",
-                          color: "primary.main",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          flexShrink: 0,
-                          ...theme.applyStyles("dark", {
-                            color: theme.vars.palette.primary.light,
-                          }),
-                        })}
-                      >
-                        <span
-                          className="material-symbols-outlined"
-                          style={{ fontSize: 18 }}
-                        >
-                          {w.icon}
-                        </span>
-                      </Box>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography
-                          sx={{
-                            fontWeight: 600,
-                            fontSize: 14,
-                            color: "text.primary",
-                          }}
-                        >
-                          {w.name}
-                        </Typography>
-                      </Box>
-                      {added && (
-                        <Chip
-                          size="small"
-                          label="Added"
-                          icon={
-                            <span
-                              className="material-symbols-outlined"
-                              style={{ fontSize: 16 }}
-                            >
-                              check
-                            </span>
-                          }
-                          sx={{ flexShrink: 0 }}
-                        />
-                      )}
-                    </Box>
-                  );
-                })}
+                {items.map((w) => (
+                  <WidgetListItem
+                    key={w.type}
+                    widget={w}
+                    added={existingTypes.includes(w.type)}
+                    selected={pending.includes(w.type)}
+                    onToggle={() => toggle(w.type)}
+                    hoverProps={hoverProps(w.type)}
+                  />
+                ))}
               </Box>
             </Box>
           );
         })}
       </Box>
+
+      {hovered && (
+        <WidgetPreview
+          key={hovered.type}
+          type={hovered.type}
+          anchorY={hovered.anchorY}
+        />
+      )}
     </Drawer>
   );
 }

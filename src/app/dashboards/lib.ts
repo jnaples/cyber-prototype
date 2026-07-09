@@ -123,70 +123,70 @@ export const reqLabels = [
 ];
 
 export const reqSeries: Series[] = [
-  { name: "Allowed", color: PAL.secure, data: [8200, 9600, 10000, 9100, 6400, 3100, 400] },
-  { name: "Blocked", color: PAL.ink,    data: [4100, 3600, 2400, 1200, 600, 200, 100] },
-  { name: "Threats", color: PAL.magenta, data: [300, 340, 280, 220, 120, 80, 40] },
+  { name: "Allowed", color: PAL.secure, data: [24800, 26100, 25400, 27300, 22600, 4200, 3100] },
+  { name: "Blocked", color: PAL.ink,    data: [1820, 2010, 1760, 2140, 1680, 320, 240] },
+  { name: "Threats", color: PAL.magenta, data: [14, 9, 18, 11, 7, 3, 2] },
 ];
 
 export const threatSeries: Series[] = [
-  { name: "Malware",  color: PAL.magenta, data: [120, 98, 140, 160, 110, 90, 130] },
-  { name: "Phishing", color: PAL.rose,    data: [60, 72, 55, 80, 64, 48, 70] },
-  { name: "Botnet",   color: PAL.purple,  data: [22, 30, 18, 26, 20, 14, 24] },
+  { name: "Malware",  color: PAL.magenta, data: [4, 3, 5, 4, 2, 1, 1] },
+  { name: "Phishing", color: PAL.rose,    data: [5, 4, 6, 5, 3, 1, 0] },
+  { name: "Botnet",   color: PAL.purple,  data: [2, 1, 2, 2, 1, 0, 1] },
 ];
 
-export const eventCats = ["CP Summit", "Right of Boom", "TruPeer", "XChange", "Zero Trust"];
+export const eventCats = ["Business Apps", "Search", "Cloud Storage", "Social Media", "Streaming"];
 export const eventStacks: StackedSeries[] = [
-  { name: "50-300",   color: PAL.info,      data: [18, 7, 8, 7, 9] },
-  { name: "301-500",  color: PAL.teal,      data: [7, 3, 5, 3, 7] },
-  { name: "501-1000", color: PAL.purple,    data: [4, 2, 3, 2, 7] },
-  { name: "1001+",    color: PAL.lightBlue, data: [3, 1, 2, 2, 7] },
+  { name: "Main Office",      color: PAL.info,   data: [12400, 9800, 7200, 4100, 2800] },
+  { name: "Branch Office",    color: PAL.teal,   data: [6200, 5100, 3800, 2200, 1400] },
+  { name: "Remote / Roaming", color: PAL.purple, data: [4800, 3900, 2600, 3400, 2100] },
 ];
 
 export const topDomains: Record<string, string>[] = [
-  { domain: "103.in-addr.arpa", requests: "4,197", icon: "language", iconColor: PAL.secure },
-  { domain: "rubiconproject.com", requests: "684", icon: "language", iconColor: PAL.secure },
-  { domain: "ib.adnxs.com", requests: "644", icon: "language", iconColor: PAL.secure },
-  { domain: "msftncsi.com", requests: "209", icon: "language", iconColor: PAL.secure },
-  { domain: "amazon-adsystem.com", requests: "196", icon: "block", iconColor: PAL.magenta },
-  { domain: "bing.com", requests: "190", icon: "language", iconColor: PAL.secure },
-  { domain: "googlesyndication.com", requests: "177", icon: "language", iconColor: PAL.secure },
-  { domain: "outbrain.com", requests: "164", icon: "block", iconColor: PAL.magenta },
+  { domain: "google.com", requests: "4,197", icon: "language", iconColor: PAL.secure },
+  { domain: "microsoft.com", requests: "3,412", icon: "language", iconColor: PAL.secure },
+  { domain: "youtube.com", requests: "2,865", icon: "language", iconColor: PAL.secure },
+  { domain: "apple.com", requests: "1,930", icon: "language", iconColor: PAL.secure },
+  { domain: "cloudflare.com", requests: "1,644", icon: "language", iconColor: PAL.secure },
+  { domain: "facebook.com", requests: "1,209", icon: "block", iconColor: PAL.magenta },
+  { domain: "amazonaws.com", requests: "996", icon: "language", iconColor: PAL.secure },
+  { domain: "tiktok.com", requests: "684", icon: "block", iconColor: PAL.magenta },
 ];
 
 export const topOrgs: Record<string, string>[] = [
-  { org: "FilterDNS", requests: "24,038", icon: "business", iconColor: PAL.green },
-  { org: "Scranton Security", requests: "11,204", icon: "business", iconColor: PAL.green },
-  { org: "Northwind Schools", requests: "6,852", icon: "business", iconColor: PAL.green },
-  { org: "Acme Retail Group", requests: "3,419", icon: "business", iconColor: PAL.green },
+  { org: "Riverside Dental Group", requests: "42,180", icon: "business", iconColor: PAL.green },
+  { org: "Summit Financial Advisors", requests: "38,920", icon: "business", iconColor: PAL.green },
+  { org: "Coastal Property Mgmt", requests: "27,640", icon: "business", iconColor: PAL.green },
+  { org: "Bright Future Pediatrics", requests: "19,350", icon: "business", iconColor: PAL.green },
+  { org: "Vanguard Auto Repair", requests: "12,470", icon: "business", iconColor: PAL.green },
 ];
 
 export const catSlices: DonutSlice[] = [
-  { label: "Advertising",    value: 38, color: PAL.orange },
-  { label: "Search Engines", value: 24, color: PAL.secure },
-  { label: "Business Tools", value: 18, color: PAL.teal },
-  { label: "Technology",     value: 12, color: PAL.purple },
-  { label: "Streaming",      value: 8,  color: PAL.rose },
+  { label: "Business Tools", value: 342, color: PAL.teal },
+  { label: "Search Engines", value: 258, color: PAL.secure },
+  { label: "Cloud Services", value: 164, color: PAL.purple },
+  { label: "Social Media",   value: 112, color: PAL.rose },
+  { label: "Advertising",    value: 88,  color: PAL.orange },
 ];
 
 export const threatSlices: DonutSlice[] = [
-  { label: "Malware",  value: 21, color: PAL.magenta },
-  { label: "Phishing", value: 9,  color: PAL.rose },
-  { label: "Botnet",   value: 5,  color: PAL.purple },
-  { label: "Clean",    value: 65, color: PAL.secure },
+  { label: "Phishing",          value: 24, color: PAL.rose },
+  { label: "Malware",           value: 18, color: PAL.magenta },
+  { label: "Botnet",            value: 9,  color: PAL.purple },
+  { label: "Cryptomining",      value: 8,  color: PAL.orange },
+  { label: "Command & Control", value: 5,  color: PAL.teal },
 ];
 
 export const ownerRows: HBarRow[] = [
-  { label: "Chris Hamel",  values: { call: 420, email: 380, msg: 260, meeting: 310, note: 420, task: 420 } },
-  { label: "Peter Linden", values: { call: 520, email: 410, msg: 300, meeting: 360, note: 440, task: 420 } },
-  { label: "Blaise V.",    values: { call: 280, email: 220, msg: 160, meeting: 180, note: 200, task: 210 } },
+  { label: "Sarah Mitchell", values: { business: 4200, search: 3100, social: 1800, streaming: 1200, ads: 900 } },
+  { label: "James Chen",     values: { business: 3800, search: 2600, social: 2200, streaming: 1600, ads: 1100 } },
+  { label: "Maria Lopez",    values: { business: 2900, search: 2100, social: 1400, streaming: 800, ads: 700 } },
 ];
 export const ownerSegs: HBarSegment[] = [
-  { key: "call",    color: PAL.secure,    label: "Call" },
-  { key: "email",   color: PAL.teal,      label: "Email" },
-  { key: "msg",     color: PAL.purple,    label: "Message" },
-  { key: "meeting", color: PAL.lightBlue, label: "Meeting" },
-  { key: "note",    color: PAL.mint,      label: "Note" },
-  { key: "task",    color: PAL.info,      label: "Task" },
+  { key: "business",  color: PAL.teal,      label: "Business Apps" },
+  { key: "search",    color: PAL.secure,    label: "Search" },
+  { key: "social",    color: PAL.purple,    label: "Social Media" },
+  { key: "streaming", color: PAL.rose,      label: "Streaming" },
+  { key: "ads",       color: PAL.orange,    label: "Advertising" },
 ];
 
 // ---------------------------------------------------------------------------

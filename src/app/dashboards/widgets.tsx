@@ -182,7 +182,7 @@ export function WidgetBody({ type }: { type: string }) {
           icon="radio_button_checked"
           color={PAL.primary}
           label="Total Requests"
-          value={fmt(scale(24040))}
+          value={fmt(scale(143534))}
         />
       );
     case "kpi-allowed":
@@ -191,7 +191,7 @@ export function WidgetBody({ type }: { type: string }) {
           icon="check"
           color={PAL.secure}
           label="Allowed Requests"
-          value={fmt(scale(19110))}
+          value={fmt(scale(133500))}
         />
       );
     case "kpi-blocked":
@@ -200,7 +200,7 @@ export function WidgetBody({ type }: { type: string }) {
           icon="block"
           color={PAL.ink}
           label="Blocked Requests"
-          value={fmt(scale(4930))}
+          value={fmt(scale(9970))}
         />
       );
     case "kpi-threats":
@@ -209,7 +209,7 @@ export function WidgetBody({ type }: { type: string }) {
           icon="skull"
           color={PAL.magenta}
           label="Threats"
-          value={fmt(scale(39))}
+          value={fmt(scale(64))}
         />
       );
 
@@ -218,8 +218,8 @@ export function WidgetBody({ type }: { type: string }) {
         <FractionCard
           icon="location_on"
           color={PAL.green}
-          num={0}
-          denom={12}
+          num={3}
+          denom={3}
           label="Sites Protected"
         />
       );
@@ -228,8 +228,8 @@ export function WidgetBody({ type }: { type: string }) {
         <FractionCard
           icon="devices"
           color={PAL.rose}
-          num={6}
-          denom={9}
+          num={38}
+          denom={42}
           label="Roaming Clients Protected"
         />
       );
@@ -238,8 +238,8 @@ export function WidgetBody({ type }: { type: string }) {
         <FractionCard
           icon="person"
           color={PAL.purple}
-          num={80}
-          denom={80}
+          num={74}
+          denom={75}
           label="Users"
         />
       );
@@ -248,8 +248,8 @@ export function WidgetBody({ type }: { type: string }) {
         <FractionCard
           icon="device_hub"
           color={PAL.ink}
-          num={5}
-          denom={5}
+          num={2}
+          denom={2}
           label="Relays"
         />
       );
@@ -300,7 +300,7 @@ export function WidgetBody({ type }: { type: string }) {
             { key: "domain", label: "Domain" },
             { key: "requests", label: "# of Requests" },
           ]}
-          rows={topDomains}
+          rows={topDomains.slice(0, 5)}
         />
       );
     case "top-orgs":
@@ -310,7 +310,7 @@ export function WidgetBody({ type }: { type: string }) {
             { key: "org", label: "Organization" },
             { key: "requests", label: "# of Requests" },
           ]}
-          rows={topOrgs}
+          rows={topOrgs.slice(0, 5)}
         />
       );
 

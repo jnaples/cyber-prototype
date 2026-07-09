@@ -175,7 +175,7 @@ export function LineChart({
         }))}
         xAxis={[{ scaleType: "point", data: labels }]}
         yAxis={[{ valueFormatter: (v: number | null) => (v == null ? "" : fmt(v)) }]}
-        margin={{ top: 14, right: 14, bottom: 26, left: 56 }}
+        margin={{ top: 14, right: 14, bottom: 0, left: 0 }}
         grid={{ horizontal: true }}
       />
     </Box>
@@ -206,7 +206,7 @@ export function BarChart({
         }))}
         xAxis={[{ scaleType: "band", data: categories }]}
         yAxis={[{ valueFormatter: (v: number | null) => (v == null ? "" : fmt(v)) }]}
-        margin={{ top: 16, right: 12, bottom: 30, left: 50 }}
+        margin={{ top: 16, right: 12, bottom: 0, left: 0 }}
         grid={{ horizontal: true }}
         borderRadius={3}
       />
@@ -240,7 +240,7 @@ export function HBarChart({
         }))}
         yAxis={[{ scaleType: "band", data: rows.map((r) => r.label) }]}
         xAxis={[{ valueFormatter: (v: number | null) => (v == null ? "" : fmt(v)) }]}
-        margin={{ top: 8, right: 32, bottom: 22, left: 100 }}
+        margin={{ top: 8, right: 32, bottom: 0, left: 0 }}
         grid={{ vertical: true }}
         borderRadius={3}
       />
