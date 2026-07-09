@@ -10,6 +10,8 @@ import React, { useState } from "react";
 
 import { FooterPopover } from "@/components/footer-popover";
 
+import { MaterialSymbol } from "./material-symbol";
+
 interface FooterProps {
   sidebarWidth?: number;
 }
@@ -128,15 +130,11 @@ export default function Footer({ sidebarWidth = 0 }: FooterProps) {
                   color="primary"
                   onClick={() => handleCopy(r.address, r.label)}
                 >
-                  <span
-                    className="material-symbols-outlined"
-                    style={{
-                      fontSize: 20,
-                      transition: "all 300ms ease-out",
-                    }}
-                  >
-                    {copiedLabel === r.label ? "check" : "content_copy"}
-                  </span>
+                  <MaterialSymbol
+                    name={copiedLabel === r.label ? "check" : "content_copy"}
+                    size={20}
+                    sx={{ transition: "all 300ms ease-out" }}
+                  />
                 </IconButton>
               </Box>
             </React.Fragment>

@@ -17,6 +17,7 @@ import {
 import type { Theme } from "@mui/material/styles";
 import { useState } from "react";
 
+import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { lightPalette } from "@/theme/core/palette";
 
@@ -29,14 +30,7 @@ function MaterialIcon({
   size?: number;
   color?: string;
 }) {
-  return (
-    <span
-      className="material-symbols-outlined"
-      style={{ fontSize: size, color, lineHeight: 1 }}
-    >
-      {name}
-    </span>
-  );
+  return <MaterialSymbol name={name} size={size} sx={{ color }} />;
 }
 
 type ActivityRow = {

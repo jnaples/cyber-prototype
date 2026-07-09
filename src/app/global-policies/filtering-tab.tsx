@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
+import { MaterialSymbol } from "@/components/material-symbol";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
@@ -205,15 +206,11 @@ function PolicyActionsCell() {
     <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
       <ArrowTooltip title="Edit policy">
         <IconButton size="small" aria-label="Edit policy">
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-            edit
-          </span>
+          <MaterialSymbol name="edit" size={20} />
         </IconButton>
       </ArrowTooltip>
       <IconButton size="small" aria-label="more options">
-        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-          more_horiz
-        </span>
+        <MaterialSymbol name="more_horiz" size={20} />
       </IconButton>
     </Box>
   );
@@ -233,15 +230,11 @@ function buildColumns(
           <Link href="#" underline="hover" sx={{ fontWeight: 400 }}>
             {params.row.name}
           </Link>
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: 16,
-              color: "var(--dnsf-palette-text-secondary)",
-            }}
-          >
-            public
-          </span>
+          <MaterialSymbol
+            name="public"
+            size={16}
+            sx={{ color: "var(--dnsf-palette-text-secondary)" }}
+          />
         </Box>
       ),
     },
@@ -356,9 +349,7 @@ export function FilteringTab() {
           variant="contained"
           color="primary"
           startIcon={
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-              add
-            </span>
+            <MaterialSymbol name="add" size={20} />
           }
         >
           Add Policy

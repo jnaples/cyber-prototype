@@ -12,6 +12,7 @@ import { useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
+import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
 // ---------------------------------------------------------------------------
@@ -37,12 +38,7 @@ function RowActionsCell() {
       {QUICK_ACTIONS.map(({ label, icon }) => (
         <ArrowTooltip key={label} title={label}>
           <IconButton size="small" aria-label={label}>
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 20 }}
-            >
-              {icon}
-            </span>
+            <MaterialSymbol name={icon} size={20} />
           </IconButton>
         </ArrowTooltip>
       ))}
@@ -51,9 +47,7 @@ function RowActionsCell() {
         aria-label="more options"
         onClick={(e) => setAnchorEl(e.currentTarget)}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-          more_horiz
-        </span>
+        <MaterialSymbol name="more_horiz" size={20} />
       </IconButton>
       <Menu
         anchorEl={anchorEl}
@@ -65,12 +59,7 @@ function RowActionsCell() {
         {MENU_ACTIONS.map(({ label, icon }) => (
           <MenuItem key={label} onClick={close}>
             <ListItemIcon>
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 20 }}
-              >
-                {icon}
-              </span>
+              <MaterialSymbol name={icon} size={20} />
             </ListItemIcon>
             {label}
           </MenuItem>

@@ -3,6 +3,7 @@ import type { GridColDef } from "@mui/x-data-grid";
 import { format as fnsFormat } from "date-fns";
 
 import { DataTable } from "@/components/data-table";
+import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { PILL_CHIP_RADIUS } from "@/theme/core/components/chip";
 
@@ -51,12 +52,10 @@ const columns: GridColDef[] = [
             variant="outlined"
             color={allowed ? "success" : "error"}
             icon={
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 16 }}
-              >
-                {allowed ? "check" : "block"}
-              </span>
+              <MaterialSymbol
+                name={allowed ? "check" : "block"}
+                size={16}
+              />
             }
             label={params.value}
             sx={{ borderRadius: PILL_CHIP_RADIUS }}
@@ -76,9 +75,7 @@ const columns: GridColDef[] = [
     headerAlign: "center",
     renderCell: () => (
       <IconButton size="small" aria-label="more options">
-        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-          more_horiz
-        </span>
+        <MaterialSymbol name="more_horiz" size={20} />
       </IconButton>
     ),
   },

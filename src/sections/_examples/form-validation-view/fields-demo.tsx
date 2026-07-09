@@ -10,15 +10,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Field, Form } from "@/components/hook-form";
+import { MaterialSymbol } from "@/components/material-symbol";
 import { today } from "@/utils/format-time";
 
 // Material Symbol icon component
 function Icon({ name, size = 24 }: { name: string; size?: number }) {
-  return (
-    <span className="material-symbols-outlined" style={{ fontSize: size }}>
-      {name}
-    </span>
-  );
+  return <MaterialSymbol name={name} size={size} />;
 }
 
 import { FieldContainer, FormActions, FormGrid } from "./components";

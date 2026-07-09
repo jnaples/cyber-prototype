@@ -1,6 +1,7 @@
 import { Button, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 
+import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
 export default function SitesPage() {
@@ -10,14 +11,7 @@ export default function SitesPage() {
         <Button
           variant="contained"
           color="primary"
-          startIcon={
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 20 }}
-            >
-              install_desktop
-            </span>
-          }
+          startIcon={<MaterialSymbol name="install_desktop" size={20} />}
         >
           Install Roaming Client
         </Button>

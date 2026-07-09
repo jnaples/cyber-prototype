@@ -18,6 +18,7 @@ import {
   widgetLegend,
   type WidgetInstance,
 } from "./lib";
+import { MaterialSymbol } from "@/components/material-symbol";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 
 import { WidgetBody } from "./widgets";
@@ -189,12 +190,7 @@ export function DashCard({
               cursor: "grab",
             }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 20 }}
-            >
-              drag_indicator
-            </span>
+            <MaterialSymbol name="drag_indicator" size={20} />
           </Box>
           <IconButton
             className="dash-toolbar"

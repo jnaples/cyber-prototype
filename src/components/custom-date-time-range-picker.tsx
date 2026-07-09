@@ -29,6 +29,8 @@ import { DateRangeCalendar } from "@mui/x-date-pickers-pro/DateRangeCalendar";
 import { TimeField } from "@mui/x-date-pickers/TimeField";
 import type { DateRange } from "@mui/x-date-pickers-pro/models";
 
+import { MaterialSymbol } from "./material-symbol";
+
 export type CustomDateTimeRangePickerValue = DateRange<Date>;
 
 export type CustomDateTimeRangePickerProps = {
@@ -157,12 +159,7 @@ function StepperField({
                           sx={{ p: 0, height: 16 }}
                           aria-label="increment"
                         >
-                          <span
-                            className="material-symbols-outlined"
-                            style={{ fontSize: 16 }}
-                          >
-                            keyboard_arrow_up
-                          </span>
+                          <MaterialSymbol name="keyboard_arrow_up" size={16} />
                         </IconButton>
                         <IconButton
                           size="small"
@@ -170,12 +167,10 @@ function StepperField({
                           sx={{ p: 0, height: 16 }}
                           aria-label="decrement"
                         >
-                          <span
-                            className="material-symbols-outlined"
-                            style={{ fontSize: 16 }}
-                          >
-                            keyboard_arrow_down
-                          </span>
+                          <MaterialSymbol
+                            name="keyboard_arrow_down"
+                            size={16}
+                          />
                         </IconButton>
                       </Stack>
                     </InputAdornment>
@@ -300,12 +295,7 @@ export function CustomDateTimeRangePicker({
             readOnly: true,
             startAdornment: (
               <InputAdornment position="start">
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: 20 }}
-                >
-                  date_range
-                </span>
+                <MaterialSymbol name="date_range" size={20} />
               </InputAdornment>
             ),
           },
@@ -358,12 +348,7 @@ export function CustomDateTimeRangePicker({
                 onChange={setDraftStart}
               />
               <Box sx={{ pt: 3, color: "text.secondary" }}>
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: 20 }}
-                >
-                  arrow_forward
-                </span>
+                <MaterialSymbol name="arrow_forward" size={20} />
               </Box>
               <StepperField
                 label="End time"

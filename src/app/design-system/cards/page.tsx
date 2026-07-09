@@ -16,13 +16,11 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
+import { MaterialSymbol } from "@/components/material-symbol";
+
 // Material Symbol icon component
 function Icon({ name, size = 24 }: { name: string; size?: number }) {
-  return (
-    <span className="material-symbols-outlined" style={{ fontSize: size }}>
-      {name}
-    </span>
-  );
+  return <MaterialSymbol name={name} size={size} />;
 }
 
 export default function CardsDocs() {

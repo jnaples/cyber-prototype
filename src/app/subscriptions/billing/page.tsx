@@ -15,6 +15,7 @@ import { useState } from "react";
 
 import { CollapsibleCard } from "@/components/collapsible-card";
 import { DataTable } from "@/components/data-table";
+import { MaterialSymbol } from "@/components/material-symbol";
 
 type SummaryStat = {
   label: string;
@@ -41,9 +42,7 @@ function InvoiceActionsCell() {
         aria-label="more options"
         onClick={(e) => setAnchorEl(e.currentTarget)}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-          more_horiz
-        </span>
+        <MaterialSymbol name="more_horiz" size={20} />
       </IconButton>
       <Menu
         anchorEl={anchorEl}
@@ -259,13 +258,11 @@ function BreakdownRow({ item }: { item: BreakdownItem }) {
 function DiscountRow({ discount }: { discount: Discount }) {
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, py: 0.25 }}>
-      <Box
-        component="span"
-        className="material-symbols-outlined"
-        sx={{ fontSize: 16, color: "text.secondary" }}
-      >
-        {discount.icon}
-      </Box>
+      <MaterialSymbol
+        name={discount.icon}
+        size={16}
+        sx={{ color: "text.secondary" }}
+      />
       <Typography variant="body2" sx={{ color: "text.primary" }}>
         {discount.label}
       </Typography>

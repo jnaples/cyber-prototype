@@ -14,6 +14,7 @@ import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { Drawer } from "@/components/drawer";
 import { AndroidIcon } from "@/components/icons/os-icons";
+import { MaterialSymbol } from "@/components/material-symbol";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { roamingClientRows } from "@/data/roaming-clients";
@@ -33,12 +34,11 @@ const columns: GridColDef[] = [
     renderCell: () => (
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
         <ArrowTooltip title="Protected" direction="bottom">
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: 22, color: "var(--dnsf-palette-success-main)" }}
-          >
-            verified_user
-          </span>
+          <MaterialSymbol
+            name="verified_user"
+            size={22}
+            sx={{ color: "var(--dnsf-palette-success-main)" }}
+          />
         </ArrowTooltip>
       </Box>
     ),
@@ -91,22 +91,18 @@ const columns: GridColDef[] = [
             ) : hasBothIcons ? (
               <>
                 <ArrowTooltip title="Inherited from Site" direction="top">
-                  <Box
-                    component="span"
-                    className="material-symbols-outlined"
-                    sx={{ fontSize: 20, color: "text.secondary" }}
-                  >
-                    location_on
-                  </Box>
+                  <MaterialSymbol
+                    name="location_on"
+                    size={20}
+                    sx={{ color: "text.secondary" }}
+                  />
                 </ArrowTooltip>
                 <ArrowTooltip title="Global Policy" direction="top">
-                  <Box
-                    component="span"
-                    className="material-symbols-outlined"
-                    sx={{ fontSize: 20, color: "text.secondary" }}
-                  >
-                    globe
-                  </Box>
+                  <MaterialSymbol
+                    name="globe"
+                    size={20}
+                    sx={{ color: "text.secondary" }}
+                  />
                 </ArrowTooltip>
               </>
             ) : (
@@ -114,24 +110,20 @@ const columns: GridColDef[] = [
                 <Box sx={{ width: 20, height: 20 }} />
                 {showMerge && (
                   <ArrowTooltip title="Inherited from Site" direction="top">
-                    <Box
-                      component="span"
-                      className="material-symbols-outlined"
-                      sx={{ fontSize: 20, color: "text.secondary" }}
-                    >
-                      location_on
-                    </Box>
+                    <MaterialSymbol
+                      name="location_on"
+                      size={20}
+                      sx={{ color: "text.secondary" }}
+                    />
                   </ArrowTooltip>
                 )}
                 {showGlobe && (
                   <ArrowTooltip title="Global Policy" direction="top">
-                    <Box
-                      component="span"
-                      className="material-symbols-outlined"
-                      sx={{ fontSize: 20, color: "text.secondary" }}
-                    >
-                      globe
-                    </Box>
+                    <MaterialSymbol
+                      name="globe"
+                      size={20}
+                      sx={{ color: "text.secondary" }}
+                    />
                   </ArrowTooltip>
                 )}
               </>
@@ -177,14 +169,10 @@ function RowActionsCell() {
         aria-label="edit"
         onClick={() => setEditOpen(true)}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-          edit
-        </span>
+        <MaterialSymbol name="edit" size={20} />
       </IconButton>
       <IconButton size="small" aria-label="more options">
-        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-          more_horiz
-        </span>
+        <MaterialSymbol name="more_horiz" size={20} />
       </IconButton>
       <Drawer
         open={editOpen}
@@ -291,14 +279,7 @@ export default function RoamingClientsPage() {
         <Button
           variant="contained"
           color="primary"
-          startIcon={
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 20 }}
-            >
-              install_desktop
-            </span>
-          }
+          startIcon={<MaterialSymbol name="install_desktop" size={20} />}
         >
           Install Roaming Client
         </Button>

@@ -21,6 +21,7 @@ import type { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 
 import { DataTable } from "@/components/data-table";
+import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import {
   CHART_META,
@@ -36,14 +37,7 @@ import { BarChart, fmt, Legend, LineChart, PieChart } from "./charts";
 
 // Material Symbols Outlined icon (matches the rest of the app).
 function Icon({ name, size = 20 }: { name: string; size?: number }) {
-  return (
-    <span
-      className="material-symbols-outlined"
-      style={{ fontSize: size, lineHeight: 1 }}
-    >
-      {name}
-    </span>
-  );
+  return <MaterialSymbol name={name} size={size} />;
 }
 
 const OWNER_COLORS: Record<string, string> = {

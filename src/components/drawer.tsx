@@ -12,6 +12,8 @@ import type React from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 
+import { MaterialSymbol } from "./material-symbol";
+
 // Preset drawer-paper widths. Choose with the `size` prop, or override with an
 // explicit `width`. "default" matches the Figma spec; "large" is the wide
 // variant used for denser content like the advanced filter builder.
@@ -192,12 +194,7 @@ export function Drawer({
                 onClick={onClose}
                 sx={{ flexShrink: 0 }}
               >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: 20 }}
-                >
-                  close
-                </span>
+                <MaterialSymbol name="close" size={20} />
               </IconButton>
             </Box>
             <Divider />

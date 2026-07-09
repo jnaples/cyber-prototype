@@ -8,6 +8,8 @@ import {
 import type { SxProps, Theme } from "@mui/material/styles";
 import { useState } from "react";
 
+import { MaterialSymbol } from "./material-symbol";
+
 interface CollapsibleCardProps {
   title: React.ReactNode;
   defaultExpanded?: boolean;
@@ -52,12 +54,10 @@ export function CollapsibleCard({
             tabIndex={-1}
             sx={{ pointerEvents: "none" }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 20 }}
-            >
-              {expanded ? "expand_less" : "expand_more"}
-            </span>
+            <MaterialSymbol
+              name={expanded ? "expand_less" : "expand_more"}
+              size={20}
+            />
           </IconButton>
         }
       />

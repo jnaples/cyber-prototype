@@ -17,6 +17,7 @@ import { useColorScheme } from "@mui/material/styles";
 import { useNavigate } from "react-router";
 
 import { GeoActivityBackground } from "@/components/geo-activity-background";
+import { MaterialSymbol } from "@/components/material-symbol";
 
 function ThemeToggle() {
   const { mode, systemMode, setMode } = useColorScheme();
@@ -33,9 +34,7 @@ function ThemeToggle() {
           "&:hover": { bgcolor: "background.paper" },
         }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 24 }}>
-          {isDark ? "light_mode" : "dark_mode"}
-        </span>
+        <MaterialSymbol name={isDark ? "light_mode" : "dark_mode"} size={24} />
       </IconButton>
     </Tooltip>
   );

@@ -17,6 +17,7 @@ import { useNavigate } from "react-router";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
+import { MaterialSymbol } from "@/components/material-symbol";
 import { Modal } from "@/components/modal";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
@@ -148,14 +149,7 @@ export default function ManageDashboardsPage() {
           variant="contained"
           color="primary"
           onClick={() => navigate("/dashboards")}
-          startIcon={
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 20 }}
-            >
-              add
-            </span>
-          }
+          startIcon={<MaterialSymbol name="add" size={20} />}
         >
           Create Dashboard
         </Button>
@@ -190,12 +184,7 @@ export default function ManageDashboardsPage() {
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}
             >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 18 }}
-              >
-                delete
-              </span>
+              <MaterialSymbol name="delete" size={18} />
               Delete
             </Box>
           ),
@@ -287,18 +276,16 @@ function ActionsCell({
           aria-pressed={isFavorite}
           onClick={onToggleFavorite}
         >
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: 20,
+          <MaterialSymbol
+            name="star"
+            size={20}
+            sx={{
               fontVariationSettings: isFavorite ? '"FILL" 1' : '"FILL" 0',
               color: isFavorite
                 ? "var(--dnsf-palette-warning-main)"
                 : undefined,
             }}
-          >
-            star
-          </span>
+          />
         </IconButton>
       </ArrowTooltip>
       <IconButton
@@ -306,9 +293,7 @@ function ActionsCell({
         aria-label="more options"
         onClick={(e) => setAnchorEl(e.currentTarget)}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-          more_horiz
-        </span>
+        <MaterialSymbol name="more_horiz" size={20} />
       </IconButton>
       <Menu
         anchorEl={anchorEl}
@@ -331,12 +316,7 @@ function ActionsCell({
           }}
         >
           <ListItemIcon>
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 20, opacity: 0.7 }}
-            >
-              check_circle
-            </span>
+            <MaterialSymbol name="check_circle" size={20} sx={{ opacity: 0.7 }} />
           </ListItemIcon>
           Set as default
         </MenuItem>
@@ -349,12 +329,7 @@ function ActionsCell({
           sx={{ color: "error.main" }}
         >
           <ListItemIcon sx={{ color: "inherit" }}>
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 20, color: "inherit" }}
-            >
-              delete
-            </span>
+            <MaterialSymbol name="delete" size={20} sx={{ color: "inherit" }} />
           </ListItemIcon>
           Delete Dashboard
         </MenuItem>

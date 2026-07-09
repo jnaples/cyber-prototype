@@ -7,6 +7,7 @@ import type { GridColDef, GridColumnGroupingModel } from "@mui/x-data-grid";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
+import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
 // ---------------------------------------------------------------------------
@@ -34,12 +35,11 @@ function PlanSummaryCard({ plan }: { plan: PlanSummary }) {
       <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           {plan.icon && (
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 20, color: "var(--dnsf-palette-text-primary)" }}
-            >
-              {plan.icon}
-            </span>
+            <MaterialSymbol
+              name={plan.icon}
+              size={20}
+              sx={{ color: "var(--dnsf-palette-text-primary)" }}
+            />
           )}
           <Typography variant="h6" sx={{ fontWeight: 700 }}>
             {plan.title}
@@ -92,12 +92,11 @@ function FeatureCell({ on }: { on: boolean }) {
     return <Box component="span" sx={{ color: "text.disabled" }}>-</Box>;
   }
   return (
-    <span
-      className="material-symbols-outlined"
-      style={{ fontSize: 20, color: "var(--dnsf-palette-success-main)" }}
-    >
-      check
-    </span>
+    <MaterialSymbol
+      name="check"
+      size={20}
+      sx={{ color: "var(--dnsf-palette-success-main)" }}
+    />
   );
 }
 
@@ -181,9 +180,7 @@ const columns: GridColDef<OrgRow>[] = [
     renderCell: () => (
       <ArrowTooltip title="Edit organization">
         <IconButton size="small" aria-label="Edit organization">
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-            edit
-          </span>
+          <MaterialSymbol name="edit" size={20} />
         </IconButton>
       </ArrowTooltip>
     ),
@@ -315,11 +312,7 @@ export default function SubscriptionsManagePage() {
         <Button
           variant="contained"
           color="primary"
-          startIcon={
-            <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-              add
-            </span>
-          }
+          startIcon={<MaterialSymbol name="add" size={20} />}
         >
           Add Organization
         </Button>
@@ -327,28 +320,14 @@ export default function SubscriptionsManagePage() {
           <Button
             variant="outlined"
             color="secondary"
-            startIcon={
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 20 }}
-              >
-                file_download
-              </span>
-            }
+            startIcon={<MaterialSymbol name="file_download" size={20} />}
           >
             Import Organizations
           </Button>
           <Button
             variant="outlined"
             color="secondary"
-            startIcon={
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 20 }}
-              >
-                query_stats
-              </span>
-            }
+            startIcon={<MaterialSymbol name="query_stats" size={20} />}
           >
             View Usage Summary
           </Button>

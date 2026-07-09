@@ -4,6 +4,8 @@ import Box from "@mui/material/Box";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 
+import { MaterialSymbol } from "./material-symbol";
+
 export interface StatusTabProps {
   icon: string;
   count: number;
@@ -55,16 +57,11 @@ export function StatusTab({
           size={58}
           sx={{ color }}
         />
-        <span
-          className="material-symbols-outlined"
-          style={{
-            fontSize: 24,
-            position: "absolute",
-            color: iconColorVar,
-          }}
-        >
-          {icon}
-        </span>
+        <MaterialSymbol
+          name={icon}
+          size={24}
+          sx={{ position: "absolute", color: iconColorVar }}
+        />
       </Box>
       <Box
         sx={{

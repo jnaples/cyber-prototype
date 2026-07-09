@@ -14,6 +14,7 @@ import {
 import type { Theme } from "@mui/material/styles";
 import { Fragment, useState } from "react";
 
+import { MaterialSymbol } from "@/components/material-symbol";
 import { QuantityStepper } from "@/components/quantity-stepper";
 
 type Plan = {
@@ -392,9 +393,7 @@ function OrderSummary({
               color: theme.vars.palette.Alert.successColor,
             })}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: 24 }}>
-              check
-            </span>
+            <MaterialSymbol name="check" size={24} />
           </Box>
           <Typography sx={{ fontWeight: 600, fontSize: 16 }}>
             Payment successful
@@ -649,11 +648,7 @@ function StatusChip({ status }: { status: "active" | "enterprise" }) {
   return (
     <Chip
       size="small"
-      icon={
-        <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
-          {config.icon}
-        </span>
-      }
+      icon={<MaterialSymbol name={config.icon} size={16} />}
       label={config.label}
       sx={(theme) => ({
         bgcolor: theme.vars.palette.Alert[`${config.severity}StandardBg`],

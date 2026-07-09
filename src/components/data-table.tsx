@@ -38,6 +38,8 @@ import {
 } from "@mui/x-data-grid";
 import React, { useState } from "react";
 
+import { MaterialSymbol } from "./material-symbol";
+
 const DEFAULT_PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 // ---------------------------------------------------------------------------
@@ -227,14 +229,7 @@ function TimeWindowChip({
         variant="outlined"
         color="secondary"
         onClick={(e) => setAnchorEl(e.currentTarget)}
-        endIcon={
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: 20 }}
-          >
-            arrow_drop_down
-          </span>
-        }
+        endIcon={<MaterialSymbol name="arrow_drop_down" size={20} />}
       >
         Time Window
         <span style={{ textTransform: "none", marginLeft: 4 }}>
@@ -394,11 +389,7 @@ function FilterPanelFooter() {
         variant="text"
         color="primary"
         onClick={handleAddFilter}
-        startIcon={
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-            add
-          </span>
-        }
+        startIcon={<MaterialSymbol name="add" size={20} />}
       >
         Add Filter
       </Button>
@@ -406,11 +397,7 @@ function FilterPanelFooter() {
         variant="text"
         color="primary"
         onClick={handleRemoveAll}
-        startIcon={
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-            delete
-          </span>
-        }
+        startIcon={<MaterialSymbol name="delete" size={20} />}
       >
         Remove All
       </Button>
@@ -786,12 +773,11 @@ export function DataTable({
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: 20, color: "inherit" }}
-                    >
-                      search
-                    </span>
+                    <MaterialSymbol
+                      name="search"
+                      size={20}
+                      sx={{ color: "inherit" }}
+                    />
                   </InputAdornment>
                 ),
               },
@@ -825,14 +811,7 @@ export function DataTable({
                   apiRef.current?.showFilterPanel();
                 }
               }}
-              startIcon={
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: 20 }}
-                >
-                  filter_alt
-                </span>
-              }
+              startIcon={<MaterialSymbol name="filter_alt" size={20} />}
               sx={{ color: "text.primary" }}
             >
               Filters
@@ -849,14 +828,7 @@ export function DataTable({
                   color="secondary"
                   size="medium"
                   onClick={(e) => setDefaultViewAnchorEl(e.currentTarget)}
-                  startIcon={
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: 20 }}
-                    >
-                      view_column
-                    </span>
-                  }
+                  startIcon={<MaterialSymbol name="view_column" size={20} />}
                   sx={{ px: "8px", mr: "4px" }}
                 >
                   <span style={{ marginRight: "8px" }}>
@@ -872,12 +844,7 @@ export function DataTable({
                       opacity: 0.5,
                     }}
                   />
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: 20 }}
-                  >
-                    arrow_drop_down
-                  </span>
+                  <MaterialSymbol name="arrow_drop_down" size={20} />
                 </Button>
                 <Menu
                   anchorEl={defaultViewAnchorEl}
@@ -910,14 +877,7 @@ export function DataTable({
                   color="secondary"
                   size="small"
                   onClick={(e) => setPreferencesAnchorEl(e.currentTarget)}
-                  startIcon={
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: 20 }}
-                    >
-                      tune
-                    </span>
-                  }
+                  startIcon={<MaterialSymbol name="tune" size={20} />}
                   sx={{ color: "text.primary" }}
                 >
                   Preferences
@@ -939,34 +899,19 @@ export function DataTable({
                     }}
                   >
                     <ListItemIcon sx={{ color: "text.primary" }}>
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: 20 }}
-                      >
-                        view_column
-                      </span>
+                      <MaterialSymbol name="view_column" size={20} />
                     </ListItemIcon>
                     <ListItemText>Columns</ListItemText>
                   </MenuItem>
                   <MenuItem onClick={() => setPreferencesAnchorEl(null)}>
                     <ListItemIcon sx={{ color: "text.primary" }}>
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: 20 }}
-                      >
-                        density_small
-                      </span>
+                      <MaterialSymbol name="density_small" size={20} />
                     </ListItemIcon>
                     <ListItemText>Density</ListItemText>
                   </MenuItem>
                   <MenuItem onClick={() => setPreferencesAnchorEl(null)}>
                     <ListItemIcon sx={{ color: "text.primary" }}>
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: 20 }}
-                      >
-                        save
-                      </span>
+                      <MaterialSymbol name="save" size={20} />
                     </ListItemIcon>
                     <ListItemText>Save View</ListItemText>
                   </MenuItem>
@@ -980,14 +925,7 @@ export function DataTable({
                 color="secondary"
                 size="small"
                 onClick={onExportClick}
-                startIcon={
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: 20 }}
-                  >
-                    download
-                  </span>
-                }
+                startIcon={<MaterialSymbol name="download" size={20} />}
                 sx={{ color: "text.primary" }}
               >
                 Export
@@ -1000,14 +938,7 @@ export function DataTable({
                 color="secondary"
                 size="small"
                 onClick={onRefreshClick}
-                startIcon={
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: 20 }}
-                  >
-                    refresh
-                  </span>
-                }
+                startIcon={<MaterialSymbol name="refresh" size={20} />}
               >
                 Refresh
               </Button>

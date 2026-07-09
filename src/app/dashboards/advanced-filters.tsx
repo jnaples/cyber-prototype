@@ -15,6 +15,7 @@ import {
 import { type ReactNode, useRef, useState } from "react";
 
 import { Drawer } from "@/components/drawer";
+import { MaterialSymbol } from "@/components/material-symbol";
 
 import {
   DEPLOYMENT_TYPE_OPTIONS,
@@ -161,9 +162,7 @@ function FilterRow({
     <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1.5 }}>
       <Tooltip title="Remove filter">
         <IconButton size="small" aria-label="remove filter" onClick={onRemove}>
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-            close
-          </span>
+          <MaterialSymbol name="close" size={20} />
         </IconButton>
       </Tooltip>
 
@@ -330,14 +329,7 @@ export function AdvancedFilters({
             variant="text"
             color="primary"
             onClick={addFilter}
-            startIcon={
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 20 }}
-              >
-                add
-              </span>
-            }
+            startIcon={<MaterialSymbol name="add" size={20} />}
           >
             Add Filter
           </Button>
@@ -345,14 +337,7 @@ export function AdvancedFilters({
             variant="text"
             color="error"
             onClick={removeAll}
-            startIcon={
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 20 }}
-              >
-                delete
-              </span>
-            }
+            startIcon={<MaterialSymbol name="delete" size={20} />}
           >
             Remove All
           </Button>

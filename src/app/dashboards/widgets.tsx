@@ -14,6 +14,8 @@ import {
   Typography,
 } from "@mui/material";
 
+import { MaterialSymbol } from "@/components/material-symbol";
+
 import {
   BarChart,
   Donut,
@@ -61,9 +63,7 @@ function GeoMap() {
         color: "text.disabled",
       }}
     >
-      <span className="material-symbols-outlined" style={{ fontSize: 38 }}>
-        map
-      </span>
+      <MaterialSymbol name="map" size={38} />
       <Typography
         sx={{
           fontSize: 14,
@@ -140,15 +140,11 @@ function DataTableWidget({
                         gap: 1,
                       }}
                     >
-                      <span
-                        className="material-symbols-outlined"
-                        style={{
-                          fontSize: 14,
-                          color: (r.iconColor as string) ?? "currentColor",
-                        }}
-                      >
-                        {(r.icon as string) ?? "language"}
-                      </span>
+                      <MaterialSymbol
+                        name={(r.icon as string) ?? "language"}
+                        size={14}
+                        sx={{ color: (r.iconColor as string) ?? "currentColor" }}
+                      />
                       {r[c.key]}
                     </Box>
                   ) : (

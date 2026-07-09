@@ -19,6 +19,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
+import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { sites as SITE_OPTIONS } from "@/data/query-logs";
 
@@ -120,14 +121,7 @@ function Ico({
   size?: number;
   color?: string;
 }) {
-  return (
-    <span
-      className="material-symbols-outlined"
-      style={{ fontSize: size, color, lineHeight: 1 }}
-    >
-      {name}
-    </span>
-  );
+  return <MaterialSymbol name={name} size={size} sx={{ color }} />;
 }
 
 // ---------------------------------------------------------------------------

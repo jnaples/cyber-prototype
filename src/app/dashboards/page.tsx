@@ -26,6 +26,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
+import { MaterialSymbol } from "@/components/material-symbol";
 import { Modal } from "@/components/modal";
 
 import { AddPanel } from "./add-panel";
@@ -194,11 +195,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
         <Button
           variant="contained"
           onClick={onAdd}
-          startIcon={
-            <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-              add
-            </span>
-          }
+          startIcon={<MaterialSymbol name="add" size={18} />}
         >
           Add your first widget
         </Button>
@@ -525,18 +522,16 @@ export default function DashboardsPage() {
             setToast(favorited ? "Removed from favorites" : "Added to favorites");
           }}
         >
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: 20,
+          <MaterialSymbol
+            name="star"
+            size={20}
+            sx={{
               color: favorited
                 ? "var(--dnsf-palette-warning-main)"
                 : "var(--dnsf-palette-text-disabled)",
               fontVariationSettings: favorited ? '"FILL" 1' : '"FILL" 0',
             }}
-          >
-            star
-          </span>
+          />
         </IconButton>
 
         {renaming ? (
@@ -575,15 +570,11 @@ export default function DashboardsPage() {
             <Typography variant="pageTitle" sx={{ color: "text.primary" }}>
               {name}
             </Typography>
-            <span
-              className="material-symbols-outlined"
-              style={{
-                fontSize: 18,
-                color: "var(--dnsf-palette-text-disabled)",
-              }}
-            >
-              {switcherAnchor ? "expand_less" : "expand_more"}
-            </span>
+            <MaterialSymbol
+              name={switcherAnchor ? "expand_less" : "expand_more"}
+              size={18}
+              sx={{ color: "var(--dnsf-palette-text-disabled)" }}
+            />
           </Box>
         )}
 
@@ -647,12 +638,7 @@ export default function DashboardsPage() {
               setSwitcherAnchor(null);
             }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16, marginRight: 8, opacity: 0.7 }}
-            >
-              edit
-            </span>
+            <MaterialSymbol name="edit" size={16} sx={{ mr: "8px", opacity: 0.7 }} />
             Rename
           </MenuItem>
           <MenuItem
@@ -676,12 +662,11 @@ export default function DashboardsPage() {
               setToast(`${name} set as default`);
             }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16, marginRight: 8, opacity: 0.7 }}
-            >
-              check_circle
-            </span>
+            <MaterialSymbol
+              name="check_circle"
+              size={16}
+              sx={{ mr: "8px", opacity: 0.7 }}
+            />
             Set as default
           </MenuItem>
 
@@ -689,12 +674,7 @@ export default function DashboardsPage() {
 
           {/* Share band */}
           <MenuItem onClick={() => setActionsAnchor(null)}>
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16, marginRight: 8, opacity: 0.7 }}
-            >
-              share
-            </span>
+            <MaterialSymbol name="share" size={16} sx={{ mr: "8px", opacity: 0.7 }} />
             Share
           </MenuItem>
 
@@ -706,12 +686,11 @@ export default function DashboardsPage() {
               setResetOpen(true);
             }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16, marginRight: 8, opacity: 0.7 }}
-            >
-              restart_alt
-            </span>
+            <MaterialSymbol
+              name="restart_alt"
+              size={16}
+              sx={{ mr: "8px", opacity: 0.7 }}
+            />
             Reset to app default
           </MenuItem>
 
@@ -725,12 +704,7 @@ export default function DashboardsPage() {
             }}
             sx={{ color: "error.main" }}
           >
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16, marginRight: 8 }}
-            >
-              delete
-            </span>
+            <MaterialSymbol name="delete" size={16} sx={{ mr: "8px" }} />
             Delete
           </MenuItem>
         </Menu>
@@ -761,14 +735,7 @@ export default function DashboardsPage() {
               variant="outlined"
               color="secondary"
               onClick={() => setEditMode(true)}
-              startIcon={
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: 16 }}
-                >
-                  edit
-                </span>
-              }
+              startIcon={<MaterialSymbol name="edit" size={16} />}
             >
               Edit
             </Button>
@@ -776,14 +743,7 @@ export default function DashboardsPage() {
               variant="contained"
               color="primary"
               onClick={() => setAddOpen(true)}
-              startIcon={
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: 16 }}
-                >
-                  add
-                </span>
-              }
+              startIcon={<MaterialSymbol name="add" size={16} />}
             >
               Add widget
             </Button>
@@ -808,14 +768,7 @@ export default function DashboardsPage() {
           color="secondary"
           size="small"
           onClick={() => setQuickFiltersOpen(true)}
-          startIcon={
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16 }}
-            >
-              filter_alt
-            </span>
-          }
+          startIcon={<MaterialSymbol name="filter_alt" size={16} />}
         >
           Quick filters
         </Button>
@@ -825,14 +778,7 @@ export default function DashboardsPage() {
           color="secondary"
           size="small"
           onClick={() => setAdvancedFiltersOpen(true)}
-          startIcon={
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 16 }}
-            >
-              tune
-            </span>
-          }
+          startIcon={<MaterialSymbol name="tune" size={16} />}
         >
           Advanced filters
         </Button>
@@ -850,12 +796,7 @@ export default function DashboardsPage() {
             {autosave === "saving" ? (
               <CircularProgress size={20} color="inherit" />
             ) : (
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 20 }}
-              >
-                check
-              </span>
+              <MaterialSymbol name="check" size={20} />
             )}
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
               {autosave === "saving" ? "Autosaving" : "Autosaved"}
@@ -866,14 +807,7 @@ export default function DashboardsPage() {
           variant="text"
           color="secondary"
           size="small"
-          startIcon={
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: 20 }}
-            >
-              refresh
-            </span>
-          }
+          startIcon={<MaterialSymbol name="refresh" size={20} />}
         >
           Refresh
         </Button>

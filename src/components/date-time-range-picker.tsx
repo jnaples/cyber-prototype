@@ -13,6 +13,8 @@ import { DateTimeRangePicker as MuiDateTimeRangePicker } from "@mui/x-date-picke
 import type { PickersShortcutsItem } from "@mui/x-date-pickers-pro";
 import type { DateRange } from "@mui/x-date-pickers-pro/models";
 
+import { MaterialSymbol } from "./material-symbol";
+
 export type DateTimeRangePickerShortcut = PickersShortcutsItem<DateRange<Date>>;
 
 export type DateTimeRangePickerValue = DateRange<Date>;
@@ -112,12 +114,7 @@ export function DateTimeRangePicker({
             readOnly: true,
             startAdornment: (
               <InputAdornment position="start">
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: 20 }}
-                >
-                  date_range
-                </span>
+                <MaterialSymbol name="date_range" size={20} />
               </InputAdornment>
             ),
           },

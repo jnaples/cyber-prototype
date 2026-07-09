@@ -2,6 +2,8 @@ import Fab from "@mui/material/Fab";
 import { useColorScheme, useTheme } from "@mui/material/styles";
 import Tooltip from "@mui/material/Tooltip";
 
+import { MaterialSymbol } from "../material-symbol";
+
 function Icon({
   name,
   size = 24,
@@ -11,17 +13,7 @@ function Icon({
   size?: number;
   color?: string;
 }) {
-  return (
-    <span
-      className="material-symbols-outlined"
-      style={{
-        fontSize: size,
-        color: color,
-      }}
-    >
-      {name}
-    </span>
-  );
+  return <MaterialSymbol name={name} size={size} sx={{ color: color }} />;
 }
 
 export const ThemeModeToggle = ({ inline }: { inline?: boolean }) => {

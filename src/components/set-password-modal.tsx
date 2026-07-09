@@ -17,6 +17,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { MaterialSymbol } from "./material-symbol";
+
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
@@ -142,9 +144,9 @@ export function SetPasswordModal({ open, onClose, onSubmit }: SetPasswordModalPr
                       onClick={() => setShowTemporary((v) => !v)}
                       edge="end"
                     >
-                      <span className="material-symbols-outlined">
-                        {showTemporary ? "visibility_off" : "visibility"}
-                      </span>
+                      <MaterialSymbol
+                        name={showTemporary ? "visibility_off" : "visibility"}
+                      />
                     </IconButton>
                   </InputAdornment>
                 }
@@ -180,9 +182,9 @@ export function SetPasswordModal({ open, onClose, onSubmit }: SetPasswordModalPr
                         onClick={() => setShowNew((v) => !v)}
                         edge="end"
                       >
-                        <span className="material-symbols-outlined">
-                          {showNew ? "visibility_off" : "visibility"}
-                        </span>
+                        <MaterialSymbol
+                          name={showNew ? "visibility_off" : "visibility"}
+                        />
                       </IconButton>
                     </InputAdornment>
                   }
@@ -216,9 +218,9 @@ export function SetPasswordModal({ open, onClose, onSubmit }: SetPasswordModalPr
                         onClick={() => setShowConfirm((v) => !v)}
                         edge="end"
                       >
-                        <span className="material-symbols-outlined">
-                          {showConfirm ? "visibility_off" : "visibility"}
-                        </span>
+                        <MaterialSymbol
+                          name={showConfirm ? "visibility_off" : "visibility"}
+                        />
                       </IconButton>
                     </InputAdornment>
                   }

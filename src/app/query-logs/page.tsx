@@ -38,6 +38,7 @@ import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
 import { CustomDateTimeRangePicker } from "@/components/custom-date-time-range-picker";
 import type { CustomDateTimeRangePickerValue } from "@/components/custom-date-time-range-picker";
 import { EmptyState } from "@/components/empty-state";
+import { MaterialSymbol } from "@/components/material-symbol";
 import { Modal } from "@/components/modal";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 import { PILL_CHIP_RADIUS } from "@/theme/core/components/chip";
@@ -139,9 +140,7 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
           aria-label="Investigate Query Log"
           onClick={() => setInvestigateOpen(true)}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-            manage_search
-          </span>
+          <MaterialSymbol name="manage_search" size={20} />
         </IconButton>
       </ArrowTooltip>
       <IconButton
@@ -149,9 +148,7 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
         aria-label="more options"
         onClick={(e) => setAnchorEl(e.currentTarget)}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-          more_horiz
-        </span>
+        <MaterialSymbol name="more_horiz" size={20} />
       </IconButton>
       <Menu
         anchorEl={anchorEl}
@@ -306,12 +303,10 @@ const columns: GridColDef[] = [
             variant="outlined"
             color={allowed ? "success" : "error"}
             icon={
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: 16 }}
-              >
-                {allowed ? "check" : "block"}
-              </span>
+              <MaterialSymbol
+                name={allowed ? "check" : "block"}
+                size={16}
+              />
             }
             label={params.value}
             sx={{ borderRadius: PILL_CHIP_RADIUS }}
@@ -1234,12 +1229,7 @@ export default function QueryLogsPage() {
                           input: {
                             startAdornment: (
                               <InputAdornment position="start">
-                                <span
-                                  className="material-symbols-outlined"
-                                  style={{ fontSize: 20 }}
-                                >
-                                  date_range
-                                </span>
+                                <MaterialSymbol name="date_range" size={20} />
                               </InputAdornment>
                             ),
                           },
@@ -1304,12 +1294,7 @@ export default function QueryLogsPage() {
                     color="secondary"
                     size="small"
                     startIcon={
-                      <span
-                        className="material-symbols-outlined"
-                        style={{ fontSize: 16 }}
-                      >
-                        refresh
-                      </span>
+                      <MaterialSymbol name="refresh" size={16} />
                     }
                   >
                     Refresh
@@ -1367,12 +1352,7 @@ export default function QueryLogsPage() {
                       variant="text"
                       color="primary"
                       startIcon={
-                        <span
-                          className="material-symbols-outlined"
-                          style={{ fontSize: 18 }}
-                        >
-                          edit
-                        </span>
+                        <MaterialSymbol name="edit" size={18} />
                       }
                     >
                       Edit

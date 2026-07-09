@@ -4,6 +4,7 @@ import type { Theme } from "@mui/material/styles";
 import React from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 
+import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 
@@ -90,14 +91,7 @@ export default function UnblockRequestsLayout() {
                 <Tab
                   key={tab.path}
                   label={tab.label}
-                  icon={
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: 20 }}
-                    >
-                      {tab.icon}
-                    </span>
-                  }
+                  icon={<MaterialSymbol name={tab.icon} size={20} />}
                   sx={selectedTabSx}
                 />
               ))}

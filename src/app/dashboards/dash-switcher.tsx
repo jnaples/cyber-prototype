@@ -16,6 +16,8 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
+import { MaterialSymbol } from "@/components/material-symbol";
+
 import { DASHBOARD_NAMES } from "./lib";
 
 const ALL_DASHBOARDS = DASHBOARD_NAMES;
@@ -98,15 +100,11 @@ function DashRow({
             })),
         })}
       >
-        <span
-          className="material-symbols-outlined"
-          style={{
-            fontSize: 20,
-            fontVariationSettings: isFav ? '"FILL" 1' : '"FILL" 0',
-          }}
-        >
-          star
-        </span>
+        <MaterialSymbol
+          name="star"
+          size={20}
+          sx={{ fontVariationSettings: isFav ? '"FILL" 1' : '"FILL" 0' }}
+        />
       </IconButton>
     </Box>
   );
@@ -178,15 +176,11 @@ export function DashSwitcher({
                 input: {
                   endAdornment: (
                     <InputAdornment position="end">
-                      <span
-                        className="material-symbols-outlined"
-                        style={{
-                          fontSize: 18,
-                          color: "var(--dnsf-palette-text-disabled)",
-                        }}
-                      >
-                        search
-                      </span>
+                      <MaterialSymbol
+                        name="search"
+                        size={18}
+                        sx={{ color: "var(--dnsf-palette-text-disabled)" }}
+                      />
                     </InputAdornment>
                   ),
                 },
@@ -262,14 +256,7 @@ export function DashSwitcher({
               color="secondary"
               fullWidth
               onClick={onCreate}
-              startIcon={
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: 16 }}
-                >
-                  add
-                </span>
-              }
+              startIcon={<MaterialSymbol name="add" size={16} />}
               sx={{ justifyContent: "flex-start" }}
             >
               Create dashboard
@@ -279,14 +266,7 @@ export function DashSwitcher({
               color="secondary"
               fullWidth
               onClick={onManage}
-              startIcon={
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: 16 }}
-                >
-                  dashboard
-                </span>
-              }
+              startIcon={<MaterialSymbol name="dashboard" size={16} />}
               sx={{ justifyContent: "flex-start" }}
             >
               Manage Dashboards

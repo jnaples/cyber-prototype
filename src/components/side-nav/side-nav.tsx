@@ -11,6 +11,8 @@ import { MspBadge } from "@/components/msp-badge";
 import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { lightPalette } from "@/theme/core/palette";
 
+import { MaterialSymbol } from "../material-symbol";
+
 // Material Symbol icon component
 function Icon({
   name,
@@ -24,10 +26,10 @@ function Icon({
   style?: React.CSSProperties;
 }) {
   return (
-    <span
-      className="material-symbols-outlined"
-      style={{
-        fontSize: size,
+    <MaterialSymbol
+      name={name}
+      size={size}
+      sx={{
         width: size,
         height: size,
         display: "inline-flex",
@@ -36,9 +38,7 @@ function Icon({
         color: color,
         ...style,
       }}
-    >
-      {name}
-    </span>
+    />
   );
 }
 

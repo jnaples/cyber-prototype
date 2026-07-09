@@ -9,6 +9,8 @@ import { BarChart as MuiBarChart } from "@mui/x-charts/BarChart";
 import { LineChart as MuiLineChart } from "@mui/x-charts/LineChart";
 import { PieChart } from "@mui/x-charts/PieChart";
 
+import { MaterialSymbol } from "@/components/material-symbol";
+
 import {
   fmt,
   PAL,
@@ -53,9 +55,7 @@ export function StatCard({
       }}
     >
       <Box sx={{ display: "flex", color }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 40 }}>
-          {icon}
-        </span>
+        <MaterialSymbol name={icon} size={40} />
       </Box>
       <Typography
         sx={{
@@ -113,9 +113,7 @@ export function FractionCard({
       }}
     >
       <Box sx={{ display: "flex", color }}>
-        <span className="material-symbols-outlined" style={{ fontSize: 40 }}>
-          {icon}
-        </span>
+        <MaterialSymbol name={icon} size={40} />
       </Box>
       <Typography
         sx={{

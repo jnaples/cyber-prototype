@@ -1,34 +1,9 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 
+import { MaterialSymbol } from "@/components/material-symbol";
+
 import { GeoActivityGlobe } from "./geo-activity-globe";
-
-type MaterialSymbolProps = {
-  icon: string;
-  size?: number;
-  color?: string;
-  weight?: 100 | 200 | 300 | 400 | 500 | 600 | 700;
-};
-
-function MaterialSymbol({
-  icon,
-  size = 48,
-  color,
-  weight = 700,
-}: MaterialSymbolProps) {
-  return (
-    <span
-      className="material-symbols-outlined"
-      style={{
-        fontSize: size,
-        color: color,
-        fontVariationSettings: `'wght' ${weight}`,
-      }}
-    >
-      {icon}
-    </span>
-  );
-}
 
 type StatCardProps = {
   icon: string;
@@ -51,7 +26,11 @@ function StatCard({ icon, value, label, color }: StatCardProps) {
         }}
       >
         <Box sx={{ mb: 2 }}>
-          <MaterialSymbol icon={icon} color={color} />
+          <MaterialSymbol
+            name={icon}
+            size={48}
+            sx={{ color, fontVariationSettings: "'wght' 700" }}
+          />
         </Box>
         <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5 }}>
           {value}
@@ -308,13 +287,11 @@ export default function Page() {
                   gap: 1.5,
                 }}
               >
-                <Box
-                  component="span"
-                  className="material-symbols-outlined"
-                  sx={{ fontSize: 40, color: "text.primary" }}
-                >
-                  map
-                </Box>
+                <MaterialSymbol
+                  name="map"
+                  size={40}
+                  sx={{ color: "text.primary" }}
+                />
                 <Typography
                   sx={{
                     fontWeight: 700,
