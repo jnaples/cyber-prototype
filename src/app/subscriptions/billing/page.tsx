@@ -403,20 +403,11 @@ export default function BillingPage() {
             gap: 0.5,
             cursor: "pointer",
             color: "text.primary",
-            fontWeight: 600,
+            fontWeight: 700,
             fontSize: 14,
           }}
         >
           {detailsOpen ? "Hide details" : "View details"}
-          <span
-            className="material-symbols-outlined"
-            style={{
-              fontSize: 18,
-              color: "var(--dnsf-palette-text-secondary)",
-            }}
-          >
-            {detailsOpen ? "expand_less" : "expand_more"}
-          </span>
         </Box>
 
         <Collapse in={detailsOpen}>

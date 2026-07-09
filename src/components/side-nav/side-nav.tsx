@@ -355,10 +355,13 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           {/* Policies Links */}
           <Box sx={getDropdownWrapperStyles("policies")}>
             {withCollapsedTooltip(
-              "Policies",
+              "Global Policies",
               <Box
                 sx={getItemStyles("policies", expandedDropdown === "policies")}
-                onClick={() => handleDropdownToggle("policies")}
+                onClick={() => {
+                  handleDropdownToggle("policies");
+                  navigate("/global-policies");
+                }}
               >
               {isExpanded && (
                 <>
@@ -376,7 +379,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                       <Box sx={{ my: 0.5, ml: 1 }}>
                         {" "}
                         {/* Added ml for some spacing */}
-                        <span>Policies</span>
+                        <span>Global Policies</span>
                       </Box>
                       {/* Pink dot signifying a nested badge (Unblock Requests). */}
                       <Box

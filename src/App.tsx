@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router";
 
 import RootLayout from "@/app/layout";
 import CybersightPage from "@/app/cybersight/page";
+import GlobalPoliciesPage from "@/app/global-policies/page";
 import SecureShieldPage from "@/app/secureshield/page";
 import DeploymentsLayout from "@/app/deployments/layout";
 import DeploymentsIndexPage from "@/app/deployments/page";
@@ -36,6 +37,7 @@ function App() {
       <Route index element={<HomePage />} />
       <Route element={<RootLayout />}>
         <Route path="overview" element={<OverviewPage />} />
+        <Route path="global-policies" element={<GlobalPoliciesPage />} />
         <Route path="dashboards" element={<DashboardsPage />} />
         <Route path="dashboards/manage" element={<ManageDashboardsPage />} />
         <Route path="cybersight" element={<CybersightPage />} />

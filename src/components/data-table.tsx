@@ -743,6 +743,9 @@ export function DataTable({
       `& .MuiDataGrid-columnHeader[data-field='${pinnedShadowFields.left}']`
     ] = {
       boxShadow: "rgba(0, 0, 0, 0.21) 2px 0px 4px -2px",
+      // Sit above the neighbouring header so its opaque background does not
+      // paint over this column's right-side shadow.
+      zIndex: 1,
     };
   }
   if (pinnedShadowFields?.right) {
