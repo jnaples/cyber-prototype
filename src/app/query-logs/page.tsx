@@ -44,6 +44,11 @@ import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+import { AdvancedFilters } from "@/app/dashboards/advanced-filters";
+import type {
+  AppliedAdvancedFilter,
+  FilterColumn,
+} from "@/app/dashboards/advanced-filters";
 import { InvestigateBanner } from "@/app/query-logs/investigate-banner";
 import {
   queryLogRows,
@@ -53,6 +58,55 @@ import {
   users,
 } from "@/data/query-logs";
 import type { QueryLogRow } from "@/data/query-logs";
+
+// Advanced-filter columns for the Query Logs grid — every filterable table
+// column (Time and Actions excluded). Columns with a fixed value set get a
+// dropdown; the rest use a free-text "contains" input.
+const QUERY_LOG_FILTER_COLUMNS: FilterColumn[] = [
+  { field: "fqdn", label: "FQDN" },
+  { field: "domain", label: "Domain" },
+  { field: "result", label: "Result", options: ["Allowed", "Blocked"] },
+  { field: "method", label: "Method" },
+  { field: "categories", label: "Categories" },
+  { field: "threat", label: "Threat" },
+  { field: "application", label: "Application" },
+  { field: "site", label: "Site" },
+  { field: "deployment", label: "Deployment" },
+  { field: "deploymentType", label: "Deployment Type" },
+  { field: "agentName", label: "Agent Name" },
+  { field: "localUserName", label: "Local User Name" },
+  { field: "localIpv4", label: "Local IPv4 Address" },
+  { field: "requestAddress", label: "Request Address" },
+  { field: "resolvedIp", label: "Resolved IPs" },
+  {
+    field: "queryType",
+    label: "Query Type",
+    options: ["A", "AAAA", "CNAME", "MX", "TXT", "PTR", "NS"],
+  },
+  { field: "lookupType", label: "Lookup Type" },
+  { field: "resolver", label: "Resolver" },
+  { field: "policy", label: "Policy" },
+  { field: "scheduledPolicyName", label: "Scheduled Policy Name" },
+];
+
+// Does a row satisfy every applied advanced filter? (AND across rows; each is a
+// case-insensitive contains / does-not-contain on the mapped column.)
+function rowMatchesAdvancedFilters(
+  row: QueryLogRow,
+  filters: AppliedAdvancedFilter[],
+): boolean {
+  return filters.every((f) => {
+    const field = QUERY_LOG_FILTER_COLUMNS.find(
+      (c) => c.label === f.fieldLabel,
+    )?.field;
+    if (!field) return true;
+    const cell = String(
+      (row as Record<string, unknown>)[field] ?? "",
+    ).toLowerCase();
+    const contains = cell.includes(f.value.toLowerCase());
+    return f.operatorLabel === "does not contain" ? !contains : contains;
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Row actions menu (placeholder items — wire up later)
@@ -603,6 +657,12 @@ function buildVisibilityModel(
 // ---------------------------------------------------------------------------
 
 export default function QueryLogsPage() {
+  // "More Filters" opens the shared advanced-filters drawer (scoped to the
+  // Query Logs columns); the applied rows drive the button's count.
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [appliedAdvancedFilters, setAppliedAdvancedFilters] = useState<
+    AppliedAdvancedFilter[]
+  >([]);
   const [cardTab, setCardTab] = useState(0);
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
   const [appliedOrg, setAppliedOrg] = useState<string | null>(null);
@@ -795,9 +855,9 @@ export default function QueryLogsPage() {
   const startMs = startDate?.getTime() ?? 0;
   const endMs = endDate?.getTime() ?? Number.POSITIVE_INFINITY;
   const rowsInRange = hasData
-    ? queryLogRows.filter(
-        (r) => r.timestampMs >= startMs && r.timestampMs <= endMs,
-      )
+    ? queryLogRows
+        .filter((r) => r.timestampMs >= startMs && r.timestampMs <= endMs)
+        .filter((r) => rowMatchesAdvancedFilters(r, appliedAdvancedFilters))
     : [];
   // While investigating, the grid is filtered to a ±window around the anchor;
   // narrow the rows the tab counts + result tabs are computed from so they
@@ -871,6 +931,14 @@ export default function QueryLogsPage() {
     }, FETCH_DELAY_MS);
   };
 
+  // Applying advanced filters mimics a fetch: show the grid spinner for ~1s.
+  const handleAdvancedApply = (applied: AppliedAdvancedFilter[]) => {
+    setAppliedAdvancedFilters(applied);
+    setCardTab(0);
+    setIsFetching(true);
+    window.setTimeout(() => setIsFetching(false), 1000);
+  };
+
   const handleClear = () => {
     exitInvestigation();
     setSelectedOrg(null);
@@ -882,6 +950,7 @@ export default function QueryLogsPage() {
     setDateRange(getRangeForPreset("Last 15 minutes") ?? [null, null]);
     setRevertState(null);
     setAppliedSnapshot(null);
+    setAppliedAdvancedFilters([]);
   };
 
   return (
@@ -1184,7 +1253,7 @@ export default function QueryLogsPage() {
               <Box
                 sx={{
                   display: "grid",
-                  gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
+                  gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
                   gap: 2,
                 }}
               >
@@ -1346,6 +1415,21 @@ export default function QueryLogsPage() {
                     )}
                   </Box>
                 </ArrowTooltip>
+                <ArrowTooltip title={filtersDisabledTooltip}>
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <Button
+                      variant="text"
+                      color="secondary"
+                      disabled={filtersDisabled}
+                      onClick={() => setAdvancedOpen(true)}
+                      startIcon={<MaterialSymbol name="tune" size={20} />}
+                    >
+                      {appliedAdvancedFilters.length > 0
+                        ? `Advanced Filters (${appliedAdvancedFilters.length})`
+                        : "Advanced Filters"}
+                    </Button>
+                  </Box>
+                </ArrowTooltip>
               </Box>
               <Box
                 sx={{
@@ -1448,6 +1532,7 @@ export default function QueryLogsPage() {
                 : NoResultsOverlay
             }
             showSearch={false}
+            showFilters={false}
             timeRangeField="time"
             pinnedShadowFields={{ left: "time", right: "actions" }}
             columnVisibilityModel={columnVisibilityModel}
@@ -1491,6 +1576,16 @@ export default function QueryLogsPage() {
             }
           />
         </TabbedDataCard>
+
+        <AdvancedFilters
+          open={advancedOpen}
+          onClose={() => setAdvancedOpen(false)}
+          columns={QUERY_LOG_FILTER_COLUMNS}
+          onApply={handleAdvancedApply}
+          seedFilters={appliedAdvancedFilters}
+          applyLabel="Done"
+          title="Advanced Filters"
+        />
       </PageShell>
     </InvestigateContext.Provider>
   );

@@ -53,7 +53,7 @@ function MultiSelect({
 
   return (
     <FormControl fullWidth size="small">
-      <FormLabel sx={{ mb: 0.5 }}>{label}</FormLabel>
+      <FormLabel>{label}</FormLabel>
       <Select
         multiple
         displayEmpty
@@ -133,7 +133,7 @@ export function QuickFilters({
       />
 
       <FormControl fullWidth size="small">
-        <FormLabel sx={{ mb: 0.5 }}>Time range</FormLabel>
+        <FormLabel>Time range</FormLabel>
         <Select
           value={draft.timeRange}
           onChange={(e) =>

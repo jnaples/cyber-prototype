@@ -12,7 +12,7 @@ import {
   TextField,
   Tooltip,
 } from "@mui/material";
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { Drawer } from "@/components/drawer";
 import { MaterialSymbol } from "@/components/material-symbol";
@@ -130,7 +130,7 @@ function Field({
 }) {
   return (
     <Box
-      sx={{ flex: 1, minWidth: 120, display: "flex", flexDirection: "column", gap: 0.5 }}
+      sx={{ flex: 1, minWidth: 120, display: "flex", flexDirection: "column" }}
     >
       <FormLabel>{label}</FormLabel>
       {children}
@@ -145,6 +145,7 @@ function FilterRow({
   columns,
   onChange,
   onRemove,
+  onEnter,
 }: {
   item: FilterItem;
   index: number;
@@ -152,6 +153,8 @@ function FilterRow({
   columns: FilterColumn[];
   onChange: (next: FilterItem) => void;
   onRemove: () => void;
+  /** Fired when Enter is pressed in the free-text value field. */
+  onEnter: () => void;
 }) {
   const column = columnByField(item.field, columns);
 
@@ -239,6 +242,12 @@ function FilterRow({
             placeholder="Enter value"
             value={item.value}
             onChange={(e) => onChange({ ...item, value: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                onEnter();
+              }
+            }}
           />
         )}
       </Field>
@@ -263,6 +272,9 @@ export function AdvancedFilters({
   onClose,
   onApply,
   columns = DASHBOARD_FILTER_COLUMNS,
+  applyLabel = "Apply",
+  title = "Advanced Filters",
+  seedFilters,
 }: {
   open: boolean;
   onClose: () => void;
@@ -270,21 +282,42 @@ export function AdvancedFilters({
   onApply?: (applied: AppliedAdvancedFilter[]) => void;
   /** Filterable columns; defaults to the dashboard dimensions. */
   columns?: FilterColumn[];
+  /** Label for the primary (apply) button. */
+  applyLabel?: string;
+  /** Drawer title. */
+  title?: string;
+  /**
+   * Previously-applied filters to restore when the drawer opens, so applied
+   * filters persist until edited here or cleared upstream. Omit to always open
+   * with a single empty row.
+   */
+  seedFilters?: AppliedAdvancedFilter[];
 }) {
   const firstField = columns[0].field;
-  // Row ids: the seed row reuses id 0 (rows are cleared between opens), while
-  // Add Filter pulls fresh ids from a ref counter inside the event handler.
-  const nextId = useRef(1);
-  const newId = () => nextId.current++;
-  const [items, setItems] = useState<FilterItem[]>(() => [
-    makeItem(0, firstField),
-  ]);
 
-  // Re-seed to a single empty row whenever the drawer opens.
+  // Rebuild editable rows from previously-applied filters (label → field /
+  // operator via the column + operator lists).
+  const rowsFromSeed = (): FilterItem[] =>
+    seedFilters && seedFilters.length > 0
+      ? seedFilters.map((f, i) => ({
+          id: i,
+          field:
+            columns.find((c) => c.label === f.fieldLabel)?.field ?? firstField,
+          operator:
+            OPERATORS.find((o) => o.label === f.operatorLabel)?.value ??
+            OPERATORS[0].value,
+          value: f.value,
+          conjunction: "And" as Conjunction,
+        }))
+      : [makeItem(0, firstField)];
+  // Row ids: the seed row reuses id 0 (rows are cleared between opens), while
+  const [items, setItems] = useState<FilterItem[]>(rowsFromSeed);
+
+  // Re-seed from the applied filters (or a single empty row) on each open.
   const [wasOpen, setWasOpen] = useState(open);
   if (open !== wasOpen) {
     setWasOpen(open);
-    if (open) setItems([makeItem(0, firstField)]);
+    if (open) setItems(rowsFromSeed());
   }
 
   const updateItem = (id: number, next: FilterItem) =>
@@ -293,8 +326,12 @@ export function AdvancedFilters({
   const removeItem = (id: number) =>
     setItems((prev) => prev.filter((it) => it.id !== id));
 
+  // Fresh id = one past the current max, so ids stay unique after re-seeding.
   const addFilter = () =>
-    setItems((prev) => [...prev, makeItem(newId(), firstField)]);
+    setItems((prev) => [
+      ...prev,
+      makeItem(prev.reduce((m, it) => Math.max(m, it.id), -1) + 1, firstField),
+    ]);
 
   const removeAll = () => setItems([]);
 
@@ -317,9 +354,9 @@ export function AdvancedFilters({
       open={open}
       onClose={onClose}
       size="large"
-      title="Advanced Filters"
+      title={title}
       secondaryAction={{ label: "Cancel", onClick: onClose }}
-      primaryAction={{ label: "Apply", onClick: handleApply }}
+      primaryAction={{ label: applyLabel, onClick: handleApply }}
     >
       <Box>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -332,6 +369,7 @@ export function AdvancedFilters({
               columns={columns}
               onChange={(next) => updateItem(item.id, next)}
               onRemove={() => removeItem(item.id)}
+              onEnter={addFilter}
             />
           ))}
         </Box>
