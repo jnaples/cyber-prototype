@@ -152,9 +152,11 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
           ) : (
             <>
               <Box component="span" sx={{ fontWeight: 700 }}>
-                Investigate Mode:
-              </Box>{" "}
-              See all activity in an adjustable time window around this query.
+                Investigate Mode
+              </Box>
+              <br />
+              Filters the query log to the deployment associated with this row,
+              displaying all DNS activity within an adjustable time window.
             </>
           )
         }
@@ -780,7 +782,7 @@ export default function QueryLogsPage() {
 
   const investigating = Boolean(investigation);
   const investigateLockTooltip =
-    "Filters are locked while investigating a query. Exit Investigate Mode to change them.";
+    "Filters locked during query investigation. Exit the investigation to modify filters.";
   const filtersDisabled = !selectedOrg || investigating;
   const filtersDisabledTooltip = investigating
     ? investigateLockTooltip
