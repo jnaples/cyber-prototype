@@ -614,6 +614,18 @@ export interface DataTableProps {
   pinnedShadowFields?: { left?: string; right?: string };
   /** Grouped column headers (e.g. spanning header over several columns). */
   columnGroupingModel?: DataGridProps["columnGroupingModel"];
+  /**
+   * Provide an external grid api ref to drive the grid from outside (e.g. apply
+   * a filter from a control rendered elsewhere on the page). Defaults to an
+   * internally-created ref.
+   */
+  apiRef?: ReturnType<typeof useGridApiRef>;
+  /**
+   * Filter item ids to omit from the Active Filters bar (the filter still
+   * applies to the grid — it's just represented elsewhere, e.g. the Investigate
+   * Mode banner owns its time-window filter).
+   */
+  hiddenFilterIds?: ReadonlyArray<string | number>;
   sx?: DataGridProps["sx"];
 }
 
@@ -654,9 +666,12 @@ export function DataTable({
   bulkActions,
   pinnedShadowFields,
   columnGroupingModel,
+  apiRef: apiRefProp,
+  hiddenFilterIds,
   sx: sxOverrides,
 }: DataTableProps) {
-  const apiRef = useGridApiRef();
+  const internalApiRef = useGridApiRef();
+  const apiRef = apiRefProp ?? internalApiRef;
   const [searchQuery, setSearchQuery] = useState("");
   const [preferencesAnchorEl, setPreferencesAnchorEl] =
     useState<null | HTMLElement>(null);
@@ -684,7 +699,11 @@ export function DataTable({
   const [filterModel, setFilterModel] = useState<GridFilterModel>({
     items: [],
   });
-  const activeFilterItems = filterModel.items.filter(hasFilterValue);
+  const activeFilterItems = filterModel.items
+    .filter(hasFilterValue)
+    .filter(
+      (it) => it.id === undefined || !hiddenFilterIds?.includes(it.id),
+    );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
