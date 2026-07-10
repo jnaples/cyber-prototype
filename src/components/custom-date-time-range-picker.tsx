@@ -390,7 +390,7 @@ export function CustomDateTimeRangePicker({
                   onClick={handleApply}
                   sx={{ fontWeight: 700, letterSpacing: "0.46px" }}
                 >
-                  Apply
+                  Done
                 </Button>
               </Box>
             </Box>
