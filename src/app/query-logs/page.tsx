@@ -134,6 +134,8 @@ function FqdnCell({ row }: { row: QueryLogRow }) {
 function RowActionsCell({ row }: { row: QueryLogRow }) {
   const investigateCtx = useContext(InvestigateContext);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  // Only one investigation at a time — lock the icon on every row while active.
+  const investigating = investigateCtx?.investigatedRowId != null;
 
   return (
     <Box
@@ -145,21 +147,38 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
     >
       <ArrowTooltip
         title={
-          <>
-            <Box component="span" sx={{ fontWeight: 700 }}>
-              Investigate Mode:
-            </Box>{" "}
-            See all activity in an adjustable time window around this query.
-          </>
+          investigating ? (
+            "An investigation is already active. Exit it to investigate this query."
+          ) : (
+            <>
+              <Box component="span" sx={{ fontWeight: 700 }}>
+                Investigate Mode:
+              </Box>{" "}
+              See all activity in an adjustable time window around this query.
+            </>
+          )
         }
       >
-        <IconButton
-          size="small"
-          aria-label="Investigate Mode"
-          onClick={() => investigateCtx?.startInvestigation(row)}
+        <Box
+          component="span"
+          sx={{
+            display: "inline-flex",
+            cursor: investigating ? "not-allowed" : undefined,
+          }}
         >
-          <MaterialSymbol name="manage_search" size={20} />
-        </IconButton>
+          <IconButton
+            size="small"
+            aria-label="Investigate Mode"
+            disabled={investigating}
+            onClick={() => investigateCtx?.startInvestigation(row)}
+          >
+            <MaterialSymbol
+              name="manage_search"
+              size={20}
+              sx={{ color: investigating ? "action.disabled" : undefined }}
+            />
+          </IconButton>
+        </Box>
       </ArrowTooltip>
       <IconButton
         size="small"

@@ -5,7 +5,6 @@ import {
   Chip,
   Divider,
   FormControl,
-  FormLabel,
   IconButton,
   InputAdornment,
   ListItemText,
@@ -14,10 +13,10 @@ import {
   MenuItem,
   Select,
   TextField,
-  Typography,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 import Box from "@mui/material/Box";
+import { alpha } from "@mui/material/styles";
 import type { Theme } from "@mui/material/styles";
 import type {
   GridColDef,
@@ -25,14 +24,13 @@ import type {
   GridFilterOperator,
   GridRowSelectionModel,
 } from "@mui/x-data-grid";
-import { getGridStringOperators, useGridApiContext } from "@mui/x-data-grid";
+import { getGridStringOperators, useGridApiRef } from "@mui/x-data-grid";
 import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import { endOfDay, startOfDay, subDays, subHours, subMinutes } from "date-fns";
 import { createContext, useContext, useState } from "react";
 
-import { AdvancedFilters } from "@/app/dashboards/advanced-filters";
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
@@ -40,13 +38,15 @@ import { CustomDateTimeRangePicker } from "@/components/custom-date-time-range-p
 import type { CustomDateTimeRangePickerValue } from "@/components/custom-date-time-range-picker";
 import { EmptyState } from "@/components/empty-state";
 import { MaterialSymbol } from "@/components/material-symbol";
-import { Modal } from "@/components/modal";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 import { PILL_CHIP_RADIUS } from "@/theme/core/components/chip";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+import { AdvancedFilters } from "@/app/dashboards/advanced-filters";
+import type { FilterColumn } from "@/app/dashboards/advanced-filters";
+import { InvestigateBanner } from "@/app/query-logs/investigate-banner";
 import {
   queryLogRows,
   relays,
@@ -55,6 +55,36 @@ import {
   users,
 } from "@/data/query-logs";
 import type { QueryLogRow } from "@/data/query-logs";
+
+// Advanced-filter columns for the Query Logs grid — every filterable table
+// column (Time and Actions excluded). Columns with a fixed value set get a
+// dropdown; the rest use a free-text "contains" input.
+const QUERY_LOG_FILTER_COLUMNS: FilterColumn[] = [
+  { field: "fqdn", label: "FQDN" },
+  { field: "domain", label: "Domain" },
+  { field: "result", label: "Result", options: ["Allowed", "Blocked"] },
+  { field: "method", label: "Method" },
+  { field: "categories", label: "Categories" },
+  { field: "threat", label: "Threat" },
+  { field: "application", label: "Application" },
+  { field: "site", label: "Site" },
+  { field: "deployment", label: "Deployment" },
+  { field: "deploymentType", label: "Deployment Type" },
+  { field: "agentName", label: "Agent Name" },
+  { field: "localUserName", label: "Local User Name" },
+  { field: "localIpv4", label: "Local IPv4 Address" },
+  { field: "requestAddress", label: "Request Address" },
+  { field: "resolvedIp", label: "Resolved IPs" },
+  {
+    field: "queryType",
+    label: "Query Type",
+    options: ["A", "AAAA", "CNAME", "MX", "TXT", "PTR", "NS"],
+  },
+  { field: "lookupType", label: "Lookup Type" },
+  { field: "resolver", label: "Resolver" },
+  { field: "policy", label: "Policy" },
+  { field: "scheduledPolicyName", label: "Scheduled Policy Name" },
+];
 
 // ---------------------------------------------------------------------------
 // Row actions menu (placeholder items — wire up later)
@@ -85,48 +115,60 @@ const INVESTIGATE_FILTER_ID = "investigate-query";
 const InvestigateContext = createContext<{
   setDefaultView: (value: string) => void;
   setInvestigatedRow: (id: string | number) => void;
+  startInvestigation: (row: QueryLogRow) => void;
+  investigatedRowId: string | number | null;
 } | null>(null);
 
+// FQDN cell — appends an "Investigating" chip on the anchored row so the user
+// can see which query the Investigate Mode window is centered on.
+function FqdnCell({ row }: { row: QueryLogRow }) {
+  const investigateCtx = useContext(InvestigateContext);
+  const anchored = investigateCtx?.investigatedRowId === row.id;
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        height: "100%",
+        minWidth: 0,
+      }}
+    >
+      <Box
+        component="span"
+        sx={{
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {row.fqdn}
+      </Box>
+      {anchored && (
+        <Chip
+          size="small"
+          label="Investigating"
+          sx={{
+            flexShrink: 0,
+            bgcolor: "#E2F6FE",
+            color: "#185B9C",
+            '[data-mui-color-scheme="dark"] &': {
+              bgcolor: (t) => alpha(t.palette.info.main, 0.2),
+              color: "info.light",
+            },
+          }}
+        />
+      )}
+    </Box>
+  );
+}
+
 function RowActionsCell({ row }: { row: QueryLogRow }) {
-  const apiRef = useGridApiContext();
   const investigateCtx = useContext(InvestigateContext);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [investigateOpen, setInvestigateOpen] = useState(false);
-  const [timeWindow, setTimeWindow] = useState<TimeWindowOption>(
-    TIME_WINDOW_OPTIONS[0],
-  );
+  // Only one investigation at a time — lock the icon on every row while active.
+  const investigating = investigateCtx?.investigatedRowId != null;
 
-  const handleInvestigate = () => {
-    const windowMs = TIME_WINDOW_SECONDS[timeWindow] * 1000;
-    const startISO = new Date(row.timestampMs - windowMs).toISOString();
-    const endISO = new Date(row.timestampMs + windowMs).toISOString();
-    apiRef.current?.setFilterModel({
-      items: [
-        {
-          id: INVESTIGATE_FILTER_ID,
-          field: "time",
-          operator: "range",
-          value: [startISO, endISO],
-        },
-      ],
-    });
-    // Swap the visible columns to the "Investigative" preset so the user
-    // immediately sees the fields most relevant to forensic review. Also
-    // flip the page-level "Default View" selection so the toolbar label
-    // reflects the new state.
-    const investigativeFields = COLUMN_VIEW_PRESETS.investigative;
-    if (investigativeFields && apiRef.current) {
-      apiRef.current.setColumnVisibilityModel(
-        buildVisibilityModel(
-          columns.map((c) => c.field),
-          investigativeFields,
-        ),
-      );
-    }
-    investigateCtx?.setDefaultView("investigative");
-    investigateCtx?.setInvestigatedRow(row.id);
-    setInvestigateOpen(false);
-  };
   return (
     <Box
       sx={{
@@ -135,14 +177,40 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
         height: "100%",
       }}
     >
-      <ArrowTooltip title="Investigate Query Log">
-        <IconButton
-          size="small"
-          aria-label="Investigate Query Log"
-          onClick={() => setInvestigateOpen(true)}
+      <ArrowTooltip
+        title={
+          investigating ? (
+            "An investigation is already active. Exit it to investigate this query."
+          ) : (
+            <>
+              <Box component="span" sx={{ fontWeight: 700 }}>
+                Investigate Mode:
+              </Box>{" "}
+              See all activity in an adjustable time window around this query.
+            </>
+          )
+        }
+      >
+        <Box
+          component="span"
+          sx={{
+            display: "inline-flex",
+            cursor: investigating ? "not-allowed" : undefined,
+          }}
         >
-          <MaterialSymbol name="manage_search" size={20} />
-        </IconButton>
+          <IconButton
+            size="small"
+            aria-label="Investigate Mode"
+            disabled={investigating}
+            onClick={() => investigateCtx?.startInvestigation(row)}
+          >
+            <MaterialSymbol
+              name="manage_search"
+              size={20}
+              sx={{ color: investigating ? "action.disabled" : undefined }}
+            />
+          </IconButton>
+        </Box>
       </ArrowTooltip>
       <IconButton
         size="small"
@@ -164,41 +232,6 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
           </MenuItem>
         ))}
       </Menu>
-      <Modal
-        open={investigateOpen}
-        onClose={() => setInvestigateOpen(false)}
-        title="Investigate Query"
-        secondaryAction={{
-          label: "Cancel",
-          onClick: () => setInvestigateOpen(false),
-        }}
-        primaryAction={{
-          label: "Apply",
-          onClick: handleInvestigate,
-        }}
-      >
-        <Typography variant="body1" color="text.primary" sx={{ mb: 2 }}>
-          Filters the query log to the deployment associated with this row,
-          displaying all DNS activity within the selected time window.
-        </Typography>
-        <Typography variant="body1" color="text.primary" sx={{ mb: 2 }}>
-          Adjust the time window from the Active Filters bar after applying.
-        </Typography>
-        <FormControl fullWidth>
-          <FormLabel id="time-window-label">Time Window</FormLabel>
-          <Select
-            labelId="time-window-label"
-            value={timeWindow}
-            onChange={(e) => setTimeWindow(e.target.value)}
-          >
-            {TIME_WINDOW_OPTIONS.map((opt) => (
-              <MenuItem key={opt} value={opt}>
-                {opt}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Modal>
     </Box>
   );
 }
@@ -288,7 +321,13 @@ const columns: GridColDef[] = [
     minWidth: 240,
     filterOperators: [timeRangeOperator, ...getGridStringOperators()],
   },
-  { field: "fqdn", headerName: "FQDN", width: 172, minWidth: 150 },
+  {
+    field: "fqdn",
+    headerName: "FQDN",
+    width: 300,
+    minWidth: 150,
+    renderCell: (params) => <FqdnCell row={params.row as QueryLogRow} />,
+  },
   { field: "domain", headerName: "Domain", flex: 1, minWidth: 140 },
   {
     field: "result",
@@ -594,8 +633,8 @@ function buildVisibilityModel(
 // ---------------------------------------------------------------------------
 
 export default function QueryLogsV2Page() {
-  // "More Filters" opens the shared advanced-filters drawer (the built-in
-  // toolbar Filters button is hidden — see `showFilters={false}`).
+  // "More Filters" opens the shared advanced-filters drawer (scoped to the
+  // Query Logs columns).
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [cardTab, setCardTab] = useState(0);
   const [selectedOrg, setSelectedOrg] = useState<string | null>(null);
@@ -700,6 +739,56 @@ export default function QueryLogsV2Page() {
   const [investigatedRowId, setInvestigatedRowId] = useState<
     string | number | null
   >(null);
+  // Active investigation (drives the banner above the grid). Null when not
+  // investigating.
+  const [investigation, setInvestigation] = useState<{
+    domain: string;
+    anchorMs: number;
+  } | null>(null);
+  const [investigateWindow, setInvestigateWindow] = useState<TimeWindowOption>(
+    TIME_WINDOW_OPTIONS[0],
+  );
+  const gridApiRef = useGridApiRef();
+
+  // Filter the grid to a ±window range around the anchored query's timestamp.
+  const applyInvestigateFilter = (anchorMs: number, window: TimeWindowOption) => {
+    const windowMs = TIME_WINDOW_SECONDS[window] * 1000;
+    gridApiRef.current?.setFilterModel({
+      items: [
+        {
+          id: INVESTIGATE_FILTER_ID,
+          field: "time",
+          operator: "range",
+          value: [
+            new Date(anchorMs - windowMs).toISOString(),
+            new Date(anchorMs + windowMs).toISOString(),
+          ],
+        },
+      ],
+    });
+  };
+
+  const startInvestigation = (row: QueryLogRow) => {
+    const window = TIME_WINDOW_OPTIONS[0];
+    setInvestigation({ domain: row.domain, anchorMs: row.timestampMs });
+    setInvestigateWindow(window);
+    setInvestigatedRowId(row.id);
+    // Match the old flow: swap to the Investigative column preset and filter
+    // to the time window around this query.
+    handleDefaultViewChange("investigative");
+    applyInvestigateFilter(row.timestampMs, window);
+  };
+
+  const changeInvestigateWindow = (window: TimeWindowOption) => {
+    setInvestigateWindow(window);
+    if (investigation) applyInvestigateFilter(investigation.anchorMs, window);
+  };
+
+  const exitInvestigation = () => {
+    gridApiRef.current?.setFilterModel({ items: [] });
+    setInvestigation(null);
+    setInvestigatedRowId(null);
+  };
   const handleDefaultViewChange = (value: string) => {
     setSelectedView(value);
     const preset = COLUMN_VIEW_PRESETS[value];
@@ -724,10 +813,15 @@ export default function QueryLogsV2Page() {
   const filteredRelays = relays.filter((r) => matches(r, clientsSearch));
   const filteredUsers = users.filter((u) => matches(u, usersSearch));
 
-  const filtersDisabled = !selectedOrg;
-  const filtersDisabledTooltip = filtersDisabled
-    ? "Select an Organization to enable this filter."
-    : "";
+  const investigating = Boolean(investigation);
+  const investigateLockTooltip =
+    "Filters are locked while investigating a query. Exit Investigate Mode to change them.";
+  const filtersDisabled = !selectedOrg || investigating;
+  const filtersDisabledTooltip = investigating
+    ? investigateLockTooltip
+    : !selectedOrg
+      ? "Select an Organization to enable this filter."
+      : "";
 
   const hasData = appliedOrg !== null && !isFetching;
   const [startDate, endDate] = appliedDateRange;
@@ -738,15 +832,29 @@ export default function QueryLogsV2Page() {
         (r) => r.timestampMs >= startMs && r.timestampMs <= endMs,
       )
     : [];
+  // While investigating, the grid is filtered to a ±window around the anchor;
+  // narrow the rows the tab counts + result tabs are computed from so they
+  // reflect what's actually shown.
+  const investigateWindowMs = investigation
+    ? TIME_WINDOW_SECONDS[investigateWindow] * 1000
+    : 0;
+  const scopedRows =
+    hasData && investigation
+      ? rowsInRange.filter(
+          (r) =>
+            r.timestampMs >= investigation.anchorMs - investigateWindowMs &&
+            r.timestampMs <= investigation.anchorMs + investigateWindowMs,
+        )
+      : rowsInRange;
   const visibleRows =
     cardTab === 1
-      ? rowsInRange.filter((r) => r.result === "Allowed")
+      ? scopedRows.filter((r) => r.result === "Allowed")
       : cardTab === 2
-        ? rowsInRange.filter((r) => r.result === "Blocked")
+        ? scopedRows.filter((r) => r.result === "Blocked")
         : cardTab === 3
-          ? rowsInRange.filter((r) => r.isThreat)
-          : rowsInRange;
-  const tabsConfig = buildTabsConfig(hasData, rowsInRange);
+          ? scopedRows.filter((r) => r.isThreat)
+          : scopedRows;
+  const tabsConfig = buildTabsConfig(hasData, scopedRows);
   // v8 selection model: "include" lists selected ids; "exclude" lists deselected
   // (header "Select all" uses exclude so it doesn't materialize every id).
   const selectedRowCount =
@@ -797,6 +905,7 @@ export default function QueryLogsV2Page() {
   };
 
   const handleClear = () => {
+    exitInvestigation();
     setSelectedOrg(null);
     setAppliedOrg(null);
     setAppliedDateRange([null, null]);
@@ -813,6 +922,8 @@ export default function QueryLogsV2Page() {
       value={{
         setDefaultView: handleDefaultViewChange,
         setInvestigatedRow: setInvestigatedRowId,
+        startInvestigation,
+        investigatedRowId,
       }}
     >
       <PageShell
@@ -824,6 +935,11 @@ export default function QueryLogsV2Page() {
                 flexDirection: "column",
                 gap: 2,
                 px: 3,
+                // In Investigate Mode the whole filter bar is disabled; show a
+                // not-allowed cursor on the disabled controls.
+                ...(investigating && {
+                  "& .Mui-disabled": { cursor: "not-allowed !important" },
+                }),
               }}
             >
               <Box
@@ -833,15 +949,24 @@ export default function QueryLogsV2Page() {
                   gap: 2,
                 }}
               >
-                <Autocomplete
-                  size="small"
-                  options={FILTER_OPTIONS.organization}
-                  value={selectedOrg}
-                  onChange={(_event, newValue) => setSelectedOrg(newValue)}
-                  renderInput={(params) => (
-                    <TextField {...params} placeholder="Select Organization" />
-                  )}
-                />
+                <ArrowTooltip title={investigating ? investigateLockTooltip : ""}>
+                  <Box sx={{ display: "flex", "& > *": { width: "100%" } }}>
+                    <Autocomplete
+                      size="small"
+                      fullWidth
+                      disabled={investigating}
+                      options={FILTER_OPTIONS.organization}
+                      value={selectedOrg}
+                      onChange={(_event, newValue) => setSelectedOrg(newValue)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          placeholder="Select Organization"
+                        />
+                      )}
+                    />
+                  </Box>
+                </ArrowTooltip>
                 <ArrowTooltip title={filtersDisabledTooltip}>
                   <Box
                     sx={{
@@ -1262,7 +1387,6 @@ export default function QueryLogsV2Page() {
                       disabled={filtersDisabled}
                       onClick={() => setAdvancedOpen(true)}
                       startIcon={<MaterialSymbol name="filter_alt" size={20} />}
-                      sx={{ color: "text.primary" }}
                     >
                       More Filters
                     </Button>
@@ -1278,9 +1402,11 @@ export default function QueryLogsV2Page() {
               >
                 <ArrowTooltip
                   title={
-                    isCurrentApplied
-                      ? "Change your selection to apply a new filter."
-                      : ""
+                    investigating
+                      ? investigateLockTooltip
+                      : isCurrentApplied
+                        ? "Change your selection to apply a new filter."
+                        : ""
                   }
                 >
                   <span>
@@ -1288,7 +1414,12 @@ export default function QueryLogsV2Page() {
                       variant="contained"
                       color="primary"
                       size="small"
-                      disabled={!selectedOrg || isFetching || isCurrentApplied}
+                      disabled={
+                        !selectedOrg ||
+                        isFetching ||
+                        isCurrentApplied ||
+                        investigating
+                      }
                       onClick={handleApply}
                     >
                       Apply
@@ -1297,38 +1428,63 @@ export default function QueryLogsV2Page() {
                 </ArrowTooltip>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   {appliedOrg && (
-                    <Button
-                      variant="text"
-                      color="error"
-                      size="small"
-                      onClick={handleClear}
-                      startIcon={<DeleteForeverOutlinedIcon sx={{ fontSize: 16 }} />}
-                    >
-                      Clear
-                    </Button>
+                    <ArrowTooltip title={investigating ? investigateLockTooltip : ""}>
+                      <span>
+                        <Button
+                          variant="text"
+                          color="error"
+                          size="small"
+                          disabled={investigating}
+                          onClick={handleClear}
+                          startIcon={
+                            <DeleteForeverOutlinedIcon sx={{ fontSize: 16 }} />
+                          }
+                        >
+                          Clear
+                        </Button>
+                      </span>
+                    </ArrowTooltip>
                   )}
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    size="small"
-                    startIcon={
-                      <MaterialSymbol name="refresh" size={16} />
-                    }
-                  >
-                    Refresh
-                  </Button>
+                  <ArrowTooltip title={investigating ? investigateLockTooltip : ""}>
+                    <span>
+                      <Button
+                        variant="outlined"
+                        color="secondary"
+                        size="small"
+                        disabled={investigating}
+                        startIcon={<MaterialSymbol name="refresh" size={16} />}
+                      >
+                        Refresh
+                      </Button>
+                    </span>
+                  </ArrowTooltip>
                 </Box>
               </Box>
             </Box>
           </PageHeader>
         }
       >
+        {investigation && (
+          <InvestigateBanner
+            domain={investigation.domain}
+            anchorMs={investigation.anchorMs}
+            windowSeconds={TIME_WINDOW_SECONDS[investigateWindow]}
+            windowOptions={TIME_WINDOW_OPTIONS}
+            activeWindow={investigateWindow}
+            onWindowChange={(value) =>
+              changeInvestigateWindow(value as TimeWindowOption)
+            }
+            onExit={exitInvestigation}
+          />
+        )}
         <TabbedDataCard
           tabs={tabsConfig}
           activeTab={cardTab}
           onTabChange={(_, newValue) => setCardTab(newValue)}
         >
           <DataTable
+            apiRef={gridApiRef}
+            hiddenFilterIds={investigation ? [INVESTIGATE_FILTER_ID] : undefined}
             rows={visibleRows}
             columns={columns}
             loading={isFetching}
@@ -1338,7 +1494,6 @@ export default function QueryLogsV2Page() {
                 : NoResultsOverlay
             }
             showSearch={false}
-            showFilters={false}
             timeRangeField="time"
             pinnedShadowFields={{ left: "time", right: "actions" }}
             columnVisibilityModel={columnVisibilityModel}
@@ -1386,6 +1541,7 @@ export default function QueryLogsV2Page() {
         <AdvancedFilters
           open={advancedOpen}
           onClose={() => setAdvancedOpen(false)}
+          columns={QUERY_LOG_FILTER_COLUMNS}
         />
       </PageShell>
     </InvestigateContext.Provider>
