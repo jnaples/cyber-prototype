@@ -113,6 +113,7 @@ export function InvestigateBanner({
                 py: "4px",
                 px: "8px",
                 lineHeight: "22px",
+                textTransform: "none",
               },
               // The active window is the primary action while investigating.
               "& .MuiToggleButton-root.Mui-selected": {
