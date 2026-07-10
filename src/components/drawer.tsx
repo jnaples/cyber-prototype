@@ -86,6 +86,7 @@ function renderAction(
 ) {
   const button = (
     <Button
+      type="button"
       onClick={cfg.onClick}
       disabled={cfg.disabled || cfg.loading}
       variant={cfg.variant ?? defaultVariant}

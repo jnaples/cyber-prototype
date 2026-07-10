@@ -67,7 +67,49 @@ const QUERY_LOG_FILTER_COLUMNS: FilterColumn[] = [
   { field: "domain", label: "Domain" },
   { field: "result", label: "Result", options: ["Allowed", "Blocked"] },
   { field: "method", label: "Method" },
-  { field: "categories", label: "Categories" },
+  {
+    field: "categories",
+    label: "Categories",
+    options: [
+      "Advertising",
+      "Analytics",
+      "Artificial Intelligence",
+      "Business",
+      "CRM",
+      "Cloud",
+      "Code Repositories",
+      "Collaboration",
+      "Communication",
+      "Computing & Internet",
+      "Cryptocurrency",
+      "Customer Support",
+      "Design",
+      "DevOps",
+      "Email Marketing",
+      "Finance",
+      "Gambling",
+      "Gaming",
+      "HR",
+      "Information Technology",
+      "Malware",
+      "News",
+      "Package Registry",
+      "Phishing",
+      "Productivity",
+      "Reference",
+      "SEO",
+      "Sales Enablement",
+      "Scam",
+      "Scheduling",
+      "Security",
+      "Social Media",
+      "Social Networking",
+      "Streaming Media",
+      "Surveys",
+      "Web Hosting",
+      "Webmail",
+    ],
+  },
   { field: "threat", label: "Threat" },
   { field: "application", label: "Application" },
   { field: "site", label: "Site" },
@@ -931,14 +973,6 @@ export default function QueryLogsPage() {
     }, FETCH_DELAY_MS);
   };
 
-  // Applying advanced filters mimics a fetch: show the grid spinner for ~1s.
-  const handleAdvancedApply = (applied: AppliedAdvancedFilter[]) => {
-    setAppliedAdvancedFilters(applied);
-    setCardTab(0);
-    setIsFetching(true);
-    window.setTimeout(() => setIsFetching(false), 1000);
-  };
-
   const handleClear = () => {
     exitInvestigation();
     setSelectedOrg(null);
@@ -1581,7 +1615,7 @@ export default function QueryLogsPage() {
           open={advancedOpen}
           onClose={() => setAdvancedOpen(false)}
           columns={QUERY_LOG_FILTER_COLUMNS}
-          onApply={handleAdvancedApply}
+          onApply={setAppliedAdvancedFilters}
           seedFilters={appliedAdvancedFilters}
           applyLabel="Done"
           title="Advanced Filters"
