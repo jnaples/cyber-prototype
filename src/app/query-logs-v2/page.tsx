@@ -180,7 +180,7 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
       <ArrowTooltip
         title={
           investigating ? (
-            "An investigation is already active. Exit it to investigate this query."
+            "Investigate Mode is already active. Exit it to investigate this query."
           ) : (
             <>
               <Box component="span" sx={{ fontWeight: 700 }}>
