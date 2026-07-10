@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 import Box from "@mui/material/Box";
+import { alpha } from "@mui/material/styles";
 import type { Theme } from "@mui/material/styles";
 import type {
   GridColDef,
@@ -114,9 +115,16 @@ function FqdnCell({ row }: { row: QueryLogRow }) {
       {anchored && (
         <Chip
           size="small"
-          color="info"
           label="Investigating"
-          sx={{ flexShrink: 0 }}
+          sx={{
+            flexShrink: 0,
+            bgcolor: "#E2F6FE",
+            color: "#185B9C",
+            '[data-mui-color-scheme="dark"] &': {
+              bgcolor: (t) => alpha(t.palette.info.main, 0.2),
+              color: "info.light",
+            },
+          }}
         />
       )}
     </Box>
@@ -265,7 +273,7 @@ const columns: GridColDef[] = [
   {
     field: "fqdn",
     headerName: "FQDN",
-    width: 172,
+    width: 300,
     minWidth: 150,
     renderCell: (params) => <FqdnCell row={params.row as QueryLogRow} />,
   },
