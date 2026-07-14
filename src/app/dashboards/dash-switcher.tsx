@@ -39,7 +39,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
       sx={{
         display: "block",
         color: "text.secondary",
-        px: 1.25,
+        px: 2,
         pt: 1.25,
         pb: 0,
       }}
@@ -74,15 +74,14 @@ function DashRow({
         width: "100%",
         textAlign: "left",
         cursor: "pointer",
-        bgcolor: selected ? "rgba(53,39,253,.08)" : "transparent",
-        borderRadius: 1,
-        px: 1.25,
+        bgcolor: selected ? "rgba(53,39,253,.24)" : "transparent",
+        px: 2,
         py: 1,
         fontSize: 16,
         fontWeight: 400,
         color: "text.primary",
         "&:hover": {
-          bgcolor: selected ? "rgba(53,39,253,.08)" : "action.hover",
+          bgcolor: selected ? "rgba(53,39,253,.32)" : "action.hover",
         },
       }}
     >
@@ -206,7 +205,7 @@ export function DashSwitcher({
             />
           </Box>
 
-          <Box sx={{ flex: 1, overflow: "auto", maxHeight: 360, p: 0.75 }}>
+          <Box sx={{ flex: 1, overflow: "auto", maxHeight: 360, py: 0.75 }}>
             {favList.length > 0 && (
               <>
                 <SectionLabel>Favorites</SectionLabel>
