@@ -2,6 +2,7 @@
 // Query Logs grid (Columns / Operator / value rows, with Add filter / Remove
 // all), but scoped to dashboard-relevant dimensions rather than log columns.
 
+import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import {
   Box,
   Button,
@@ -295,6 +296,7 @@ export function AdvancedFilters({
   title = "Advanced Filters",
   seedFilters,
   lockConjunction = false,
+  headerSlot,
 }: {
   open: boolean;
   onClose: () => void;
@@ -317,6 +319,8 @@ export function AdvancedFilters({
    * instead of the And/Or dropdown.
    */
   lockConjunction?: boolean;
+  /** Optional content rendered above the filter rows, followed by a divider. */
+  headerSlot?: ReactNode;
 }) {
   const firstField = columns[0].field;
 
@@ -360,6 +364,9 @@ export function AdvancedFilters({
 
   const removeAll = () => setItems([]);
 
+  // At least one row must have a value before the apply action is enabled.
+  const hasFilters = items.some((it) => it.value !== "");
+
   const handleApply = () => {
     const applied = items
       .filter((it) => it.value !== "")
@@ -381,9 +388,20 @@ export function AdvancedFilters({
       size="large"
       title={title}
       secondaryAction={{ label: "Cancel", onClick: onClose }}
-      primaryAction={{ label: applyLabel, onClick: handleApply }}
+      primaryAction={{
+        label: applyLabel,
+        onClick: handleApply,
+        disabled: !hasFilters,
+        tooltip: hasFilters ? undefined : "Add a filter to continue.",
+      }}
     >
       <Box>
+        {headerSlot && (
+          <>
+            {headerSlot}
+            <Divider sx={{ my: 2 }} />
+          </>
+        )}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {items.map((item, index) => (
             <FilterRow
@@ -421,7 +439,7 @@ export function AdvancedFilters({
             variant="text"
             color="error"
             onClick={removeAll}
-            startIcon={<MaterialSymbol name="delete" size={20} />}
+            startIcon={<DeleteForeverOutlinedIcon sx={{ fontSize: 20 }} />}
           >
             Remove All
           </Button>

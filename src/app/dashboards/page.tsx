@@ -6,7 +6,6 @@
 // layout persists in localStorage.
 
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
-import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import LibraryAddOutlinedIcon from "@mui/icons-material/LibraryAddOutlined";
 import {
   Alert,
@@ -868,7 +867,7 @@ export default function DashboardsPage() {
             color="error"
             size="small"
             onClick={clearAllFilters}
-            startIcon={<DeleteForeverOutlinedIcon sx={{ fontSize: 16 }} />}
+            startIcon={<MaterialSymbol name="close" size={18} />}
           >
             Clear
           </Button>

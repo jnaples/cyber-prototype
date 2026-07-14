@@ -26,7 +26,6 @@ import type {
 } from "@mui/x-data-grid";
 import { getGridStringOperators, useGridApiRef } from "@mui/x-data-grid";
 import CancelIcon from "@mui/icons-material/Cancel";
-import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import { endOfDay, startOfDay, subDays, subHours, subMinutes } from "date-fns";
@@ -1509,9 +1508,7 @@ export default function QueryLogsPage() {
                           size="small"
                           disabled={investigating}
                           onClick={handleClear}
-                          startIcon={
-                            <DeleteForeverOutlinedIcon sx={{ fontSize: 16 }} />
-                          }
+                          startIcon={<MaterialSymbol name="close" size={18} />}
                         >
                           Clear
                         </Button>

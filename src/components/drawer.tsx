@@ -99,7 +99,14 @@ function renderAction(
   if (!cfg.tooltip) return button;
   return (
     <ArrowTooltip title={cfg.tooltip}>
-      <span style={{ display: "inline-flex" }}>{button}</span>
+      <span
+        style={{
+          display: "inline-flex",
+          cursor: cfg.disabled || cfg.loading ? "not-allowed" : undefined,
+        }}
+      >
+        {button}
+      </span>
     </ArrowTooltip>
   );
 }

@@ -1,4 +1,5 @@
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
+import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import {
   Autocomplete,
   Box,
@@ -17,6 +18,11 @@ import {
 import type { Theme } from "@mui/material/styles";
 import { useState } from "react";
 
+import { AdvancedFilters } from "@/app/dashboards/advanced-filters";
+import type {
+  AppliedAdvancedFilter,
+  FilterColumn,
+} from "@/app/dashboards/advanced-filters";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { lightPalette } from "@/theme/core/palette";
@@ -183,14 +189,34 @@ const CYBERSIGHT_TABS = [
 ] as const;
 
 const WEBSITES: ActivityRow[] = [
-  { label: "portal.zorustech.com", duration: "72h 59m", percent: 57.35, users: 3 },
-  { label: "dnsfilter.atlassian.net", duration: "21h 32m", percent: 13.01, users: 1 },
+  {
+    label: "portal.zorustech.com",
+    duration: "72h 59m",
+    percent: 57.35,
+    users: 3,
+  },
+  {
+    label: "dnsfilter.atlassian.net",
+    duration: "21h 32m",
+    percent: 13.01,
+    users: 1,
+  },
   { label: "docs.google.com", duration: "8h 6m", percent: 4.89, users: 2 },
   { label: "mail.google.com", duration: "4h 39m", percent: 2.81, users: 2 },
   { label: "meet.google.com", duration: "3h 55m", percent: 2.37, users: 1 },
-  { label: "zorustech.atlassian.net", duration: "3h 19m", percent: 2.01, users: 1 },
+  {
+    label: "zorustech.atlassian.net",
+    duration: "3h 19m",
+    percent: 2.01,
+    users: 1,
+  },
   { label: "calendar.google.com", duration: "3h 14m", percent: 1.96, users: 1 },
-  { label: "portal-staging.zorustech.com", duration: "2h 53m", percent: 1.74, users: 1 },
+  {
+    label: "portal-staging.zorustech.com",
+    duration: "2h 53m",
+    percent: 1.74,
+    users: 1,
+  },
   { label: "www.lowes.com", duration: "1h 49m", percent: 1.1, users: 1 },
   { label: "chatgpt.com", duration: "1h 35m", percent: 0.96, users: 1 },
 ];
@@ -200,9 +226,19 @@ const APPLICATIONS: ActivityRow[] = [
   { label: "Google Chrome", duration: "26h 45m", percent: 23, users: 3 },
   { label: "Discord", duration: "1h 37m", percent: 1.4, users: 1 },
   { label: "Zoom", duration: "1h 32m", percent: 1.3, users: 2 },
-  { label: "Microsoft\u00ae Windows\u00ae Operating System", duration: "1h 27m", percent: 1.25, users: 2 },
+  {
+    label: "Microsoft\u00ae Windows\u00ae Operating System",
+    duration: "1h 27m",
+    percent: 1.25,
+    users: 2,
+  },
   { label: "Microsoft Excel", duration: "1h 13m", percent: 1.05, users: 1 },
-  { label: "HPSystemEventUtilityHost.OSD", duration: "24m", percent: 0.35, users: 1 },
+  {
+    label: "HPSystemEventUtilityHost.OSD",
+    duration: "24m",
+    percent: 0.35,
+    users: 1,
+  },
   { label: "Snipping Tool", duration: "16m", percent: 0.23, users: 1 },
   { label: "Microsoft Word", duration: "9m", percent: 0.13, users: 1 },
   { label: "ScreenConnect", duration: "8m", percent: 0.11, users: 1 },
@@ -212,12 +248,27 @@ const CATEGORIES: ActivityRow[] = [
   { label: "Computing & Internet", duration: "96h 18m", percent: 60, users: 3 },
   { label: "Web based Mail", duration: "4h 31m", percent: 2.8, users: 2 },
   { label: "Web Conferencing", duration: "3h 59m", percent: 2.5, users: 1 },
-  { label: "Business & Commercial", duration: "3h 58m", percent: 2.48, users: 3 },
+  {
+    label: "Business & Commercial",
+    duration: "3h 58m",
+    percent: 2.48,
+    users: 3,
+  },
   { label: "Reference", duration: "3h 19m", percent: 2.07, users: 1 },
   { label: "Shopping/Retail", duration: "3h 12m", percent: 2, users: 3 },
-  { label: "Artificial Intelligence", duration: "2h 13m", percent: 1.38, users: 1 },
+  {
+    label: "Artificial Intelligence",
+    duration: "2h 13m",
+    percent: 1.38,
+    users: 1,
+  },
   { label: "LinkedIn", duration: "1h 15m", percent: 0.78, users: 1 },
-  { label: "Search Engines & Portals", duration: "59m", percent: 0.61, users: 1 },
+  {
+    label: "Search Engines & Portals",
+    duration: "59m",
+    percent: 0.61,
+    users: 1,
+  },
   { label: "Education", duration: "58m", percent: 0.6, users: 1 },
 ];
 
@@ -259,8 +310,25 @@ const FILTER_OPTIONS = {
   users: ["All Users"],
 };
 
+// Advanced-filter columns for CyberSight activity data.
+const CYBERSIGHT_FILTER_COLUMNS: FilterColumn[] = [
+  { field: "website", label: "Website" },
+  { field: "application", label: "Application" },
+  { field: "category", label: "Category" },
+  { field: "user", label: "User" },
+  { field: "site", label: "Site" },
+  { field: "roamingClient", label: "Roaming Client" },
+];
+
 export default function CyberSightPage() {
   const [activeTab, setActiveTab] = useState(0);
+  // "More Filters" opens the shared advanced-filters drawer (AND-only, like
+  // Query Logs).
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [appliedAdvancedFilters, setAppliedAdvancedFilters] = useState<
+    AppliedAdvancedFilter[]
+  >([]);
+  const [excludeWeekends, setExcludeWeekends] = useState(false);
 
   return (
     <Box
@@ -274,13 +342,11 @@ export default function CyberSightPage() {
         pb: "80px",
       }}
     >
-      {/* Page header + filter bar */}
-      <Box sx={{ bgcolor: "background.paper", boxShadow: 1 }}>
-        <PageHeader title="CyberSight" />
+      {/* Page header with the filter bar living inside it (like Query Logs) */}
+      <PageHeader title="CyberSight">
         <Box
           sx={{
-            px: 2,
-            pb: 2,
+            px: 3,
             display: "flex",
             flexDirection: "column",
             gap: 2,
@@ -346,11 +412,18 @@ export default function CyberSightPage() {
                 },
               }}
             />
-            <FormControlLabel
-              control={<Switch size="small" />}
-              label="Exclude Weekends"
-              sx={{ ml: 0 }}
-            />
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Button
+                variant="text"
+                color="secondary"
+                onClick={() => setAdvancedOpen(true)}
+                startIcon={<FilterAltOutlinedIcon sx={{ fontSize: 20 }} />}
+              >
+                {appliedAdvancedFilters.length > 0
+                  ? `More Filters (${appliedAdvancedFilters.length})`
+                  : "More Filters"}
+              </Button>
+            </Box>
           </Box>
           <Box
             sx={{
@@ -382,54 +455,54 @@ export default function CyberSightPage() {
             </Box>
           </Box>
         </Box>
+      </PageHeader>
 
-        {/* Tab nav */}
-        <Box
-          sx={{
-            px: 3,
-            pt: 1,
-            bgcolor: "background.neutral",
-          }}
+      {/* Tab nav */}
+      <Box
+        sx={{
+          px: 3,
+          pt: 1,
+          bgcolor: "background.neutral",
+        }}
+      >
+        <Tabs
+          value={activeTab}
+          onChange={(_, v) => setActiveTab(v)}
+          aria-label="cybersight tabs"
+          sx={{ minHeight: 0 }}
         >
-          <Tabs
-            value={activeTab}
-            onChange={(_, v) => setActiveTab(v)}
-            aria-label="cybersight tabs"
-            sx={{ minHeight: 0 }}
-          >
-            {CYBERSIGHT_TABS.map((tab) => (
-              <Tab
-                key={tab.label}
-                label={tab.label}
-                icon={<MaterialIcon name={tab.icon} size={20} />}
-                iconPosition="start"
-                sx={{
-                  minHeight: 0,
-                  textTransform: "none",
-                  fontSize: 13,
-                  py: 0.5,
-                  px: 1,
-                  mr: 2,
-                  gap: 0.75,
-                  "&.Mui-selected": {
-                    backgroundColor: (
-                      theme: Theme & {
-                        vars?: {
-                          palette?: { background?: { paper?: string } };
-                        };
-                      },
-                    ) =>
-                      theme.vars?.palette?.background?.paper ??
-                      theme.palette.background.paper,
-                    borderTopLeftRadius: 6,
-                    borderTopRightRadius: 6,
-                    boxShadow: (theme: Theme) => theme.shadows[3],
-                  },
-                }}
-              />
-            ))}
-          </Tabs>
-        </Box>
+          {CYBERSIGHT_TABS.map((tab) => (
+            <Tab
+              key={tab.label}
+              label={tab.label}
+              icon={<MaterialIcon name={tab.icon} size={20} />}
+              iconPosition="start"
+              sx={{
+                minHeight: 0,
+                textTransform: "none",
+                fontSize: 13,
+                py: 0.5,
+                px: 1,
+                mr: 2,
+                gap: 0.75,
+                "&.Mui-selected": {
+                  backgroundColor: (
+                    theme: Theme & {
+                      vars?: {
+                        palette?: { background?: { paper?: string } };
+                      };
+                    },
+                  ) =>
+                    theme.vars?.palette?.background?.paper ??
+                    theme.palette.background.paper,
+                  borderTopLeftRadius: 6,
+                  borderTopRightRadius: 6,
+                  boxShadow: (theme: Theme) => theme.shadows[3],
+                },
+              }}
+            />
+          ))}
+        </Tabs>
       </Box>
 
       {/* Tab content */}
@@ -446,142 +519,174 @@ export default function CyberSightPage() {
           </Typography>
         </Box>
       ) : (
-      <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" },
-            gap: 2,
-          }}
-        >
-          <ActivityCard
-            count={127}
-            title="Websites"
-            rows={WEBSITES}
-            barColor={lightPalette.primary.main}
-          />
-          <ActivityCard
-            count={84}
-            title="Applications"
-            rows={APPLICATIONS}
-            barColor={lightPalette.pairingPurple.main}
-          />
-          <ActivityCard
-            count={42}
-            title="Categories"
-            rows={CATEGORIES}
-            barColor={lightPalette.warning.main}
-          />
-          <ActivityCard
-            count={12}
-            title="Streaming Activities"
-            rows={STREAMING}
-            barColor={lightPalette.pairingTeal.main}
-          />
-          <ActivityCard
-            count={18}
-            title="AI Tools"
-            rows={AI_TOOLS}
-            barColor={lightPalette.tertiary.main}
-          />
-          <ActivityCard
-            count={36}
-            title="Clients"
-            rows={CLIENTS}
-            barColor={lightPalette.success.main}
-          />
-        </Box>
+        <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                md: "repeat(2, 1fr)",
+                lg: "repeat(3, 1fr)",
+              },
+              gap: 2,
+            }}
+          >
+            <ActivityCard
+              count={127}
+              title="Websites"
+              rows={WEBSITES}
+              barColor={lightPalette.primary.main}
+            />
+            <ActivityCard
+              count={84}
+              title="Applications"
+              rows={APPLICATIONS}
+              barColor={lightPalette.pairingPurple.main}
+            />
+            <ActivityCard
+              count={42}
+              title="Categories"
+              rows={CATEGORIES}
+              barColor={lightPalette.warning.main}
+            />
+            <ActivityCard
+              count={12}
+              title="Streaming Activities"
+              rows={STREAMING}
+              barColor={lightPalette.pairingTeal.main}
+            />
+            <ActivityCard
+              count={18}
+              title="AI Tools"
+              rows={AI_TOOLS}
+              barColor={lightPalette.tertiary.main}
+            />
+            <ActivityCard
+              count={36}
+              title="Clients"
+              rows={CLIENTS}
+              barColor={lightPalette.success.main}
+            />
+          </Box>
 
-        {/* Active Time Trend */}
-        <Card>
-          <CardContent sx={{ p: "16px !important" }}>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 0.5,
-                mb: 2,
-              }}
-            >
-              <Typography
+          {/* Active Time Trend */}
+          <Card>
+            <CardContent sx={{ p: "16px !important" }}>
+              <Box
                 sx={{
-                  fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
-                  fontWeight: 600,
-                  fontSize: 18,
-                  lineHeight: 1.33,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 0.5,
+                  mb: 2,
                 }}
               >
-                Active Time Trend
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Average of 8.77 hours per day
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                height: 280,
-                bgcolor: "background.default",
-                borderRadius: 1,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexDirection: "column",
-                gap: 1,
-              }}
-            >
-              <MaterialIcon name="show_chart" size={40} color="currentColor" />
-              <Typography variant="body2" color="text.secondary">
-                Active time trend chart
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 3,
-                mt: 2,
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Box
-                  sx={{
-                    width: 22,
-                    height: 2,
-                    bgcolor: lightPalette.primary.main,
-                  }}
-                />
                 <Typography
-                  variant="caption"
-                  sx={{ color: "text.secondary", fontSize: 12 }}
-                >
-                  Active Time
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Box
                   sx={{
-                    width: 22,
-                    height: 2,
-                    bgcolor: lightPalette.pairingTeal.main,
-                    borderStyle: "dashed",
-                    borderWidth: "1px 0 0 0",
-                    borderColor: lightPalette.pairingTeal.main,
-                    backgroundColor: "transparent",
+                    fontFamily: (t: Theme) => t.typography.fontSecondaryFamily,
+                    fontWeight: 600,
+                    fontSize: 18,
+                    lineHeight: 1.33,
                   }}
-                />
-                <Typography
-                  variant="caption"
-                  sx={{ color: "text.secondary", fontSize: 12 }}
                 >
                   Active Time Trend
                 </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Average of 8.77 hours per day
+                </Typography>
               </Box>
-            </Box>
-          </CardContent>
-        </Card>
-      </Box>
+              <Box
+                sx={{
+                  height: 280,
+                  bgcolor: "background.default",
+                  borderRadius: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexDirection: "column",
+                  gap: 1,
+                }}
+              >
+                <MaterialIcon
+                  name="show_chart"
+                  size={40}
+                  color="currentColor"
+                />
+                <Typography variant="body2" color="text.secondary">
+                  Active time trend chart
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 3,
+                  mt: 2,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Box
+                    sx={{
+                      width: 22,
+                      height: 2,
+                      bgcolor: lightPalette.primary.main,
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "text.secondary", fontSize: 12 }}
+                  >
+                    Active Time
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Box
+                    sx={{
+                      width: 22,
+                      height: 2,
+                      bgcolor: lightPalette.pairingTeal.main,
+                      borderStyle: "dashed",
+                      borderWidth: "1px 0 0 0",
+                      borderColor: lightPalette.pairingTeal.main,
+                      backgroundColor: "transparent",
+                    }}
+                  />
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "text.secondary", fontSize: 12 }}
+                  >
+                    Active Time Trend
+                  </Typography>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
       )}
+
+      <AdvancedFilters
+        open={advancedOpen}
+        onClose={() => setAdvancedOpen(false)}
+        columns={CYBERSIGHT_FILTER_COLUMNS}
+        onApply={setAppliedAdvancedFilters}
+        seedFilters={appliedAdvancedFilters}
+        applyLabel="Done"
+        title="More Filters"
+        lockConjunction
+        headerSlot={
+          <FormControlLabel
+            control={
+              <Switch
+                size="small"
+                checked={excludeWeekends}
+                onChange={(e) => setExcludeWeekends(e.target.checked)}
+              />
+            }
+            label="Exclude Weekends"
+            sx={{ ml: 0 }}
+          />
+        }
+      />
     </Box>
   );
 }
