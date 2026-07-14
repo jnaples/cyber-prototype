@@ -299,6 +299,20 @@ const METHODS = ["A", "AAAA", "CNAME", "MX", "TXT", "PTR"];
 const DEPLOYMENT_TYPES = ["Roaming Client", "Relay", "Site"];
 const QUERY_TYPES = ["Standard", "DoH", "DoT", "DNSCrypt"];
 const LOOKUP_TYPES = ["Forward", "Reverse"];
+const DEPLOYMENT_OS = ["Windows 11", "macOS 14", "iOS 17", "Android 14"];
+const PROTOCOLS = ["UDP", "TCP", "HTTPS", "TLS"];
+const COLLECTIONS = [
+  "Corporate Devices",
+  "Field Team",
+  "Executive Devices",
+  "Lab Machines",
+  "Guest Devices",
+];
+const hex2 = (n: number) =>
+  Math.abs(n % 256)
+    .toString(16)
+    .padStart(2, "0")
+    .toUpperCase();
 
 // Per-department default policy name shown in the row's `policy` column.
 const POLICY_BY_DEPT: Record<Department, string> = {
@@ -358,6 +372,13 @@ export const queryLogRows = (() => {
       resolver: "android Agent 30",
       policy: POLICY_BY_DEPT[user.dept],
       scheduledPolicyName: SCHEDULED_POLICIES[i % SCHEDULED_POLICIES.length],
+      collectionName: COLLECTIONS[i % COLLECTIONS.length],
+      deploymentOs: DEPLOYMENT_OS[i % DEPLOYMENT_OS.length],
+      lanDeviceName: `${user.hostname.toLowerCase()}.local`,
+      localIpv6: `2001:db8:${hex2(i * 3)}:${hex2(i * 5)}::${hex2(i * 7)}`,
+      macAddress: `00:1A:2B:${hex2(i * 3)}:${hex2(i * 5)}:${hex2(i * 7)}`,
+      protocol: PROTOCOLS[i % PROTOCOLS.length],
+      responseTime: `${((i * 3) % 48) + 2} ms`,
     };
   });
 

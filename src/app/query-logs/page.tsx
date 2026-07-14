@@ -39,7 +39,6 @@ import type { CustomDateTimeRangePickerValue } from "@/components/custom-date-ti
 import { EmptyState } from "@/components/empty-state";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
-import { PILL_CHIP_RADIUS } from "@/theme/core/components/chip";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
@@ -415,7 +414,7 @@ const columns: GridColDef[] = [
               />
             }
             label={params.value}
-            sx={{ borderRadius: PILL_CHIP_RADIUS }}
+            sx={{ borderRadius: "6px" }}
           />
         </Box>
       );
@@ -426,6 +425,19 @@ const columns: GridColDef[] = [
   { field: "threat", headerName: "Threat", flex: 1, minWidth: 120 },
   { field: "application", headerName: "Application", flex: 1, minWidth: 140 },
   { field: "site", headerName: "Site", flex: 1, minWidth: 120 },
+  { field: "policy", headerName: "Policy", flex: 1, minWidth: 120 },
+  {
+    field: "scheduledPolicyName",
+    headerName: "Scheduled Policy Name",
+    flex: 1,
+    minWidth: 180,
+  },
+  {
+    field: "collectionName",
+    headerName: "Collection Name",
+    flex: 1,
+    minWidth: 160,
+  },
   { field: "deployment", headerName: "Deployment", flex: 1, minWidth: 140 },
   {
     field: "deploymentType",
@@ -433,10 +445,24 @@ const columns: GridColDef[] = [
     flex: 1,
     minWidth: 150,
   },
+  { field: "deploymentOs", headerName: "Deployment OS", flex: 1, minWidth: 140 },
   { field: "agentName", headerName: "Agent Name", flex: 1, minWidth: 140 },
+  { field: "resolver", headerName: "Resolver", flex: 1, minWidth: 120 },
   {
     field: "localUserName",
     headerName: "Local User Name",
+    flex: 1,
+    minWidth: 150,
+  },
+  {
+    field: "lanDeviceName",
+    headerName: "LAN Device Name",
+    flex: 1,
+    minWidth: 160,
+  },
+  {
+    field: "requestAddress",
+    headerName: "Request Address",
     flex: 1,
     minWidth: 150,
   },
@@ -447,22 +473,16 @@ const columns: GridColDef[] = [
     minWidth: 160,
   },
   {
-    field: "requestAddress",
-    headerName: "Request Address",
-    flex: 1,
-    minWidth: 150,
-  },
-  { field: "resolvedIp", headerName: "Resolved IPs", flex: 1, minWidth: 140 },
-  { field: "queryType", headerName: "Query Type", flex: 1, minWidth: 130 },
-  { field: "lookupType", headerName: "Lookup Type", flex: 1, minWidth: 130 },
-  { field: "resolver", headerName: "Resolver", flex: 1, minWidth: 120 },
-  { field: "policy", headerName: "Policy", flex: 1, minWidth: 120 },
-  {
-    field: "scheduledPolicyName",
-    headerName: "Scheduled Policy Name",
+    field: "localIpv6",
+    headerName: "Local IPv6 Address",
     flex: 1,
     minWidth: 180,
   },
+  { field: "macAddress", headerName: "MAC Address", flex: 1, minWidth: 150 },
+  { field: "resolvedIp", headerName: "Resolved IPs", flex: 1, minWidth: 140 },
+  { field: "queryType", headerName: "Query Type", flex: 1, minWidth: 130 },
+  { field: "protocol", headerName: "Protocol", flex: 1, minWidth: 110 },
+  { field: "responseTime", headerName: "Response Time", flex: 1, minWidth: 130 },
   {
     field: "actions",
     headerName: "Actions",
@@ -470,6 +490,7 @@ const columns: GridColDef[] = [
     sortable: false,
     filterable: false,
     resizable: false,
+    hideable: false,
     renderCell: (params) => <RowActionsCell row={params.row as QueryLogRow} />,
   },
 ];
@@ -616,18 +637,24 @@ const COLUMN_VIEW_PRESETS: Record<string, string[] | null> = {
     "threat",
     "application",
     "site",
-    "deployment",
-    "deploymentType",
-    "agentName",
-    "localUserName",
-    "localIpv4",
-    "requestAddress",
-    "resolvedIp",
-    "queryType",
-    "lookupType",
-    "resolver",
     "policy",
     "scheduledPolicyName",
+    "collectionName",
+    "deployment",
+    "deploymentType",
+    "deploymentOs",
+    "agentName",
+    "resolver",
+    "localUserName",
+    "lanDeviceName",
+    "requestAddress",
+    "localIpv4",
+    "localIpv6",
+    "macAddress",
+    "resolvedIp",
+    "queryType",
+    "protocol",
+    "responseTime",
     "actions",
   ],
   default: [
@@ -650,9 +677,9 @@ const COLUMN_VIEW_PRESETS: Record<string, string[] | null> = {
     "method",
     "categories",
     "threat",
+    "site",
     "policy",
     "scheduledPolicyName",
-    "site",
     "deployment",
     "deploymentType",
     "localUserName",
@@ -666,18 +693,17 @@ const COLUMN_VIEW_PRESETS: Record<string, string[] | null> = {
     "result",
     "method",
     "categories",
+    "threat",
     "site",
     "policy",
     "deployment",
-    "localUserName",
     "deploymentType",
-    "requestAddress",
-    "threat",
     "agentName",
+    "localUserName",
+    "requestAddress",
     "localIpv4",
     "resolvedIp",
     "queryType",
-    "lookupType",
     "actions",
   ],
 };
@@ -801,7 +827,12 @@ export default function QueryLogsPage() {
   // Column visibility — driven by the Default-view preset selection.
   const [columnVisibilityModel, setColumnVisibilityModel] = useState<
     Record<string, boolean>
-  >({});
+  >(() =>
+    buildVisibilityModel(
+      columns.map((c) => c.field),
+      COLUMN_VIEW_PRESETS.default ?? null,
+    ),
+  );
   const [selectedView, setSelectedView] = useState<string>("default");
   // Row most recently acted on via "Investigate Query" — highlighted like a
   // selected row until the time-window filter is cleared.

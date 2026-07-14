@@ -1,5 +1,6 @@
-// Dashboard switcher dropdown — search at top, Favorites section, Other
-// dashboards section, with "Create dashboard" and "Manage Dashboards" actions
+// Dashboard switcher dropdown — search at top, then Favorites / Published views
+// / My dashboards sections, with "Create dashboard" and "Manage Dashboards"
+// actions
 // pinned at the bottom.
 
 import {
@@ -16,11 +17,20 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { MaterialSymbol } from "@/components/material-symbol";
 
 import { DASHBOARD_NAMES } from "./lib";
 
 const ALL_DASHBOARDS = DASHBOARD_NAMES;
+
+// Non-favorite dashboards are split into "Published views" (shared) and
+// "My dashboards" (personal). Anything not listed here falls under My dashboards.
+const PUBLISHED_VIEWS = [
+  "MSP Client Health",
+  "Threat Activity",
+  "Roaming Clients",
+];
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -68,8 +78,8 @@ function DashRow({
         borderRadius: 1,
         px: 1.25,
         py: 1,
-        fontSize: 14,
-        fontWeight: 500,
+        fontSize: 16,
+        fontWeight: 400,
         color: "text.primary",
         "&:hover": {
           bgcolor: selected ? "rgba(53,39,253,.08)" : "action.hover",
@@ -87,25 +97,24 @@ function DashRow({
       >
         {name}
       </Box>
-      <IconButton
-        size="small"
-        onClick={(e) => onToggleFav(e, name)}
-        title={isFav ? "Unfavorite" : "Add to favorites"}
-        sx={(theme) => ({
-          p: 0.25,
-          color: isFav ? "warning.main" : "text.disabled",
-          ...(isFav &&
-            theme.applyStyles("dark", {
-              color: theme.vars.palette.primary.light,
-            })),
-        })}
+      <ArrowTooltip
+        title={isFav ? "Remove from favorites." : "Add to favorites."}
       >
-        <MaterialSymbol
-          name="star"
-          size={20}
-          sx={{ fontVariationSettings: isFav ? '"FILL" 1' : '"FILL" 0' }}
-        />
-      </IconButton>
+        <IconButton
+          size="small"
+          onClick={(e) => onToggleFav(e, name)}
+          sx={{
+            p: 0.25,
+            color: isFav ? "warning.main" : "text.disabled",
+          }}
+        >
+          <MaterialSymbol
+            name="star"
+            size={20}
+            sx={{ fontVariationSettings: isFav ? '"FILL" 1' : '"FILL" 0' }}
+          />
+        </IconButton>
+      </ArrowTooltip>
     </Box>
   );
 }
@@ -138,9 +147,13 @@ export function DashSwitcher({
   };
   const match = (n: string) => n.toLowerCase().includes(q.toLowerCase());
   const favList = ALL_DASHBOARDS.filter((n) => favs.includes(n) && match(n));
-  const otherList = ALL_DASHBOARDS.filter(
-    (n) => !favs.includes(n) && match(n),
+  const publishedList = ALL_DASHBOARDS.filter(
+    (n) => !favs.includes(n) && PUBLISHED_VIEWS.includes(n) && match(n),
   );
+  const myList = ALL_DASHBOARDS.filter(
+    (n) => !favs.includes(n) && !PUBLISHED_VIEWS.includes(n) && match(n),
+  );
+  const totalMatches = favList.length + publishedList.length + myList.length;
 
   return (
     <Popper
@@ -209,11 +222,11 @@ export function DashSwitcher({
                 ))}
               </>
             )}
-            {favList.length > 0 && otherList.length > 0 && <Divider />}
-            {otherList.length > 0 && (
+            {favList.length > 0 && publishedList.length > 0 && <Divider />}
+            {publishedList.length > 0 && (
               <>
-                <SectionLabel>Other dashboards</SectionLabel>
-                {otherList.map((n) => (
+                <SectionLabel>Published views</SectionLabel>
+                {publishedList.map((n) => (
                   <DashRow
                     key={n}
                     name={n}
@@ -225,7 +238,24 @@ export function DashSwitcher({
                 ))}
               </>
             )}
-            {favList.length === 0 && otherList.length === 0 && (
+            {favList.length + publishedList.length > 0 &&
+              myList.length > 0 && <Divider />}
+            {myList.length > 0 && (
+              <>
+                <SectionLabel>My dashboards</SectionLabel>
+                {myList.map((n) => (
+                  <DashRow
+                    key={n}
+                    name={n}
+                    current={current}
+                    isFav={false}
+                    onPick={onPick}
+                    onToggleFav={toggleFav}
+                  />
+                ))}
+              </>
+            )}
+            {totalMatches === 0 && (
               <Typography
                 sx={{
                   fontSize: 14,

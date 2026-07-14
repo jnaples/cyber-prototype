@@ -1,35 +1,7 @@
 import type { Components, Theme } from "@mui/material";
-import { createTheme, ThemeProvider, useTheme } from "@mui/material";
-import { GridFilterPanel } from "@mui/x-data-grid";
-import React from "react";
+import { alpha } from "@mui/material";
 
-function StandardFilterPanel(
-  props: React.ComponentProps<typeof GridFilterPanel>,
-) {
-  const outer = useTheme();
-  const inner = React.useMemo(
-    () =>
-      createTheme({
-        ...outer,
-        components: {
-          ...outer.components,
-          MuiTextField: {
-            defaultProps: { size: "small" },
-          },
-          MuiFormControl: {
-            defaultProps: { size: "small" },
-          },
-        },
-      }),
-    [outer],
-  );
-
-  return (
-    <ThemeProvider theme={inner}>
-      <GridFilterPanel {...props} />
-    </ThemeProvider>
-  );
-}
+import { StandardFilterPanel } from "./standard-filter-panel";
 
 const MuiDataGrid: Components<Theme>["MuiDataGrid"] = {
   defaultProps: {
@@ -45,6 +17,14 @@ const MuiDataGrid: Components<Theme>["MuiDataGrid"] = {
       // text button color, wherever an "actions" column appears.
       "& .MuiDataGrid-cell[data-field='actions'] .MuiIconButton-root": {
         color: theme.vars.palette.secondary.main,
+      },
+      // Selected row uses the same primary tint as a selected menu item, so
+      // "selected" reads consistently between grids and dropdowns.
+      "& .MuiDataGrid-row.Mui-selected": {
+        backgroundColor: alpha(theme.palette.primary.main, 0.24),
+        "&:hover": {
+          backgroundColor: alpha(theme.palette.primary.main, 0.32),
+        },
       },
     }),
   },

@@ -22,7 +22,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { MaterialSymbol } from "@/components/material-symbol";
@@ -245,6 +245,18 @@ function readPersisted(): {
   }
 }
 
+// Toast message with the dashboard/widget name bolded.
+function nameToast(name: string, rest: string): ReactNode {
+  return (
+    <>
+      <Box component="span" sx={{ fontWeight: 700 }}>
+        {name}
+      </Box>{" "}
+      {rest}
+    </>
+  );
+}
+
 export default function DashboardsPage() {
   const navigate = useNavigate();
   const persisted = readPersisted();
@@ -267,12 +279,15 @@ export default function DashboardsPage() {
     null,
   );
   const [actionsAnchor, setActionsAnchor] = useState<HTMLElement | null>(null);
+  // Whether this dashboard is shared with the org. Held in memory only, so it
+  // resets on refresh — enough to simulate the toggle.
+  const [sharedWithOrg, setSharedWithOrg] = useState(false);
   const [dashDeleteOpen, setDashDeleteOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [switcherAnchor, setSwitcherAnchor] = useState<HTMLElement | null>(
     null,
   );
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<ReactNode | null>(null);
   // Snapshot of the filters cleared by the Clear button, so the toast can undo.
   const [clearedFilters, setClearedFilters] = useState<{
     filters: DashboardFilters;
@@ -518,7 +533,9 @@ export default function DashboardsPage() {
           aria-pressed={favorited}
           onClick={() => {
             setFavorited((prev) => !prev);
-            setToast(favorited ? "Removed from favorites" : "Added to favorites");
+            setToast(
+              favorited ? "Removed from favorites." : "Added to favorites.",
+            );
           }}
         >
           <MaterialSymbol
@@ -628,6 +645,7 @@ export default function DashboardsPage() {
           disableRestoreFocus
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           transformOrigin={{ vertical: "top", horizontal: "right" }}
+          sx={{ "& .MuiMenuItem-root": { fontSize: 16 } }}
         >
           {/* Edit-this-dashboard cluster */}
           <MenuItem
@@ -643,7 +661,7 @@ export default function DashboardsPage() {
           <MenuItem
             onClick={() => {
               setActionsAnchor(null);
-              setToast(`${name} duplicated`);
+              setToast(nameToast(name, "duplicated."));
             }}
           >
             <LibraryAddOutlinedIcon
@@ -658,7 +676,7 @@ export default function DashboardsPage() {
           <MenuItem
             onClick={() => {
               setActionsAnchor(null);
-              setToast(`${name} set as default`);
+              setToast(nameToast(name, "set as default."));
             }}
           >
             <MaterialSymbol
@@ -669,12 +687,20 @@ export default function DashboardsPage() {
             Set as default
           </MenuItem>
 
-          <Divider />
-
-          {/* Share band */}
-          <MenuItem onClick={() => setActionsAnchor(null)}>
-            <MaterialSymbol name="share" size={16} sx={{ mr: "8px", opacity: 0.7 }} />
-            Share
+          {/* Share band — grouped with the defaults cluster */}
+          <MenuItem
+            onClick={() => {
+              setSharedWithOrg((prev) => !prev);
+              setActionsAnchor(null);
+              setToast(nameToast(name, "updated."));
+            }}
+          >
+            <MaterialSymbol
+              name={sharedWithOrg ? "lock" : "share"}
+              size={16}
+              sx={{ mr: "8px", opacity: 0.7 }}
+            />
+            {sharedWithOrg ? "Make view private" : "Make view public"}
           </MenuItem>
 
           <Divider />
@@ -722,7 +748,7 @@ export default function DashboardsPage() {
               color="primary"
               onClick={() => {
                 setEditMode(false);
-                setToast(`${name} saved`);
+                setToast(nameToast(name, "saved."));
               }}
             >
               Save
@@ -934,7 +960,7 @@ export default function DashboardsPage() {
         onApply={(types) => {
           types.forEach((t) => addWidget(t));
           setToast(
-            `${types.length} widget${types.length === 1 ? "" : "s"} added`,
+            `${types.length} widget${types.length === 1 ? "" : "s"} added.`,
           );
         }}
       />
@@ -978,7 +1004,7 @@ export default function DashboardsPage() {
             if (pendingDelete) {
               removeWidget(pendingDelete.id);
               const name = CATALOG_BY_TYPE[pendingDelete.type]?.name ?? "Widget";
-              setToast(`${name} removed`);
+              setToast(nameToast(name, "removed."));
             }
             setPendingDelete(null);
           },
@@ -1054,8 +1080,9 @@ export default function DashboardsPage() {
       {/* Add/remove toast */}
       <Snackbar
         open={Boolean(toast)}
-        // The "Filters cleared" toast lingers longer so Undo is reachable.
-        autoHideDuration={clearedFilters ? 8000 : 3000}
+        // The "Filters cleared" toast lingers longer so Undo is reachable;
+        // all other toasts dismiss quickly.
+        autoHideDuration={clearedFilters ? 8000 : 2000}
         onClose={() => {
           setToast(null);
           setClearedFilters(null);
