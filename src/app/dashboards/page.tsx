@@ -22,7 +22,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { MaterialSymbol } from "@/components/material-symbol";
@@ -245,18 +245,6 @@ function readPersisted(): {
   }
 }
 
-// Toast message with the dashboard/widget name bolded.
-function nameToast(name: string, rest: string): ReactNode {
-  return (
-    <>
-      <Box component="span" sx={{ fontWeight: 700 }}>
-        {name}
-      </Box>{" "}
-      {rest}
-    </>
-  );
-}
-
 export default function DashboardsPage() {
   const navigate = useNavigate();
   const persisted = readPersisted();
@@ -287,7 +275,7 @@ export default function DashboardsPage() {
   const [switcherAnchor, setSwitcherAnchor] = useState<HTMLElement | null>(
     null,
   );
-  const [toast, setToast] = useState<ReactNode | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   // Snapshot of the filters cleared by the Clear button, so the toast can undo.
   const [clearedFilters, setClearedFilters] = useState<{
     filters: DashboardFilters;
@@ -661,7 +649,7 @@ export default function DashboardsPage() {
           <MenuItem
             onClick={() => {
               setActionsAnchor(null);
-              setToast(nameToast(name, "duplicated."));
+              setToast(`${name} duplicated.`);
             }}
           >
             <LibraryAddOutlinedIcon
@@ -676,7 +664,7 @@ export default function DashboardsPage() {
           <MenuItem
             onClick={() => {
               setActionsAnchor(null);
-              setToast(nameToast(name, "set as default."));
+              setToast(`${name} set as default.`);
             }}
           >
             <MaterialSymbol
@@ -692,7 +680,7 @@ export default function DashboardsPage() {
             onClick={() => {
               setSharedWithOrg((prev) => !prev);
               setActionsAnchor(null);
-              setToast(nameToast(name, "updated."));
+              setToast(`${name} updated.`);
             }}
           >
             <MaterialSymbol
@@ -700,7 +688,7 @@ export default function DashboardsPage() {
               size={16}
               sx={{ mr: "8px", opacity: 0.7 }}
             />
-            {sharedWithOrg ? "Make view private" : "Make view public"}
+            {sharedWithOrg ? "Change to private" : "Share with organization"}
           </MenuItem>
 
           <Divider />
@@ -748,7 +736,7 @@ export default function DashboardsPage() {
               color="primary"
               onClick={() => {
                 setEditMode(false);
-                setToast(nameToast(name, "saved."));
+                setToast(`${name} saved.`);
               }}
             >
               Save
@@ -1004,7 +992,7 @@ export default function DashboardsPage() {
             if (pendingDelete) {
               removeWidget(pendingDelete.id);
               const name = CATALOG_BY_TYPE[pendingDelete.type]?.name ?? "Widget";
-              setToast(nameToast(name, "removed."));
+              setToast(`${name} removed.`);
             }
             setPendingDelete(null);
           },
