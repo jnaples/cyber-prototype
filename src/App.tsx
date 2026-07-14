@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 
 import RootLayout from "@/app/layout";
 import CybersightPage from "@/app/cybersight/page";
@@ -7,7 +7,10 @@ import SecureShieldPage from "@/app/secureshield/page";
 import DeploymentsLayout from "@/app/deployments/layout";
 import DeploymentsIndexPage from "@/app/deployments/page";
 import RoamingClientsPage from "@/app/deployments/roaming-clients/page";
+import ClientlessPage from "@/app/deployments/clientless/page";
+import CreateClientlessPage from "@/app/deployments/clientless/create/page";
 import SitesPage from "@/app/deployments/sites/page";
+import DesignSystemLayout from "@/app/design-system/layout";
 import AlertsDocsPage from "@/app/design-system/alerts/page";
 import ButtonsDocsPage from "@/app/design-system/buttons/page";
 import CardsDocsPage from "@/app/design-system/cards/page";
@@ -59,7 +62,12 @@ function App() {
           <Route index element={<DeploymentsIndexPage />} />
           <Route path="sites" element={<SitesPage />} />
           <Route path="roaming-clients" element={<RoamingClientsPage />} />
+          <Route path="clientless" element={<ClientlessPage />} />
         </Route>
+        <Route
+          path="deployments/clientless/create"
+          element={<CreateClientlessPage />}
+        />
 
         <Route path="unblock-requests" element={<UnblockRequestsLayout />}>
           <Route index element={<UnblockRequestsIndexPage />} />
@@ -67,7 +75,8 @@ function App() {
           <Route path="history" element={<RequestHistoryPage />} />
         </Route>
 
-        <Route path="design-system">
+        <Route path="design-system" element={<DesignSystemLayout />}>
+          <Route index element={<Navigate to="buttons" replace />} />
           <Route path="alerts" element={<AlertsDocsPage />} />
           <Route path="buttons" element={<ButtonsDocsPage />} />
           <Route path="cards" element={<CardsDocsPage />} />

@@ -27,6 +27,7 @@ import type {
 import { getGridStringOperators, useGridApiRef } from "@mui/x-data-grid";
 import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
+import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import { endOfDay, startOfDay, subDays, subHours, subMinutes } from "date-fns";
 import { createContext, useContext, useState } from "react";
@@ -1456,11 +1457,11 @@ export default function QueryLogsPage() {
                       color="secondary"
                       disabled={filtersDisabled}
                       onClick={() => setAdvancedOpen(true)}
-                      startIcon={<MaterialSymbol name="tune" size={20} />}
+                      startIcon={<FilterAltOutlinedIcon sx={{ fontSize: 20 }} />}
                     >
                       {appliedAdvancedFilters.length > 0
-                        ? `Advanced Filters (${appliedAdvancedFilters.length})`
-                        : "Advanced Filters"}
+                        ? `More Filters (${appliedAdvancedFilters.length})`
+                        : "More Filters"}
                     </Button>
                   </Box>
                 </ArrowTooltip>
@@ -1618,7 +1619,7 @@ export default function QueryLogsPage() {
           onApply={setAppliedAdvancedFilters}
           seedFilters={appliedAdvancedFilters}
           applyLabel="Done"
-          title="Advanced Filters"
+          title="More Filters"
         />
       </PageShell>
     </InvestigateContext.Provider>

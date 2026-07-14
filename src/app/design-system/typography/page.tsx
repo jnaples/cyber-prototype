@@ -1,5 +1,6 @@
 import {
   Button,
+  Container,
   FormLabel,
   Stack,
   Typography,
@@ -24,35 +25,17 @@ const VARIANTS: { variant: TypographyVariant; label: string }[] = [
 
 export default function TypographyView() {
   return (
-    <Stack>
-      {VARIANTS.map((variant) => (
-        <Typography key={variant.variant} variant={variant.variant}>
-          {variant.label}
-        </Typography>
-      ))}
+    <Container maxWidth="lg">
+      <Stack spacing={1} sx={{ py: 4, alignItems: "flex-start" }}>
+        {VARIANTS.map((variant) => (
+          <Typography key={variant.variant} variant={variant.variant}>
+            {variant.label}
+          </Typography>
+        ))}
 
-      {VARIANTS.map((variant) => (
-        <Typography
-          key={variant.variant}
-          variant={variant.variant}
-          color="text.secondary"
-        >
-          {variant.label}
-        </Typography>
-      ))}
-
-      {VARIANTS.map((variant) => (
-        <Typography
-          key={variant.variant}
-          variant={variant.variant}
-          color="text.disabled"
-        >
-          {variant.label}
-        </Typography>
-      ))}
-
-      <FormLabel>Form Label</FormLabel>
-      <Button variant="contained">Button</Button>
-    </Stack>
+        <FormLabel>Form Label</FormLabel>
+        <Button variant="contained">Button</Button>
+      </Stack>
+    </Container>
   );
 }

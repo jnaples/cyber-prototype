@@ -10,16 +10,11 @@ export default function PageHeaderDocs() {
   return (
     <Container maxWidth="lg">
       <Stack sx={{ p: 4, gap: 6 }}>
-        <Box>
-          <Typography variant="pageTitle" component="h1">
-            Page Header
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-            The Page Header sits at the top of every page. It always shows a
-            title and optionally renders a back arrow, a left slot for context
-            (like an org selector), and right-aligned action buttons.
-          </Typography>
-        </Box>
+        <Typography variant="body1" color="text.secondary">
+          The Page Header sits at the top of every page. It always shows a
+          title and optionally renders a back arrow, a left slot for context
+          (like an org selector), and right-aligned action buttons.
+        </Typography>
 
         <Box>
           <Typography variant="sectionHeading" component="h2" sx={{ mb: 2 }}>

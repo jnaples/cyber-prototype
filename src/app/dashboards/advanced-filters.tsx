@@ -172,24 +172,26 @@ function FilterRow({
         </IconButton>
       </Tooltip>
 
-      {/* And/Or conjunction — only when filters are stacked. The first row
-          reserves the space so columns stay aligned across rows. */}
+      {/* Conjunction — only AND is supported, so it's shown as static text.
+          The first row reserves the space so columns stay aligned across rows. */}
       {multi &&
         (index === 0 ? (
           <Box sx={{ width: CONJ_WIDTH, flexShrink: 0 }} />
         ) : (
-          <TextField
-            select
-            size="small"
-            value={item.conjunction}
-            onChange={(e) =>
-              onChange({ ...item, conjunction: e.target.value as Conjunction })
-            }
-            sx={{ width: CONJ_WIDTH, flexShrink: 0 }}
+          <Box
+            sx={{
+              width: CONJ_WIDTH,
+              flexShrink: 0,
+              height: 40,
+              display: "flex",
+              alignItems: "center",
+              color: "text.primary",
+              fontWeight: 600,
+              fontSize: 14,
+            }}
           >
-            <MenuItem value="And">And</MenuItem>
-            <MenuItem value="Or">Or</MenuItem>
-          </TextField>
+            And
+          </Box>
         ))}
 
       <Field label="Filter by:">
