@@ -143,6 +143,7 @@ function FilterRow({
   index,
   multi,
   columns,
+  lockConjunction,
   onChange,
   onRemove,
   onEnter,
@@ -151,6 +152,8 @@ function FilterRow({
   index: number;
   multi: boolean;
   columns: FilterColumn[];
+  /** When true, the conjunction is fixed to AND (shown as static text). */
+  lockConjunction: boolean;
   onChange: (next: FilterItem) => void;
   onRemove: () => void;
   /** Fired when Enter is pressed in the free-text value field. */
@@ -172,12 +175,12 @@ function FilterRow({
         </IconButton>
       </Tooltip>
 
-      {/* Conjunction — only AND is supported, so it's shown as static text.
-          The first row reserves the space so columns stay aligned across rows. */}
+      {/* Conjunction — an And/Or dropdown, or static "And" when locked. The
+          first row reserves the space so columns stay aligned across rows. */}
       {multi &&
         (index === 0 ? (
           <Box sx={{ width: CONJ_WIDTH, flexShrink: 0 }} />
-        ) : (
+        ) : lockConjunction ? (
           <Box
             sx={{
               width: CONJ_WIDTH,
@@ -192,6 +195,19 @@ function FilterRow({
           >
             And
           </Box>
+        ) : (
+          <TextField
+            select
+            size="small"
+            value={item.conjunction}
+            onChange={(e) =>
+              onChange({ ...item, conjunction: e.target.value as Conjunction })
+            }
+            sx={{ width: CONJ_WIDTH, flexShrink: 0 }}
+          >
+            <MenuItem value="And">And</MenuItem>
+            <MenuItem value="Or">Or</MenuItem>
+          </TextField>
         ))}
 
       <Field label="Filter by:">
@@ -278,6 +294,7 @@ export function AdvancedFilters({
   applyLabel = "Apply",
   title = "Advanced Filters",
   seedFilters,
+  lockConjunction = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -295,6 +312,11 @@ export function AdvancedFilters({
    * with a single empty row.
    */
   seedFilters?: AppliedAdvancedFilter[];
+  /**
+   * When true, stacked rows are joined with AND only (shown as static text)
+   * instead of the And/Or dropdown.
+   */
+  lockConjunction?: boolean;
 }) {
   const firstField = columns[0].field;
 
@@ -370,6 +392,7 @@ export function AdvancedFilters({
               index={index}
               multi={items.length > 1}
               columns={columns}
+              lockConjunction={lockConjunction}
               onChange={(next) => updateItem(item.id, next)}
               onRemove={() => removeItem(item.id)}
               onEnter={addFilter}

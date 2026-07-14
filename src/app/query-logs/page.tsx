@@ -1620,6 +1620,7 @@ export default function QueryLogsPage() {
           seedFilters={appliedAdvancedFilters}
           applyLabel="Done"
           title="More Filters"
+          lockConjunction
         />
       </PageShell>
     </InvestigateContext.Provider>
