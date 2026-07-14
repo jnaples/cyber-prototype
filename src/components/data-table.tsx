@@ -395,9 +395,9 @@ function FilterPanelFooter() {
       </Button>
       <Button
         variant="text"
-        color="primary"
+        color="error"
         onClick={handleRemoveAll}
-        startIcon={<MaterialSymbol name="delete" size={20} />}
+        startIcon={<DeleteForeverOutlinedIcon sx={{ fontSize: 20 }} />}
       >
         Remove All
       </Button>
