@@ -495,6 +495,8 @@ export default function DashboardsPage() {
   // Filtering and refresh are unavailable while editing the layout.
   const editLockTooltip = (label: string) =>
     `Edit mode is active. Exit it to enable ${label}.`;
+  const filterBarLockTooltip =
+    "Edit mode is active. Exit to remove or clear active filters.";
 
   return (
     <Box
@@ -920,25 +922,47 @@ export default function DashboardsPage() {
                 {group.fieldLabel}:
               </Typography>
               {group.items.map((f) => (
-                <Chip
+                <ArrowTooltip
                   key={f.key}
-                  size="small"
-                  label={f.valueLabel}
-                  onDelete={f.onRemove}
-                  sx={{ borderRadius: (t) => t.spacing(1) }}
-                />
+                  title={editMode ? filterBarLockTooltip : ""}
+                >
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      cursor: editMode ? "not-allowed" : undefined,
+                    }}
+                  >
+                    <Chip
+                      size="small"
+                      label={f.valueLabel}
+                      onDelete={f.onRemove}
+                      disabled={editMode}
+                      sx={{ borderRadius: (t) => t.spacing(1) }}
+                    />
+                  </span>
+                </ArrowTooltip>
               ))}
             </Box>
           ))}
-          <Button
-            variant="text"
-            color="error"
-            size="small"
-            onClick={clearAllFilters}
-            startIcon={<MaterialSymbol name="close" size={18} />}
-          >
-            Clear
-          </Button>
+          <ArrowTooltip title={editMode ? filterBarLockTooltip : ""}>
+            <span
+              style={{
+                display: "inline-flex",
+                cursor: editMode ? "not-allowed" : undefined,
+              }}
+            >
+              <Button
+                variant="text"
+                color="error"
+                size="small"
+                disabled={editMode}
+                onClick={clearAllFilters}
+                startIcon={<MaterialSymbol name="close" size={18} />}
+              >
+                Clear
+              </Button>
+            </span>
+          </ArrowTooltip>
         </Box>
       )}
 
