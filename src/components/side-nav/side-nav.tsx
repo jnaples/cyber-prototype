@@ -1,5 +1,4 @@
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Badge, Box, Collapse, MenuItem, Select } from "@mui/material";
+import { Badge, Box, Collapse } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
 import React, { useState } from "react";
@@ -12,6 +11,7 @@ import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { lightPalette } from "@/theme/core/palette";
 
 import { MaterialSymbol } from "../material-symbol";
+import { OrgSwitcher } from "./org-switcher";
 
 // Material Symbol icon component
 function Icon({
@@ -78,14 +78,6 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
   const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState<string>("dashboard-overview");
   const [expandedDropdown, setExpandedDropdown] = useState<string | null>(null);
-  const [workspace, setWorkspace] = useState<string>("test-lab");
-
-  const workspaces = [
-    { value: "test-lab", label: "Test Lab" },
-    { value: "production", label: "Production" },
-    { value: "staging", label: "Staging" },
-  ];
-
   const handleItemClick = (itemId: string) => {
     setActiveItem(itemId);
   };
@@ -270,43 +262,8 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           )}
         </Box>
 
-        {/* Workspace switcher */}
-        {isExpanded && (
-          <Box data-mui-color-scheme="dark" sx={{ px: 1, pt: 2, pb: 1 }}>
-            <Select
-              fullWidth
-              size="small"
-              value={workspace}
-              onChange={(e) => setWorkspace(e.target.value)}
-              IconComponent={ExpandMoreIcon}
-              sx={{
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "#e5e7eb",
-                },
-                "& .MuiSelect-icon": {
-                  fontSize: 20,
-                  color: "common.white",
-                },
-              }}
-              MenuProps={{
-                slotProps: {
-                  paper: {
-                    "data-mui-color-scheme": "dark",
-                  } as React.HTMLAttributes<HTMLDivElement>,
-                },
-              }}
-            >
-              {workspaces.map((w) => (
-                <MenuItem key={w.value} value={w.value}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Icon name="language" size={20} />
-                    <span>{w.label}</span>
-                  </Box>
-                </MenuItem>
-              ))}
-            </Select>
-          </Box>
-        )}
+        {/* Workspace / organization switcher */}
+        {isExpanded && <OrgSwitcher />}
 
         {/* Navigation Links - scrollable middle */}
         <Box

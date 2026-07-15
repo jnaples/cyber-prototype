@@ -26,7 +26,10 @@ import {
   type GridFilterModel,
   gridColumnDefinitionsSelector,
   gridColumnVisibilityModelSelector,
+  gridFilterableColumnDefinitionsSelector,
+  GridFilterForm,
   GridFilterPanel,
+  GridLogicOperator,
   gridPageCountSelector,
   gridPageSelector,
   gridPageSizeSelector,
@@ -438,6 +441,216 @@ function StandardFilterPanel(
   );
 }
 
+// ---------------------------------------------------------------------------
+// Deferred-apply filter panel
+// ---------------------------------------------------------------------------
+
+// Monotonic id source for newly-added draft filters (event-handler only, so it
+// never mutates during render). The empty starter row uses a stable id.
+let deferredFilterId = 0;
+const PLACEHOLDER_FILTER_ID = "deferred-placeholder";
+
+// Structural equality for two filter models (order-insensitive on items) — used
+// to disable "Apply" when the draft matches what's already applied.
+function isSameFilterModel(a: GridFilterModel, b: GridFilterModel): boolean {
+  const logicA = a.logicOperator ?? GridLogicOperator.And;
+  const logicB = b.logicOperator ?? GridLogicOperator.And;
+  if (logicA !== logicB) return false;
+  if (a.items.length !== b.items.length) return false;
+  const key = (it: GridFilterItem) =>
+    `${it.field}|${it.operator}|${JSON.stringify(it.value ?? "")}`;
+  const as = a.items.map(key).sort();
+  const bs = b.items.map(key).sort();
+  return as.every((k, i) => k === bs[i]);
+}
+
+// A filter panel that edits a *local draft* model — the grid does not filter as
+// the user types. Changes are committed to the grid only when "Apply" is
+// clicked; closing the panel discards them (the panel remounts on next open,
+// re-seeding from the applied model). Mirrors MUI's "apply filters on demand".
+function DeferredFilterPanel(
+  props: React.ComponentProps<typeof GridFilterPanel> & {
+    seedModel?: GridFilterModel;
+    onApply?: (model: GridFilterModel) => void;
+  },
+) {
+  const { seedModel, onApply } = props;
+  const apiRef = useGridApiContext();
+  const filterableColumns = useGridSelector(
+    apiRef,
+    gridFilterableColumnDefinitionsSelector,
+  );
+  const outer = useTheme();
+  const inner = React.useMemo(
+    () =>
+      createTheme({
+        ...outer,
+        components: {
+          ...outer.components,
+          MuiTextField: {
+            defaultProps: { variant: "standard", size: "small" },
+          },
+          MuiFormControl: {
+            defaultProps: { variant: "standard", size: "small" },
+          },
+          MuiSelect: { defaultProps: { variant: "standard" } },
+        },
+      }),
+    [outer],
+  );
+
+  const [draft, setDraft] = useState<GridFilterModel>(() => ({
+    items: (seedModel?.items ?? []).map((it) => ({ ...it })),
+    logicOperator: seedModel?.logicOperator ?? GridLogicOperator.And,
+  }));
+
+  const firstColumn = filterableColumns.find((c) => c.filterOperators?.length);
+
+  // Always show at least one (empty) row to edit — matches GridFilterPanel.
+  const displayItems: GridFilterItem[] =
+    draft.items.length > 0
+      ? draft.items
+      : firstColumn
+        ? [
+            {
+              id: PLACEHOLDER_FILTER_ID,
+              field: firstColumn.field,
+              operator: firstColumn.filterOperators![0].value,
+            },
+          ]
+        : [];
+
+  const applyFilterChanges = (item: GridFilterItem) => {
+    setDraft((prev) => {
+      const exists = prev.items.some((i) => i.id === item.id);
+      const items = exists
+        ? prev.items.map((i) => (i.id === item.id ? item : i))
+        : [...prev.items, item];
+      return { ...prev, items };
+    });
+  };
+
+  const deleteFilter = (item: GridFilterItem) => {
+    setDraft((prev) => ({
+      ...prev,
+      items: prev.items.filter((i) => i.id !== item.id),
+    }));
+  };
+
+  const setLogicOperator = (operator: GridLogicOperator) => {
+    setDraft((prev) => ({ ...prev, logicOperator: operator }));
+  };
+
+  const addFilter = () => {
+    if (!firstColumn) return;
+    deferredFilterId += 1;
+    setDraft((prev) => ({
+      ...prev,
+      items: [
+        ...prev.items,
+        {
+          id: `deferred-${deferredFilterId}`,
+          field: firstColumn.field,
+          operator: firstColumn.filterOperators![0].value,
+        },
+      ],
+    }));
+  };
+
+  const removeAll = () => setDraft((prev) => ({ ...prev, items: [] }));
+
+  // Only items that will actually filter (a complete value) get committed.
+  const cleanedItems = draft.items.filter((item) => {
+    const col = filterableColumns.find((c) => c.field === item.field);
+    const op = col?.filterOperators?.find((o) => o.value === item.operator);
+    return Boolean(col && op && op.getApplyFilterFn(item, col));
+  });
+  const cleanedModel: GridFilterModel = {
+    items: cleanedItems,
+    logicOperator: draft.logicOperator,
+  };
+  const appliedModel: GridFilterModel = {
+    items: seedModel?.items ?? [],
+    logicOperator: seedModel?.logicOperator ?? GridLogicOperator.And,
+  };
+  const canApply = !isSameFilterModel(cleanedModel, appliedModel);
+
+  const handleApply = () => {
+    onApply?.(cleanedModel);
+    apiRef.current.hideFilterPanel();
+  };
+
+  const hasMultipleFilters = displayItems.length > 1;
+
+  return (
+    <ThemeProvider theme={inner}>
+      <Box sx={{ display: "flex", flexDirection: "column" }}>
+        <Box
+          sx={{
+            p: 1.5,
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            maxHeight: 400,
+            overflowY: "auto",
+          }}
+        >
+          {displayItems.map((item, index) => (
+            <GridFilterForm
+              key={item.id ?? index}
+              item={item}
+              hasMultipleFilters={hasMultipleFilters}
+              showMultiFilterOperators={index > 0}
+              disableMultiFilterOperator={index !== 1}
+              applyFilterChanges={applyFilterChanges}
+              applyMultiFilterOperatorChanges={setLogicOperator}
+              deleteFilter={deleteFilter}
+              focusElementRef={null}
+            />
+          ))}
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            p: 1,
+            borderTop: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Button
+            variant="text"
+            color="primary"
+            onClick={addFilter}
+            startIcon={<MaterialSymbol name="add" size={20} />}
+          >
+            Add Filter
+          </Button>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Button
+              variant="text"
+              color="error"
+              onClick={removeAll}
+              startIcon={<DeleteForeverOutlinedIcon sx={{ fontSize: 20 }} />}
+            >
+              Remove All
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              disabled={!canApply}
+              onClick={handleApply}
+            >
+              Apply
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </ThemeProvider>
+  );
+}
+
 function CustomColumnsPanel() {
   const apiRef = useGridApiContext();
   const [search, setSearch] = useState("");
@@ -578,6 +791,11 @@ export interface DataTableProps {
   density?: "compact" | "standard" | "comfortable";
   showSearch?: boolean;
   showFilters?: boolean;
+  /**
+   * When set, the filter panel edits a draft model and the grid does not
+   * filter until the user clicks "Apply" (MUI's "apply filters on demand").
+   */
+  deferFilterApply?: boolean;
   showDefaultView?: boolean;
   defaultViewOptions?: DefaultViewOption[];
   /**
@@ -638,6 +856,7 @@ export function DataTable({
   density = "compact",
   showSearch = true,
   showFilters = true,
+  deferFilterApply = false,
   showDefaultView = true,
   defaultViewOptions = [
     { label: "All", value: "all" },
@@ -1011,7 +1230,9 @@ export function DataTable({
             slots={{
               pagination: CustomPagination,
               columnsManagement: CustomColumnsPanel,
-              filterPanel: StandardFilterPanel,
+              filterPanel: deferFilterApply
+                ? DeferredFilterPanel
+                : StandardFilterPanel,
               loadingOverlay: LoadingOverlay,
               // Use the same overlay whether the grid has no data at all
               // (noRowsOverlay) or filtering removed everything
@@ -1024,6 +1245,17 @@ export function DataTable({
             slotProps={{
               pagination: { pageSizeOptions } as never,
               panel: { target: panelTarget },
+              ...(deferFilterApply
+                ? {
+                    filterPanel: {
+                      seedModel: filterModel,
+                      onApply: (model: GridFilterModel) => {
+                        setFilterModel(model);
+                        onFilterModelChange?.(model);
+                      },
+                    } as never,
+                  }
+                : {}),
             }}
             sx={{
               width: "100%",
