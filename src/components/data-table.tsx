@@ -4,6 +4,8 @@ import {
   Chip,
   CircularProgress,
   Divider,
+  FormLabel,
+  IconButton,
   InputAdornment,
   ListItemIcon,
   ListItemText,
@@ -14,6 +16,7 @@ import {
   Select,
   Switch,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -27,7 +30,6 @@ import {
   gridColumnDefinitionsSelector,
   gridColumnVisibilityModelSelector,
   gridFilterableColumnDefinitionsSelector,
-  GridFilterForm,
   GridFilterPanel,
   GridLogicOperator,
   gridPageCountSelector,
@@ -138,7 +140,9 @@ function CustomPagination({
 const OPERATOR_LABELS: Record<string, string> = {
   range: "spans",
   contains: "contains",
+  doesNotContain: "does not contain",
   equals: "equals",
+  doesNotEqual: "does not equal",
   startsWith: "starts with",
   endsWith: "ends with",
   isAnyOf: "is any of",
@@ -150,10 +154,23 @@ const OPERATOR_LABELS: Record<string, string> = {
   before: "before",
   onOrAfter: "on or after",
   onOrBefore: "on or before",
+  "=": "equals",
+  "!=": "does not equal",
+  ">": "greater than",
+  ">=": "greater than or equal to",
+  "<": "less than",
+  "<=": "less than or equal to",
 };
 
 function formatFilterOperator(op: string): string {
-  return OPERATOR_LABELS[op] ?? op;
+  // De-camel-case anything not explicitly mapped, e.g. "doesNotContain".
+  return (
+    OPERATOR_LABELS[op] ??
+    op
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (c) => c.toLowerCase())
+      .trim()
+  );
 }
 
 const DATETIME_LOCAL_RE =
@@ -419,13 +436,13 @@ function StandardFilterPanel(
         components: {
           ...outer.components,
           MuiTextField: {
-            defaultProps: { variant: "standard", size: "small" },
+            defaultProps: { variant: "outlined", size: "small" },
           },
           MuiFormControl: {
-            defaultProps: { variant: "standard", size: "small" },
+            defaultProps: { variant: "outlined", size: "small" },
           },
           MuiSelect: {
-            defaultProps: { variant: "standard" },
+            defaultProps: { variant: "outlined" },
           },
         },
       }),
@@ -464,6 +481,38 @@ function isSameFilterModel(a: GridFilterModel, b: GridFilterModel): boolean {
   return as.every((k, i) => k === bs[i]);
 }
 
+// Width reserved for the And/Or conjunction control so the Filter-by / Operator
+// / Value columns line up across rows (the first row leaves it empty).
+const CONJ_WIDTH = 96;
+
+// A single filter field with its label stacked above the control — matches the
+// dashboards Advanced Filters drawer.
+function LabeledField({
+  label,
+  children,
+  width,
+}: {
+  label: string;
+  children: React.ReactNode;
+  /** Fixed width (px). When omitted, the field flexes to fill the row. */
+  width?: number;
+}) {
+  return (
+    <Box
+      sx={{
+        ...(width
+          ? { flex: "0 0 auto", width, minWidth: width }
+          : { flex: 1, minWidth: 120 }),
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {label ? <FormLabel>{label}</FormLabel> : null}
+      {children}
+    </Box>
+  );
+}
+
 // A filter panel that edits a *local draft* model — the grid does not filter as
 // the user types. Changes are committed to the grid only when "Apply" is
 // clicked; closing the panel discards them (the panel remounts on next open,
@@ -488,12 +537,12 @@ function DeferredFilterPanel(
         components: {
           ...outer.components,
           MuiTextField: {
-            defaultProps: { variant: "standard", size: "small" },
+            defaultProps: { variant: "outlined", size: "small" },
           },
           MuiFormControl: {
-            defaultProps: { variant: "standard", size: "small" },
+            defaultProps: { variant: "outlined", size: "small" },
           },
-          MuiSelect: { defaultProps: { variant: "standard" } },
+          MuiSelect: { defaultProps: { variant: "outlined" } },
         },
       }),
     [outer],
@@ -537,9 +586,6 @@ function DeferredFilterPanel(
     }));
   };
 
-  const setLogicOperator = (operator: GridLogicOperator) => {
-    setDraft((prev) => ({ ...prev, logicOperator: operator }));
-  };
 
   const addFilter = () => {
     if (!firstColumn) return;
@@ -595,19 +641,137 @@ function DeferredFilterPanel(
             overflowY: "auto",
           }}
         >
-          {displayItems.map((item, index) => (
-            <GridFilterForm
-              key={item.id ?? index}
-              item={item}
-              hasMultipleFilters={hasMultipleFilters}
-              showMultiFilterOperators={index > 0}
-              disableMultiFilterOperator={index !== 1}
-              applyFilterChanges={applyFilterChanges}
-              applyMultiFilterOperatorChanges={setLogicOperator}
-              deleteFilter={deleteFilter}
-              focusElementRef={null}
-            />
-          ))}
+          {displayItems.map((item, index) => {
+            const column = filterableColumns.find((c) => c.field === item.field);
+            const operators = column?.filterOperators ?? [];
+            const currentOperator = operators.find(
+              (o) => o.value === item.operator,
+            );
+            const ValueInput = currentOperator?.InputComponent;
+            // The time "range" operator's value input is two datetime pickers,
+            // so it's much wider — pin the column/operator selects to a fixed
+            // width in that case so they don't balloon with the row.
+            const wideValue = item.operator === "range";
+
+            const handleColumnChange = (field: string) => {
+              const col = filterableColumns.find((c) => c.field === field);
+              applyFilterChanges({
+                ...item,
+                field,
+                operator: col?.filterOperators?.[0]?.value ?? item.operator,
+                value: undefined,
+              });
+            };
+            const handleOperatorChange = (operator: string) => {
+              const nextOp = operators.find((o) => o.value === operator);
+              const eraseValue =
+                !nextOp?.InputComponent ||
+                nextOp.InputComponent !== currentOperator?.InputComponent;
+              applyFilterChanges({
+                ...item,
+                operator,
+                value: eraseValue ? undefined : item.value,
+              });
+            };
+
+            return (
+              <Box
+                key={item.id ?? index}
+                sx={{ display: "flex", alignItems: "flex-end", gap: 1.5 }}
+              >
+                <Tooltip title="Remove filter">
+                  <IconButton
+                    size="small"
+                    aria-label="remove filter"
+                    onClick={() => deleteFilter(item)}
+                  >
+                    <MaterialSymbol name="close" size={20} />
+                  </IconButton>
+                </Tooltip>
+
+                {hasMultipleFilters &&
+                  (index === 0 ? (
+                    // Reserve the conjunction column so the first row's fields
+                    // line up with the rows below.
+                    <Box sx={{ width: CONJ_WIDTH, flexShrink: 0 }} />
+                  ) : (
+                    // Rows are always joined with AND (no And/Or dropdown).
+                    <Box
+                      sx={{
+                        width: CONJ_WIDTH,
+                        flexShrink: 0,
+                        height: 40,
+                        display: "flex",
+                        alignItems: "center",
+                        color: "text.primary",
+                        fontWeight: 600,
+                        fontSize: 14,
+                      }}
+                    >
+                      And
+                    </Box>
+                  ))}
+
+                <LabeledField
+                  label="Filter by:"
+                  width={wideValue ? 150 : undefined}
+                >
+                  <TextField
+                    select
+                    size="small"
+                    value={item.field}
+                    onChange={(e) => handleColumnChange(e.target.value)}
+                  >
+                    {filterableColumns.map((c) => (
+                      <MenuItem key={c.field} value={c.field}>
+                        {c.headerName ?? c.field}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </LabeledField>
+
+                <LabeledField
+                  label="Operator"
+                  width={wideValue ? 150 : undefined}
+                >
+                  <TextField
+                    select
+                    size="small"
+                    value={item.operator}
+                    onChange={(e) => handleOperatorChange(e.target.value)}
+                  >
+                    {operators.map((op) => (
+                      <MenuItem key={op.value} value={op.value}>
+                        {op.label ?? formatFilterOperator(op.value)}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </LabeledField>
+
+                <LabeledField label={wideValue ? "" : "Value"}>
+                  {ValueInput ? (
+                    <ValueInput
+                      apiRef={apiRef}
+                      item={item}
+                      applyValue={applyFilterChanges}
+                      slotProps={
+                        {
+                          root: {
+                            label: "",
+                            variant: "outlined",
+                            size: "small",
+                            fullWidth: true,
+                          },
+                        } as never
+                      }
+                    />
+                  ) : (
+                    <TextField size="small" disabled placeholder="No value" />
+                  )}
+                </LabeledField>
+              </Box>
+            );
+          })}
         </Box>
         <Box
           sx={{

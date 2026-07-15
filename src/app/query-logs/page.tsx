@@ -5,6 +5,7 @@ import {
   Chip,
   Divider,
   FormControl,
+  FormLabel,
   IconButton,
   InputAdornment,
   ListItemText,
@@ -221,6 +222,7 @@ function TimeRangeFilterInput(props: GridFilterInputValueProps) {
   // "mm/dd/yyyy --:--:--" placeholder text.
   const fieldSx = (empty: boolean) =>
     ({
+      width: 75,
       accentColor: (theme: Theme) => theme.palette.primary.main,
       "& input::-webkit-calendar-picker-indicator": { display: "none" },
       ...(empty && {
@@ -228,34 +230,39 @@ function TimeRangeFilterInput(props: GridFilterInputValueProps) {
       }),
     }) as const;
   const sharedSlotProps = {
-    inputLabel: { shrink: true },
     htmlInput: { step: 1 },
   } as const;
 
   return (
-    <Box sx={{ display: "flex", gap: 1, alignItems: "flex-end" }}>
-      <TextField
-        label="Start"
-        type="datetime-local"
-        size="small"
-        variant="standard"
-        value={start}
-        onChange={(e) => applyValue({ ...item, value: [e.target.value, end] })}
-        sx={fieldSx(!start)}
-        slotProps={sharedSlotProps}
-      />
-      <TextField
-        label="End"
-        type="datetime-local"
-        size="small"
-        variant="standard"
-        value={end}
-        onChange={(e) =>
-          applyValue({ ...item, value: [start, e.target.value] })
-        }
-        sx={fieldSx(!end)}
-        slotProps={sharedSlotProps}
-      />
+    <Box sx={{ display: "flex", gap: 1 }}>
+      <Box sx={{ display: "flex", flexDirection: "column" }}>
+        <FormLabel>Start</FormLabel>
+        <TextField
+          type="datetime-local"
+          size="small"
+          variant="outlined"
+          value={start}
+          onChange={(e) =>
+            applyValue({ ...item, value: [e.target.value, end] })
+          }
+          sx={fieldSx(!start)}
+          slotProps={sharedSlotProps}
+        />
+      </Box>
+      <Box sx={{ display: "flex", flexDirection: "column" }}>
+        <FormLabel>End</FormLabel>
+        <TextField
+          type="datetime-local"
+          size="small"
+          variant="outlined"
+          value={end}
+          onChange={(e) =>
+            applyValue({ ...item, value: [start, e.target.value] })
+          }
+          sx={fieldSx(!end)}
+          slotProps={sharedSlotProps}
+        />
+      </Box>
     </Box>
   );
 }
