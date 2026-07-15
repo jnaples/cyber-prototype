@@ -548,18 +548,21 @@ function DeferredFilterPanel(
     [outer],
   );
 
-  const [draft, setDraft] = useState<GridFilterModel>(() => ({
-    items: (seedModel?.items ?? []).map((it) => ({ ...it })),
-    logicOperator: seedModel?.logicOperator ?? GridLogicOperator.And,
-  }));
-
   const firstColumn = filterableColumns.find((c) => c.filterOperators?.length);
 
-  // Always show at least one (empty) row to edit — matches GridFilterPanel.
-  const displayItems: GridFilterItem[] =
-    draft.items.length > 0
-      ? draft.items
-      : firstColumn
+  // Seed the draft from the applied model, or start with a single empty row so
+  // the first "Add Filter" click adds a *second* row (rather than silently
+  // replacing an invisible placeholder).
+  const [draft, setDraft] = useState<GridFilterModel>(() => {
+    const seeded = seedModel?.items ?? [];
+    if (seeded.length > 0) {
+      return {
+        items: seeded.map((it) => ({ ...it })),
+        logicOperator: seedModel?.logicOperator ?? GridLogicOperator.And,
+      };
+    }
+    return {
+      items: firstColumn
         ? [
             {
               id: PLACEHOLDER_FILTER_ID,
@@ -567,7 +570,12 @@ function DeferredFilterPanel(
               operator: firstColumn.filterOperators![0].value,
             },
           ]
-        : [];
+        : [],
+      logicOperator: GridLogicOperator.And,
+    };
+  });
+
+  const displayItems = draft.items;
 
   const applyFilterChanges = (item: GridFilterItem) => {
     setDraft((prev) => {
