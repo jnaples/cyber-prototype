@@ -16,20 +16,12 @@ import {
 import { useState } from "react";
 
 import { MaterialSymbol } from "@/components/material-symbol";
+import { MSP_ORGANIZATIONS } from "@/data/organizations";
 
 const byName = (a: string, b: string) => a.localeCompare(b);
 
 const MSP_DASHBOARDS = ["TechsRUs", "MSPDash"].sort(byName);
-const ORGANIZATIONS = [
-  "Riverside Dental Group",
-  "Summit Financial Advisors",
-  "Coastal Property Mgmt",
-  "Bright Future Pediatrics",
-  "Vanguard Auto Repair",
-  "Northwind Traders",
-  "Acme Retail Group",
-  "Lakeside Law Group",
-].sort(byName);
+const ORGANIZATIONS = MSP_ORGANIZATIONS;
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -218,7 +210,7 @@ export function OrgSwitcher() {
                   onClick={close}
                   startIcon={<MaterialSymbol name="add" size={20} />}
                   sx={{
-                    justifyContent: "flex-start",
+                    justifyContent: "center",
                     width: "100%",
                     color: "#ffffff",
                   }}

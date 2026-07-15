@@ -40,6 +40,7 @@ import { AdvancedFilters, type AppliedAdvancedFilter } from "./advanced-filters"
 import { QuickFilters } from "./quick-filters";
 import { DashCard } from "./dash-card";
 import { DashSwitcher } from "./dash-switcher";
+import { ShareWithOrganizationsDrawer } from "./share-with-organizations-drawer";
 import { CATALOG_BY_TYPE, type WidgetInstance } from "./lib";
 
 // ---------------------------------------------------------------------------
@@ -267,9 +268,9 @@ export default function DashboardsPage() {
     null,
   );
   const [actionsAnchor, setActionsAnchor] = useState<HTMLElement | null>(null);
-  // Whether this dashboard is shared with the org. Held in memory only, so it
-  // resets on refresh — enough to simulate the toggle.
-  const [sharedWithOrg, setSharedWithOrg] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  // Organizations this dashboard is currently shared with (in-memory only).
+  const [sharedOrgs, setSharedOrgs] = useState<string[]>([]);
   const [dashDeleteOpen, setDashDeleteOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [switcherAnchor, setSwitcherAnchor] = useState<HTMLElement | null>(
@@ -678,18 +679,34 @@ export default function DashboardsPage() {
           {/* Share band — grouped with the defaults cluster */}
           <MenuItem
             onClick={() => {
-              setSharedWithOrg((prev) => !prev);
               setActionsAnchor(null);
-              setToast(`${name} updated.`);
+              setShareOpen(true);
             }}
           >
             <MaterialSymbol
-              name={sharedWithOrg ? "lock" : "share"}
+              name="share"
               size={16}
               sx={{ mr: "8px", opacity: 0.7 }}
             />
-            {sharedWithOrg ? "Change to private" : "Share with organization"}
+            Share with Organizations
           </MenuItem>
+
+          {sharedOrgs.length > 0 && (
+            <MenuItem
+              onClick={() => {
+                setActionsAnchor(null);
+                setSharedOrgs([]);
+                setToast(`${name} changed to private.`);
+              }}
+            >
+              <MaterialSymbol
+                name="lock"
+                size={16}
+                sx={{ mr: "8px", opacity: 0.7 }}
+              />
+              Change to private
+            </MenuItem>
+          )}
 
           <Divider />
 
@@ -971,6 +988,20 @@ export default function DashboardsPage() {
           setAdvancedFilters(applied);
           setNoResults(applied.length > 0);
           triggerAutosave();
+        }}
+      />
+
+      <ShareWithOrganizationsDrawer
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        initial={sharedOrgs}
+        onSave={(orgs) => {
+          setSharedOrgs(orgs);
+          setToast(
+            orgs.length === 1
+              ? `${name} shared with 1 Organization.`
+              : `${name} shared with ${orgs.length} Organizations.`,
+          );
         }}
       />
 

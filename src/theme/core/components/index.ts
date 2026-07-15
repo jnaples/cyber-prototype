@@ -1,6 +1,7 @@
 import { autocomplete } from "./autocomplete";
 import { button } from "./button";
 import { card } from "./card";
+import { checkbox } from "./checkbox";
 import { chip } from "./chip";
 import { circularProgress } from "./circular-progress";
 import { container } from "./container";
@@ -24,6 +25,7 @@ export const components = {
   ...formLabel,
   ...formHelperText,
   ...card,
+  ...checkbox,
   ...chip,
   ...container,
   ...tab,
