@@ -25,6 +25,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { Modal } from "@/components/modal";
 
@@ -491,6 +492,10 @@ export default function DashboardsPage() {
   // Packed layout (explicit row/col per widget + the empty cells in between).
   const layout = packLayout(widgets);
 
+  // Filtering and refresh are unavailable while editing the layout.
+  const editLockTooltip = (label: string) =>
+    `Edit mode is active. Exit it to enable ${label}.`;
+
   return (
     <Box
       sx={{
@@ -793,25 +798,47 @@ export default function DashboardsPage() {
           fontSize: 14,
         }}
       >
-        <Button
-          variant="text"
-          color="secondary"
-          size="small"
-          onClick={() => setQuickFiltersOpen(true)}
-          startIcon={<MaterialSymbol name="filter_alt" size={16} />}
-        >
-          Quick filters
-        </Button>
+        <ArrowTooltip title={editMode ? editLockTooltip("Quick Filters") : ""}>
+          <span
+            style={{
+              display: "inline-flex",
+              cursor: editMode ? "not-allowed" : undefined,
+            }}
+          >
+            <Button
+              variant="text"
+              color="secondary"
+              size="small"
+              disabled={editMode}
+              onClick={() => setQuickFiltersOpen(true)}
+              startIcon={<MaterialSymbol name="filter_alt" size={16} />}
+            >
+              Quick filters
+            </Button>
+          </span>
+        </ArrowTooltip>
         <Box sx={{ width: "1px", height: 16, bgcolor: "divider" }} />
-        <Button
-          variant="text"
-          color="secondary"
-          size="small"
-          onClick={() => setAdvancedFiltersOpen(true)}
-          startIcon={<MaterialSymbol name="tune" size={16} />}
+        <ArrowTooltip
+          title={editMode ? editLockTooltip("Advanced Filters") : ""}
         >
-          Advanced filters
-        </Button>
+          <span
+            style={{
+              display: "inline-flex",
+              cursor: editMode ? "not-allowed" : undefined,
+            }}
+          >
+            <Button
+              variant="text"
+              color="secondary"
+              size="small"
+              disabled={editMode}
+              onClick={() => setAdvancedFiltersOpen(true)}
+              startIcon={<MaterialSymbol name="tune" size={16} />}
+            >
+              Advanced filters
+            </Button>
+          </span>
+        </ArrowTooltip>
         <Box sx={{ flex: 1 }} />
         {autosave !== "idle" && (
           <Box
@@ -833,14 +860,24 @@ export default function DashboardsPage() {
             </Typography>
           </Box>
         )}
-        <Button
-          variant="text"
-          color="secondary"
-          size="small"
-          startIcon={<MaterialSymbol name="refresh" size={20} />}
-        >
-          Refresh
-        </Button>
+        <ArrowTooltip title={editMode ? editLockTooltip("Refresh") : ""}>
+          <span
+            style={{
+              display: "inline-flex",
+              cursor: editMode ? "not-allowed" : undefined,
+            }}
+          >
+            <Button
+              variant="text"
+              color="secondary"
+              size="small"
+              disabled={editMode}
+              startIcon={<MaterialSymbol name="refresh" size={20} />}
+            >
+              Refresh
+            </Button>
+          </span>
+        </ArrowTooltip>
       </Box>
 
       {/* Active filters — modeled like the Query Logs bar */}

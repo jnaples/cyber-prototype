@@ -1,4 +1,4 @@
-// Dashboard switcher dropdown — search at top, then Favorites / Published views
+// Dashboard switcher dropdown — search at top, then Favorites / Shared Views
 // / My dashboards sections, with "Create dashboard" and "Manage Dashboards"
 // actions
 // pinned at the bottom.
@@ -24,7 +24,7 @@ import { DASHBOARD_NAMES } from "./lib";
 
 const ALL_DASHBOARDS = DASHBOARD_NAMES;
 
-// Non-favorite dashboards are split into "Published views" (shared) and
+// Non-favorite dashboards are split into "Shared Views" (shared) and
 // "My dashboards" (personal). Anything not listed here falls under My dashboards.
 const PUBLISHED_VIEWS = [
   "MSP Client Health",
@@ -224,7 +224,7 @@ export function DashSwitcher({
             {favList.length > 0 && publishedList.length > 0 && <Divider />}
             {publishedList.length > 0 && (
               <>
-                <SectionLabel>Published views</SectionLabel>
+                <SectionLabel>Shared Views</SectionLabel>
                 {publishedList.map((n) => (
                   <DashRow
                     key={n}
