@@ -959,7 +959,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                     navigate("/subscriptions");
                   }}
                 >
-                  <span style={{ margin: "4px 0" }}>Billing & Subscriptions</span>
+                  <span style={{ margin: "4px 0" }}>Subscriptions</span>
                 </Box>
                 <Box
                   sx={getSubItemStyles("organization-settings")}

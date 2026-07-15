@@ -4,17 +4,12 @@ import {
   Chip,
   Collapse,
   Divider,
-  IconButton,
-  Menu,
-  MenuItem,
   Stack,
   Typography,
 } from "@mui/material";
-import type { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 
 import { CollapsibleCard } from "@/components/collapsible-card";
-import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 
 type SummaryStat = {
@@ -24,112 +19,6 @@ type SummaryStat = {
   /** Optional extra line rendered below the caption in the success color. */
   extra?: React.ReactNode;
 };
-
-type InvoiceRow = {
-  id: string;
-  invoice: string;
-  invoiceDate: string;
-  status: "Paid";
-  total: string;
-};
-
-function InvoiceActionsCell() {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  return (
-    <>
-      <IconButton
-        size="small"
-        aria-label="more options"
-        onClick={(e) => setAnchorEl(e.currentTarget)}
-      >
-        <MaterialSymbol name="more_horiz" size={20} />
-      </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={() => setAnchorEl(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-      >
-        <MenuItem onClick={() => setAnchorEl(null)}>View invoice</MenuItem>
-      </Menu>
-    </>
-  );
-}
-
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-const INVOICE_ROWS: InvoiceRow[] = Array.from({ length: 200 }, (_, i) => {
-  const monthsAgo = i;
-  const date = new Date(2050, 4 - monthsAgo, 1);
-  const seq = String(200 - i).padStart(2, "0");
-  return {
-    id: `INV-${date.getFullYear()}-${seq}`,
-    invoice: `INV-${date.getFullYear()}-${seq}`,
-    invoiceDate: `${MONTHS[date.getMonth()]} ${date.getFullYear()}`,
-    status: "Paid",
-    total: "$1,500.50",
-  };
-});
-
-const INVOICE_COLUMNS: GridColDef[] = [
-  { field: "invoice", headerName: "Invoice", width: 240, minWidth: 200 },
-  { field: "invoiceDate", headerName: "Invoice Date", flex: 1, minWidth: 160 },
-  {
-    field: "status",
-    headerName: "Status",
-    flex: 1,
-    minWidth: 160,
-    renderCell: (params) => (
-      <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-        <Chip
-          size="small"
-          label={params.value}
-          // Match the standard success Alert exactly: MUI generates these
-          // scheme-aware CSS-variable tokens, so the chip flips between
-          // light/dark automatically just like a standard <Alert severity="success">.
-          sx={(theme) => ({
-            bgcolor: theme.vars.palette.Alert.successStandardBg,
-            color: theme.vars.palette.Alert.successColor,
-            "& .MuiChip-label": { color: "inherit" },
-          })}
-        />
-      </Box>
-    ),
-  },
-  {
-    field: "total",
-    headerName: "Total",
-    flex: 1,
-    minWidth: 160,
-    align: "right",
-    headerAlign: "right",
-  },
-  {
-    field: "actions",
-    headerName: "Actions",
-    width: 80,
-    sortable: false,
-    filterable: false,
-    resizable: false,
-    align: "center",
-    headerAlign: "center",
-    renderCell: () => <InvoiceActionsCell />,
-  },
-];
 
 const SUMMARY_STATS: SummaryStat[] = [
   {
@@ -461,14 +350,14 @@ export default function BillingPage() {
         </Button>
       </CollapsibleCard>
 
-      <CollapsibleCard title="Invoice History" disableContentPadding>
-        <DataTable
-          rows={INVOICE_ROWS}
-          columns={INVOICE_COLUMNS}
-          checkboxSelection={false}
-          showFilters={false}
-          showDefaultView={false}
-        />
+      <CollapsibleCard title="Invoice History">
+        <Typography variant="body1" sx={{ color: "text.primary" }}>
+          View, download, and search all past invoices loaded directly from our
+          billing provider.
+        </Typography>
+        <Button variant="outlined" color="secondary" sx={{ mt: 2 }}>
+          View Invoices
+        </Button>
       </CollapsibleCard>
     </Stack>
   );
