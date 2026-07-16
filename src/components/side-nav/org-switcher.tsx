@@ -96,7 +96,10 @@ export function OrgSwitcher() {
           color: "#ffffff",
         }}
       >
-        <MaterialSymbol name="search" size={18} />
+        <MaterialSymbol
+          name={MSP_DASHBOARDS.includes(selected) ? "language" : "corporate_fare"}
+          size={20}
+        />
         <Box
           component="span"
           sx={{

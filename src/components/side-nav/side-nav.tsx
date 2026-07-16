@@ -580,6 +580,89 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Box>,
           )}
 
+          {/* Identities Link with Dropdown */}
+          <Box sx={getDropdownWrapperStyles("identities")}>
+            {withCollapsedTooltip(
+              "Identities",
+              <Box
+                sx={getItemStyles(
+                  "identities",
+                  expandedDropdown === "identities",
+                )}
+                onClick={() => handleDropdownToggle("identities")}
+              >
+                {isExpanded ? (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      width: "100%",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <Icon name="person_check" />
+                      <span style={{ margin: "4px 0 4px 8px" }}>Identities</span>
+                    </div>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        transition: "transform 0.2s",
+                      }}
+                    >
+                      {expandedDropdown === "identities" ? (
+                        <Icon name="expand_less" />
+                      ) : (
+                        <Icon name="expand_more" />
+                      )}
+                    </Box>
+                  </div>
+                ) : (
+                  <Icon name="person_check" size={24} />
+                )}
+              </Box>,
+            )}
+
+            <Collapse in={expandedDropdown === "identities" && isExpanded}>
+              <Box
+                sx={{
+                  p: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "2px",
+                  borderRadius: "0 0 6px 6px",
+                }}
+              >
+                <Box
+                  sx={getSubItemStyles("identities-users")}
+                  onClick={() => handleItemClick("identities-users")}
+                >
+                  <span style={{ margin: "4px 0" }}>Users</span>
+                </Box>
+                <Box
+                  sx={getSubItemStyles("identities-collections")}
+                  onClick={() => handleItemClick("identities-collections")}
+                >
+                  <span style={{ margin: "4px 0" }}>Collections</span>
+                </Box>
+                <Box
+                  sx={getSubItemStyles("identities-connections")}
+                  onClick={() => handleItemClick("identities-connections")}
+                >
+                  <span style={{ margin: "4px 0" }}>Identity Connections</span>
+                </Box>
+                <Box
+                  sx={getSubItemStyles("identities-ad-sync-tools")}
+                  onClick={() => handleItemClick("identities-ad-sync-tools")}
+                >
+                  <span style={{ margin: "4px 0" }}>AD Sync Tools</span>
+                </Box>
+              </Box>
+            </Collapse>
+          </Box>
+
           {/* CyberSight Link with Dropdown */}
           <Box sx={getDropdownWrapperStyles("cybersight")}>
             {withCollapsedTooltip(

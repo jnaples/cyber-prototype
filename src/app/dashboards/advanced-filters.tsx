@@ -364,8 +364,34 @@ export function AdvancedFilters({
 
   const removeAll = () => setItems([]);
 
-  // At least one row must have a value before the apply action is enabled.
-  const hasFilters = items.some((it) => it.value !== "");
+  // Rows that currently carry a value — the drawer's applied-equivalent state.
+  const appliedNow = items
+    .filter((it) => it.value !== "")
+    .map((it) => ({
+      fieldLabel: columnByField(it.field, columns).label,
+      operatorLabel:
+        OPERATORS.find((o) => o.value === it.operator)?.label ?? it.operator,
+      value: it.value,
+    }));
+
+  // Apply enables whenever the current filters differ from what the drawer
+  // opened with (seedFilters) — so ADDING, editing, or REMOVING a
+  // previously-applied filter all count as a change. It's only disabled in the
+  // drawer's fresh/unchanged state.
+  const filterKey = (f: {
+    fieldLabel: string;
+    operatorLabel: string;
+    value: string;
+  }) => `${f.fieldLabel}|${f.operatorLabel}|${f.value}`;
+  const seedApplied = (seedFilters ?? []).map((f) => ({
+    fieldLabel: f.fieldLabel,
+    operatorLabel: f.operatorLabel,
+    value: f.value,
+  }));
+  const changed =
+    appliedNow.length !== seedApplied.length ||
+    appliedNow.map(filterKey).sort().join("~") !==
+      seedApplied.map(filterKey).sort().join("~");
 
   const handleApply = () => {
     const applied = items
@@ -391,8 +417,12 @@ export function AdvancedFilters({
       primaryAction={{
         label: applyLabel,
         onClick: handleApply,
-        disabled: !hasFilters,
-        tooltip: hasFilters ? undefined : "Add a filter to continue.",
+        disabled: !changed,
+        tooltip: changed
+          ? undefined
+          : seedApplied.length === 0
+            ? "Add a filter to continue."
+            : "Make a change to apply.",
       }}
     >
       <Box>

@@ -79,8 +79,8 @@ export default function DeploymentsLayout() {
                 deleteIcon={
                   <MaterialSymbol
                     name="filter_list"
-                    size={18}
-                    sx={{ color: "var(--mui-palette-text-primary)" }}
+                    size={20}
+                    sx={{ color: "text.primary" }}
                   />
                 }
                 onDelete={() => {}}

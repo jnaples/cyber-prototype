@@ -66,6 +66,8 @@ export function PageHeader({
               sx={{
                 flexDirection: "row",
                 alignItems: "center",
+                // 16px from the title (Stack gap is 8px + this 8px).
+                ml: 1,
                 display: { xs: "none", sm: "flex" },
               }}
             >

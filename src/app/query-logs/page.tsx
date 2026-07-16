@@ -1634,9 +1634,14 @@ export default function QueryLogsPage() {
           open={advancedOpen}
           onClose={() => setAdvancedOpen(false)}
           columns={QUERY_LOG_FILTER_COLUMNS}
-          onApply={setAppliedAdvancedFilters}
+          onApply={(applied) => {
+            // Applying "More Filters" behaves exactly like the header Apply
+            // button: set the advanced filters and re-run the fetch.
+            setAppliedAdvancedFilters(applied);
+            handleApply();
+          }}
           seedFilters={appliedAdvancedFilters}
-          applyLabel="Done"
+          applyLabel="Apply"
           title="More Filters"
           lockConjunction
         />
