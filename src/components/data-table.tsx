@@ -521,14 +521,25 @@ function DeferredFilterPanel(
   props: React.ComponentProps<typeof GridFilterPanel> & {
     seedModel?: GridFilterModel;
     onApply?: (model: GridFilterModel) => void;
+    filterFields?: string[];
   },
 ) {
-  const { seedModel, onApply } = props;
+  const { seedModel, onApply, filterFields } = props;
   const apiRef = useGridApiContext();
-  const filterableColumns = useGridSelector(
+  const allFilterableColumns = useGridSelector(
     apiRef,
     gridFilterableColumnDefinitionsSelector,
   );
+  // Columns offered in the "Filter by" dropdown — restricted to `filterFields`
+  // (in that order) when provided; full column lookup stays available for
+  // resolving items already in the model.
+  const filterableColumns =
+    filterFields && filterFields.length > 0
+      ? filterFields.flatMap((f) => {
+          const col = allFilterableColumns.find((c) => c.field === f);
+          return col ? [col] : [];
+        })
+      : allFilterableColumns;
   const outer = useTheme();
   const inner = React.useMemo(
     () =>
@@ -615,7 +626,7 @@ function DeferredFilterPanel(
 
   // Only items that will actually filter (a complete value) get committed.
   const cleanedItems = draft.items.filter((item) => {
-    const col = filterableColumns.find((c) => c.field === item.field);
+    const col = allFilterableColumns.find((c) => c.field === item.field);
     const op = col?.filterOperators?.find((o) => o.value === item.operator);
     return Boolean(col && op && op.getApplyFilterFn(item, col));
   });
@@ -650,7 +661,9 @@ function DeferredFilterPanel(
           }}
         >
           {displayItems.map((item, index) => {
-            const column = filterableColumns.find((c) => c.field === item.field);
+            const column = allFilterableColumns.find(
+              (c) => c.field === item.field,
+            );
             const operators = column?.filterOperators ?? [];
             const currentOperator = operators.find(
               (o) => o.value === item.operator,
@@ -662,7 +675,7 @@ function DeferredFilterPanel(
             const wideValue = item.operator === "range";
 
             const handleColumnChange = (field: string) => {
-              const col = filterableColumns.find((c) => c.field === field);
+              const col = allFilterableColumns.find((c) => c.field === field);
               applyFilterChanges({
                 ...item,
                 field,
@@ -968,6 +981,12 @@ export interface DataTableProps {
    * filter until the user clicks "Apply" (MUI's "apply filters on demand").
    */
   deferFilterApply?: boolean;
+  /**
+   * Restricts which columns are offered in the deferred filter panel's
+   * "Filter by" dropdown (by field name, in this order). Omit to offer every
+   * filterable column. Only applies when `deferFilterApply` is set.
+   */
+  filterFields?: string[];
   showDefaultView?: boolean;
   defaultViewOptions?: DefaultViewOption[];
   /**
@@ -1029,6 +1048,7 @@ export function DataTable({
   showSearch = true,
   showFilters = true,
   deferFilterApply = false,
+  filterFields,
   showDefaultView = true,
   defaultViewOptions = [
     { label: "All", value: "all" },
@@ -1421,6 +1441,7 @@ export function DataTable({
                 ? {
                     filterPanel: {
                       seedModel: filterModel,
+                      filterFields,
                       onApply: (model: GridFilterModel) => {
                         setFilterModel(model);
                         onFilterModelChange?.(model);
