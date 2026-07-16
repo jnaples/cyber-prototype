@@ -15,6 +15,7 @@ const COMPONENTS = [
   { label: "Alerts", path: `${BASE}/alerts` },
   { label: "Buttons", path: `${BASE}/buttons` },
   { label: "Cards", path: `${BASE}/cards` },
+  { label: "Chips", path: `${BASE}/chips` },
   { label: "Forms", path: `${BASE}/forms` },
   { label: "Page Header", path: `${BASE}/page-header` },
   { label: "Typography", path: `${BASE}/typography` },

@@ -395,8 +395,6 @@ const columns: GridColDef[] = [
         <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
           <Chip
             size="small"
-            variant="outlined"
-            color={allowed ? "success" : "error"}
             icon={
               <MaterialSymbol
                 name={allowed ? "check" : "block"}
@@ -404,7 +402,16 @@ const columns: GridColDef[] = [
               />
             }
             label={params.value}
-            sx={{ borderRadius: "6px" }}
+            sx={(theme) => ({
+              borderRadius: "6px",
+              bgcolor: allowed
+                ? theme.vars.palette.Alert.successStandardBg
+                : theme.vars.palette.Alert.errorStandardBg,
+              color: allowed
+                ? theme.vars.palette.Alert.successColor
+                : theme.vars.palette.Alert.errorColor,
+              "& .MuiChip-icon, & .MuiChip-label": { color: "inherit" },
+            })}
           />
         </Box>
       );

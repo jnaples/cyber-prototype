@@ -14,6 +14,7 @@ import DesignSystemLayout from "@/app/design-system/layout";
 import AlertsDocsPage from "@/app/design-system/alerts/page";
 import ButtonsDocsPage from "@/app/design-system/buttons/page";
 import CardsDocsPage from "@/app/design-system/cards/page";
+import ChipsDocsPage from "@/app/design-system/chips/page";
 import FormsDocsPage from "@/app/design-system/forms/page";
 import PageHeaderDocsPage from "@/app/design-system/page-header/page";
 import TypographyDocsPage from "@/app/design-system/typography/page";
@@ -80,6 +81,7 @@ function App() {
           <Route path="alerts" element={<AlertsDocsPage />} />
           <Route path="buttons" element={<ButtonsDocsPage />} />
           <Route path="cards" element={<CardsDocsPage />} />
+          <Route path="chips" element={<ChipsDocsPage />} />
           <Route path="forms" element={<FormsDocsPage />} />
           <Route path="page-header" element={<PageHeaderDocsPage />} />
           <Route path="typography" element={<TypographyDocsPage />} />

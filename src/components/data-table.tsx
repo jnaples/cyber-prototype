@@ -1131,6 +1131,10 @@ export function DataTable({
     () =>
       columns.map((col) => ({
         ...col,
+        // Action columns carry no sortable/filterable content, so their column
+        // menu only offers "Manage columns" — suppress the menu entirely.
+        disableColumnMenu:
+          col.field === "actions" ? true : col.disableColumnMenu,
         renderHeader:
           col.renderHeader ??
           (() => <span style={{ fontWeight: 600 }}>{col.headerName}</span>),
@@ -1152,27 +1156,28 @@ export function DataTable({
 
   // Pinned shadow styles
   const pinnedSx: Record<string, unknown> = {};
-  if (pinnedShadowFields?.left) {
-    pinnedSx[`& .MuiDataGrid-cell[data-field='${pinnedShadowFields.left}']`] = {
+  const leftShadowField = pinnedShadowFields?.left;
+  // Any "actions" column always gets the right-edge shadow — pages don't need
+  // to opt in via pinnedShadowFields.right (an explicit value still wins).
+  const rightShadowField =
+    pinnedShadowFields?.right ??
+    (columns.some((c) => c.field === "actions") ? "actions" : undefined);
+  if (leftShadowField) {
+    pinnedSx[`& .MuiDataGrid-cell[data-field='${leftShadowField}']`] = {
       boxShadow: "rgba(0, 0, 0, 0.21) 2px 0px 4px -2px",
     };
-    pinnedSx[
-      `& .MuiDataGrid-columnHeader[data-field='${pinnedShadowFields.left}']`
-    ] = {
+    pinnedSx[`& .MuiDataGrid-columnHeader[data-field='${leftShadowField}']`] = {
       boxShadow: "rgba(0, 0, 0, 0.21) 2px 0px 4px -2px",
       // Sit above the neighbouring header so its opaque background does not
       // paint over this column's right-side shadow.
       zIndex: 1,
     };
   }
-  if (pinnedShadowFields?.right) {
-    pinnedSx[`& .MuiDataGrid-cell[data-field='${pinnedShadowFields.right}']`] =
-      {
-        boxShadow: "rgba(0, 0, 0, 0.21) -2px 0px 4px -2px",
-      };
-    pinnedSx[
-      `& .MuiDataGrid-columnHeader[data-field='${pinnedShadowFields.right}']`
-    ] = {
+  if (rightShadowField) {
+    pinnedSx[`& .MuiDataGrid-cell[data-field='${rightShadowField}']`] = {
+      boxShadow: "rgba(0, 0, 0, 0.21) -2px 0px 4px -2px",
+    };
+    pinnedSx[`& .MuiDataGrid-columnHeader[data-field='${rightShadowField}']`] = {
       boxShadow: "rgba(0, 0, 0, 0.21) -2px 0px 4px -2px",
     };
   }

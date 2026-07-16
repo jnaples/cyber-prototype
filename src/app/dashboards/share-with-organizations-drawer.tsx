@@ -108,7 +108,7 @@ export function ShareWithOrganizationsDrawer({
             : "Make a change to save.",
       }}
     >
-      <Typography variant="body1" sx={{ color: "text.primary" }}>
+      <Typography variant="body2" sx={{ color: "text.primary" }}>
         Choose which Organizations can see this dashboard.
       </Typography>
 

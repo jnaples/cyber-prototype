@@ -1,5 +1,5 @@
-// Dashboard switcher dropdown — search at top, then Favorites / Shared Views
-// / My dashboards sections, with "Create dashboard" and "Manage Dashboards"
+// Dashboard switcher dropdown — search at top, then Favorites / My dashboards
+// / Shared dashboards sections, with "Create dashboard" and "Manage Dashboards"
 // actions
 // pinned at the bottom.
 
@@ -24,7 +24,7 @@ import { DASHBOARD_NAMES } from "./lib";
 
 const ALL_DASHBOARDS = DASHBOARD_NAMES;
 
-// Non-favorite dashboards are split into "Shared Views" (shared) and
+// Non-favorite dashboards are split into "Shared dashboards" (shared) and
 // "My dashboards" (personal). Anything not listed here falls under My dashboards.
 const PUBLISHED_VIEWS = [
   "MSP Client Health",
@@ -221,11 +221,11 @@ export function DashSwitcher({
                 ))}
               </>
             )}
-            {favList.length > 0 && publishedList.length > 0 && <Divider />}
-            {publishedList.length > 0 && (
+            {favList.length > 0 && myList.length > 0 && <Divider />}
+            {myList.length > 0 && (
               <>
-                <SectionLabel>Shared Views</SectionLabel>
-                {publishedList.map((n) => (
+                <SectionLabel>My dashboards</SectionLabel>
+                {myList.map((n) => (
                   <DashRow
                     key={n}
                     name={n}
@@ -237,12 +237,12 @@ export function DashSwitcher({
                 ))}
               </>
             )}
-            {favList.length + publishedList.length > 0 &&
-              myList.length > 0 && <Divider />}
-            {myList.length > 0 && (
+            {favList.length + myList.length > 0 &&
+              publishedList.length > 0 && <Divider />}
+            {publishedList.length > 0 && (
               <>
-                <SectionLabel>My dashboards</SectionLabel>
-                {myList.map((n) => (
+                <SectionLabel>Shared dashboards</SectionLabel>
+                {publishedList.map((n) => (
                   <DashRow
                     key={n}
                     name={n}

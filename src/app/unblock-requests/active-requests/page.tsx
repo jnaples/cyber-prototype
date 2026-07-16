@@ -19,10 +19,10 @@ import { TabbedDataCard } from "@/components/tabbed-data-card";
 // Row actions
 // ---------------------------------------------------------------------------
 
-// Inline quick actions to the left of the overflow menu.
-const QUICK_ACTIONS: { label: string; icon: string }[] = [
-  { label: "Allow", icon: "check" },
-  { label: "Block", icon: "block" },
+// Items shown in the Deny popout menu.
+const DENY_ACTIONS: { label: string; icon: string }[] = [
+  { label: "Notify user", icon: "notifications" },
+  { label: "Continue without notifying", icon: "notifications_off" },
 ];
 
 // Items kept in the overflow menu.
@@ -31,33 +31,60 @@ const MENU_ACTIONS: { label: string; icon: string }[] = [
 ];
 
 function RowActionsCell() {
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const close = () => setAnchorEl(null);
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const [denyAnchor, setDenyAnchor] = useState<HTMLElement | null>(null);
+  const closeMenu = () => setMenuAnchor(null);
+  const closeDeny = () => setDenyAnchor(null);
   return (
     <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-      {QUICK_ACTIONS.map(({ label, icon }) => (
-        <ArrowTooltip key={label} title={label}>
-          <IconButton size="small" aria-label={label}>
-            <MaterialSymbol name={icon} size={20} />
-          </IconButton>
-        </ArrowTooltip>
-      ))}
+      <ArrowTooltip title="Add to Allow List">
+        <IconButton size="small" aria-label="Add to Allow List">
+          <MaterialSymbol name="check" size={20} />
+        </IconButton>
+      </ArrowTooltip>
+      <ArrowTooltip title="Deny">
+        <IconButton
+          size="small"
+          aria-label="Deny"
+          onClick={(e) => setDenyAnchor(e.currentTarget)}
+        >
+          <MaterialSymbol name="block" size={20} />
+        </IconButton>
+      </ArrowTooltip>
       <IconButton
         size="small"
         aria-label="more options"
-        onClick={(e) => setAnchorEl(e.currentTarget)}
+        onClick={(e) => setMenuAnchor(e.currentTarget)}
       >
         <MaterialSymbol name="more_horiz" size={20} />
       </IconButton>
+
       <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={close}
+        anchorEl={denyAnchor}
+        open={Boolean(denyAnchor)}
+        onClose={closeDeny}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        {DENY_ACTIONS.map(({ label, icon }) => (
+          <MenuItem key={label} onClick={closeDeny}>
+            <ListItemIcon>
+              <MaterialSymbol name={icon} size={20} />
+            </ListItemIcon>
+            {label}
+          </MenuItem>
+        ))}
+      </Menu>
+
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={closeMenu}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
         {MENU_ACTIONS.map(({ label, icon }) => (
-          <MenuItem key={label} onClick={close}>
+          <MenuItem key={label} onClick={closeMenu}>
             <ListItemIcon>
               <MaterialSymbol name={icon} size={20} />
             </ListItemIcon>
@@ -104,8 +131,8 @@ const columns: GridColDef[] = [
     sortable: false,
     filterable: false,
     resizable: false,
-    align: "center",
-    headerAlign: "center",
+    align: "left",
+    headerAlign: "left",
     renderCell: () => <RowActionsCell />,
   },
 ];
