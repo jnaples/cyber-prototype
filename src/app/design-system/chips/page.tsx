@@ -319,7 +319,10 @@ export default function ChipsDocs() {
             Five families, one grammar. Soft fill = status, identity, or filter
             selection. Outline = counts and tags. Semantic colors belong to
             status only. Status always has an icon; identity never does. Every
-            chip is 6px radius — pills are badges, not chips.
+            chip is 6px radius — pills are badges, not chips. Chip height is
+            24px in grids, which is MUI&rsquo;s small size, and 32px in a
+            spacious surface like Domain Report, or a card. The font size is
+            MUI&rsquo;s default of 13px.
           </Typography>
         </Box>
 
