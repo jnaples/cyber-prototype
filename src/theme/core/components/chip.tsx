@@ -9,8 +9,13 @@ export const PILL_CHIP_RADIUS = 999;
 
 const MuiChip: Components<Theme>["MuiChip"] = {
   styleOverrides: {
+    // All chips (and badge-style pill chips) use 13px text, regardless of size.
     root: {
       borderRadius: 6,
+      fontSize: 13,
+    },
+    sizeSmall: {
+      fontSize: 13,
     },
   },
 };
