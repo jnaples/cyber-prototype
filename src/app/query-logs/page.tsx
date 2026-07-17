@@ -1651,6 +1651,7 @@ export default function QueryLogsPage() {
           applyLabel="Apply"
           title="More Filters"
           lockConjunction
+          uniqueColumns
         />
       </PageShell>
     </InvestigateContext.Provider>

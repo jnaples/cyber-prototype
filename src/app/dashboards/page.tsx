@@ -1094,12 +1094,11 @@ export default function DashboardsPage() {
           <Box component="b" sx={{ color: "text.primary" }}>
             {(pendingDelete && CATALOG_BY_TYPE[pendingDelete.type]?.name) || ""}
           </Box>{" "}
-          will be removed from this dashboard. You can add it back anytime by
-          clicking the{" "}
+          will be removed from this dashboard. You can add it back any time from{" "}
           <Box component="b" sx={{ color: "text.primary" }}>
-            ADD WIDGET
-          </Box>{" "}
-          button.
+            Add Widget
+          </Box>
+          .
         </Typography>
       </Modal>
 

@@ -296,6 +296,7 @@ export function AdvancedFilters({
   title = "Advanced Filters",
   seedFilters,
   lockConjunction = false,
+  uniqueColumns = false,
   headerSlot,
 }: {
   open: boolean;
@@ -319,6 +320,12 @@ export function AdvancedFilters({
    * instead of the And/Or dropdown.
    */
   lockConjunction?: boolean;
+  /**
+   * When true, each column can only be filtered once: "Add Filter" auto-fills
+   * the next unused column and each row's column dropdown hides columns already
+   * used by other rows (mirrors the data-grid filter panel).
+   */
+  uniqueColumns?: boolean;
   /** Optional content rendered above the filter rows, followed by a divider. */
   headerSlot?: ReactNode;
 }) {
@@ -357,10 +364,24 @@ export function AdvancedFilters({
 
   // Fresh id = one past the current max, so ids stay unique after re-seeding.
   const addFilter = () =>
-    setItems((prev) => [
-      ...prev,
-      makeItem(prev.reduce((m, it) => Math.max(m, it.id), -1) + 1, firstField),
-    ]);
+    setItems((prev) => {
+      const nextId = prev.reduce((m, it) => Math.max(m, it.id), -1) + 1;
+      // With unique columns, the new row auto-selects the next column not yet
+      // in use (like the grid). If every column is used, add nothing.
+      let field = firstField;
+      if (uniqueColumns) {
+        const used = new Set(prev.map((it) => it.field));
+        const nextCol = columns.find((c) => !used.has(c.field));
+        if (!nextCol) return prev;
+        field = nextCol.field;
+      }
+      return [...prev, makeItem(nextId, field)];
+    });
+
+  // All columns already have a row (so "Add Filter" has nothing left to add).
+  const allColumnsUsed =
+    uniqueColumns &&
+    new Set(items.map((it) => it.field)).size >= columns.length;
 
   const removeAll = () => setItems([]);
 
@@ -433,19 +454,32 @@ export function AdvancedFilters({
           </>
         )}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {items.map((item, index) => (
-            <FilterRow
-              key={item.id}
-              item={item}
-              index={index}
-              multi={items.length > 1}
-              columns={columns}
-              lockConjunction={lockConjunction}
-              onChange={(next) => updateItem(item.id, next)}
-              onRemove={() => removeItem(item.id)}
-              onEnter={addFilter}
-            />
-          ))}
+          {items.map((item, index) => {
+            // With unique columns, hide columns already chosen in other rows
+            // (but keep this row's own selection).
+            const rowColumns = uniqueColumns
+              ? columns.filter(
+                  (c) =>
+                    c.field === item.field ||
+                    !items.some(
+                      (it) => it.id !== item.id && it.field === c.field,
+                    ),
+                )
+              : columns;
+            return (
+              <FilterRow
+                key={item.id}
+                item={item}
+                index={index}
+                multi={items.length > 1}
+                columns={rowColumns}
+                lockConjunction={lockConjunction}
+                onChange={(next) => updateItem(item.id, next)}
+                onRemove={() => removeItem(item.id)}
+                onEnter={addFilter}
+              />
+            );
+          })}
         </Box>
 
         <Divider sx={{ my: 2 }} />
@@ -457,14 +491,21 @@ export function AdvancedFilters({
             justifyContent: "space-between",
           }}
         >
-          <Button
-            variant="text"
-            color="primary"
-            onClick={addFilter}
-            startIcon={<MaterialSymbol name="add" size={20} />}
+          <Tooltip
+            title={allColumnsUsed ? "Every filter type is already added." : ""}
           >
-            Add Filter
-          </Button>
+            <span>
+              <Button
+                variant="text"
+                color="primary"
+                onClick={addFilter}
+                disabled={allColumnsUsed}
+                startIcon={<MaterialSymbol name="add" size={20} />}
+              >
+                Add Filter
+              </Button>
+            </span>
+          </Tooltip>
           <Button
             variant="text"
             color="error"
