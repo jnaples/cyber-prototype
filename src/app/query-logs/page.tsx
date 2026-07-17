@@ -1026,7 +1026,7 @@ export default function QueryLogsPage() {
     >
       <PageShell
         header={
-          <PageHeader title="Query Logs">
+          <PageHeader title="DNS Query Logs">
             <Box
               sx={{
                 display: "flex",

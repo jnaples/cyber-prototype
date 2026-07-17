@@ -4,7 +4,13 @@
 
 import { createContext, useContext } from "react";
 
-export type TimeRangeKey = "24h" | "yesterday" | "7d" | "30d" | "custom";
+export type TimeRangeKey =
+  | "today"
+  | "24h"
+  | "yesterday"
+  | "7d"
+  | "30d"
+  | "custom";
 
 export type DashboardFilters = {
   organizations: string[];
@@ -19,6 +25,7 @@ export type DashboardFilters = {
 export const ORGANIZATION_OPTIONS = ["Acme Inc.", "Globex", "Initech"];
 
 export const TIME_RANGE_OPTIONS: { value: TimeRangeKey; label: string }[] = [
+  { value: "today", label: "Today" },
   { value: "24h", label: "Last 24 hours" },
   { value: "yesterday", label: "Yesterday" },
   { value: "7d", label: "Last 7 days" },
@@ -48,7 +55,7 @@ export const CATEGORY_OPTIONS = [
 
 export const DEFAULT_FILTERS: DashboardFilters = {
   organizations: [],
-  timeRange: "7d",
+  timeRange: "24h",
   results: [],
   sites: [],
   deploymentTypes: [],
@@ -56,6 +63,7 @@ export const DEFAULT_FILTERS: DashboardFilters = {
 };
 
 const TIME_FACTOR: Record<TimeRangeKey, number> = {
+  today: 0.22,
   "24h": 0.18,
   yesterday: 0.28,
   "7d": 1,

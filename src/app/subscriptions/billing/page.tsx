@@ -250,8 +250,8 @@ export default function BillingPage() {
     setOptedOut(next);
     setToast(
       next
-        ? "You've opted out of the automatic Plus upgrade."
-        : "You've opted back in to the automatic Plus upgrade.",
+        ? "You've opted to keep your current plan."
+        : "You've re-enabled the automatic Plus upgrade.",
     );
   };
 
@@ -263,14 +263,13 @@ export default function BillingPage() {
         icon={<MaterialSymbol name="info" size={22} />}
       >
         <AlertTitle sx={{ fontWeight: 600 }}>
-          Pro upgrades to Plus at the next renewal
+          Pro upgrades to Plus on July 1, 2027
         </AlertTitle>
-        <Typography variant="body2">
-          On <Box component="strong">July 1, 2027</Box>, the Pro plan
-          automatically upgrades to Plus at $X.XX per license per year
-          (currently $Y.YY).
-          <br />
-          To keep the current plan and pricing, choose Opt Out before that date.
+        <Typography variant="body2" sx={{ maxWidth: 700 }}>
+          On July 1, 2027, the Pro plan automatically upgrades to Plus. The new
+          price is $X.XX per license per year, up from the current $Y.YY. To
+          stay on Pro at current pricing, select Keep Current Plan before July
+          1, 2027.
         </Typography>
         <Stack direction="row" spacing={1.5} sx={{ mt: 2 }}>
           <Button
@@ -279,7 +278,7 @@ export default function BillingPage() {
             size="small"
             onClick={handleUpgradeToggle}
           >
-            {optedOut ? "Stay on Pro" : "Opt Out"}
+            {optedOut ? "Allow Upgrade" : "Keep Current Plan"}
           </Button>
           <Button variant="outlined" color="secondary" size="small">
             Compare Plans
