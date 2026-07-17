@@ -25,8 +25,8 @@ export type DashboardFilters = {
 export const ORGANIZATION_OPTIONS = ["Acme Inc.", "Globex", "Initech"];
 
 export const TIME_RANGE_OPTIONS: { value: TimeRangeKey; label: string }[] = [
-  { value: "today", label: "Today" },
   { value: "24h", label: "Last 24 hours" },
+  { value: "today", label: "Today" },
   { value: "yesterday", label: "Yesterday" },
   { value: "7d", label: "Last 7 days" },
   { value: "30d", label: "Last 30 days" },

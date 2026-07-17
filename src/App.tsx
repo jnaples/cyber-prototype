@@ -33,6 +33,7 @@ import SubscriptionsLayout from "@/app/subscriptions/layout";
 import SubscriptionsIndexPage from "@/app/subscriptions/page";
 import SubscriptionsManagePage from "@/app/subscriptions/manage/page";
 import BillingPage from "@/app/subscriptions/billing/page";
+import OldBillingPage from "@/app/subscriptions/old-billing/page";
 import PlansLicensesPage from "@/app/subscriptions/plans-licenses/page";
 
 function App() {
@@ -58,6 +59,7 @@ function App() {
           <Route path="billing" element={<BillingPage />} />
           <Route path="plans-licenses" element={<PlansLicensesPage />} />
         </Route>
+        <Route path="subscriptions/old-billing" element={<OldBillingPage />} />
 
         <Route path="deployments" element={<DeploymentsLayout />}>
           <Route index element={<DeploymentsIndexPage />} />

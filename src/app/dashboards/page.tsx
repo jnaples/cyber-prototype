@@ -591,13 +591,20 @@ export default function DashboardsPage() {
         )}
 
         {/* Metadata — the active organization context, to the right of name */}
-        <Typography variant="body2" sx={{ color: "text.secondary", ml: 1 }}>
-          {filters.organizations.length === 0
-            ? "All Organizations"
-            : filters.organizations.length === 1
-              ? filters.organizations[0]
-              : `${filters.organizations.length} Organizations`}
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, ml: 1 }}>
+          <MaterialSymbol
+            name="corporate_fare"
+            size={18}
+            sx={{ color: "text.secondary" }}
+          />
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            {filters.organizations.length === 0
+              ? "All Organizations"
+              : filters.organizations.length === 1
+                ? filters.organizations[0]
+                : `${filters.organizations.length} Organizations`}
+          </Typography>
+        </Box>
 
         <DashSwitcher
           anchorEl={switcherAnchor}

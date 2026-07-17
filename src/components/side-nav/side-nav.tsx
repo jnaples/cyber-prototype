@@ -1002,6 +1002,15 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   <span style={{ margin: "4px 0" }}>Subscriptions</span>
                 </Box>
                 <Box
+                  sx={getSubItemStyles("organization-old-billing")}
+                  onClick={() => {
+                    handleItemClick("organization-old-billing");
+                    navigate("/subscriptions/old-billing");
+                  }}
+                >
+                  <span style={{ margin: "4px 0" }}>Old Billing</span>
+                </Box>
+                <Box
                   sx={getSubItemStyles("organization-settings")}
                   onClick={() => handleItemClick("organization-settings")}
                 >

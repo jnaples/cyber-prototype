@@ -97,7 +97,7 @@ export const WIDGET_CATALOG: WidgetDef[] = [
   { type: "threat-breakdown", name: "Threat Breakdown",     desc: "Pie of threat types",                   icon: "pie_chart",       cat: "Charts", span: 2 },
   { type: "geo-activity",     name: "Geo Activity",         desc: "Request map by location",               icon: "map",             cat: "Charts", span: 3 },
 
-  { type: "top-domains", name: "Top Domains",       desc: "Most-requested domains",   icon: "list",     cat: "Tables", span: 2 },
+  { type: "top-domains", name: "Top Domains",       desc: "Most-requested domains",   icon: "public",   cat: "Tables", span: 2 },
   { type: "top-orgs",    name: "Top Organizations", desc: "Requests by organization", icon: "business", cat: "Tables", span: 2 },
 ];
 
