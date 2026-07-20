@@ -165,8 +165,11 @@ export default function OldBillingPage() {
             </Typography>
             <Typography sx={{ fontSize: 16, color: "#46586B", mt: 1, maxWidth: 700 }}>
               The new price is $X.XX per license per year, up from the current
-              $Y.YY. To stay on Pro at the current pricing, select Keep Current
-              Plan before July 1, 2027.
+              $Y.YY. To stay on Pro at the current pricing, select{" "}
+              <Box component="strong" sx={{ fontWeight: 700 }}>
+                Keep Current Plan
+              </Box>{" "}
+              before July 1, 2027.
             </Typography>
             <Box sx={{ display: "flex", gap: 1.5, mt: 2 }}>
               {["Keep Current Plan", "Compare Plans"].map((l) => (

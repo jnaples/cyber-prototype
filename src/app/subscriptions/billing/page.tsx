@@ -1,12 +1,9 @@
 import {
-  Alert,
-  AlertTitle,
   Box,
   Button,
   Chip,
   Collapse,
   Divider,
-  Snackbar,
   Stack,
   Typography,
 } from "@mui/material";
@@ -242,49 +239,9 @@ function SummaryDetails() {
 
 export default function BillingPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [optedOut, setOptedOut] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
-
-  const handleUpgradeToggle = () => {
-    const next = !optedOut;
-    setOptedOut(next);
-    setToast(
-      next
-        ? "You've opted to keep your current plan."
-        : "You've re-enabled the automatic Plus upgrade.",
-    );
-  };
 
   return (
     <Stack spacing={2}>
-      <Alert
-        severity="info"
-        variant="standard"
-        icon={<MaterialSymbol name="info" size={22} />}
-      >
-        <AlertTitle sx={{ fontWeight: 600 }}>
-          Pro plan automatically upgrades to Plus on July 1, 2027
-        </AlertTitle>
-        <Typography variant="body2" sx={{ maxWidth: 700 }}>
-          The new price is $X.XX per license per year, up from the current
-          $Y.YY. To stay on Pro at the current pricing, select Keep Current
-          Plan before July 1, 2027.
-        </Typography>
-        <Stack direction="row" spacing={1.5} sx={{ mt: 2 }}>
-          <Button
-            variant="outlined"
-            color="secondary"
-            size="small"
-            onClick={handleUpgradeToggle}
-          >
-            {optedOut ? "Allow Upgrade" : "Keep Current Plan"}
-          </Button>
-          <Button variant="outlined" color="secondary" size="small">
-            Compare Plans
-          </Button>
-        </Stack>
-      </Alert>
-
       <CollapsibleCard title="Summary">
         <Box
           sx={{
@@ -402,28 +359,6 @@ export default function BillingPage() {
           View Invoices
         </Button>
       </CollapsibleCard>
-
-      <Snackbar
-        open={Boolean(toast)}
-        autoHideDuration={2000}
-        onClose={() => setToast(null)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
-          severity="success"
-          variant="standard"
-          elevation={8}
-          onClose={() => setToast(null)}
-          sx={{
-            alignItems: "center",
-            "& .MuiAlert-icon": { alignSelf: "center", py: 0 },
-            "& .MuiAlert-message": { py: 0 },
-            "& .MuiAlert-action": { alignSelf: "center", py: 0, pt: 0 },
-          }}
-        >
-          {toast}
-        </Alert>
-      </Snackbar>
     </Stack>
   );
 }
