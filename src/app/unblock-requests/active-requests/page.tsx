@@ -16,6 +16,8 @@ import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
+import { AddToAllowListDrawer } from "./add-to-allow-list-drawer";
+
 // ---------------------------------------------------------------------------
 // Row actions
 // ---------------------------------------------------------------------------
@@ -31,15 +33,20 @@ const MENU_ACTIONS: { label: string; icon: string }[] = [
   { label: "Report miscategorization", icon: "flag" },
 ];
 
-function RowActionsCell() {
+function RowActionsCell({ domain }: { domain: string }) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [denyAnchor, setDenyAnchor] = useState<HTMLElement | null>(null);
+  const [allowOpen, setAllowOpen] = useState(false);
   const closeMenu = () => setMenuAnchor(null);
   const closeDeny = () => setDenyAnchor(null);
   return (
     <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
       <ArrowTooltip title="Add to Allow List">
-        <IconButton size="small" aria-label="Add to Allow List">
+        <IconButton
+          size="small"
+          aria-label="Add to Allow List"
+          onClick={() => setAllowOpen(true)}
+        >
           <MaterialSymbol name="check" size={20} />
         </IconButton>
       </ArrowTooltip>
@@ -93,6 +100,12 @@ function RowActionsCell() {
           </MenuItem>
         ))}
       </Menu>
+
+      <AddToAllowListDrawer
+        open={allowOpen}
+        onClose={() => setAllowOpen(false)}
+        domain={domain}
+      />
     </Box>
   );
 }
@@ -128,7 +141,9 @@ const columns: GridColDef[] = [
         sx={{
           cursor: "pointer",
           color: "text.primary",
-          "&:hover": { color: "primary.main" },
+          textDecoration: "underline",
+          textDecorationColor: "currentColor",
+          "&:hover": { color: "primary.light" },
         }}
       >
         {params.row.site}
@@ -149,7 +164,9 @@ const columns: GridColDef[] = [
         sx={{
           cursor: "pointer",
           color: "text.primary",
-          "&:hover": { color: "primary.main" },
+          textDecoration: "underline",
+          textDecorationColor: "currentColor",
+          "&:hover": { color: "primary.light" },
         }}
       >
         {params.row.policy}
@@ -185,7 +202,7 @@ const columns: GridColDef[] = [
     resizable: false,
     align: "left",
     headerAlign: "left",
-    renderCell: () => <RowActionsCell />,
+    renderCell: (params) => <RowActionsCell domain={params.row.domain} />,
   },
 ];
 

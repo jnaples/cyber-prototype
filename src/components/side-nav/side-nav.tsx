@@ -1029,7 +1029,10 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                 </Box>
                 <Box
                   sx={getSubItemStyles("organization-settings")}
-                  onClick={() => handleItemClick("organization-settings")}
+                  onClick={() => {
+                    handleItemClick("organization-settings");
+                    navigate("/msp/settings");
+                  }}
                 >
                   <span style={{ margin: "4px 0" }}>Settings</span>
                 </Box>

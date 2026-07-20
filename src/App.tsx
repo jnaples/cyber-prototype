@@ -21,6 +21,7 @@ import TypographyDocsPage from "@/app/design-system/typography/page";
 import OverviewPage from "@/app/overview/page";
 import DashboardsPage from "@/app/dashboards/page";
 import DashboardsV2Page from "@/app/dashboards/v2/page";
+import OrganizationSettingsPage from "@/app/msp/settings/page";
 import ManageDashboardsPage from "@/app/dashboards/manage/page";
 import HomePage from "@/app/page";
 import QueryLogsPage from "@/app/query-logs/page";
@@ -55,6 +56,7 @@ function App() {
           <Route path="custom-reports" element={<CustomReportsPage />} />
         </Route>
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="msp/settings" element={<OrganizationSettingsPage />} />
 
         <Route path="subscriptions" element={<SubscriptionsLayout />}>
           <Route index element={<SubscriptionsIndexPage />} />

@@ -166,7 +166,19 @@ function V2Card({
           </Typography>
         </Box>
       )}
-      <Box sx={{ flex: 1, minHeight: 0, overflow: "auto", position: "relative" }}>
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflow: "auto",
+          position: "relative",
+          // Match v1's body padding: headed cards get their top padding from
+          // the header, so only pad the sides + bottom (px/pb 2); headerless
+          // KPI/status cards get uniform 1.5.
+          p: headerless ? 1.5 : 2,
+          pt: headerless ? 1.5 : 0,
+        }}
+      >
         <WidgetBody type={widget.type} />
         {noResults && (
           <Box
