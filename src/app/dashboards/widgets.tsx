@@ -178,7 +178,7 @@ export function WidgetBody({ type }: { type: string }) {
           icon="radio_button_checked"
           color={PAL.primary}
           label="Total Requests"
-          value={fmt(scale(143534))}
+          value={fmt(scale(1657222))}
         />
       );
     case "kpi-allowed":
@@ -187,7 +187,7 @@ export function WidgetBody({ type }: { type: string }) {
           icon="check"
           color={PAL.secure}
           label="Allowed Requests"
-          value={fmt(scale(133500))}
+          value={fmt(scale(1162944))}
         />
       );
     case "kpi-blocked":
@@ -196,7 +196,7 @@ export function WidgetBody({ type }: { type: string }) {
           icon="block"
           color={PAL.ink}
           label="Blocked Requests"
-          value={fmt(scale(9970))}
+          value={fmt(scale(494278))}
         />
       );
     case "kpi-threats":
@@ -205,7 +205,7 @@ export function WidgetBody({ type }: { type: string }) {
           icon="skull"
           color={PAL.magenta}
           label="Threats"
-          value={fmt(scale(64))}
+          value={fmt(scale(115056))}
         />
       );
 

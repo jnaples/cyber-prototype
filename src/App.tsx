@@ -44,6 +44,7 @@ function App() {
       <Route element={<RootLayout />}>
         <Route path="overview" element={<OverviewPage />} />
         <Route path="global-policies" element={<GlobalPoliciesPage />} />
+        <Route path="global-policies/filter" element={<GlobalPoliciesPage />} />
         <Route path="dashboards" element={<DashboardsPage />} />
         <Route path="dashboards/v2" element={<DashboardsV2Page />} />
         <Route path="dashboards/manage" element={<ManageDashboardsPage />} />
