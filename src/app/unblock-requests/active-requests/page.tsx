@@ -1,6 +1,7 @@
 import {
   Box,
   IconButton,
+  Link,
   ListItemIcon,
   Menu,
   MenuItem,
@@ -101,6 +102,17 @@ function RowActionsCell() {
 // ---------------------------------------------------------------------------
 
 const columns: GridColDef[] = [
+  {
+    field: "domain",
+    headerName: "Domain",
+    flex: 1,
+    minWidth: 180,
+    renderCell: (params) => (
+      <Link href="#" underline="hover">
+        {params.row.domain}
+      </Link>
+    ),
+  },
   { field: "organization", headerName: "Organization", flex: 1, minWidth: 160 },
   { field: "site", headerName: "Site", flex: 1, minWidth: 150 },
   { field: "policy", headerName: "Policy", flex: 1, minWidth: 150 },
@@ -142,6 +154,7 @@ const columns: GridColDef[] = [
 // ---------------------------------------------------------------------------
 
 type ActiveRequest = {
+  domain: string;
   organization: string;
   site: string;
   policy: string;
@@ -153,6 +166,7 @@ type ActiveRequest = {
 
 const REQUESTS: ActiveRequest[] = [
   {
+    domain: "linkedin.com",
     organization: "Northwind Traders",
     site: "Seattle HQ",
     policy: "Standard Policy",
@@ -162,6 +176,7 @@ const REQUESTS: ActiveRequest[] = [
     requestReason: "Need LinkedIn for recruiting and sales outreach",
   },
   {
+    domain: "youtube.com",
     organization: "Globex Manufacturing",
     site: "Detroit Plant",
     policy: "Default Filtering",
@@ -171,6 +186,7 @@ const REQUESTS: ActiveRequest[] = [
     requestReason: "Vendor posted required machine-training videos",
   },
   {
+    domain: "dropbox.com",
     organization: "Contoso Health",
     site: "Austin Clinic",
     policy: "HIPAA Strict",
@@ -180,6 +196,7 @@ const REQUESTS: ActiveRequest[] = [
     requestReason: "Referring clinic shared patient records here",
   },
   {
+    domain: "github.com",
     organization: "Initech Legal",
     site: "Chicago Office",
     policy: "Standard Policy",
@@ -189,6 +206,7 @@ const REQUESTS: ActiveRequest[] = [
     requestReason: "Miscategorized — needed for internal dev tooling",
   },
   {
+    domain: "canva.com",
     organization: "Umbrella Retail",
     site: "Phoenix HQ",
     policy: "Marketing Policy",
@@ -198,6 +216,7 @@ const REQUESTS: ActiveRequest[] = [
     requestReason: "Designing this quarter's promo graphics",
   },
   {
+    domain: "reddit.com",
     organization: "Northwind Traders",
     site: "Portland DC",
     policy: "Support Policy",
@@ -207,6 +226,7 @@ const REQUESTS: ActiveRequest[] = [
     requestReason: "Customer reported a bug discussed in a thread",
   },
   {
+    domain: "wetransfer.com",
     organization: "Contoso Health",
     site: "Dallas Hospital",
     policy: "Finance Policy",
@@ -216,6 +236,7 @@ const REQUESTS: ActiveRequest[] = [
     requestReason: "Auditor is sending large year-end documents",
   },
   {
+    domain: "chatgpt.com",
     organization: "Globex Manufacturing",
     site: "Cincinnati HQ",
     policy: "Engineering Policy",
@@ -225,6 +246,7 @@ const REQUESTS: ActiveRequest[] = [
     requestReason: "Approved for debugging production code",
   },
   {
+    domain: "vimeo.com",
     organization: "Umbrella Retail",
     site: "Tucson Store",
     policy: "Marketing Policy",
@@ -234,6 +256,7 @@ const REQUESTS: ActiveRequest[] = [
     requestReason: "Embedded product demo for the landing page",
   },
   {
+    domain: "nytimes.com",
     organization: "Initech Legal",
     site: "NYC Office",
     policy: "Standard Policy",
@@ -282,9 +305,9 @@ export default function ActiveRequestsPage() {
       <DataTable
         rows={rows}
         columns={columns}
-        checkboxSelection={false}
         showDefaultView={false}
         noRowsOverlay={ActiveRequestsEmptyOverlay}
+        pinnedShadowFields={{ left: "domain" }}
       />
     </TabbedDataCard>
   );

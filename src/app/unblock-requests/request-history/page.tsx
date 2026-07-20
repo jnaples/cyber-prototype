@@ -1,13 +1,23 @@
-import { Box, Chip, IconButton, Typography } from "@mui/material";
+import { Box, Chip, IconButton, Link, Typography } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import { format as fnsFormat } from "date-fns";
 
 import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
-import { PILL_CHIP_RADIUS } from "@/theme/core/components/chip";
 
 const columns: GridColDef[] = [
+  {
+    field: "domain",
+    headerName: "Domain",
+    flex: 1,
+    minWidth: 180,
+    renderCell: (params) => (
+      <Link href="#" underline="hover">
+        {params.row.domain}
+      </Link>
+    ),
+  },
   { field: "organization", headerName: "Organization", flex: 1, minWidth: 160 },
   { field: "site", headerName: "Site", flex: 1, minWidth: 150 },
   { field: "policy", headerName: "Policy", flex: 1, minWidth: 150 },
@@ -49,8 +59,6 @@ const columns: GridColDef[] = [
         <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
           <Chip
             size="small"
-            variant="outlined"
-            color={allowed ? "success" : "error"}
             icon={
               <MaterialSymbol
                 name={allowed ? "check" : "block"}
@@ -58,7 +66,16 @@ const columns: GridColDef[] = [
               />
             }
             label={params.value}
-            sx={{ borderRadius: PILL_CHIP_RADIUS }}
+            sx={(theme) => ({
+              borderRadius: "6px",
+              bgcolor: allowed
+                ? theme.vars.palette.Alert.successStandardBg
+                : theme.vars.palette.Alert.errorStandardBg,
+              color: allowed
+                ? theme.vars.palette.Alert.successColor
+                : theme.vars.palette.Alert.errorColor,
+              "& .MuiChip-icon, & .MuiChip-label": { color: "inherit" },
+            })}
           />
         </Box>
       );
@@ -86,6 +103,7 @@ const columns: GridColDef[] = [
 // ---------------------------------------------------------------------------
 
 type HistoryRequest = {
+  domain: string;
   organization: string;
   site: string;
   policy: string;
@@ -99,6 +117,7 @@ type HistoryRequest = {
 
 const HISTORY: HistoryRequest[] = [
   {
+    domain: "linkedin.com",
     organization: "Northwind Traders",
     site: "Seattle HQ",
     policy: "Standard Policy",
@@ -110,6 +129,7 @@ const HISTORY: HistoryRequest[] = [
     action: "Allowed",
   },
   {
+    domain: "youtube.com",
     organization: "Globex Manufacturing",
     site: "Detroit Plant",
     policy: "Default Filtering",
@@ -121,6 +141,7 @@ const HISTORY: HistoryRequest[] = [
     action: "Allowed",
   },
   {
+    domain: "dropbox.com",
     organization: "Contoso Health",
     site: "Austin Clinic",
     policy: "HIPAA Strict",
@@ -132,6 +153,7 @@ const HISTORY: HistoryRequest[] = [
     action: "Allowed",
   },
   {
+    domain: "github.com",
     organization: "Initech Legal",
     site: "Chicago Office",
     policy: "Standard Policy",
@@ -143,6 +165,7 @@ const HISTORY: HistoryRequest[] = [
     action: "Allowed",
   },
   {
+    domain: "canva.com",
     organization: "Umbrella Retail",
     site: "Phoenix HQ",
     policy: "Marketing Policy",
@@ -154,6 +177,7 @@ const HISTORY: HistoryRequest[] = [
     action: "Blocked",
   },
   {
+    domain: "reddit.com",
     organization: "Northwind Traders",
     site: "Portland DC",
     policy: "Support Policy",
@@ -165,6 +189,7 @@ const HISTORY: HistoryRequest[] = [
     action: "Allowed",
   },
   {
+    domain: "wetransfer.com",
     organization: "Contoso Health",
     site: "Dallas Hospital",
     policy: "Finance Policy",
@@ -176,6 +201,7 @@ const HISTORY: HistoryRequest[] = [
     action: "Allowed",
   },
   {
+    domain: "chatgpt.com",
     organization: "Globex Manufacturing",
     site: "Cincinnati HQ",
     policy: "Engineering Policy",
@@ -187,6 +213,7 @@ const HISTORY: HistoryRequest[] = [
     action: "Allowed",
   },
   {
+    domain: "vimeo.com",
     organization: "Umbrella Retail",
     site: "Tucson Store",
     policy: "Marketing Policy",
@@ -198,6 +225,7 @@ const HISTORY: HistoryRequest[] = [
     action: "Blocked",
   },
   {
+    domain: "nytimes.com",
     organization: "Initech Legal",
     site: "NYC Office",
     policy: "Standard Policy",
@@ -251,6 +279,7 @@ export default function RequestHistoryPage() {
         checkboxSelection={false}
         showDefaultView={false}
         noRowsOverlay={RequestHistoryEmptyOverlay}
+        pinnedShadowFields={{ left: "domain" }}
       />
     </TabbedDataCard>
   );

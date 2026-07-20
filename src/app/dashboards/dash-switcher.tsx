@@ -70,14 +70,14 @@ function DashRow({
         width: "100%",
         textAlign: "left",
         cursor: "pointer",
-        bgcolor: selected ? "rgba(53,39,253,.24)" : "transparent",
+        bgcolor: selected ? "rgba(53,39,253,.08)" : "transparent",
         px: 2,
         py: 1,
         fontSize: 16,
         fontWeight: 400,
         color: "text.primary",
         "&:hover": {
-          bgcolor: selected ? "rgba(53,39,253,.32)" : "action.hover",
+          bgcolor: selected ? "rgba(53,39,253,.12)" : "action.hover",
         },
       }}
     >

@@ -21,9 +21,9 @@ const MuiDataGrid: Components<Theme>["MuiDataGrid"] = {
       // Selected row uses the same primary tint as a selected menu item, so
       // "selected" reads consistently between grids and dropdowns.
       "& .MuiDataGrid-row.Mui-selected": {
-        backgroundColor: alpha(theme.palette.primary.main, 0.24),
+        backgroundColor: alpha(theme.palette.primary.main, 0.08),
         "&:hover": {
-          backgroundColor: alpha(theme.palette.primary.main, 0.32),
+          backgroundColor: alpha(theme.palette.primary.main, 0.12),
         },
       },
     }),

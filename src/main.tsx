@@ -14,6 +14,14 @@ import type {} from "@/theme/extend-theme-types";
 
 import "./index.css";
 
+// react-draggable (bundled by react-grid-layout) reads `process.env` in a debug
+// helper at drag time, which throws "process is not defined" in the browser.
+// Provide a minimal shim before anything drags.
+const g = globalThis as Record<string, unknown>;
+if (typeof g.process === "undefined") {
+  g.process = { env: {} };
+}
+
 const theme = createTheme();
 
 createRoot(document.getElementById("root")!).render(
