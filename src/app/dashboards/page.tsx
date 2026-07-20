@@ -42,7 +42,11 @@ import { QuickFilters } from "./quick-filters";
 import { DashCard } from "./dash-card";
 import { DashSwitcher } from "./dash-switcher";
 import { ShareWithOrganizationsDrawer } from "./share-with-organizations-drawer";
-import { CATALOG_BY_TYPE, type WidgetInstance } from "./lib";
+import {
+  CATALOG_BY_TYPE,
+  SHARED_DASHBOARDS,
+  type WidgetInstance,
+} from "./lib";
 
 // ---------------------------------------------------------------------------
 // Config
@@ -591,19 +595,40 @@ export default function DashboardsPage() {
         )}
 
         {/* Metadata — the active organization context, to the right of name */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, ml: 1 }}>
-          <MaterialSymbol
-            name="corporate_fare"
-            size={18}
-            sx={{ color: "text.secondary" }}
-          />
-          <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            {filters.organizations.length === 0
-              ? "All Organizations"
-              : filters.organizations.length === 1
-                ? filters.organizations[0]
-                : `${filters.organizations.length} Organizations`}
-          </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+            <MaterialSymbol
+              name="corporate_fare"
+              size={18}
+              sx={{ color: "text.secondary" }}
+            />
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              {filters.organizations.length === 0
+                ? "All Organizations"
+                : filters.organizations.length === 1
+                  ? filters.organizations[0]
+                  : `${filters.organizations.length} Organizations`}
+            </Typography>
+          </Box>
+          {SHARED_DASHBOARDS.includes(name) && (
+            <>
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ borderColor: "divider", my: 0.5 }}
+              />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                <MaterialSymbol
+                  name="share"
+                  size={18}
+                  sx={{ color: "text.secondary" }}
+                />
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  Shared by John Smith
+                </Typography>
+              </Box>
+            </>
+          )}
         </Box>
 
         <DashSwitcher

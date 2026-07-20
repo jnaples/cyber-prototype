@@ -59,6 +59,14 @@ export const DASHBOARD_NAMES = [
   "Weekly Executive Summary",
 ];
 
+// Dashboards shown under "Shared Dashboards" in the switcher (shared by another
+// user). Anything not listed falls under the user's own dashboards.
+export const SHARED_DASHBOARDS = [
+  "MSP Client Health",
+  "Threat Activity",
+  "Roaming Clients",
+];
+
 export type WidgetCategory = "KPIs" | "Status" | "Charts" | "Tables" | "Other";
 export type WidgetDef = {
   type: string;

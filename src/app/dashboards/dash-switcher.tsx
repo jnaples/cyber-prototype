@@ -20,17 +20,13 @@ import { useState } from "react";
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { MaterialSymbol } from "@/components/material-symbol";
 
-import { DASHBOARD_NAMES } from "./lib";
+import { DASHBOARD_NAMES, SHARED_DASHBOARDS } from "./lib";
 
 const ALL_DASHBOARDS = DASHBOARD_NAMES;
 
 // Non-favorite dashboards are split into "Shared dashboards" (shared) and
 // "My dashboards" (personal). Anything not listed here falls under My dashboards.
-const PUBLISHED_VIEWS = [
-  "MSP Client Health",
-  "Threat Activity",
-  "Roaming Clients",
-];
+const PUBLISHED_VIEWS = SHARED_DASHBOARDS;
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
