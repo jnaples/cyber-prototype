@@ -9,6 +9,7 @@ const LINK_BLUE = "#1976D2";
 const BORDER = "#E0E0E0";
 const TEXT = "#212B36";
 const MUTED = "#637381";
+const TABLE_TEXT = "#76838F";
 
 type Price = { price?: string; unit?: string; retail?: string; na?: boolean };
 type Plan = {
@@ -55,18 +56,18 @@ const TABS = ["Subscription", "Invoices", "Manage"];
 
 function PriceCell({ p }: { p: Price }) {
   if (p.na) {
-    return <Typography sx={{ fontSize: 20, color: TEXT }}>N/A</Typography>;
+    return <Typography sx={{ fontSize: 16, color: TABLE_TEXT }}>N/A</Typography>;
   }
   return (
     <Box>
-      <Typography component="span" sx={{ fontSize: 20, color: TEXT }}>
+      <Typography component="span" sx={{ fontSize: 16, color: TABLE_TEXT }}>
         {p.price}
       </Typography>
-      <Typography component="span" sx={{ fontSize: 13, color: MUTED }}>
+      <Typography component="span" sx={{ fontSize: 13, color: TABLE_TEXT }}>
         {p.unit}
       </Typography>
       {p.retail && (
-        <Typography sx={{ fontSize: 13, color: MUTED, mt: 0.5 }}>
+        <Typography sx={{ fontSize: 13, color: TABLE_TEXT, mt: 0.5 }}>
           (Retail: {p.retail})
         </Typography>
       )}
@@ -78,28 +79,37 @@ export default function OldBillingPage() {
   const cellSx = {
     borderRight: `1px solid ${BORDER}`,
     borderBottom: `1px solid ${BORDER}`,
-    px: 3,
-    py: 2,
+    padding: "5px",
     verticalAlign: "middle",
     textAlign: "center" as const,
   };
   const rowLabelSx = {
     ...cellSx,
+    borderTop: `1px solid ${BORDER}`,
+    borderLeft: `1px solid ${BORDER}`,
     textAlign: "left" as const,
-    color: TEXT,
+    color: TABLE_TEXT,
     fontSize: 15,
     width: 200,
   };
 
   return (
-    <Box sx={{ bgcolor: "#fff", minHeight: "100%" }}>
+    <Box
+      sx={{
+        bgcolor: "#fff",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* Legacy tab bar */}
       <Box
         sx={{
           bgcolor: "#EEF1F8",
-          px: 4,
+          px: 2,
           display: "flex",
           gap: 4,
+          flexShrink: 0,
           borderBottom: `1px solid ${BORDER}`,
         }}
       >
@@ -108,10 +118,9 @@ export default function OldBillingPage() {
             key={t}
             sx={{
               py: 2,
-              fontSize: 18,
+              fontSize: 16,
               cursor: "pointer",
               color: i === 0 ? LINK_BLUE : MUTED,
-              borderBottom: i === 0 ? `2px solid ${LINK_BLUE}` : "2px solid transparent",
             }}
           >
             {t}
@@ -119,14 +128,13 @@ export default function OldBillingPage() {
         ))}
       </Box>
 
-      <Box sx={{ px: 4, py: 3 }}>
+      <Box sx={{ px: 2, pt: 2, pb: 8, flex: 1, minHeight: 0, overflow: "auto" }}>
         {/* Plus-upgrade notice — styled like the legacy Select a Plan banner */}
         <Box
           sx={{
             bgcolor: "#E9F3FB",
-            borderRadius: "8px",
-            px: 3,
-            py: 2.5,
+            borderRadius: "2px",
+            p: 2,
             mb: 4,
             display: "flex",
             gap: 1.5,
@@ -166,11 +174,17 @@ export default function OldBillingPage() {
                   key={l}
                   variant="outlined"
                   sx={{
-                    color: TEXT,
-                    borderColor: "#C4CDD5",
-                    textTransform: "uppercase",
-                    fontWeight: 700,
-                    "&:hover": { borderColor: "#919EAB", bgcolor: "transparent" },
+                    color: "#2096F3",
+                    borderColor: "#2096F3",
+                    fontSize: 14,
+                    borderRadius: "2px",
+                    padding: "6px 15px",
+                    textTransform: "none",
+                    fontWeight: 400,
+                    "&:hover": {
+                      borderColor: "#2096F3",
+                      bgcolor: "rgba(32, 150, 243, 0.04)",
+                    },
                   }}
                 >
                   {l}
@@ -184,8 +198,7 @@ export default function OldBillingPage() {
         <Box
           sx={{
             bgcolor: "#ECECEC",
-            px: 2.5,
-            py: 1.75,
+            p: 2,
             display: "flex",
             alignItems: "center",
             gap: 1.5,
@@ -210,7 +223,7 @@ export default function OldBillingPage() {
           >
             i
           </Box>
-          <Typography sx={{ fontSize: 18, color: TEXT }}>
+          <Typography sx={{ fontSize: 16, color: TEXT }}>
             View your usage metrics{" "}
             <Link href="#" underline="hover" sx={{ color: LINK_BLUE }}>
               here.
@@ -218,7 +231,7 @@ export default function OldBillingPage() {
           </Typography>
         </Box>
 
-        <Typography sx={{ fontSize: 32, color: TEXT, mb: 3 }}>
+        <Typography sx={{ fontSize: 24, color: TEXT, mb: 3 }}>
           Our Plans
         </Typography>
 
@@ -230,6 +243,7 @@ export default function OldBillingPage() {
             borderCollapse: "collapse",
             border: `1px solid ${BORDER}`,
             borderTop: "none",
+            borderLeft: "none",
           }}
         >
           <Box component="thead">
@@ -242,7 +256,7 @@ export default function OldBillingPage() {
                   sx={{
                     bgcolor: HEADER_BLUE,
                     color: "#fff",
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: 700,
                     px: 3,
                     py: 2,
@@ -284,7 +298,7 @@ export default function OldBillingPage() {
                 <Box
                   component="td"
                   key={plan.name}
-                  sx={{ ...cellSx, color: MUTED, fontSize: 16 }}
+                  sx={{ ...cellSx, color: TABLE_TEXT, fontSize: 16 }}
                 >
                   {plan.ideal}
                 </Box>
@@ -293,7 +307,7 @@ export default function OldBillingPage() {
           </Box>
         </Box>
 
-        <Typography sx={{ fontSize: 18, color: TEXT, mt: 3 }}>
+        <Typography sx={{ fontSize: 16, color: TEXT, mt: 3 }}>
           See our{" "}
           <Link href="#" underline="hover" sx={{ color: "#3527FD" }}>
             pricing page
@@ -306,9 +320,8 @@ export default function OldBillingPage() {
           sx={{
             mt: 4,
             bgcolor: "#FBEEDE",
-            borderRadius: "8px",
-            px: 3,
-            py: 2.5,
+            borderRadius: "2px",
+            p: 2,
           }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
@@ -330,11 +343,11 @@ export default function OldBillingPage() {
             >
               i
             </Box>
-            <Typography sx={{ fontSize: 18, fontWeight: 700, color: TEXT }}>
+            <Typography sx={{ fontSize: 16, fontWeight: 700, color: TEXT }}>
               Select a Plan
             </Typography>
           </Box>
-          <Typography sx={{ fontSize: 16, color: "#9A6A00", pl: 3.5 }}>
+          <Typography sx={{ fontSize: 14, color: "#9A6A00", pl: 3.5 }}>
             Plan changes are managed by your Account Owner. Email{" "}
             <Link
               href="mailto:sales@dnsfilter.com"
