@@ -38,13 +38,11 @@ function RowActionsCell({
   requester,
   reason,
   policy,
-  organization,
 }: {
   domain: string;
   requester: string;
   reason: string;
   policy: string;
-  organization: string;
 }) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [denyAnchor, setDenyAnchor] = useState<HTMLElement | null>(null);
@@ -120,7 +118,6 @@ function RowActionsCell({
         requester={requester}
         reason={reason}
         policy={policy}
-        organization={organization}
       />
     </Box>
   );
@@ -224,7 +221,6 @@ const columns: GridColDef[] = [
         requester={params.row.loggedInUser}
         reason={params.row.requestReason}
         policy={params.row.policy}
-        organization={params.row.organization}
       />
     ),
   },

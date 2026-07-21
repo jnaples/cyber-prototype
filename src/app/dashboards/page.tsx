@@ -62,7 +62,7 @@ import "react-grid-layout/css/styles.css";
 // ---------------------------------------------------------------------------
 
 const COLS = 6;
-const LS_KEY = "dnsf_custom_dash_v8";
+const LS_KEY = "dnsf_custom_dash_v9";
 
 const clampSpan = (s: number) => Math.min(COLS, Math.max(1, Number(s) || 1));
 
@@ -86,6 +86,12 @@ function buildLayout(widgets: WidgetInstance[]): Layout {
   for (const w of widgets) {
     const width = clampSpan(w.span);
     const h = w.h ?? heightFor(w.type);
+    // Honor an explicit position when the widget carries one (the default
+    // layout does); otherwise auto-pack left-to-right.
+    if (typeof w.x === "number" && typeof w.y === "number") {
+      out.push({ i: w.id, x: w.x, y: w.y, w: width, h });
+      continue;
+    }
     if (x + width > COLS) {
       x = 0;
       y += rowMaxH;
@@ -244,37 +250,34 @@ const bumpUid = (ws: WidgetInstance[]) => {
   });
 };
 
-// Default dashboard, ordered by how an admin reads it top-to-bottom:
-//   1. Threat posture — headline KPI counters (what happened).
-//   2. Coverage health — protection status fractions (are we covered).
-//   3. Trends — activity/threats over time (where it's heading).
-//   4. Breakdowns — category/threat composition (what it's made of).
-//   5. Searchables — top domains/orgs tables; most useful for MSPs managing
-//      many orgs, least useful for a single org, so they sit last.
-// The default surfaces every widget in the catalog, grouped by band.
+// Default dashboard with explicit positions (COLS = 6). Reads top-to-bottom:
+//   1. Threat posture (KPI row) + coverage health (status row) on the left,
+//      with the Geo Activity map tall on the right spanning both rows.
+//   2. Trends — threats / request activity over time.
+//   3. Breakdowns — category / threat composition donuts.
+//   4. Searchables — top domains / orgs tables (MSP-oriented), last.
 const DEFAULT_LAYOUT = (): WidgetInstance[] => [
-  // 1. Threat posture — three-up wide KPI counters (span 2 → 3 per row).
-  { id: uid(), type: "kpi-total", span: 2 },
-  { id: uid(), type: "kpi-allowed", span: 2 },
-  { id: uid(), type: "kpi-blocked", span: 2 },
-  { id: uid(), type: "kpi-threats", span: 2 },
-  // 2. Coverage health — Sites/Roaming finish the KPI grid; Users/Relays are
-  //    narrow (span 1) and tall (h 4) so they flank the Request Activity chart.
-  { id: uid(), type: "status-sites", span: 2 },
-  { id: uid(), type: "status-roaming", span: 2 },
-  { id: uid(), type: "status-users", span: 1, h: 4 },
-  { id: uid(), type: "status-relays", span: 1, h: 4 },
-  // 3. Trends
-  { id: uid(), type: "request-activity", span: 4 },
-  { id: uid(), type: "threats-time", span: 3 },
-  // 4. Breakdowns
-  { id: uid(), type: "requests-bar", span: 3 },
-  { id: uid(), type: "activity-owner", span: 2 },
-  { id: uid(), type: "cat-breakdown", span: 2 },
-  { id: uid(), type: "threat-breakdown", span: 2 },
-  // 5. Searchables (MSP)
-  { id: uid(), type: "top-domains", span: 3 },
-  { id: uid(), type: "top-orgs", span: 3 },
+  // Threat posture (row 1, left)
+  { id: uid(), type: "kpi-threats", span: 1, x: 0, y: 0, h: 2 },
+  { id: uid(), type: "kpi-blocked", span: 1, x: 1, y: 0, h: 2 },
+  { id: uid(), type: "kpi-total", span: 1, x: 2, y: 0, h: 2 },
+  { id: uid(), type: "kpi-allowed", span: 1, x: 3, y: 0, h: 2 },
+  // Geo Activity (right, tall — flanks both small-card rows)
+  { id: uid(), type: "geo-activity", span: 2, x: 4, y: 0, h: 4 },
+  // Coverage health (row 2, left)
+  { id: uid(), type: "status-roaming", span: 1, x: 0, y: 2, h: 2 },
+  { id: uid(), type: "status-sites", span: 1, x: 1, y: 2, h: 2 },
+  { id: uid(), type: "status-users", span: 1, x: 2, y: 2, h: 2 },
+  { id: uid(), type: "status-relays", span: 1, x: 3, y: 2, h: 2 },
+  // Trends
+  { id: uid(), type: "threats-time", span: 3, x: 0, y: 4, h: 4 },
+  { id: uid(), type: "request-activity", span: 3, x: 3, y: 4, h: 4 },
+  // Breakdowns
+  { id: uid(), type: "cat-breakdown", span: 3, x: 0, y: 8, h: 4 },
+  { id: uid(), type: "threat-breakdown", span: 3, x: 3, y: 8, h: 4 },
+  // Searchables (MSP)
+  { id: uid(), type: "top-domains", span: 3, x: 0, y: 12, h: 4 },
+  { id: uid(), type: "top-orgs", span: 3, x: 3, y: 12, h: 4 },
 ];
 
 // Keep only widgets whose type still exists in the catalog. De-duplicate IDs.
@@ -283,7 +286,16 @@ function sanitize(arr: unknown): WidgetInstance[] | null {
   const seen = new Set<string>();
   return arr
     .filter(
-      (w): w is { id?: string; type?: string; span?: number; h?: number } =>
+      (
+        w,
+      ): w is {
+        id?: string;
+        type?: string;
+        span?: number;
+        h?: number;
+        x?: number;
+        y?: number;
+      } =>
         Boolean(w) &&
         typeof w === "object" &&
         typeof (w as { type?: unknown }).type === "string" &&
@@ -298,6 +310,9 @@ function sanitize(arr: unknown): WidgetInstance[] | null {
         type: w.type as string,
         span: clampSpan(w.span ?? 1),
         ...(typeof w.h === "number" ? { h: w.h } : {}),
+        ...(typeof w.x === "number" && typeof w.y === "number"
+          ? { x: w.x, y: w.y }
+          : {}),
       };
     });
 }

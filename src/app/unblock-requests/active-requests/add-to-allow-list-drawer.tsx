@@ -26,7 +26,6 @@ export function AddToAllowListDrawer({
   requester = "the requester",
   reason,
   policy = "this policy",
-  organization = "the organization",
 }: {
   open: boolean;
   onClose: () => void;
@@ -34,7 +33,6 @@ export function AddToAllowListDrawer({
   requester?: string;
   reason?: string;
   policy?: string;
-  organization?: string;
 }) {
   const [note, setNote] = useState("");
   const [includeCnames, setIncludeCnames] = useState(false);
@@ -75,7 +73,7 @@ export function AddToAllowListDrawer({
       <Divider />
 
       {/* Scope summary */}
-      <Box sx={{ mb: 1 }}>
+      <Box>
         <Typography sx={{ color: "text.primary" }}>
           Add {domain} to the{" "}
           <Box component="strong" sx={{ fontWeight: 700 }}>
@@ -113,12 +111,10 @@ export function AddToAllowListDrawer({
               sx={{ p: 0.5, mr: 1 }}
             />
           }
-          label={
-            <Typography>Also Add to {organization} Global Allow List</Typography>
-          }
+          label={<Typography>Also Add to Universal Allow List</Typography>}
           sx={{ m: 0 }}
         />
-        <Typography variant="body2" sx={{ color: "text.secondary", ml: "34px" }}>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
           Affects all {GLOBAL_IMPACT}.
         </Typography>
       </Box>

@@ -82,6 +82,10 @@ export type WidgetInstance = {
   span: number;
   /** Optional seed height (grid rows). Falls back to the per-type default. */
   h?: number;
+  /** Optional explicit grid position. When both are set, the layout seeder
+   *  places the widget here instead of auto-packing left-to-right. */
+  x?: number;
+  y?: number;
 };
 
 // ---------------------------------------------------------------------------
