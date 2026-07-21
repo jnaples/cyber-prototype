@@ -156,7 +156,13 @@ function V2Card({
         borderColor: editing ? "primary.main" : "transparent",
         // Signify draggability in edit mode (resize handle keeps its own cursor).
         cursor: editing ? "grab" : undefined,
+        transition: "box-shadow 140ms",
         "&:active": editing ? { cursor: "grabbing" } : undefined,
+        // Raise the shadow on hover (like v1): elevation 5 while editing, 4
+        // otherwise.
+        "&:hover": {
+          boxShadow: (theme) => theme.shadows[editing ? 5 : 4],
+        },
         // Reveal the edit affordances (drag handle + remove) only on hover.
         "&:hover .v2-edit-affordance": { opacity: 1 },
       }}
@@ -487,6 +493,8 @@ export default function DashboardsPage() {
     advancedFilters: AppliedAdvancedFilter[];
   } | null>(null);
   const [favorited, setFavorited] = useState(false);
+  // Name of the dashboard currently set as the default landing view.
+  const [defaultDashboard, setDefaultDashboard] = useState<string | null>(null);
   const [quickFiltersOpen, setQuickFiltersOpen] = useState(false);
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<DashboardFilters>(
@@ -860,20 +868,37 @@ export default function DashboardsPage() {
 
           <Divider />
 
-          {/* Defaults cluster */}
-          <MenuItem
-            onClick={() => {
-              setActionsAnchor(null);
-              setToast(`${name} set as default.`);
-            }}
+          {/* Defaults cluster — disabled once this dashboard is the default. */}
+          <ArrowTooltip
+            title={
+              defaultDashboard === name
+                ? "Dashboard already set to default."
+                : ""
+            }
           >
-            <MaterialSymbol
-              name="check_circle"
-              size={16}
-              sx={{ mr: "8px", opacity: 0.7 }}
-            />
-            Set as default
-          </MenuItem>
+            <span
+              style={{
+                display: "block",
+                cursor: defaultDashboard === name ? "not-allowed" : undefined,
+              }}
+            >
+              <MenuItem
+                disabled={defaultDashboard === name}
+                onClick={() => {
+                  setActionsAnchor(null);
+                  setDefaultDashboard(name);
+                  setToast(`${name} set as default.`);
+                }}
+              >
+                <MaterialSymbol
+                  name="check_circle"
+                  size={16}
+                  sx={{ mr: "8px", opacity: 0.7 }}
+                />
+                Set as default
+              </MenuItem>
+            </span>
+          </ArrowTooltip>
 
           {/* Share band — grouped with the defaults cluster */}
           <MenuItem

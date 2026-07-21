@@ -20,15 +20,16 @@ import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
 import { AddToAllowListDrawer } from "./add-to-allow-list-drawer";
+import { DenyRequestDrawer } from "./deny-request-drawer";
 
 // ---------------------------------------------------------------------------
 // Row actions
 // ---------------------------------------------------------------------------
 
-// Items shown in the Deny popout menu.
+// Items shown in the Deny popout menu (notify option first).
 const DENY_ACTIONS: { label: string; icon: string }[] = [
-  { label: "Notify user", icon: "notifications" },
-  { label: "Continue without notifying", icon: "notifications_off" },
+  { label: "Deny and notify user", icon: "notifications" },
+  { label: "Deny without notifying user", icon: "notifications_off" },
 ];
 
 // Items kept in the overflow menu.
@@ -50,7 +51,8 @@ function RowActionsCell({
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [denyAnchor, setDenyAnchor] = useState<HTMLElement | null>(null);
   const [allowOpen, setAllowOpen] = useState(false);
-  const [toastOpen, setToastOpen] = useState(false);
+  const [denyOpen, setDenyOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   // Demo: this domain is already on the allow list, so the request is stale.
   const alreadyAllowed = domain === "nytimes.com";
   const closeMenu = () => setMenuAnchor(null);
@@ -91,7 +93,17 @@ function RowActionsCell({
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
         {DENY_ACTIONS.map(({ label, icon }) => (
-          <MenuItem key={label} onClick={closeDeny}>
+          <MenuItem
+            key={label}
+            onClick={() => {
+              closeDeny();
+              if (label === "Deny and notify user") {
+                setDenyOpen(true);
+              } else {
+                setToast("Request denied.");
+              }
+            }}
+          >
             <ListItemIcon>
               <MaterialSymbol name={icon} size={20} />
             </ListItemIcon>
@@ -120,7 +132,13 @@ function RowActionsCell({
       <AddToAllowListDrawer
         open={allowOpen}
         onClose={() => setAllowOpen(false)}
-        onSubmit={() => setToastOpen(true)}
+        onSubmit={() =>
+          setToast(
+            alreadyAllowed
+              ? "Request resolved."
+              : `${domain} added to the Allow List.`,
+          )
+        }
         domain={domain}
         requester={requester}
         reason={reason}
@@ -128,22 +146,29 @@ function RowActionsCell({
         alreadyAllowed={alreadyAllowed}
       />
 
+      <DenyRequestDrawer
+        open={denyOpen}
+        onClose={() => setDenyOpen(false)}
+        onDeny={() => setToast("Request denied.")}
+        domain={domain}
+        requester={requester}
+        reason={reason}
+      />
+
       <Portal>
         <Snackbar
-          open={toastOpen}
+          open={Boolean(toast)}
           autoHideDuration={4000}
-          onClose={() => setToastOpen(false)}
+          onClose={() => setToast(null)}
           anchorOrigin={{ vertical: "top", horizontal: "center" }}
         >
           <Alert
             severity="success"
             variant="standard"
             elevation={8}
-            onClose={() => setToastOpen(false)}
+            onClose={() => setToast(null)}
           >
-            {alreadyAllowed
-              ? "Request resolved."
-              : `${domain} added to the Allow List.`}
+            {toast}
           </Alert>
         </Snackbar>
       </Portal>
