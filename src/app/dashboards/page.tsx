@@ -62,7 +62,7 @@ import "react-grid-layout/css/styles.css";
 // ---------------------------------------------------------------------------
 
 const COLS = 6;
-const LS_KEY = "dnsf_custom_dash_v9";
+const LS_KEY = "dnsf_custom_dash_v10";
 
 const clampSpan = (s: number) => Math.min(COLS, Math.max(1, Number(s) || 1));
 
@@ -200,10 +200,24 @@ function V2Card({
         </>
       )}
       {!headerless && (
-        <Box sx={{ p: 2, pb: 1 }}>
+        <Box
+          sx={{
+            p: 2,
+            pb: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 1,
+          }}
+        >
           <Typography sx={{ fontWeight: 600, fontSize: 16, color: "text.primary" }}>
             {def?.name ?? widget.type}
           </Typography>
+          {widget.type === "geo-activity" && (
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              Showing top 100 sites
+            </Typography>
+          )}
         </Box>
       )}
       <Box
@@ -272,12 +286,14 @@ const DEFAULT_LAYOUT = (): WidgetInstance[] => [
   // Trends
   { id: uid(), type: "threats-time", span: 3, x: 0, y: 4, h: 4 },
   { id: uid(), type: "request-activity", span: 3, x: 3, y: 4, h: 4 },
-  // Breakdowns
-  { id: uid(), type: "cat-breakdown", span: 3, x: 0, y: 8, h: 4 },
-  { id: uid(), type: "threat-breakdown", span: 3, x: 3, y: 8, h: 4 },
+  // Breakdowns — bar composition first, then the proportional donuts.
+  { id: uid(), type: "requests-bar", span: 3, x: 0, y: 8, h: 4 },
+  { id: uid(), type: "activity-owner", span: 3, x: 3, y: 8, h: 4 },
+  { id: uid(), type: "cat-breakdown", span: 3, x: 0, y: 12, h: 4 },
+  { id: uid(), type: "threat-breakdown", span: 3, x: 3, y: 12, h: 4 },
   // Searchables (MSP)
-  { id: uid(), type: "top-domains", span: 3, x: 0, y: 12, h: 4 },
-  { id: uid(), type: "top-orgs", span: 3, x: 3, y: 12, h: 4 },
+  { id: uid(), type: "top-domains", span: 3, x: 0, y: 16, h: 4 },
+  { id: uid(), type: "top-orgs", span: 3, x: 3, y: 16, h: 4 },
 ];
 
 // Keep only widgets whose type still exists in the catalog. De-duplicate IDs.

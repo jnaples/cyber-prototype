@@ -82,7 +82,7 @@ export function AddToAllowListDrawer({
           Allow List.
         </Typography>
         <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-          Affects {POLICY_IMPACT}.
+          {POLICY_IMPACT}
         </Typography>
       </Box>
 
@@ -115,7 +115,7 @@ export function AddToAllowListDrawer({
           sx={{ m: 0 }}
         />
         <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          Affects all {GLOBAL_IMPACT}.
+          {GLOBAL_IMPACT}
         </Typography>
       </Box>
 
