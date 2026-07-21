@@ -6,6 +6,8 @@
 // layout persists in localStorage.
 
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
+import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
+import DragIndicatorOutlinedIcon from "@mui/icons-material/DragIndicatorOutlined";
 import LibraryAddOutlinedIcon from "@mui/icons-material/LibraryAddOutlined";
 import {
   Alert,
@@ -18,10 +20,13 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Paper,
   Snackbar,
   TextField,
   Typography,
 } from "@mui/material";
+import { GridLayout, useContainerWidth } from "react-grid-layout";
+import type { Layout, LayoutItem } from "react-grid-layout";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -39,54 +44,190 @@ import {
 } from "./dashboard-filters";
 import { AdvancedFilters, type AppliedAdvancedFilter } from "./advanced-filters";
 import { QuickFilters } from "./quick-filters";
-import { DashCard } from "./dash-card";
 import { DashSwitcher } from "./dash-switcher";
 import { ShareWithOrganizationsDrawer } from "./share-with-organizations-drawer";
+import { WidgetBody } from "./widgets";
 import {
   CATALOG_BY_TYPE,
+  HEADERLESS,
   SHARED_DASHBOARDS,
   type WidgetInstance,
 } from "./lib";
+
+import "react-grid-layout/css/styles.css";
 
 // ---------------------------------------------------------------------------
 // Config
 // ---------------------------------------------------------------------------
 
 const COLS = 6;
-const LS_KEY = "dnsf_custom_dash_v4";
+const LS_KEY = "dnsf_custom_dash_v8";
 
 const clampSpan = (s: number) => Math.min(COLS, Math.max(1, Number(s) || 1));
 
-// Simulate the grid's row-flow packing so each widget gets an explicit
-// (row, column) and we can find the empty cells the user can resize/drag into.
-function packLayout(widgets: WidgetInstance[]) {
-  const placements: Record<string, { row: number; col: number }> = {};
-  let row = 0;
-  let col = 0;
+// react-grid-layout tuning.
+const ROW_HEIGHT = 78;
+
+// Height (in grid rows) per widget type — KPIs/status are short; charts,
+// donuts, and tables need room.
+function heightFor(type: string): number {
+  if (type.startsWith("kpi-") || type.startsWith("status-")) return 2;
+  return 4;
+}
+
+// Pack widgets left-to-right into COLS columns to seed the grid layout,
+// advancing each row by the tallest item it contains.
+function buildLayout(widgets: WidgetInstance[]): Layout {
+  const out: LayoutItem[] = [];
+  let x = 0;
+  let y = 0;
+  let rowMaxH = 0;
   for (const w of widgets) {
-    const span = clampSpan(w.span);
-    if (col + span > COLS) {
-      row++;
-      col = 0;
+    const width = clampSpan(w.span);
+    const h = w.h ?? heightFor(w.type);
+    if (x + width > COLS) {
+      x = 0;
+      y += rowMaxH;
+      rowMaxH = 0;
     }
-    placements[w.id] = { row, col };
-    col += span;
+    out.push({ i: w.id, x, y, w: width, h });
+    x += width;
+    rowMaxH = Math.max(rowMaxH, h);
   }
-  const rows = widgets.length
-    ? Math.max(...widgets.map((w) => placements[w.id].row)) + 1
-    : 0;
-  const occupied = new Set<string>();
+  return out;
+}
+
+// Keep existing item positions, append new widgets at the bottom, drop removed.
+function reconcileLayout(prev: Layout, widgets: WidgetInstance[]): Layout {
+  const byId = new Map(prev.map((it) => [it.i, it]));
+  let maxY = prev.reduce((m, it) => Math.max(m, it.y + it.h), 0);
+  const out: LayoutItem[] = [];
   for (const w of widgets) {
-    const { row: r, col: c } = placements[w.id];
-    for (let i = c; i < c + clampSpan(w.span); i++) occupied.add(`${r}:${i}`);
-  }
-  const emptyCells: { row: number; col: number }[] = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < COLS; c++) {
-      if (!occupied.has(`${r}:${c}`)) emptyCells.push({ row: r, col: c });
+    const existing = byId.get(w.id);
+    if (existing) {
+      out.push(existing);
+    } else {
+      const h = w.h ?? heightFor(w.type);
+      out.push({ i: w.id, x: 0, y: maxY, w: clampSpan(w.span), h });
+      maxY += h;
     }
   }
-  return { placements, emptyCells };
+  return out;
+}
+
+// A single widget card for the react-grid-layout grid. Drag/resize are handled
+// by the grid; this just renders the widget's content + an edit-mode remove.
+function V2Card({
+  widget,
+  editing,
+  noResults,
+  onRemove,
+}: {
+  widget: WidgetInstance;
+  editing: boolean;
+  noResults: boolean;
+  onRemove: () => void;
+}) {
+  const def = CATALOG_BY_TYPE[widget.type];
+  const headerless = HEADERLESS(widget.type);
+  return (
+    <Paper
+      elevation={editing ? 3 : 1}
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        borderRadius: 1,
+        position: "relative",
+        overflow: "hidden",
+        borderWidth: 2,
+        borderStyle: editing ? "dashed" : "solid",
+        borderColor: editing ? "primary.main" : "transparent",
+        // Signify draggability in edit mode (resize handle keeps its own cursor).
+        cursor: editing ? "grab" : undefined,
+        "&:active": editing ? { cursor: "grabbing" } : undefined,
+        // Reveal the edit affordances (drag handle + remove) only on hover.
+        "&:hover .v2-edit-affordance": { opacity: 1 },
+      }}
+    >
+      {editing && (
+        <>
+          {/* Drag affordance in the top-left, revealed on hover — the whole
+              card is draggable, so this is just a visual handle (no
+              .rgl-no-drag). */}
+          <DragIndicatorOutlinedIcon
+            className="v2-edit-affordance"
+            fontSize="small"
+            sx={{
+              position: "absolute",
+              top: 6,
+              left: 6,
+              zIndex: 3,
+              color: "text.disabled",
+              cursor: "grab",
+              opacity: 0,
+              transition: "opacity 0.15s ease",
+            }}
+          />
+          <IconButton
+            className="v2-edit-affordance rgl-no-drag"
+            size="small"
+            onClick={onRemove}
+            title="Remove"
+            sx={{
+              position: "absolute",
+              top: 6,
+              right: 6,
+              zIndex: 3,
+              color: "error.main",
+              opacity: 0,
+              transition: "opacity 0.15s ease",
+            }}
+          >
+            <DeleteForeverOutlinedIcon fontSize="small" />
+          </IconButton>
+        </>
+      )}
+      {!headerless && (
+        <Box sx={{ p: 2, pb: 1 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 16, color: "text.primary" }}>
+            {def?.name ?? widget.type}
+          </Typography>
+        </Box>
+      )}
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflow: "auto",
+          position: "relative",
+          // Match v1's body padding: headed cards get their top padding from
+          // the header, so only pad the sides + bottom (px/pb 2); headerless
+          // KPI/status cards get uniform 1.5.
+          p: headerless ? 1.5 : 2,
+          pt: headerless ? 1.5 : 0,
+        }}
+      >
+        <WidgetBody type={widget.type} />
+        {noResults && (
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              bgcolor: "rgba(0, 0, 0, 0.02)",
+              color: "text.secondary",
+              fontSize: 13,
+            }}
+          >
+            No results
+          </Box>
+        )}
+      </Box>
+    </Paper>
+  );
 }
 
 let _uid = 100;
@@ -98,19 +239,37 @@ const bumpUid = (ws: WidgetInstance[]) => {
   });
 };
 
+// Default dashboard, ordered by how an admin reads it top-to-bottom:
+//   1. Threat posture — headline KPI counters (what happened).
+//   2. Coverage health — protection status fractions (are we covered).
+//   3. Trends — activity/threats over time (where it's heading).
+//   4. Breakdowns — category/threat composition (what it's made of).
+//   5. Searchables — top domains/orgs tables; most useful for MSPs managing
+//      many orgs, least useful for a single org, so they sit last.
+// The default surfaces every widget in the catalog, grouped by band.
 const DEFAULT_LAYOUT = (): WidgetInstance[] => [
-  { id: uid(), type: "kpi-total", span: 1 },
-  { id: uid(), type: "kpi-allowed", span: 1 },
-  { id: uid(), type: "kpi-blocked", span: 1 },
-  { id: uid(), type: "kpi-threats", span: 1 },
-  { id: uid(), type: "status-sites", span: 1 },
-  { id: uid(), type: "status-roaming", span: 1 },
-  { id: uid(), type: "status-users", span: 1 },
-  { id: uid(), type: "status-relays", span: 1 },
+  // 1. Threat posture — three-up wide KPI counters (span 2 → 3 per row).
+  { id: uid(), type: "kpi-total", span: 2 },
+  { id: uid(), type: "kpi-allowed", span: 2 },
+  { id: uid(), type: "kpi-blocked", span: 2 },
+  { id: uid(), type: "kpi-threats", span: 2 },
+  // 2. Coverage health — Sites/Roaming finish the KPI grid; Users/Relays are
+  //    narrow (span 1) and tall (h 4) so they flank the Request Activity chart.
+  { id: uid(), type: "status-sites", span: 2 },
+  { id: uid(), type: "status-roaming", span: 2 },
+  { id: uid(), type: "status-users", span: 1, h: 4 },
+  { id: uid(), type: "status-relays", span: 1, h: 4 },
+  // 3. Trends
   { id: uid(), type: "request-activity", span: 4 },
+  { id: uid(), type: "threats-time", span: 3 },
+  // 4. Breakdowns
+  { id: uid(), type: "requests-bar", span: 3 },
+  { id: uid(), type: "activity-owner", span: 2 },
   { id: uid(), type: "cat-breakdown", span: 2 },
-  { id: uid(), type: "top-domains", span: 2 },
-  { id: uid(), type: "top-orgs", span: 2 },
+  { id: uid(), type: "threat-breakdown", span: 2 },
+  // 5. Searchables (MSP)
+  { id: uid(), type: "top-domains", span: 3 },
+  { id: uid(), type: "top-orgs", span: 3 },
 ];
 
 // Keep only widgets whose type still exists in the catalog. De-duplicate IDs.
@@ -119,7 +278,7 @@ function sanitize(arr: unknown): WidgetInstance[] | null {
   const seen = new Set<string>();
   return arr
     .filter(
-      (w): w is { id?: string; type?: string; span?: number } =>
+      (w): w is { id?: string; type?: string; span?: number; h?: number } =>
         Boolean(w) &&
         typeof w === "object" &&
         typeof (w as { type?: unknown }).type === "string" &&
@@ -133,6 +292,7 @@ function sanitize(arr: unknown): WidgetInstance[] | null {
         id,
         type: w.type as string,
         span: clampSpan(w.span ?? 1),
+        ...(typeof w.h === "number" ? { h: w.h } : {}),
       };
     });
 }
@@ -259,10 +419,13 @@ export default function DashboardsPage() {
     () => persisted.widgets ?? DEFAULT_LAYOUT(),
   );
 
+  // react-grid-layout state — positions/sizes managed by the grid. Reconciled
+  // when widgets are added/removed.
+  const [rglLayout, setRglLayout] = useState<Layout>(() => buildLayout(widgets));
+  const { width, containerRef, mounted } = useContainerWidth();
+
   const [addOpen, setAddOpen] = useState(false);
   const [renaming, setRenaming] = useState(false);
-  const [dragId, setDragId] = useState<string | null>(null);
-  const [resizing, setResizing] = useState(false);
   // True when applied filters match no data — each widget shows a no-results
   // overlay instead of its content.
   const [noResults, setNoResults] = useState(false);
@@ -426,11 +589,14 @@ export default function DashboardsPage() {
   };
   const removeWidget = (id: string) =>
     setWidgets((ws) => ws.filter((w) => w.id !== id));
-  const setSpan = (id: string, span: number) => {
-    setWidgets((ws) =>
-      ws.map((w) => (w.id === id ? { ...w, span: clampSpan(span) } : w)),
-    );
-  };
+
+  // Reconcile the grid layout whenever the set of widgets changes (add/remove).
+  const widgetKey = widgets.map((w) => w.id).join("|");
+  const [prevWidgetKey, setPrevWidgetKey] = useState(widgetKey);
+  if (widgetKey !== prevWidgetKey) {
+    setPrevWidgetKey(widgetKey);
+    setRglLayout((prev) => reconcileLayout(prev, widgets));
+  }
 
   const deleteDashboard = () => {
     const others = [
@@ -443,58 +609,6 @@ export default function DashboardsPage() {
     setWidgets(DEFAULT_LAYOUT());
     setDashDeleteOpen(false);
   };
-
-  // Pointer-based live reorder (5px movement threshold so a plain click
-  // inside a widget never triggers an accidental reorder).
-  const beginDrag = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>, id: string) => {
-      if (e.button > 0) return;
-      const startX = e.clientX;
-      const startY = e.clientY;
-      let started = false;
-      const reorder = (ev: PointerEvent) => {
-        const el = document.elementFromPoint(ev.clientX, ev.clientY);
-        const cardEl = el?.closest("[data-widget-id]");
-        if (!cardEl) return;
-        const overId = cardEl.getAttribute("data-widget-id");
-        if (!overId || overId === id) return;
-        setWidgets((ws) => {
-          const from = ws.findIndex((w) => w.id === id);
-          const to = ws.findIndex((w) => w.id === overId);
-          if (from < 0 || to < 0 || from === to) return ws;
-          const next = ws.slice();
-          const [m] = next.splice(from, 1);
-          next.splice(to, 0, m);
-          return next;
-        });
-      };
-      const move = (ev: PointerEvent) => {
-        if (!started) {
-          if (Math.hypot(ev.clientX - startX, ev.clientY - startY) < 5) return;
-          started = true;
-          setDragId(id);
-          document.body.style.userSelect = "none";
-          document.body.style.cursor = "grabbing";
-        }
-        reorder(ev);
-      };
-      const up = () => {
-        if (started) {
-          setDragId(null);
-          document.body.style.userSelect = "";
-          document.body.style.cursor = "";
-        }
-        window.removeEventListener("pointermove", move);
-        window.removeEventListener("pointerup", up);
-      };
-      window.addEventListener("pointermove", move);
-      window.addEventListener("pointerup", up);
-    },
-    [],
-  );
-
-  // Packed layout (explicit row/col per widget + the empty cells in between).
-  const layout = packLayout(widgets);
 
   // Filtering and refresh are unavailable while editing the layout.
   const editLockTooltip = (label: string) =>
@@ -1004,48 +1118,72 @@ export default function DashboardsPage() {
       ) : (
         <DashboardFactorContext.Provider value={filterFactor(filters)}>
           <Box
+            ref={containerRef}
             sx={{
-              display: "grid",
-              gridTemplateColumns: `repeat(${COLS}, 1fr)`,
-              gap: 2,
               px: 2,
               pb: 10,
-              alignItems: "stretch",
+              minWidth: 0,
+              // Drop target — override rgl's default red placeholder with the
+              // selected-item blue tint (alpha(primary.main, 0.24)).
+              "& .react-grid-placeholder": {
+                backgroundColor: "rgba(53, 39, 253, 0.08)",
+                opacity: 1,
+                borderRadius: 1,
+              },
+              // Inset the resize gripper 8px from the card's bottom-right.
+              // rgl's own `-se` rule uses three classes, so match its
+              // specificity to win; nudge the ::after mark to the handle
+              // corner so the visible gripper lands exactly 8px in.
+              "& .react-grid-item > .react-resizable-handle.react-resizable-handle-se":
+                {
+                  bottom: 8,
+                  right: 8,
+                },
+              "& .react-grid-item > .react-resizable-handle.react-resizable-handle-se::after":
+                {
+                  right: 0,
+                  bottom: 0,
+                  // Scale the corner bracket up to roughly the delete icon's
+                  // footprint (~20px).
+                  width: 14,
+                  height: 14,
+                  // Match the top-left drag handle (text.disabled).
+                  borderRightColor: "var(--dnsf-palette-text-disabled)",
+                  borderBottomColor: "var(--dnsf-palette-text-disabled)",
+                },
             }}
           >
-            {/* Empty-cell guides — revealed while dragging/resizing so the user
-                sees exactly which open cells the widget can occupy. Placed as
-                real grid items so each one matches its row's height. */}
-            {(resizing || dragId !== null || editMode) &&
-              layout.emptyCells.map((cell) => (
-                <Box
-                  key={`${cell.row}:${cell.col}`}
-                  aria-hidden
-                  sx={{
-                    gridColumn: cell.col + 1,
-                    gridRow: cell.row + 1,
-                    bgcolor: "action.hover",
-                    borderRadius: 1,
-                  }}
-                />
-              ))}
-            {widgets.map((w) => (
-              <DashCard
-                key={w.id}
-                widget={w}
-                pad={2}
-                cols={COLS}
-                colStart={layout.placements[w.id].col}
-                rowIndex={layout.placements[w.id].row}
-                dragging={dragId === w.id}
-                noResults={noResults}
-                editing={editMode}
-                onRemove={() => setPendingDelete(w)}
-                onSpan={(s) => setSpan(w.id, s)}
-                onBeginDrag={beginDrag}
-                onResizingChange={setResizing}
-              />
-            ))}
+            {mounted && (
+              <GridLayout
+                width={width}
+                layout={rglLayout}
+                onLayoutChange={setRglLayout}
+                gridConfig={{
+                  cols: COLS,
+                  rowHeight: ROW_HEIGHT,
+                  margin: [16, 16],
+                  containerPadding: [0, 0],
+                  maxRows: Infinity,
+                }}
+                dragConfig={{
+                  enabled: editMode,
+                  cancel: ".rgl-no-drag",
+                  bounded: true,
+                }}
+                resizeConfig={{ enabled: editMode, handles: ["se"] }}
+              >
+                {widgets.map((w) => (
+                  <div key={w.id}>
+                    <V2Card
+                      widget={w}
+                      editing={editMode}
+                      noResults={noResults}
+                      onRemove={() => setPendingDelete(w)}
+                    />
+                  </div>
+                ))}
+              </GridLayout>
+            )}
           </Box>
         </DashboardFactorContext.Provider>
       )}

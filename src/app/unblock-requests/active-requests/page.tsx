@@ -16,7 +16,7 @@ import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
-import { AddToAllowListDrawer } from "./add-to-allow-list-drawer";
+import { AddToAllowListModal } from "./add-to-allow-list-modal";
 
 // ---------------------------------------------------------------------------
 // Row actions
@@ -33,7 +33,19 @@ const MENU_ACTIONS: { label: string; icon: string }[] = [
   { label: "Report miscategorization", icon: "flag" },
 ];
 
-function RowActionsCell({ domain }: { domain: string }) {
+function RowActionsCell({
+  domain,
+  requester,
+  reason,
+  policy,
+  organization,
+}: {
+  domain: string;
+  requester: string;
+  reason: string;
+  policy: string;
+  organization: string;
+}) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [denyAnchor, setDenyAnchor] = useState<HTMLElement | null>(null);
   const [allowOpen, setAllowOpen] = useState(false);
@@ -50,10 +62,10 @@ function RowActionsCell({ domain }: { domain: string }) {
           <MaterialSymbol name="check" size={20} />
         </IconButton>
       </ArrowTooltip>
-      <ArrowTooltip title="Deny">
+      <ArrowTooltip title="Deny Request">
         <IconButton
           size="small"
-          aria-label="Deny"
+          aria-label="Deny Request"
           onClick={(e) => setDenyAnchor(e.currentTarget)}
         >
           <MaterialSymbol name="block" size={20} />
@@ -101,10 +113,14 @@ function RowActionsCell({ domain }: { domain: string }) {
         ))}
       </Menu>
 
-      <AddToAllowListDrawer
+      <AddToAllowListModal
         open={allowOpen}
         onClose={() => setAllowOpen(false)}
         domain={domain}
+        requester={requester}
+        reason={reason}
+        policy={policy}
+        organization={organization}
       />
     </Box>
   );
@@ -202,7 +218,15 @@ const columns: GridColDef[] = [
     resizable: false,
     align: "left",
     headerAlign: "left",
-    renderCell: (params) => <RowActionsCell domain={params.row.domain} />,
+    renderCell: (params) => (
+      <RowActionsCell
+        domain={params.row.domain}
+        requester={params.row.loggedInUser}
+        reason={params.row.requestReason}
+        policy={params.row.policy}
+        organization={params.row.organization}
+      />
+    ),
   },
 ];
 

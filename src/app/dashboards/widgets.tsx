@@ -11,7 +11,6 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Typography,
 } from "@mui/material";
 
 import { MaterialSymbol } from "@/components/material-symbol";
@@ -45,41 +44,6 @@ import {
 } from "./lib";
 
 // ---- standalone body components ------------------------------------------
-
-function GeoMap() {
-  return (
-    <Box
-      sx={{
-        height: 230,
-        borderRadius: 1.5,
-        border: "1px dashed",
-        borderColor: "divider",
-        bgcolor: "background.default",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 1.25,
-        color: "text.disabled",
-      }}
-    >
-      <MaterialSymbol name="map" size={38} />
-      <Typography
-        sx={{
-          fontSize: 14,
-          fontWeight: 600,
-          color: "text.secondary",
-          textAlign: "center",
-        }}
-      >
-        Showing top 100 sites
-      </Typography>
-      <Typography sx={{ fontSize: 14, textAlign: "center", maxWidth: 220 }}>
-        Set a site location to populate the activity map.
-      </Typography>
-    </Box>
-  );
-}
 
 function DataTableWidget({
   cols,
@@ -285,9 +249,6 @@ export function WidgetBody({ type }: { type: string }) {
       );
     case "threat-breakdown":
       return <Donut slices={scaleSlices(threatSlices)} size={170} />;
-
-    case "geo-activity":
-      return <GeoMap />;
 
     case "top-domains":
       return (

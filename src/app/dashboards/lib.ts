@@ -80,6 +80,8 @@ export type WidgetInstance = {
   id: string;
   type: string;
   span: number;
+  /** Optional seed height (grid rows). Falls back to the per-type default. */
+  h?: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -103,7 +105,6 @@ export const WIDGET_CATALOG: WidgetDef[] = [
   { type: "activity-owner",   name: "Activity by Owner",    desc: "Stacked activity per owner",            icon: "stacked_bar_chart", cat: "Charts", span: 3 },
   { type: "cat-breakdown",    name: "Category Breakdown",   desc: "Donut of request categories",           icon: "donut_large",     cat: "Charts", span: 2 },
   { type: "threat-breakdown", name: "Threat Breakdown",     desc: "Pie of threat types",                   icon: "pie_chart",       cat: "Charts", span: 2 },
-  { type: "geo-activity",     name: "Geo Activity",         desc: "Request map by location",               icon: "map",             cat: "Charts", span: 3 },
 
   { type: "top-domains", name: "Top Domains",       desc: "Most-requested domains",   icon: "public",   cat: "Tables", span: 2 },
   { type: "top-orgs",    name: "Top Organizations", desc: "Requests by organization", icon: "business", cat: "Tables", span: 2 },

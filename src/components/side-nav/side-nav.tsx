@@ -309,23 +309,6 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Box>,
           )}
 
-          {/* Dashboards v2 Link */}
-          {withCollapsedTooltip(
-            "Dashboards v2",
-            <Box
-              sx={getItemStyles("dashboards-v2")}
-              onClick={() => {
-                handleItemClick("dashboards-v2");
-                navigate("/dashboards/v2");
-              }}
-            >
-              <Icon name="dashboard" size={isExpanded ? 20 : 24} />
-              {isExpanded && (
-                <span style={{ margin: "4px 0" }}>Dashboards v2</span>
-              )}
-            </Box>,
-          )}
-
           {/* Policies Links */}
           <Box sx={getDropdownWrapperStyles("policies")}>
             {withCollapsedTooltip(
