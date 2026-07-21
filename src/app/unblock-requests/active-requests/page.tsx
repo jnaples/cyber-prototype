@@ -1,10 +1,13 @@
 import {
+  Alert,
   Box,
   IconButton,
   Link,
   ListItemIcon,
   Menu,
   MenuItem,
+  Portal,
+  Snackbar,
   Typography,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
@@ -47,6 +50,7 @@ function RowActionsCell({
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [denyAnchor, setDenyAnchor] = useState<HTMLElement | null>(null);
   const [allowOpen, setAllowOpen] = useState(false);
+  const [toastOpen, setToastOpen] = useState(false);
   const closeMenu = () => setMenuAnchor(null);
   const closeDeny = () => setDenyAnchor(null);
   return (
@@ -114,11 +118,30 @@ function RowActionsCell({
       <AddToAllowListDrawer
         open={allowOpen}
         onClose={() => setAllowOpen(false)}
+        onSubmit={() => setToastOpen(true)}
         domain={domain}
         requester={requester}
         reason={reason}
         policy={policy}
       />
+
+      <Portal>
+        <Snackbar
+          open={toastOpen}
+          autoHideDuration={4000}
+          onClose={() => setToastOpen(false)}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <Alert
+            severity="success"
+            variant="standard"
+            elevation={8}
+            onClose={() => setToastOpen(false)}
+          >
+            {domain} added to the Allow List.
+          </Alert>
+        </Snackbar>
+      </Portal>
     </Box>
   );
 }

@@ -11,17 +11,21 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { format as fnsFormat } from "date-fns";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
 
-// Placeholder impact figures for the two scopes.
-const POLICY_IMPACT = "7 Sites, 142 Users on this policy";
-const GLOBAL_IMPACT = "12 Sites, 480 Users in the organization";
+// Placeholder impact figure for the policy scope.
+const POLICY_IMPACT = "7 sites, 142 users on this policy";
+
+// Date the note is auto-stamped with (computed once at load).
+const STAMP_DATE = fnsFormat(new Date(), "MMM d, yyyy");
 
 export function AddToAllowListDrawer({
   open,
   onClose,
+  onSubmit,
   domain = "this domain",
   requester = "the requester",
   reason,
@@ -29,6 +33,8 @@ export function AddToAllowListDrawer({
 }: {
   open: boolean;
   onClose: () => void;
+  /** Called when the user confirms "Add to Allow List". */
+  onSubmit?: () => void;
   domain?: string;
   requester?: string;
   reason?: string;
@@ -38,12 +44,13 @@ export function AddToAllowListDrawer({
   const [includeCnames, setIncludeCnames] = useState(false);
   const [addToGlobal, setAddToGlobal] = useState(false);
 
-  // Reset the form each time the drawer opens.
+  // Reset the form each time the drawer opens. The note is auto-stamped with a
+  // sensible default the admin can edit or clear.
   const [wasOpen, setWasOpen] = useState(open);
   if (open !== wasOpen) {
     setWasOpen(open);
     if (open) {
-      setNote("");
+      setNote(`Approved from unblock request — ${requester}, ${STAMP_DATE}.`);
       setIncludeCnames(false);
       setAddToGlobal(false);
     }
@@ -55,7 +62,13 @@ export function AddToAllowListDrawer({
       onClose={onClose}
       title="Add to Allow List"
       secondaryAction={{ label: "Cancel", onClick: onClose }}
-      primaryAction={{ label: "Add to Allow List", onClick: onClose }}
+      primaryAction={{
+        label: "Add to Allow List",
+        onClick: () => {
+          onSubmit?.();
+          onClose();
+        },
+      }}
     >
       {/* Request context */}
       <Box>
@@ -115,7 +128,7 @@ export function AddToAllowListDrawer({
           sx={{ m: 0 }}
         />
         <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          {GLOBAL_IMPACT}
+          This affects all sites and users.
         </Typography>
       </Box>
 
