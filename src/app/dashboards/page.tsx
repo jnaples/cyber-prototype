@@ -100,6 +100,10 @@ function buildLayout(widgets: WidgetInstance[]): Layout {
 // Keep existing item positions, append new widgets at the bottom, drop removed.
 function reconcileLayout(prev: Layout, widgets: WidgetInstance[]): Layout {
   const byId = new Map(prev.map((it) => [it.i, it]));
+  // Full replacement (e.g. Reset to default / Delete swaps in a fresh set with
+  // new ids) — repack left-to-right instead of stacking every "new" widget at
+  // x:0 down the column.
+  if (!widgets.some((w) => byId.has(w.id))) return buildLayout(widgets);
   let maxY = prev.reduce((m, it) => Math.max(m, it.y + it.h), 0);
   const out: LayoutItem[] = [];
   for (const w of widgets) {
@@ -598,6 +602,16 @@ export default function DashboardsPage() {
     setRglLayout((prev) => reconcileLayout(prev, widgets));
   }
 
+  // Replace the whole widget set (reset / delete). Set widgets AND the packed
+  // layout in the same batch so the grid's remount render already has a layout
+  // whose ids match the new children — otherwise rgl sees unmatched children
+  // and stacks them at x:0 until a refresh reseeds from buildLayout.
+  const replaceWidgets = (next: WidgetInstance[]) => {
+    setWidgets(next);
+    setRglLayout(buildLayout(next));
+    setPrevWidgetKey(next.map((w) => w.id).join("|"));
+  };
+
   const deleteDashboard = () => {
     const others = [
       "Security Summary",
@@ -606,7 +620,7 @@ export default function DashboardsPage() {
       "FilterDNS Overview",
     ].filter((n) => n !== name);
     setName(others[0] || "New Dashboard");
-    setWidgets(DEFAULT_LAYOUT());
+    replaceWidgets(DEFAULT_LAYOUT());
     setDashDeleteOpen(false);
   };
 
@@ -874,7 +888,7 @@ export default function DashboardsPage() {
               size={16}
               sx={{ mr: "8px", opacity: 0.7 }}
             />
-            Reset to app default
+            Reset to default layout
           </MenuItem>
 
           <Divider />
@@ -1155,6 +1169,11 @@ export default function DashboardsPage() {
           >
             {mounted && (
               <GridLayout
+                // Remount when the widget set changes (add/remove/reset) so rgl
+                // re-reads the freshly packed layout instead of dropping the
+                // new, unmatched children to x:0. Stable during drag/resize
+                // (those don't change widget ids).
+                key={widgetKey}
                 width={width}
                 layout={rglLayout}
                 onLayoutChange={setRglLayout}
@@ -1241,7 +1260,6 @@ export default function DashboardsPage() {
         open={Boolean(pendingDelete)}
         onClose={() => setPendingDelete(null)}
         title="Remove widget?"
-        width={420}
         secondaryAction={{
           label: "Cancel",
           onClick: () => setPendingDelete(null),
@@ -1277,7 +1295,6 @@ export default function DashboardsPage() {
         open={dashDeleteOpen}
         onClose={() => setDashDeleteOpen(false)}
         title="Delete dashboard?"
-        width={420}
         secondaryAction={{
           label: "Cancel",
           onClick: () => setDashDeleteOpen(false),
@@ -1302,16 +1319,15 @@ export default function DashboardsPage() {
       <Modal
         open={resetOpen}
         onClose={() => setResetOpen(false)}
-        title="Reset to app default?"
-        width={420}
+        title="Reset to default layout"
         secondaryAction={{
           label: "Cancel",
           onClick: () => setResetOpen(false),
         }}
         primaryAction={{
-          label: "Reset to app default",
+          label: "Reset to default",
           onClick: () => {
-            setWidgets(DEFAULT_LAYOUT());
+            replaceWidgets(DEFAULT_LAYOUT());
             setResetOpen(false);
           },
         }}
@@ -1321,8 +1337,7 @@ export default function DashboardsPage() {
             {name}
           </Box>{" "}
           will be restored to the default layout. Your current widget selection
-          and arrangement on this dashboard will be replaced. This can&apos;t be
-          undone.
+          and arrangement on this dashboard will be replaced.
         </Typography>
       </Modal>
 
