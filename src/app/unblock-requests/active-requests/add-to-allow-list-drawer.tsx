@@ -16,8 +16,8 @@ import { useState } from "react";
 import { Drawer } from "@/components/drawer";
 
 // Placeholder impact figures for the two scopes.
-const POLICY_IMPACT = "7 Sites / 142 Users on this policy";
-const GLOBAL_IMPACT = "12 Sites / 480 Users in the organization";
+const POLICY_IMPACT = "7 Sites, 142 Users on this policy";
+const GLOBAL_IMPACT = "12 Sites, 480 Users in the organization";
 
 export function AddToAllowListDrawer({
   open,

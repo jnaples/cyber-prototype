@@ -19,8 +19,52 @@ const columns: GridColDef[] = [
     ),
   },
   { field: "organization", headerName: "Organization", flex: 1, minWidth: 160 },
-  { field: "site", headerName: "Site", flex: 1, minWidth: 150 },
-  { field: "policy", headerName: "Policy", flex: 1, minWidth: 150 },
+  {
+    field: "site",
+    headerName: "Site",
+    flex: 1,
+    minWidth: 150,
+    renderCell: (params) => (
+      <Link
+        href="/deployments/sites"
+        target="_blank"
+        rel="noopener"
+        underline="always"
+        sx={{
+          cursor: "pointer",
+          color: "text.primary",
+          textDecoration: "underline",
+          textDecorationColor: "currentColor",
+          "&:hover": { color: "primary.light" },
+        }}
+      >
+        {params.row.site}
+      </Link>
+    ),
+  },
+  {
+    field: "policy",
+    headerName: "Policy",
+    flex: 1,
+    minWidth: 150,
+    renderCell: (params) => (
+      <Link
+        href="/global-policies/filter"
+        target="_blank"
+        rel="noopener"
+        underline="always"
+        sx={{
+          cursor: "pointer",
+          color: "text.primary",
+          textDecoration: "underline",
+          textDecorationColor: "currentColor",
+          "&:hover": { color: "primary.light" },
+        }}
+      >
+        {params.row.policy}
+      </Link>
+    ),
+  },
   { field: "category", headerName: "Category", flex: 1, minWidth: 160 },
   {
     field: "loggedInUser",
