@@ -1,3 +1,4 @@
+import { alert } from "./alert";
 import { autocomplete } from "./autocomplete";
 import { button } from "./button";
 import { card } from "./card";
@@ -20,6 +21,7 @@ import { tooltip } from "./tooltip";
 
 // Barrel file
 export const components = {
+  ...alert,
   ...button,
   ...form,
   ...formLabel,

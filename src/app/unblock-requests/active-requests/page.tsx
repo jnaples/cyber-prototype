@@ -51,6 +51,8 @@ function RowActionsCell({
   const [denyAnchor, setDenyAnchor] = useState<HTMLElement | null>(null);
   const [allowOpen, setAllowOpen] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
+  // Demo: this domain is already on the allow list, so the request is stale.
+  const alreadyAllowed = domain === "nytimes.com";
   const closeMenu = () => setMenuAnchor(null);
   const closeDeny = () => setDenyAnchor(null);
   return (
@@ -123,6 +125,7 @@ function RowActionsCell({
         requester={requester}
         reason={reason}
         policy={policy}
+        alreadyAllowed={alreadyAllowed}
       />
 
       <Portal>
@@ -138,7 +141,9 @@ function RowActionsCell({
             elevation={8}
             onClose={() => setToastOpen(false)}
           >
-            {domain} added to the Allow List.
+            {alreadyAllowed
+              ? "Request resolved."
+              : `${domain} added to the Allow List.`}
           </Alert>
         </Snackbar>
       </Portal>
@@ -367,18 +372,21 @@ const REQUESTS: ActiveRequest[] = [
   },
 ];
 
-// Spread attempts across the last few business days during 9-5 hours.
+// Spread attempts across the last few business days during 9-5 hours (always
+// within the past 30 days), then order oldest first.
 const NOW = new Date();
 const rows = REQUESTS.map((request, i) => {
   const date = new Date(NOW);
   date.setDate(date.getDate() - Math.floor(i / 3));
   date.setHours(9 + (i % 3) * 3, (i * 17) % 60, 0, 0);
-  return {
+  return { request, date };
+})
+  .sort((a, b) => a.date.getTime() - b.date.getTime())
+  .map(({ request, date }, i) => ({
     id: i + 1,
     ...request,
     timeOfAttempt: fnsFormat(date, "MMM d, yyyy h:mm a"),
-  };
-});
+  }));
 
 // The table always has rows, so the no-rows overlay only appears when a search
 // filters everything out.

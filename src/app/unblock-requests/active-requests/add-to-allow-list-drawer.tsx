@@ -4,6 +4,8 @@
 // list, and an optional note.
 
 import {
+  Alert,
+  AlertTitle,
   Box,
   Checkbox,
   Divider,
@@ -22,6 +24,12 @@ const POLICY_IMPACT = "7 sites, 142 users on this policy";
 // Date the note is auto-stamped with (computed once at load).
 const STAMP_DATE = fnsFormat(new Date(), "MMM d, yyyy");
 
+// Date shown in the "already on the allow list" banner (yesterday).
+const ALREADY_ADDED_DATE = fnsFormat(
+  new Date(Date.now() - 24 * 60 * 60 * 1000),
+  "MMM d",
+);
+
 export function AddToAllowListDrawer({
   open,
   onClose,
@@ -30,6 +38,7 @@ export function AddToAllowListDrawer({
   requester = "the requester",
   reason,
   policy = "this policy",
+  alreadyAllowed = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -39,6 +48,9 @@ export function AddToAllowListDrawer({
   requester?: string;
   reason?: string;
   policy?: string;
+  /** The domain is already on the policy's allow list — this request is stale.
+   *  Shows a banner and switches the action to resolving the request. */
+  alreadyAllowed?: boolean;
 }) {
   const [note, setNote] = useState("");
   const [includeCnames, setIncludeCnames] = useState(false);
@@ -63,13 +75,21 @@ export function AddToAllowListDrawer({
       title="Add to Allow List"
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{
-        label: "Add to Allow List",
+        label: alreadyAllowed ? "Resolve Request" : "Add to Allow List",
         onClick: () => {
           onSubmit?.();
           onClose();
         },
       }}
     >
+      {alreadyAllowed && (
+        <Alert severity="info">
+          <AlertTitle>Already on the Allow List</AlertTitle>
+          {domain} was added to the {policy} Allow List on {ALREADY_ADDED_DATE}.
+          No new entry is needed.
+        </Alert>
+      )}
+
       {/* Request context */}
       <Box>
         <Typography sx={{ fontWeight: 600, fontSize: 16, color: "text.primary" }}>
@@ -163,7 +183,8 @@ export function AddToAllowListDrawer({
         variant="body2"
         sx={{ color: "text.secondary", mt: "auto" }}
       >
-        {requester} will be notified by email.
+        {requester} will be notified{" "}
+        {alreadyAllowed ? "that access is available." : "by email."}
       </Typography>
     </Drawer>
   );
