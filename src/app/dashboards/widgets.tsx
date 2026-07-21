@@ -11,6 +11,7 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Typography,
 } from "@mui/material";
 
 import { MaterialSymbol } from "@/components/material-symbol";
@@ -23,7 +24,7 @@ import {
   LineChart,
   StatCard,
 } from "./charts";
-import { useDashboardFactor } from "./dashboard-filters";
+import { useDashboardFactor, useDashboardOrgCount } from "./dashboard-filters";
 import {
   catSlices,
   eventCats,
@@ -44,6 +45,79 @@ import {
 } from "./lib";
 
 // ---- standalone body components ------------------------------------------
+
+function GeoMap() {
+  // The activity map is scoped to one organization at a time. When more than
+  // one org is in the filter selection, prompt the user to narrow it down.
+  const orgCount = useDashboardOrgCount();
+  if (orgCount > 1) {
+    return (
+      <Box
+        sx={{
+          height: 230,
+          borderRadius: 1.5,
+          border: "1px dashed",
+          borderColor: "divider",
+          bgcolor: "background.default",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 1.25,
+          px: 2,
+          color: "text.disabled",
+        }}
+      >
+        <MaterialSymbol name="map" size={38} />
+        <Typography
+          sx={{
+            fontSize: 14,
+            fontWeight: 600,
+            color: "text.secondary",
+            textAlign: "center",
+          }}
+        >
+          Available for a single organization
+        </Typography>
+        <Typography sx={{ fontSize: 14, textAlign: "center", maxWidth: 260 }}>
+          Filter to one organization to view its activity map.
+        </Typography>
+      </Box>
+    );
+  }
+  return (
+    <Box
+      sx={{
+        height: 230,
+        borderRadius: 1.5,
+        border: "1px dashed",
+        borderColor: "divider",
+        bgcolor: "background.default",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 1.25,
+        color: "text.disabled",
+      }}
+    >
+      <MaterialSymbol name="map" size={38} />
+      <Typography
+        sx={{
+          fontSize: 14,
+          fontWeight: 600,
+          color: "text.secondary",
+          textAlign: "center",
+        }}
+      >
+        Showing top 100 sites
+      </Typography>
+      <Typography sx={{ fontSize: 14, textAlign: "center", maxWidth: 220 }}>
+        Set a site location to populate the activity map.
+      </Typography>
+    </Box>
+  );
+}
 
 function DataTableWidget({
   cols,
@@ -270,6 +344,9 @@ export function WidgetBody({ type }: { type: string }) {
           rows={topOrgs.slice(0, 5)}
         />
       );
+
+    case "geo-activity":
+      return <GeoMap />;
 
     default:
       return <Box sx={{ p: 2, color: "text.disabled" }}>Unknown widget</Box>;

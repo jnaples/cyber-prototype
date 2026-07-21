@@ -16,7 +16,7 @@ import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
-import { AddToAllowListModal } from "./add-to-allow-list-modal";
+import { AddToAllowListDrawer } from "./add-to-allow-list-drawer";
 
 // ---------------------------------------------------------------------------
 // Row actions
@@ -113,7 +113,7 @@ function RowActionsCell({
         ))}
       </Menu>
 
-      <AddToAllowListModal
+      <AddToAllowListDrawer
         open={allowOpen}
         onClose={() => setAllowOpen(false)}
         domain={domain}

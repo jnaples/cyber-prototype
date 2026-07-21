@@ -38,6 +38,7 @@ import { AddPanel } from "./add-panel";
 import {
   DEFAULT_FILTERS,
   DashboardFactorContext,
+  DashboardOrgCountContext,
   TIME_RANGE_OPTIONS,
   filterFactor,
   type DashboardFilters,
@@ -1131,6 +1132,7 @@ export default function DashboardsPage() {
         <EmptyState onAdd={() => setAddOpen(true)} />
       ) : (
         <DashboardFactorContext.Provider value={filterFactor(filters)}>
+         <DashboardOrgCountContext.Provider value={filters.organizations.length}>
           <Box
             ref={containerRef}
             sx={{
@@ -1204,6 +1206,7 @@ export default function DashboardsPage() {
               </GridLayout>
             )}
           </Box>
+         </DashboardOrgCountContext.Provider>
         </DashboardFactorContext.Provider>
       )}
 

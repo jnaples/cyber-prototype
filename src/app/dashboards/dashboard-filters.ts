@@ -107,3 +107,8 @@ export function activeFilterChips(f: DashboardFilters): string[] {
 // Multiplier the widgets read so they reflect the applied filters.
 export const DashboardFactorContext = createContext(1);
 export const useDashboardFactor = () => useContext(DashboardFactorContext);
+
+// Number of organizations currently in the filter selection (0 = All). Widgets
+// that only make sense for a single org (e.g. the Geo Activity map) read this.
+export const DashboardOrgCountContext = createContext(0);
+export const useDashboardOrgCount = () => useContext(DashboardOrgCountContext);
