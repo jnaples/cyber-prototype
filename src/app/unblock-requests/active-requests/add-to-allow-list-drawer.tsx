@@ -85,8 +85,11 @@ export function AddToAllowListDrawer({
       {alreadyAllowed && (
         <Alert severity="info">
           <AlertTitle>Already on the Allow List</AlertTitle>
-          {domain} was added to the {policy} Allow List on {ALREADY_ADDED_DATE}.
-          No new entry is needed.
+          <Box component="strong" sx={{ fontWeight: 700 }}>
+            {domain}
+          </Box>{" "}
+          was added to the {policy} Allow List on {ALREADY_ADDED_DATE}. No new
+          entry is needed.
         </Alert>
       )}
 
@@ -105,78 +108,90 @@ export function AddToAllowListDrawer({
 
       <Divider />
 
-      {/* Scope summary */}
-      <Box>
-        <Typography sx={{ color: "text.primary" }}>
-          Add {domain} to the{" "}
-          <Box component="strong" sx={{ fontWeight: 700 }}>
-            {policy}
-          </Box>{" "}
-          Allow List.
-        </Typography>
-        <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-          {POLICY_IMPACT}
-        </Typography>
-      </Box>
-
-      {/* Include CNAMEs */}
-      <FormControlLabel
-        control={
-          <Checkbox
-            size="small"
-            checked={includeCnames}
-            onChange={(e) => setIncludeCnames(e.target.checked)}
-            sx={{ p: 0.5, mr: 1 }}
-          />
-        }
-        label={<Typography>Include CNAMEs</Typography>}
-        sx={{ m: 0 }}
-      />
-
-      {/* Also add to global allow list */}
-      <Box>
-        <FormControlLabel
-          control={
-            <Checkbox
-              size="small"
-              checked={addToGlobal}
-              onChange={(e) => setAddToGlobal(e.target.checked)}
-              sx={{ p: 0.5, mr: 1 }}
-            />
-          }
-          label={<Typography>Also Add to Universal Allow List</Typography>}
-          sx={{ m: 0 }}
-        />
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          This affects all sites and users.
-        </Typography>
-      </Box>
-
-      {/* Note */}
-      <Box>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            mb: 0.5,
-          }}
-        >
-          <Typography sx={{ fontWeight: 700, fontSize: 14 }}>Note</Typography>
-          <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            Optional
+      {/* Scope summary — hidden once already allowed (the banner covers it). */}
+      {!alreadyAllowed && (
+        <Box>
+          <Typography sx={{ color: "text.primary" }}>
+            Add {domain} to the{" "}
+            <Box component="strong" sx={{ fontWeight: 700 }}>
+              {policy}
+            </Box>{" "}
+            Allow List.
+          </Typography>
+          <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
+            {POLICY_IMPACT}
           </Typography>
         </Box>
-        <TextField
-          fullWidth
-          multiline
-          minRows={3}
-          placeholder="Add your notes here..."
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          sx={{ "& .MuiOutlinedInput-root": { bgcolor: "background.paper" } }}
-        />
-      </Box>
+      )}
+
+      {/* Actions only apply when a new entry is being made — the domain is
+          already allowed, so the checkboxes and note are hidden. */}
+      {!alreadyAllowed && (
+        <>
+          {/* Include CNAMEs */}
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={includeCnames}
+                onChange={(e) => setIncludeCnames(e.target.checked)}
+                sx={{ p: 0.5, mr: 1 }}
+              />
+            }
+            label={<Typography>Include CNAMEs</Typography>}
+            sx={{ m: 0 }}
+          />
+
+          {/* Also add to global allow list */}
+          <Box>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  size="small"
+                  checked={addToGlobal}
+                  onChange={(e) => setAddToGlobal(e.target.checked)}
+                  sx={{ p: 0.5, mr: 1 }}
+                />
+              }
+              label={<Typography>Also Add to Universal Allow List</Typography>}
+              sx={{ m: 0 }}
+            />
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              This affects all sites and users.
+            </Typography>
+          </Box>
+
+          {/* Note */}
+          <Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 0.5,
+              }}
+            >
+              <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
+                Note
+              </Typography>
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                Optional
+              </Typography>
+            </Box>
+            <TextField
+              fullWidth
+              multiline
+              minRows={3}
+              placeholder="Add your notes here..."
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              sx={{
+                "& .MuiOutlinedInput-root": { bgcolor: "background.paper" },
+              }}
+            />
+          </Box>
+        </>
+      )}
 
       {/* Notification note — pinned to the bottom of the scroll area */}
       <Typography

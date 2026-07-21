@@ -920,7 +920,7 @@ export default function DashboardsPage() {
               size={16}
               sx={{ mr: "8px", opacity: 0.7 }}
             />
-            Reset to default layout
+            Reset to standard layout
           </MenuItem>
 
           <Divider />
@@ -1353,13 +1353,13 @@ export default function DashboardsPage() {
       <Modal
         open={resetOpen}
         onClose={() => setResetOpen(false)}
-        title="Reset to default layout"
+        title="Reset to standard layout"
         secondaryAction={{
           label: "Cancel",
           onClick: () => setResetOpen(false),
         }}
         primaryAction={{
-          label: "Reset to default",
+          label: "Reset to standard",
           onClick: () => {
             replaceWidgets(DEFAULT_LAYOUT());
             setResetOpen(false);
@@ -1370,7 +1370,7 @@ export default function DashboardsPage() {
           <Box component="b" sx={{ color: "text.primary" }}>
             {name}
           </Box>{" "}
-          will be restored to the default layout. Your current widget selection
+          will be restored to the standard layout. Your current widget selection
           and arrangement on this dashboard will be replaced.
         </Typography>
       </Modal>
