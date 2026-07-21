@@ -85,11 +85,11 @@ export function AddToAllowListDrawer({
       {alreadyAllowed && (
         <Alert severity="info">
           <AlertTitle>Already on the Allow List</AlertTitle>
+          {domain} was added to the{" "}
           <Box component="strong" sx={{ fontWeight: 700 }}>
-            {domain}
+            {policy}
           </Box>{" "}
-          was added to the {policy} Allow List on {ALREADY_ADDED_DATE}. No new
-          entry is needed.
+          Allow List on {ALREADY_ADDED_DATE}. No new entry is needed.
         </Alert>
       )}
 

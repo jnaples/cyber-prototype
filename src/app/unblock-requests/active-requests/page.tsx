@@ -26,10 +26,10 @@ import { DenyRequestDrawer } from "./deny-request-drawer";
 // Row actions
 // ---------------------------------------------------------------------------
 
-// Items shown in the Deny popout menu (notify option first).
+// Items shown in the Deny popout menu.
 const DENY_ACTIONS: { label: string; icon: string }[] = [
-  { label: "Deny and notify user", icon: "notifications" },
-  { label: "Deny without notifying user", icon: "notifications_off" },
+  { label: "Deny Request", icon: "block" },
+  { label: "Deny Request & Ignore", icon: "notifications_off" },
 ];
 
 // Items kept in the overflow menu.
@@ -52,6 +52,7 @@ function RowActionsCell({
   const [denyAnchor, setDenyAnchor] = useState<HTMLElement | null>(null);
   const [allowOpen, setAllowOpen] = useState(false);
   const [denyOpen, setDenyOpen] = useState(false);
+  const [denyIgnore, setDenyIgnore] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   // Demo: this domain is already on the allow list, so the request is stale.
   const alreadyAllowed = domain === "nytimes.com";
@@ -97,11 +98,8 @@ function RowActionsCell({
             key={label}
             onClick={() => {
               closeDeny();
-              if (label === "Deny and notify user") {
-                setDenyOpen(true);
-              } else {
-                setToast("Request denied.");
-              }
+              setDenyIgnore(label === "Deny Request & Ignore");
+              setDenyOpen(true);
             }}
           >
             <ListItemIcon>
@@ -149,7 +147,14 @@ function RowActionsCell({
       <DenyRequestDrawer
         open={denyOpen}
         onClose={() => setDenyOpen(false)}
-        onDeny={() => setToast("Request denied.")}
+        ignore={denyIgnore}
+        onDeny={() =>
+          setToast(
+            denyIgnore
+              ? `Request denied. Future requests from ${requester} ignored.`
+              : "Request denied.",
+          )
+        }
         domain={domain}
         requester={requester}
         reason={reason}

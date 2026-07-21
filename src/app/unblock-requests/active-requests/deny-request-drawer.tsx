@@ -12,14 +12,17 @@ export function DenyRequestDrawer({
   open,
   onClose,
   onDeny,
+  ignore = false,
   domain = "this domain",
   requester = "the requester",
   reason,
 }: {
   open: boolean;
   onClose: () => void;
-  /** Deny the request and notify the requester. */
+  /** Deny the request (and notify the requester unless `ignore`). */
   onDeny?: () => void;
+  /** Deny and suppress future requests — hides the message, no notification. */
+  ignore?: boolean;
   domain?: string;
   requester?: string;
   reason?: string;
@@ -41,10 +44,10 @@ export function DenyRequestDrawer({
     <Drawer
       open={open}
       onClose={onClose}
-      title="Deny request and notify user"
+      title={ignore ? "Deny Request & Ignore" : "Deny Request"}
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{
-        label: "Deny Request",
+        label: ignore ? "Deny & Ignore" : "Deny Request",
         onClick: () => {
           onDeny?.();
           onClose();
@@ -67,30 +70,51 @@ export function DenyRequestDrawer({
       <Divider />
 
       {/* Summary */}
-      <Box>
+      {ignore ? (
         <Typography sx={{ color: "text.primary" }}>
-          Deny the request and notify the user via email.
+          Stop future requests for this domain from {requester}. No notification
+          is sent.
         </Typography>
-        <Typography sx={{ color: "text.primary", mt: 0.5 }}>
-          {requester} can submit another request later.
-        </Typography>
-      </Box>
+      ) : (
+        <Box>
+          <Typography sx={{ color: "text.primary" }}>
+            Deny the request and notify the user via email.
+          </Typography>
+          <Typography sx={{ color: "text.primary", mt: 0.5 }}>
+            {requester} can submit another request later.
+          </Typography>
+        </Box>
+      )}
 
-      {/* Message to requester */}
-      <Box>
-        <Typography sx={{ fontWeight: 700, fontSize: 14, mb: 0.5 }}>
-          Message to Requester
-        </Typography>
-        <TextField
-          fullWidth
-          multiline
-          minRows={3}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          sx={{ "& .MuiOutlinedInput-root": { bgcolor: "background.paper" } }}
-        />
-      </Box>
-
+      {/* Message to requester — only when notifying. */}
+      {!ignore && (
+        <Box>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 0.5,
+            }}
+          >
+            <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
+              Message to Requester
+            </Typography>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              Optional
+            </Typography>
+          </Box>
+          <TextField
+            fullWidth
+            multiline
+            minRows={3}
+            placeholder="Add your message here…"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            sx={{ "& .MuiOutlinedInput-root": { bgcolor: "background.paper" } }}
+          />
+        </Box>
+      )}
     </Drawer>
   );
 }
