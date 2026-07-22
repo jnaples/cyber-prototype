@@ -865,7 +865,10 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                 </Box>
                 <Box
                   sx={getSubItemStyles("reporting-scheduled-reports")}
-                  onClick={() => handleItemClick("reporting-scheduled-reports")}
+                  onClick={() => {
+                    handleItemClick("reporting-scheduled-reports");
+                    navigate("/reporting/scheduled-reports");
+                  }}
                 >
                   <span style={{ margin: "4px 0" }}>Scheduled Reports</span>
                 </Box>

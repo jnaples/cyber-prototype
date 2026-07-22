@@ -199,7 +199,9 @@ export function AddToAllowListDrawer({
         sx={{ color: "text.secondary", mt: "auto" }}
       >
         {requester} will be notified{" "}
-        {alreadyAllowed ? "that access is available." : "by email."}
+        {alreadyAllowed
+          ? "by email that access is available."
+          : "by email."}
       </Typography>
     </Drawer>
   );

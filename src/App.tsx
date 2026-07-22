@@ -25,6 +25,7 @@ import ManageDashboardsPage from "@/app/dashboards/manage/page";
 import HomePage from "@/app/page";
 import QueryLogsPage from "@/app/query-logs/page";
 import CustomReportsPage from "@/app/reporting/custom-reports/page";
+import ScheduledReportsPage from "@/app/reporting/scheduled-reports/page";
 import SettingsPage from "@/app/settings/page";
 import UnblockRequestsLayout from "@/app/unblock-requests/layout";
 import UnblockRequestsIndexPage from "@/app/unblock-requests/page";
@@ -52,6 +53,7 @@ function App() {
         <Route path="query-logs" element={<QueryLogsPage />} />
         <Route path="reporting">
           <Route path="custom-reports" element={<CustomReportsPage />} />
+          <Route path="scheduled-reports" element={<ScheduledReportsPage />} />
         </Route>
         <Route path="settings" element={<SettingsPage />} />
         <Route path="msp/settings" element={<OrganizationSettingsPage />} />
