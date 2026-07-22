@@ -695,6 +695,19 @@ export default function DashboardsPage() {
           gap: 1,
         }}
       >
+        {/* Left cluster: name + metadata. Wraps (metadata drops under the
+            name) on narrow viewports; flex-grows so buttons stay on the right. */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            flexWrap: "wrap",
+            rowGap: 0.5,
+            gap: 1,
+            flex: 1,
+            minWidth: 0,
+          }}
+        >
         <IconButton
           size="small"
           aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
@@ -781,9 +794,20 @@ export default function DashboardsPage() {
           {SHARED_DASHBOARDS.includes(name) && (
             <>
               <Divider
+                component="hr"
                 orientation="vertical"
                 flexItem
-                sx={{ borderColor: "divider", my: 0.5 }}
+                sx={(theme) => ({
+                  // Match the prod divider color for this scenario.
+                  borderColor: "rgba(3, 22, 37, 0.6)",
+                  mx: 0.5,
+                  // <hr> carries a default vertical UA margin that shrinks the
+                  // flex-item; zero it so it stretches the parent's full height.
+                  my: 0,
+                  ...theme.applyStyles("dark", {
+                    borderColor: "rgba(236, 241, 250, 0.7)",
+                  }),
+                })}
               />
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
                 <MaterialSymbol
@@ -797,6 +821,7 @@ export default function DashboardsPage() {
               </Box>
             </>
           )}
+        </Box>
         </Box>
 
         <DashSwitcher
@@ -818,8 +843,6 @@ export default function DashboardsPage() {
           }}
           onClose={() => setSwitcherAnchor(null)}
         />
-
-        <Box sx={{ flex: 1 }} />
 
         {/* Actions */}
         {!editMode && (

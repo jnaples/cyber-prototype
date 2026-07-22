@@ -15,6 +15,7 @@ import { link } from "./link";
 import { listSubheader } from "./list-subheader";
 import { menu } from "./menu";
 import { outlinedInput } from "./outlined-input";
+import { switchComponent } from "./switch";
 import { tab } from "./tab";
 import { textField } from "./text-field";
 import { tooltip } from "./tooltip";
@@ -36,6 +37,7 @@ export const components = {
   ...dataGrid,
   ...textField,
   ...outlinedInput,
+  ...switchComponent,
   ...autocomplete,
   ...menu,
   ...listSubheader,

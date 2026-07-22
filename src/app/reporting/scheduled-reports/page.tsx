@@ -6,7 +6,6 @@
 import {
   Box,
   Button,
-  Card,
   Chip,
   IconButton,
   InputAdornment,
@@ -16,15 +15,21 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import type { Theme } from "@mui/material/styles";
-import type { GridColDef } from "@mui/x-data-grid";
+import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useMemo, useState } from "react";
 
-import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
+import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
+import type { StatusTabConfig } from "@/components/tabbed-data-card";
+import { TabbedDataCard } from "@/components/tabbed-data-card";
+
+import { SampleReportsModal } from "./sample-reports-modal";
 
 // ---------------------------------------------------------------------------
 // Types + data
@@ -35,140 +40,91 @@ type ScheduleStatus = "active" | "paused" | "issue";
 type Schedule = {
   id: number;
   name: string;
-  type: string;
-  typeIcon: string;
-  organization: string;
+  tags: string[];
+  organizations: string;
   recipients: number;
   freqPrimary: string;
   freqSecondary: string;
-  nextPrimary: string;
-  nextSecondary: string;
-  lastSent: string;
-  lastFailed?: string; // failure detail — presence marks a delivery issue
+  nextDelivery: string; // "Paused" when the schedule is paused
+  lastDate: string;
+  lastStatus: "sent" | "failed";
   status: ScheduleStatus;
 };
 
+// Report-type tags, offered in the filter select.
 const REPORT_TYPES = [
-  { label: "Customer Activity Overview", icon: "monitoring" },
-  { label: "Filter Protection Summary", icon: "shield" },
-  { label: "CyberSight AI Usage", icon: "auto_awesome" },
-  { label: "Endpoint Traffic Logs", icon: "table_chart" },
-  { label: "Timeline Activity Logs", icon: "article" },
-  { label: "Timeline Overview", icon: "show_chart" },
-] as const;
+  "Activity Overview",
+  "Protection Summary",
+  "Traffic Logs",
+  "AI Usage",
+  "Timeline Overview",
+  "Timeline Logs",
+];
 
 const SCHEDULES: Schedule[] = [
   {
     id: 1,
-    name: "Athlead — Weekly Executive Summary",
-    type: "Customer Activity Overview",
-    typeIcon: "monitoring",
-    organization: "Athlead",
-    recipients: 3,
-    freqPrimary: "Weekly · Mon",
-    freqSecondary: "8:00 AM · ET",
-    nextPrimary: "Jul 27, 2026",
-    nextSecondary: "in 5 days",
-    lastSent: "Jul 20, 2026",
+    name: "Monthly Executive Summary",
+    tags: ["Activity Overview", "Protection Summary"],
+    organizations: "All organizations (6)",
+    recipients: 7,
+    freqPrimary: "Monthly",
+    freqSecondary: "1st · 8:00 AM ET",
+    nextDelivery: "Aug 1 · 8:00 AM ET",
+    lastDate: "Jul 1 · 8:00 AM",
+    lastStatus: "sent",
     status: "active",
   },
   {
     id: 2,
-    name: "Vance Refrigeration — Protection Report",
-    type: "Filter Protection Summary",
-    typeIcon: "shield",
-    organization: "Vance Refrigeration",
-    recipients: 2,
-    freqPrimary: "Monthly · 1st",
-    freqSecondary: "7:00 AM · ET",
-    nextPrimary: "Aug 1, 2026",
-    nextSecondary: "in 10 days",
-    lastSent: "Jul 1, 2026",
+    name: "Acme Weekly Traffic Digest",
+    tags: ["Traffic Logs"],
+    organizations: "Acme Manufacturing",
+    recipients: 3,
+    freqPrimary: "Weekly",
+    freqSecondary: "Mon · 7:00 AM ET",
+    nextDelivery: "Mon, Jul 27 · 7:00 AM ET",
+    lastDate: "Jul 20 · 7:00 AM",
+    lastStatus: "sent",
     status: "active",
   },
   {
     id: 3,
-    name: "Schrute Farms — Daily CyberSight",
-    type: "CyberSight AI Usage",
-    typeIcon: "auto_awesome",
-    organization: "Schrute Farms",
+    name: "CyberSight AI Monthly Review",
+    tags: ["AI Usage", "Timeline Overview"],
+    organizations: "Globex +1",
     recipients: 2,
-    freqPrimary: "Daily",
-    freqSecondary: "6:30 AM · ET",
-    nextPrimary: "Jul 23, 2026",
-    nextSecondary: "tomorrow",
-    lastSent: "Jul 21, 2026",
-    status: "active",
-  },
-  {
-    id: 4,
-    name: "All Orgs — Endpoint Traffic Audit",
-    type: "Endpoint Traffic Logs",
-    typeIcon: "table_chart",
-    organization: "All Organizations",
-    recipients: 2,
-    freqPrimary: "Weekly · Fri",
-    freqSecondary: "5:00 PM · ET",
-    nextPrimary: "Jul 24, 2026",
-    nextSecondary: "in 2 days",
-    lastSent: "Jul 17, 2026",
-    status: "active",
-  },
-  {
-    id: 5,
-    name: "Michael Scott Paper — Activity Digest",
-    type: "Timeline Activity Logs",
-    typeIcon: "article",
-    organization: "Michael Scott Paper Co.",
-    recipients: 2,
-    freqPrimary: "Weekly · Wed",
-    freqSecondary: "9:00 AM · ET",
-    nextPrimary: "Jul 29, 2026",
-    nextSecondary: "in 7 days",
-    lastSent: "Jul 15, 2026",
-    lastFailed: "recipient bounced",
+    freqPrimary: "Monthly",
+    freqSecondary: "15th · 9:00 AM CT",
+    nextDelivery: "Aug 15 · 9:00 AM CT",
+    lastDate: "Jul 15 · 9:00 AM",
+    lastStatus: "failed",
     status: "issue",
   },
   {
-    id: 6,
-    name: "WUPHF.com — Usage Overview",
-    type: "Timeline Overview",
-    typeIcon: "show_chart",
-    organization: "WUPHF.com",
-    recipients: 2,
-    freqPrimary: "Monthly · 15th",
-    freqSecondary: "10:00 AM · CT",
-    nextPrimary: "—",
-    nextSecondary: "Paused",
-    lastSent: "Jul 15, 2026",
-    status: "paused",
-  },
-  {
-    id: 7,
-    name: "Prince Family Paper — Weekly Protection",
-    type: "Filter Protection Summary",
-    typeIcon: "shield",
-    organization: "Prince Family Paper",
-    recipients: 1,
-    freqPrimary: "Weekly · Mon",
-    freqSecondary: "8:00 AM · ET",
-    nextPrimary: "—",
-    nextSecondary: "Paused",
-    lastSent: "Jun 29, 2026",
-    status: "paused",
-  },
-  {
-    id: 8,
-    name: "Serenity by Jan — Quarterly Business Review",
-    type: "Customer Activity Overview",
-    typeIcon: "monitoring",
-    organization: "Serenity by Jan",
-    recipients: 2,
+    id: 4,
+    name: "Quarterly Business Review Packet",
+    tags: ["Activity Overview", "Protection Summary", "Traffic Logs", "AI Usage"],
+    organizations: "All organizations (6)",
+    recipients: 6,
     freqPrimary: "Quarterly",
-    freqSecondary: "9:00 AM · ET",
-    nextPrimary: "Oct 1, 2026",
-    nextSecondary: "in 71 days",
-    lastSent: "Jul 1, 2026",
+    freqSecondary: "1st of quarter · 9:00 AM ET",
+    nextDelivery: "Paused",
+    lastDate: "Apr 1 · 9:00 AM",
+    lastStatus: "sent",
+    status: "paused",
+  },
+  {
+    id: 5,
+    name: "Umbrella Health Timeline Logs",
+    tags: ["Timeline Logs", "Traffic Logs"],
+    organizations: "Umbrella Health",
+    recipients: 1,
+    freqPrimary: "Daily",
+    freqSecondary: "6:00 AM ET",
+    nextDelivery: "Wed, Jul 22 · 6:00 AM ET",
+    lastDate: "Jul 21 · 6:00 AM",
+    lastStatus: "sent",
     status: "active",
   },
 ];
@@ -197,6 +153,46 @@ function TwoLineCell({ primary, secondary }: { primary: string; secondary: strin
   );
 }
 
+// Schedule name + report-type tag chips (first two, then a +N overflow chip).
+function ScheduleCell({ name, tags }: { name: string; tags: string[] }) {
+  const shown = tags.slice(0, 2);
+  const extra = tags.length - shown.length;
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        gap: 0.5,
+        height: "100%",
+        minWidth: 0,
+        py: 1,
+      }}
+    >
+      <Typography variant="body2" noWrap sx={{ fontWeight: 600, color: "text.primary" }}>
+        {name}
+      </Typography>
+      <Box sx={{ display: "flex", gap: 0.5 }}>
+        {shown.map((t) => (
+          <Chip
+            key={t}
+            size="small"
+            label={t}
+            sx={{ bgcolor: "action.hover", color: "text.secondary" }}
+          />
+        ))}
+        {extra > 0 && (
+          <Chip
+            size="small"
+            label={`+${extra}`}
+            sx={{ bgcolor: "action.hover", color: "text.secondary" }}
+          />
+        )}
+      </Box>
+    </Box>
+  );
+}
+
 // Status toggle — seeded from the row, holds its own on/off state.
 function StatusCell({ status }: { status: ScheduleStatus }) {
   const [on, setOn] = useState(status !== "paused");
@@ -209,12 +205,21 @@ function StatusCell({ status }: { status: ScheduleStatus }) {
 
 function ActionsCell() {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, height: "100%" }}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 0.5,
+        height: "100%",
+        width: "100%",
+      }}
+    >
       <IconButton size="small" aria-label="Edit">
-        <MaterialSymbol name="edit" size={18} />
+        <EditOutlinedIcon sx={{ fontSize: 20 }} />
       </IconButton>
       <IconButton size="small" aria-label="More options">
-        <MaterialSymbol name="more_horiz" size={18} />
+        <MoreHorizOutlinedIcon sx={{ fontSize: 20 }} />
       </IconButton>
     </Box>
   );
@@ -223,42 +228,14 @@ function ActionsCell() {
 const columns: GridColDef<Schedule>[] = [
   {
     field: "name",
-    headerName: "Report name",
-    flex: 1.4,
-    minWidth: 220,
+    headerName: "Schedule",
+    flex: 1.5,
+    minWidth: 240,
     renderCell: (params) => (
-      <Box
-        sx={{ display: "flex", alignItems: "center", height: "100%", minWidth: 0 }}
-      >
-        <Typography
-          variant="body2"
-          noWrap
-          sx={{ fontWeight: 600, color: "text.primary" }}
-        >
-          {params.row.name}
-        </Typography>
-      </Box>
+      <ScheduleCell name={params.row.name} tags={params.row.tags} />
     ),
   },
-  {
-    field: "type",
-    headerName: "Report type",
-    flex: 1,
-    minWidth: 190,
-    renderCell: (params) => (
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, height: "100%" }}>
-        <MaterialSymbol
-          name={params.row.typeIcon}
-          size={18}
-          sx={{ color: "primary.main", flexShrink: 0 }}
-        />
-        <Typography variant="body2" noWrap sx={{ color: "text.primary" }}>
-          {params.row.type}
-        </Typography>
-      </Box>
-    ),
-  },
-  { field: "organization", headerName: "Organization", flex: 1, minWidth: 150 },
+  { field: "organizations", headerName: "Organizations", flex: 1, minWidth: 160 },
   {
     field: "recipients",
     headerName: "Recipients",
@@ -271,7 +248,7 @@ const columns: GridColDef<Schedule>[] = [
     field: "frequency",
     headerName: "Frequency",
     flex: 1,
-    minWidth: 140,
+    minWidth: 150,
     sortable: false,
     renderCell: (params) => (
       <TwoLineCell
@@ -281,57 +258,58 @@ const columns: GridColDef<Schedule>[] = [
     ),
   },
   {
-    field: "nextSend",
-    headerName: "Next send",
+    field: "nextDelivery",
+    headerName: "Next Delivery",
     flex: 1,
-    minWidth: 130,
-    sortable: false,
-    renderCell: (params) => (
-      <TwoLineCell
-        primary={params.row.nextPrimary}
-        secondary={params.row.nextSecondary}
-      />
-    ),
-  },
-  {
-    field: "lastSent",
-    headerName: "Last sent",
-    flex: 1.1,
     minWidth: 170,
     sortable: false,
     renderCell: (params) => {
-      const failed = Boolean(params.row.lastFailed);
+      const paused = params.row.nextDelivery === "Paused";
+      return (
+        <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+          <Typography
+            variant="body2"
+            sx={{ color: paused ? "text.secondary" : "text.primary" }}
+          >
+            {params.row.nextDelivery}
+          </Typography>
+        </Box>
+      );
+    },
+  },
+  {
+    field: "lastDelivery",
+    headerName: "Last Delivery",
+    flex: 1,
+    minWidth: 160,
+    sortable: false,
+    renderCell: (params) => {
+      const failed = params.row.lastStatus === "failed";
       return (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, height: "100%" }}>
           <MaterialSymbol
             name={failed ? "error" : "check_circle"}
             size={18}
-            sx={{
-              color: failed ? "warning.main" : "success.main",
-              flexShrink: 0,
-            }}
+            sx={{ color: failed ? "error.main" : "success.main", flexShrink: 0 }}
           />
-          {failed ? (
-            <Box sx={{ display: "flex", flexDirection: "column" }}>
-              <Typography variant="body2" sx={{ color: "warning.main" }}>
-                Failed
-              </Typography>
-              <Typography variant="caption" sx={{ color: "warning.main" }}>
-                {params.row.lastSent} · {params.row.lastFailed}
-              </Typography>
-            </Box>
-          ) : (
+          <Box sx={{ display: "flex", flexDirection: "column" }}>
             <Typography variant="body2" sx={{ color: "text.primary" }}>
-              {params.row.lastSent}
+              {params.row.lastDate}
             </Typography>
-          )}
+            <Typography
+              variant="caption"
+              sx={{ color: failed ? "error.main" : "text.secondary" }}
+            >
+              {failed ? "Failed" : "Sent"}
+            </Typography>
+          </Box>
         </Box>
       );
     },
   },
   {
     field: "status",
-    headerName: "Status",
+    headerName: "Active",
     width: 90,
     sortable: false,
     filterable: false,
@@ -340,10 +318,12 @@ const columns: GridColDef<Schedule>[] = [
   {
     field: "actions",
     headerName: "Actions",
-    width: 100,
+    width: 110,
     sortable: false,
     filterable: false,
     resizable: false,
+    align: "center",
+    headerAlign: "center",
     renderCell: () => <ActionsCell />,
   },
 ];
@@ -354,47 +334,8 @@ const columns: GridColDef<Schedule>[] = [
 
 type SummaryKey = "all" | "active" | "paused" | "issue";
 
-function SummaryCard({
-  icon,
-  color,
-  count,
-  label,
-  selected,
-  onClick,
-}: {
-  icon: string;
-  color: string;
-  count: number;
-  label: string;
-  selected: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <Card
-      onClick={onClick}
-      sx={{
-        flex: 1,
-        p: 2,
-        display: "flex",
-        alignItems: "center",
-        gap: 2,
-        cursor: "pointer",
-        borderBottom: "3px solid",
-        borderBottomColor: selected ? "primary.main" : "transparent",
-      }}
-    >
-      <MaterialSymbol name={icon} size={28} sx={{ color }} />
-      <Box>
-        <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-          {count}
-        </Typography>
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          {label}
-        </Typography>
-      </Box>
-    </Card>
-  );
-}
+// Order of the status tabs; the tab index maps to one of these keys.
+const STATUS_KEYS: SummaryKey[] = ["all", "active", "paused", "issue"];
 
 // ---------------------------------------------------------------------------
 // Page
@@ -404,6 +345,13 @@ export default function ScheduledReportsPage() {
   const [statusFilter, setStatusFilter] = useState<SummaryKey>("all");
   const [search, setSearch] = useState("");
   const [reportType, setReportType] = useState("all");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [rowSelection, setRowSelection] = useState<GridRowSelectionModel>({
+    type: "include",
+    ids: new Set(),
+  });
+  const clearSelection = () =>
+    setRowSelection({ type: "include", ids: new Set() });
 
   const counts = useMemo(
     () => ({
@@ -421,23 +369,56 @@ export default function ScheduledReportsPage() {
       if (statusFilter === "active" && s.status === "paused") return false;
       if (statusFilter === "paused" && s.status !== "paused") return false;
       if (statusFilter === "issue" && s.status !== "issue") return false;
-      if (reportType !== "all" && s.type !== reportType) return false;
+      if (reportType !== "all" && !s.tags.includes(reportType)) return false;
       if (
         q &&
         !s.name.toLowerCase().includes(q) &&
-        !s.organization.toLowerCase().includes(q) &&
-        !s.type.toLowerCase().includes(q)
+        !s.organizations.toLowerCase().includes(q) &&
+        !s.tags.some((t) => t.toLowerCase().includes(q))
       )
         return false;
       return true;
     });
   }, [statusFilter, search, reportType]);
 
-  const summary = [
-    { key: "all" as const, icon: "event_repeat", color: "primary.main", label: "All Schedules", count: counts.all },
-    { key: "active" as const, icon: "play_circle", color: "success.main", label: "Active", count: counts.active },
-    { key: "paused" as const, icon: "pause_circle", color: "text.secondary", label: "Paused", count: counts.paused },
-    { key: "issue" as const, icon: "error", color: "warning.main", label: "Delivery Issues", count: counts.issue },
+  const selectedCount =
+    rowSelection.type === "exclude"
+      ? rows.length - rowSelection.ids.size
+      : rowSelection.ids.size;
+
+  const tabsConfig: StatusTabConfig[] = [
+    {
+      icon: "event_repeat",
+      count: counts.all,
+      label: "All Schedules",
+      color: "primary.main",
+      iconColorVar: "var(--dnsf-palette-primary-main)",
+      progressValue: 100,
+    },
+    {
+      icon: "play_circle",
+      count: counts.active,
+      label: "Active",
+      color: "success.main",
+      iconColorVar: "var(--dnsf-palette-success-main)",
+      progressValue: counts.all ? (counts.active / counts.all) * 100 : 0,
+    },
+    {
+      icon: "pause_circle",
+      count: counts.paused,
+      label: "Paused",
+      color: "text.secondary",
+      iconColorVar: "var(--dnsf-palette-text-secondary)",
+      progressValue: counts.all ? (counts.paused / counts.all) * 100 : 0,
+    },
+    {
+      icon: "error",
+      count: counts.issue,
+      label: "Delivery Issues",
+      color: "warning.main",
+      iconColorVar: "var(--dnsf-palette-warning-main)",
+      progressValue: counts.all ? (counts.issue / counts.all) * 100 : 0,
+    },
   ];
 
   return (
@@ -472,33 +453,24 @@ export default function ScheduledReportsPage() {
         >
           Schedule Report
         </Button>
+        <Box sx={{ flex: 1 }} />
         <Button
           variant="outlined"
           color="secondary"
           size="small"
           startIcon={<MaterialSymbol name="visibility" size={18} />}
+          onClick={() => setPreviewOpen(true)}
         >
           Preview Sample Reports
         </Button>
       </Box>
 
-      {/* Summary strip */}
-      <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
-        {summary.map((s) => (
-          <SummaryCard
-            key={s.key}
-            icon={s.icon}
-            color={s.color}
-            count={s.count}
-            label={s.label}
-            selected={statusFilter === s.key}
-            onClick={() => setStatusFilter(s.key)}
-          />
-        ))}
-      </Box>
-
-      {/* Toolbar + grid */}
-      <Card sx={{ overflow: "hidden" }}>
+      {/* Summary tabs + grid, connected as one card (like Query Logs) */}
+      <TabbedDataCard
+        tabs={tabsConfig}
+        activeTab={STATUS_KEYS.indexOf(statusFilter)}
+        onTabChange={(_e, newValue) => setStatusFilter(STATUS_KEYS[newValue])}
+      >
         <Box
           sx={{
             display: "flex",
@@ -533,48 +505,66 @@ export default function ScheduledReportsPage() {
           >
             <MenuItem value="all">All report types</MenuItem>
             {REPORT_TYPES.map((t) => (
-              <MenuItem key={t.label} value={t.label}>
-                {t.label}
+              <MenuItem key={t} value={t}>
+                {t}
               </MenuItem>
             ))}
           </Select>
-          <Box sx={{ flex: 1 }} />
-          <ArrowTooltip title="Export">
-            <Button
-              variant="text"
-              color="secondary"
-              size="small"
-              startIcon={<MaterialSymbol name="download" size={20} />}
-            >
-              Export
-            </Button>
-          </ArrowTooltip>
-          <Button
-            variant="text"
-            color="secondary"
-            size="small"
-            startIcon={<MaterialSymbol name="refresh" size={20} />}
-          >
-            Refresh
-          </Button>
         </Box>
 
         <DataTable
           rows={rows}
           columns={columns}
           density="comfortable"
+          initialPageSize={10}
           showSearch={false}
-          showFilters={false}
+          showFilters
           showDefaultView={false}
           showPreferences={false}
-          showExport={false}
+          showExport
+          showRefresh
+          rowSelectionModel={rowSelection}
+          onRowSelectionModelChange={setRowSelection}
+          bulkActions={
+            selectedCount > 0 && (
+              <DataTableBulkActions
+                count={selectedCount}
+                noun="schedule"
+                onClose={clearSelection}
+                actions={
+                  <>
+                    <Button
+                      variant="text"
+                      color="primary"
+                      startIcon={<MaterialSymbol name="pause" size={18} />}
+                    >
+                      Pause
+                    </Button>
+                    <Button
+                      variant="text"
+                      color="primary"
+                      startIcon={<MaterialSymbol name="play_arrow" size={18} />}
+                    >
+                      Resume
+                    </Button>
+                  </>
+                }
+              />
+            )
+          }
           sx={(theme: Theme) => ({
             "& .MuiDataGrid-cell, & .MuiDataGrid-columnHeaderTitle": {
               fontSize: theme.typography.body2.fontSize,
             },
           })}
         />
-      </Card>
+      </TabbedDataCard>
+
+      {/* Preview sample reports */}
+      <SampleReportsModal
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+      />
     </PageShell>
   );
 }
