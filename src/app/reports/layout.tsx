@@ -1,6 +1,7 @@
-// Lightweight design-system docs shell: a Components sidebar on the left, the
-// active component's name in a page header, and the component's samples in the
-// scrollable content area. Uses our theme tokens/typography throughout.
+// Reports shell — a simple left sidebar (styled like the design-system docs
+// shell) listing the available reports, with the active report's name in the
+// page header and its content in the scrollable area. Report content is
+// constrained to a 1400px max width.
 
 import { Box, Typography } from "@mui/material";
 import { Outlet, useLocation, useNavigate } from "react-router";
@@ -9,32 +10,31 @@ import { Logo } from "@/components/logo";
 import { PageHeader } from "@/components/page-header";
 import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 
-const BASE = "/design-system";
+const BASE = "/reports";
 
-const COMPONENTS = [
-  { label: "Alerts", path: `${BASE}/alerts` },
-  { label: "Buttons", path: `${BASE}/buttons` },
-  { label: "Cards", path: `${BASE}/cards` },
-  { label: "Chips", path: `${BASE}/chips` },
-  { label: "Forms", path: `${BASE}/forms` },
-  { label: "Page Header", path: `${BASE}/page-header` },
-  { label: "Typography", path: `${BASE}/typography` },
+const REPORTS = [
+  { label: "Customer Activity Overview", path: `${BASE}/customer-activity-overview` },
+  { label: "Endpoint Traffic Logs", path: `${BASE}/endpoint-traffic-logs` },
+  { label: "Filter Protection Summary", path: `${BASE}/filter-protection-summary` },
+  { label: "Timeline Activity Logs", path: `${BASE}/timeline-activity-logs` },
+  { label: "Timeline Overview", path: `${BASE}/timeline-overview` },
+  { label: "CyberSight AI Usage", path: `${BASE}/cybersight-ai-usage` },
+  { label: "Threat Trends", path: `${BASE}/threat-trends` },
 ] as const;
 
-export default function DesignSystemLayout() {
+export default function ReportsLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const active =
-    COMPONENTS.find((c) => pathname.startsWith(c.path)) ?? COMPONENTS[0];
+  const active = REPORTS.find((r) => pathname.startsWith(r.path)) ?? REPORTS[0];
 
   return (
-    <Box sx={{ display: "flex", height: "100%", minHeight: 0 }}>
-      {/* Components sidebar — matches the app side nav styling */}
+    <Box sx={{ display: "flex", height: "100vh", minHeight: 0 }}>
+      {/* Reports sidebar — matches the app side nav styling */}
       <Box
         component="nav"
         sx={{
-          width: 240,
+          width: 260,
           flexShrink: 0,
           backgroundColor: "#000000",
           color: "#ffffff",
@@ -68,15 +68,15 @@ export default function DesignSystemLayout() {
             color: "rgba(255, 255, 255, 0.6)",
           }}
         >
-          Components
+          Reports
         </Typography>
-        {COMPONENTS.map((c) => {
-          const selected = c.path === active.path;
+        {REPORTS.map((r) => {
+          const selected = r.path === active.path;
           return (
             <Box
-              key={c.path}
+              key={r.path}
               role="button"
-              onClick={() => navigate(c.path)}
+              onClick={() => navigate(r.path)}
               sx={(theme) => ({
                 display: "flex",
                 alignItems: "center",
@@ -98,13 +98,13 @@ export default function DesignSystemLayout() {
                 },
               })}
             >
-              {c.label}
+              {r.label}
             </Box>
           );
         })}
       </Box>
 
-      {/* Content: page header (component name) + scrollable samples */}
+      {/* Content: page header (report name) + scrollable, 1400px-constrained body */}
       <Box
         sx={{
           flex: 1,
@@ -115,8 +115,10 @@ export default function DesignSystemLayout() {
         }}
       >
         <PageHeader title={active.label} />
-        <Box sx={{ flex: 1, overflowY: "auto", minHeight: 0 }}>
-          <Outlet />
+        <Box sx={{ flex: 1, overflowY: "auto", minHeight: 0, p: 3 }}>
+          <Box sx={{ maxWidth: 1400, mx: "auto", width: "100%" }}>
+            <Outlet />
+          </Box>
         </Box>
       </Box>
     </Box>

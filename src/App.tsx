@@ -26,6 +26,12 @@ import HomePage from "@/app/page";
 import QueryLogsPage from "@/app/query-logs/page";
 import CustomReportsPage from "@/app/reporting/custom-reports/page";
 import ScheduledReportsPage from "@/app/reporting/scheduled-reports/page";
+import ReportsLayout from "@/app/reports/layout";
+import CustomerActivityOverviewReport from "@/app/reports/customer-activity-overview/page";
+import ThreatTrendsReport from "@/app/reports/threat-trends/page";
+import CyberSightAiUsageReport from "@/app/reports/cybersight-ai-usage/page";
+import TimelineOverviewReport from "@/app/reports/timeline-overview/page";
+import { ReportPlaceholder } from "@/app/reports/report-placeholder";
 import SettingsPage from "@/app/settings/page";
 import UnblockRequestsLayout from "@/app/unblock-requests/layout";
 import UnblockRequestsIndexPage from "@/app/unblock-requests/page";
@@ -93,6 +99,25 @@ function App() {
           <Route path="page-header" element={<PageHeaderDocsPage />} />
           <Route path="typography" element={<TypographyDocsPage />} />
         </Route>
+      </Route>
+
+      {/* Reports has its own sidebar — rendered outside the app shell so the
+          main side nav isn't also shown. */}
+      <Route path="reports" element={<ReportsLayout />}>
+        <Route
+          index
+          element={<Navigate to="customer-activity-overview" replace />}
+        />
+        <Route
+          path="customer-activity-overview"
+          element={<CustomerActivityOverviewReport />}
+        />
+        <Route path="endpoint-traffic-logs" element={<ReportPlaceholder />} />
+        <Route path="filter-protection-summary" element={<ReportPlaceholder />} />
+        <Route path="timeline-activity-logs" element={<ReportPlaceholder />} />
+        <Route path="timeline-overview" element={<TimelineOverviewReport />} />
+        <Route path="cybersight-ai-usage" element={<CyberSightAiUsageReport />} />
+        <Route path="threat-trends" element={<ThreatTrendsReport />} />
       </Route>
     </Routes>
   );
