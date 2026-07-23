@@ -30,6 +30,7 @@ import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
 import { SampleReportsModal } from "./sample-reports-modal";
+import { ScheduleReportView } from "./schedule-report-view";
 
 // ---------------------------------------------------------------------------
 // Types + data
@@ -346,6 +347,7 @@ export default function ScheduledReportsPage() {
   const [search, setSearch] = useState("");
   const [reportType, setReportType] = useState("all");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [view, setView] = useState<"list" | "schedule">("list");
   const [rowSelection, setRowSelection] = useState<GridRowSelectionModel>({
     type: "include",
     ids: new Set(),
@@ -421,6 +423,15 @@ export default function ScheduledReportsPage() {
     },
   ];
 
+  if (view === "schedule") {
+    return (
+      <ScheduleReportView
+        onCancel={() => setView("list")}
+        onSave={() => setView("list")}
+      />
+    );
+  }
+
   return (
     <PageShell
       header={
@@ -450,6 +461,7 @@ export default function ScheduledReportsPage() {
           color="primary"
           size="small"
           startIcon={<MaterialSymbol name="add" size={18} />}
+          onClick={() => setView("schedule")}
         >
           Schedule Report
         </Button>

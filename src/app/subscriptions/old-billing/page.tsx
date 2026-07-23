@@ -2,7 +2,8 @@
 // Recreates the previous subscription/plans screen with hardcoded legacy
 // styling for reference.
 
-import { Box, Button, Link, Typography } from "@mui/material";
+import { Alert, Box, Button, Link, Snackbar, Typography } from "@mui/material";
+import { useState } from "react";
 
 const HEADER_BLUE = "#2680C2";
 const LINK_BLUE = "#1976D2";
@@ -76,6 +77,11 @@ function PriceCell({ p }: { p: Price }) {
 }
 
 export default function OldBillingPage() {
+  // When kept, the account stays on Pro; the button flips so the user can undo
+  // and allow the upgrade again.
+  const [keptPlan, setKeptPlan] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
   const cellSx = {
     borderRight: `1px solid ${BORDER}`,
     borderBottom: `1px solid ${BORDER}`,
@@ -161,38 +167,76 @@ export default function OldBillingPage() {
           </Box>
           <Box>
             <Typography sx={{ fontSize: 18, fontWeight: 700, color: "#173A5E" }}>
-              Pro plan automatically upgrades to Plus on September 30, 2026
+              {keptPlan
+                ? "Plan will remain on Pro"
+                : "Pro plan automatically upgrades to Plus on September 30, 2026"}
             </Typography>
             <Typography sx={{ fontSize: 16, color: "#46586B", mt: 1, maxWidth: 700 }}>
-              The new price is $X.XX per license per month, up from the current
-              $Y.YY. To stay on Pro at the current pricing, select{" "}
-              <Box component="strong" sx={{ fontWeight: 700 }}>
-                Keep Current Plan
-              </Box>{" "}
-              before September 30, 2026.
+              {keptPlan ? (
+                <>
+                  The auto-upgrade to Plus on September 30, 2026 will not
+                  occur. Current Pro pricing remains in effect. To opt back into
+                  the scheduled Plus upgrade, select{" "}
+                  <Box component="strong" sx={{ fontWeight: 700 }}>
+                    Upgrade to Plus
+                  </Box>
+                  .
+                </>
+              ) : (
+                <>
+                  The new price is $X.XX per license per month, up from the
+                  current $Y.YY. To stay on Pro at the current pricing, select{" "}
+                  <Box component="strong" sx={{ fontWeight: 700 }}>
+                    Keep Current Plan
+                  </Box>{" "}
+                  before September 30, 2026.
+                </>
+              )}
             </Typography>
             <Box sx={{ display: "flex", gap: 1.5, mt: 2 }}>
-              {["Keep Current Plan", "Compare Plans"].map((l) => (
-                <Button
-                  key={l}
-                  variant="outlined"
-                  sx={{
-                    color: "#2096F3",
-                    borderColor: "#2096F3",
-                    fontSize: 14,
-                    borderRadius: "2px",
-                    padding: "6px 15px",
-                    textTransform: "none",
-                    fontWeight: 400,
-                    "&:hover": {
+              {[
+                keptPlan ? "Upgrade to Plus" : "Keep Current Plan",
+                "Compare Plans",
+              ].map((l) => {
+                const isKeep =
+                  l === "Keep Current Plan" || l === "Upgrade to Plus";
+                return (
+                  <Button
+                    key={l}
+                    variant="outlined"
+                    onClick={
+                      isKeep
+                        ? () => {
+                            setKeptPlan((prev) => {
+                              const next = !prev;
+                              setToast(
+                                next
+                                  ? "Plan will remain on Pro."
+                                  : "Scheduled upgrade to Plus resumed.",
+                              );
+                              return next;
+                            });
+                          }
+                        : undefined
+                    }
+                    sx={{
+                      color: "#2096F3",
                       borderColor: "#2096F3",
-                      bgcolor: "rgba(32, 150, 243, 0.04)",
-                    },
-                  }}
-                >
-                  {l}
-                </Button>
-              ))}
+                      fontSize: 14,
+                      borderRadius: "2px",
+                      padding: "6px 15px",
+                      textTransform: "none",
+                      fontWeight: 400,
+                      "&:hover": {
+                        borderColor: "#2096F3",
+                        bgcolor: "rgba(32, 150, 243, 0.04)",
+                      },
+                    }}
+                  >
+                    {l}
+                  </Button>
+                );
+              })}
             </Box>
           </Box>
         </Box>
@@ -363,6 +407,22 @@ export default function OldBillingPage() {
           </Typography>
         </Box>
       </Box>
+
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={4000}
+        onClose={() => setToast(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          severity="success"
+          variant="standard"
+          elevation={8}
+          onClose={() => setToast(null)}
+        >
+          {toast}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
