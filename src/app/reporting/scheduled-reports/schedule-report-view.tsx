@@ -12,6 +12,7 @@ import {
   Divider,
   FormControlLabel,
   FormLabel,
+  IconButton,
   Link,
   MenuItem,
   Radio,
@@ -32,6 +33,7 @@ import ShowChartOutlinedIcon from "@mui/icons-material/ShowChartOutlined";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import { useState } from "react";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 
@@ -42,6 +44,8 @@ type ReportDef = {
   title: string;
   desc: string;
   Icon: SvgIconComponent;
+  file: string;
+  size: string;
   cybersight?: boolean;
 };
 
@@ -51,24 +55,32 @@ const REPORTS: ReportDef[] = [
     title: "Customer Activity Overview",
     desc: "Requests, blocked traffic, and top categories across the period.",
     Icon: StackedLineChartOutlinedIcon,
+    file: "Activity-Overview-Jul-2026.pdf",
+    size: "1.2 MB",
   },
   {
     key: "traffic",
     title: "Endpoint Traffic Logs",
     desc: "Full DNS request log for every endpoint, exported as tables.",
     Icon: TableChartOutlinedIcon,
+    file: "Traffic-Logs-Jul-2026.pdf",
+    size: "840 KB",
   },
   {
     key: "protection",
     title: "Filter Protection Summary",
     desc: "Threats blocked, categories filtered, and policy coverage.",
     Icon: ShieldOutlinedIcon,
+    file: "Protection-Summary-Jul-2026.pdf",
+    size: "1.1 MB",
   },
   {
     key: "timeline-logs",
     title: "Timeline Activity Logs",
     desc: "Detailed CyberSight timeline events for each device.",
     Icon: ReceiptLongOutlinedIcon,
+    file: "Timeline-Logs-Jul-2026.pdf",
+    size: "1.4 MB",
     cybersight: true,
   },
   {
@@ -76,6 +88,8 @@ const REPORTS: ReportDef[] = [
     title: "Timeline Overview",
     desc: "Summarized device timelines with notable activity called out.",
     Icon: ShowChartOutlinedIcon,
+    file: "Timeline-Overview-Jul-2026.pdf",
+    size: "980 KB",
     cybersight: true,
   },
   {
@@ -83,6 +97,8 @@ const REPORTS: ReportDef[] = [
     title: "CyberSight AI Usage",
     desc: "AI queries, insights generated, and usage by device.",
     Icon: AutoAwesomeOutlinedIcon,
+    file: "AI-Usage-Jul-2026.pdf",
+    size: "760 KB",
     cybersight: true,
   },
 ];
@@ -121,7 +137,7 @@ function Step({
     <Box>
       <Typography
         variant="overline"
-        sx={{ color: "text.secondary", fontWeight: 700, letterSpacing: "1px" }}
+        sx={{ display: "block", color: "text.secondary", lineHeight: 1.5 }}
       >
         Step {n} — {title}
       </Typography>
@@ -149,7 +165,7 @@ export function ScheduleReportView({
   const [day, setDay] = useState(DAYS[0]);
   const [time, setTime] = useState(TIMES[1]);
   const [timezone, setTimezone] = useState(TIMEZONES[0].value);
-  const [whitelabel, setWhitelabel] = useState(true);
+  const [whitelabel, setWhitelabel] = useState(false);
   const [companyName, setCompanyName] = useState("Brightwave IT");
   const [replyTo, setReplyTo] = useState("reports@brightwaveit.com");
   const [footerNote, setFooterNote] = useState("");
@@ -170,6 +186,10 @@ export function ScheduleReportView({
     (orgContacts ? orgContactCount : 0) + portalUsers.length + externalEmails.length;
   const nextDeliveryDay = day === "Last day" ? "Jul 31" : "Aug 1";
   const selectedReportDefs = REPORTS.filter((r) => selectedReports.includes(r.key));
+
+  // Required to save: a name, at least one report, and at least one recipient.
+  const canSave =
+    name.trim() !== "" && selectedReports.length > 0 && recipientCount > 0;
 
   const addExternalEmail = () => {
     const v = externalEmail.trim();
@@ -196,14 +216,34 @@ export function ScheduleReportView({
             >
               Send test
             </Button>
-            <Button variant="contained" color="primary" onClick={onSave}>
-              Save schedule
-            </Button>
+            <ArrowTooltip
+              title={
+                canSave
+                  ? ""
+                  : "Create Schedule will enable once all required fields are filled out."
+              }
+            >
+              <span
+                style={{
+                  display: "inline-flex",
+                  cursor: canSave ? undefined : "not-allowed",
+                }}
+              >
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={onSave}
+                  disabled={!canSave}
+                >
+                  Create schedule
+                </Button>
+              </span>
+            </ArrowTooltip>
           </>
         }
       />
 
-      <Box sx={{ flex: 1, overflow: "auto", p: 3 }}>
+      <Box sx={{ flex: 1, overflow: "auto", p: 3, pb: 8 }}>
         <Box
           sx={{
             display: "grid",
@@ -215,26 +255,42 @@ export function ScheduleReportView({
           {/* ---------------------------------------------------------------- */}
           {/* LEFT — stepped form                                              */}
           {/* ---------------------------------------------------------------- */}
-          <Card sx={{ p: 3, display: "flex", flexDirection: "column", gap: 3 }}>
+          <Card sx={{ p: 2, display: "flex", flexDirection: "column", gap: 3 }}>
+            <Typography variant="cardTitle">Schedule Details</Typography>
+
             {/* STEP 1 — Name & reports */}
             <Step n={1} title="Name & Reports">
-              <FormLabel sx={{ display: "block", mb: 0.5 }}>Schedule name</FormLabel>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="e.g. Monthly Executive Summary"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                sx={{ mb: 2 }}
-              />
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <Box>
+                <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                  Schedule name
+                  <Box component="span" sx={{ ml: 0.25 }}>
+                    *
+                  </Box>
+                </FormLabel>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="e.g. Monthly Executive Summary"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </Box>
 
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 2,
-                }}
-              >
+              <Box>
+                <FormLabel sx={{ display: "block", mb: 1 }}>
+                  Select reports
+                  <Box component="span" sx={{ ml: 0.25 }}>
+                    *
+                  </Box>
+                </FormLabel>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                    gap: 2,
+                  }}
+                >
                 {REPORTS.map((r) => {
                   const selected = selectedReports.includes(r.key);
                   return (
@@ -254,9 +310,8 @@ export function ScheduleReportView({
                         display: "flex",
                         flexDirection: "column",
                         gap: 1,
-                        transition: "border-color 120ms, background 120ms",
+                        transition: "background 120ms",
                         "&:hover": {
-                          borderColor: "primary.main",
                           bgcolor: alpha(
                             theme.palette.primary.main,
                             selected ? 0.12 : 0.04,
@@ -266,18 +321,13 @@ export function ScheduleReportView({
                           borderColor: selected
                             ? theme.vars.palette.primary.light
                             : theme.vars.palette.divider,
-                          "&:hover": {
-                            borderColor: theme.vars.palette.primary.light,
-                            bgcolor: alpha(
-                              theme.palette.primary.main,
-                              selected ? 0.12 : 0.04,
-                            ),
-                          },
                         }),
                       })}
                     >
-                      <Radio
+                      <Checkbox
                         checked={selected}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={() => toggleReport(r.key)}
                         sx={{
                           position: "absolute",
                           top: 8,
@@ -287,16 +337,19 @@ export function ScheduleReportView({
                         }}
                       />
                       <Box
-                        sx={{
+                        sx={(theme) => ({
                           width: 36,
                           height: 36,
                           borderRadius: 1,
-                          bgcolor: "action.hover",
-                          color: "text.secondary",
+                          bgcolor: alpha(theme.palette.primary.main, 0.1),
+                          color: "primary.main",
+                          ...theme.applyStyles("dark", {
+                            color: theme.vars.palette.primary.light,
+                          }),
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                        }}
+                        })}
                       >
                         <Box component={r.Icon} sx={{ fontSize: 20 }} />
                       </Box>
@@ -323,36 +376,26 @@ export function ScheduleReportView({
                           alignSelf: "flex-start",
                         }}
                       >
-                        <MaterialSymbol name="visibility" size={16} />
                         Preview sample
                       </Link>
-                      {r.cybersight && (
-                        <Chip
-                          label="Requires CyberSight"
-                          size="small"
-                          sx={(theme) => ({
-                            alignSelf: "flex-start",
-                            bgcolor: alpha(theme.palette.primary.main, 0.12),
-                            color: "primary.dark",
-                            fontWeight: 700,
-                            fontSize: 11,
-                            letterSpacing: "0.5px",
-                            textTransform: "uppercase",
-                          })}
-                        />
-                      )}
                     </Box>
                   );
                 })}
+                </Box>
               </Box>
 
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 2 }}>
-                <FormLabel sx={{ flexShrink: 0 }}>Reporting period</FormLabel>
+              <Box>
+                <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                  Reporting period
+                  <Box component="span" sx={{ ml: 0.25 }}>
+                    *
+                  </Box>
+                </FormLabel>
                 <Select
+                  fullWidth
                   size="small"
                   value={period}
                   onChange={(e) => setPeriod(e.target.value)}
-                  sx={{ minWidth: 220 }}
                 >
                   {PERIODS.map((p) => (
                     <MenuItem key={p} value={p}>
@@ -360,10 +403,11 @@ export function ScheduleReportView({
                     </MenuItem>
                   ))}
                 </Select>
+                <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
+                  Selected reports are combined into one PDF attachment per organization.
+                </Typography>
               </Box>
-              <Typography variant="body2" sx={{ color: "text.secondary", mt: 1.5 }}>
-                Selected reports are combined into one PDF attachment per organization.
-              </Typography>
+              </Box>
             </Step>
 
             <Divider />
@@ -585,13 +629,16 @@ export function ScheduleReportView({
                   px: 1.5,
                   py: 1,
                   borderRadius: 1,
-                  bgcolor: alpha(theme.palette.primary.main, 0.12),
-                  color: "primary.dark",
+                  bgcolor: theme.vars.palette.Alert.infoStandardBg,
+                  color: theme.vars.palette.Alert.infoColor,
                 })}
               >
-                <MaterialSymbol name="event_repeat" size={18} />
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  Next delivery: {nextDeliveryDay} · {time} {timezone}
+                <MaterialSymbol name="event_repeat" size={20} />
+                <Typography variant="body2">
+                  <Box component="span" sx={{ fontWeight: 700 }}>
+                    Next delivery:
+                  </Box>{" "}
+                  {nextDeliveryDay} · {time} {timezone}
                 </Typography>
               </Box>
             </Step>
@@ -618,67 +665,65 @@ export function ScheduleReportView({
                 sx={{ alignItems: "flex-start", m: 0, gap: 1.5, mb: 2 }}
               />
 
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 2,
-                }}
-              >
-                <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>Company name</FormLabel>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    disabled={!whitelabel}
-                  />
-                </Box>
-                <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>Reply-to email</FormLabel>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    value={replyTo}
-                    onChange={(e) => setReplyTo(e.target.value)}
-                    disabled={!whitelabel}
-                  />
-                </Box>
+              {whitelabel && (
                 <Box
                   sx={{
-                    border: "1px dashed",
-                    borderColor: "divider",
-                    borderRadius: 1,
-                    p: 2,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1.5,
-                    opacity: whitelabel ? 1 : 0.5,
+                    display: "grid",
+                    gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                    gap: 2,
                   }}
                 >
-                  <MaterialSymbol name="upload" size={22} sx={{ color: "text.secondary" }} />
                   <Box>
-                    <Link component="button" type="button" underline="hover" sx={{ fontWeight: 700 }}>
-                      Upload Logo
-                    </Link>
-                    <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                      PNG or SVG, 512px wide recommended
-                    </Typography>
+                    <FormLabel sx={{ display: "block", mb: 0.5 }}>Company name</FormLabel>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                    />
+                  </Box>
+                  <Box>
+                    <FormLabel sx={{ display: "block", mb: 0.5 }}>Reply-to email</FormLabel>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      value={replyTo}
+                      onChange={(e) => setReplyTo(e.target.value)}
+                    />
+                  </Box>
+                  <Box
+                    sx={{
+                      border: "1px dashed",
+                      borderColor: "divider",
+                      borderRadius: 1,
+                      p: 2,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                    }}
+                  >
+                    <MaterialSymbol name="upload" size={22} sx={{ color: "text.secondary" }} />
+                    <Box>
+                      <Link component="button" type="button" underline="hover" sx={{ fontWeight: 700 }}>
+                        Upload Logo
+                      </Link>
+                      <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                        PNG or SVG, 512px wide recommended
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Box>
+                    <FormLabel sx={{ display: "block", mb: 0.5 }}>Email footer note</FormLabel>
+                    <TextField
+                      fullWidth
+                      size="small"
+                      placeholder="e.g. Questions? Reply to this email."
+                      value={footerNote}
+                      onChange={(e) => setFooterNote(e.target.value)}
+                    />
                   </Box>
                 </Box>
-                <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>Email footer note</FormLabel>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    placeholder="e.g. Questions? Reply to this email."
-                    value={footerNote}
-                    onChange={(e) => setFooterNote(e.target.value)}
-                    disabled={!whitelabel}
-                  />
-                </Box>
-              </Box>
+              )}
             </Step>
           </Card>
 
@@ -697,27 +742,35 @@ export function ScheduleReportView({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                px: 2.5,
+                px: 2,
                 py: 2,
               }}
             >
-              <Typography sx={{ fontWeight: 700 }}>Preview</Typography>
+              <Typography variant="cardTitle">Preview</Typography>
               <ToggleButtonGroup
                 exclusive
                 size="small"
                 value={previewTab}
                 onChange={(_, v) => v && setPreviewTab(v)}
               >
-                <ToggleButton value="email" sx={{ textTransform: "none", px: 2 }}>
+                <ToggleButton
+                  value="email"
+                  sx={{ textTransform: "uppercase", fontSize: 13, height: 30, px: 2 }}
+                >
                   Email
                 </ToggleButton>
-                <ToggleButton value="pdf" sx={{ textTransform: "none", px: 2 }}>
+                <ToggleButton
+                  value="pdf"
+                  sx={{ textTransform: "uppercase", fontSize: 13, height: 30, px: 2 }}
+                >
                   PDF Cover
                 </ToggleButton>
               </ToggleButtonGroup>
             </Box>
 
-            <Box sx={{ bgcolor: "background.neutral", p: 2.5 }}>
+            <Box sx={{ bgcolor: "background.paper", p: 2 }}>
+              {previewTab === "email" && (
+                <>
               {/* Envelope */}
               <Box
                 sx={{
@@ -728,27 +781,41 @@ export function ScheduleReportView({
                   mb: 2,
                 }}
               >
-                <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                  From
+                <Typography variant="body2" sx={{ color: "text.primary", fontWeight: 700 }}>
+                  From:
                 </Typography>
                 <Typography variant="body2" sx={{ color: "text.primary" }}>
                   {companyName} Reports &lt;{replyTo}&gt;
                 </Typography>
-                <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                  To
+                <Typography variant="body2" sx={{ color: "text.primary", fontWeight: 700 }}>
+                  To:
                 </Typography>
                 <Typography variant="body2" sx={{ color: "text.primary" }}>
                   organization contacts ({recipientCount})
                 </Typography>
-                <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                  Subject
-                </Typography>
                 <Typography variant="body2" sx={{ color: "text.primary", fontWeight: 700 }}>
+                  Subject:
+                </Typography>
+                <Typography variant="body2" sx={{ color: "text.primary" }}>
                   {frequency} Security Report — Acme Manufacturing
                 </Typography>
               </Box>
 
               {/* Email body */}
+              <Box sx={{ p: 2, bgcolor: "background.neutral", borderRadius: 1 }}>
+              {selectedReportDefs.length === 0 ? (
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontStyle: "italic",
+                    color: "text.secondary",
+                    textAlign: "center",
+                    py: 6,
+                  }}
+                >
+                  Select a report to preview
+                </Typography>
+              ) : (
               <Card variant="outlined" sx={{ overflow: "hidden" }}>
                 <Box sx={{ px: 3, py: 2.5, display: "flex", alignItems: "center", gap: 1.5 }}>
                   <Box
@@ -814,29 +881,12 @@ export function ScheduleReportView({
                     ))}
                   </Box>
 
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "baseline",
-                      mb: 1,
-                    }}
+                  <Typography
+                    variant="overline"
+                    sx={{ color: "text.secondary", display: "block", mb: 1 }}
                   >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "text.secondary",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        fontWeight: 700,
-                      }}
-                    >
-                      Attachments
-                    </Typography>
-                    <Link component="button" type="button" underline="hover" sx={{ fontSize: 13 }}>
-                      Click to preview
-                    </Link>
-                  </Box>
+                    Attachments
+                  </Typography>
 
                   {selectedReportDefs.length === 0 ? (
                     <Box
@@ -872,37 +922,118 @@ export function ScheduleReportView({
                         >
                           <MaterialSymbol
                             name="picture_as_pdf"
-                            size={18}
-                            sx={{ color: "text.secondary" }}
+                            size={20}
+                            sx={{ color: "#d93025" }}
                           />
-                          <Typography variant="body2">{r.title}</Typography>
+                          <Typography variant="body2" sx={{ flex: 1, fontWeight: 600 }}>
+                            {r.file}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                            {r.size}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            aria-label={`Preview ${r.title}`}
+                            onClick={() => setSamplePreview(r)}
+                            sx={{ color: "primary.main", p: 0.25 }}
+                          >
+                            <MaterialSymbol name="visibility" size={20} />
+                          </IconButton>
                         </Box>
                       ))}
                     </Box>
                   )}
 
-                  <Button fullWidth variant="contained" color="primary">
-                    View full report
-                  </Button>
-                </Box>
-                <Divider />
-                <Box sx={{ px: 3, py: 2, textAlign: "center", bgcolor: "background.neutral" }}>
-                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                    Sent by {companyName}
-                  </Typography>
-                  <Link component="button" type="button" underline="hover" sx={{ fontSize: 13 }}>
-                    Manage report preferences
-                  </Link>
                 </Box>
               </Card>
+              )}
+              </Box>
+                </>
+              )}
 
               {previewTab === "pdf" && (
-                <Typography
-                  variant="body2"
-                  sx={{ color: "text.secondary", textAlign: "center", mt: 2 }}
+                <Card
+                  variant="outlined"
+                  sx={{
+                    overflow: "hidden",
+                    minHeight: 560,
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
                 >
-                  PDF cover preview uses the same branding shown above.
-                </Typography>
+                  <Box sx={{ p: 3, display: "flex", flexDirection: "column", flex: 1 }}>
+                    {/* Brand */}
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 4 }}>
+                      <Box
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 1,
+                          bgcolor: "primary.main",
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: 13,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        BI
+                      </Box>
+                      <Typography sx={{ fontWeight: 700 }}>{companyName}</Typography>
+                    </Box>
+
+                    {/* Title block */}
+                    <Typography
+                      variant="overline"
+                      sx={{ color: "primary.main", fontWeight: 700 }}
+                    >
+                      {frequency} report
+                    </Typography>
+                    <Typography sx={{ fontWeight: 700, fontSize: 28, mb: 1 }}>
+                      Security Report
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "text.primary" }}>
+                      Jun 1 – 30, 2026
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: "text.primary", mb: 2.5 }}>
+                      Prepared for Acme Manufacturing
+                    </Typography>
+
+                    <Divider sx={{ mb: 2.5 }} />
+
+                    <Typography variant="overline" sx={{ color: "text.secondary", mb: 1 }}>
+                      Included reports
+                    </Typography>
+                    {selectedReportDefs.length === 0 ? (
+                      <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                        Select at least one report to include.
+                      </Typography>
+                    ) : (
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                        {selectedReportDefs.map((r) => (
+                          <Box
+                            key={r.key}
+                            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                          >
+                            <Box
+                              component={r.Icon}
+                              sx={{ fontSize: 20, color: "primary.main" }}
+                            />
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {r.title}
+                            </Typography>
+                          </Box>
+                        ))}
+                      </Box>
+                    )}
+
+                    <Box sx={{ flex: 1 }} />
+                    <Typography variant="body2" sx={{ color: "text.secondary", mt: 3 }}>
+                      Generated Jul 21, 2026 · {companyName}
+                    </Typography>
+                  </Box>
+                </Card>
               )}
             </Box>
           </Card>

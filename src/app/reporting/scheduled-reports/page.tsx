@@ -455,7 +455,7 @@ export default function ScheduledReportsPage() {
       }
     >
       {/* Actions */}
-      <Box sx={{ display: "flex", gap: 1.5, mb: 3 }}>
+      <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>
         <Button
           variant="contained"
           color="primary"
