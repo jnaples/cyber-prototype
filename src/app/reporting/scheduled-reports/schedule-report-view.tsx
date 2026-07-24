@@ -374,6 +374,7 @@ export function ScheduleReportView({
                           fontSize: 14,
                           fontWeight: 600,
                           alignSelf: "flex-start",
+                          mt: 1,
                         }}
                       >
                         Preview sample
@@ -403,9 +404,6 @@ export function ScheduleReportView({
                     </MenuItem>
                   ))}
                 </Select>
-                <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-                  Selected reports are combined into one PDF attachment per organization.
-                </Typography>
               </Box>
               </Box>
             </Step>
@@ -446,6 +444,7 @@ export function ScheduleReportView({
 
             {/* STEP 3 — Recipients */}
             <Step n={3} title="Recipients">
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -462,20 +461,20 @@ export function ScheduleReportView({
                     </Typography>
                   </Box>
                 }
-                sx={{ alignItems: "flex-start", m: 0, gap: 1.5, mb: 2 }}
+                sx={{ alignItems: "flex-start", m: 0, gap: 1.5 }}
               />
 
-              <FormLabel sx={{ display: "block", mb: 0.5 }}>Portal users</FormLabel>
-              <Box
-                sx={{
-                  border: "1px solid",
-                  borderColor: "divider",
-                  borderRadius: 1,
-                  maxHeight: 200,
-                  overflow: "auto",
-                  mb: 2,
-                }}
-              >
+              <Box>
+                <FormLabel sx={{ display: "block", mb: 0.5 }}>Portal users</FormLabel>
+                <Box
+                  sx={{
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: 1,
+                    maxHeight: 200,
+                    overflow: "auto",
+                  }}
+                >
                 {PORTAL_USERS.map((u, i) => (
                   <Box
                     key={u.email}
@@ -513,13 +512,15 @@ export function ScheduleReportView({
                     />
                   </Box>
                 ))}
+                </Box>
               </Box>
 
-              <FormLabel sx={{ display: "block", mb: 0.5 }}>External email addresses</FormLabel>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Add email and press Enter"
+              <Box>
+                <FormLabel sx={{ display: "block", mb: 0.5 }}>External email addresses</FormLabel>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Add email and press Enter"
                 value={externalEmail}
                 onChange={(e) => setExternalEmail(e.target.value)}
                 onKeyDown={(e) => {
@@ -547,20 +548,28 @@ export function ScheduleReportView({
                 Delivering to {recipientCount} recipient{recipientCount === 1 ? "" : "s"}
                 {orgContacts ? ` — ${orgContactCount} organization contacts.` : "."}
               </Typography>
+              </Box>
+              </Box>
             </Step>
 
             <Divider />
 
             {/* STEP 4 — Schedule */}
             <Step n={4} title="Schedule">
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
               <ToggleButtonGroup
                 exclusive
+                size="small"
                 value={frequency}
                 onChange={(_, v) => v && setFrequency(v)}
-                sx={{ mb: 2 }}
+                sx={{ alignSelf: "flex-start" }}
               >
                 {FREQUENCIES.map((f) => (
-                  <ToggleButton key={f} value={f} sx={{ textTransform: "none", px: 2.5 }}>
+                  <ToggleButton
+                    key={f}
+                    value={f}
+                    sx={{ textTransform: "uppercase", fontSize: 13, height: 30, px: 2 }}
+                  >
                     {f}
                   </ToggleButton>
                 ))}
@@ -623,9 +632,9 @@ export function ScheduleReportView({
               <Box
                 sx={(theme) => ({
                   display: "inline-flex",
+                  alignSelf: "flex-start",
                   alignItems: "center",
                   gap: 1,
-                  mt: 2,
                   px: 1.5,
                   py: 1,
                   borderRadius: 1,
@@ -640,6 +649,7 @@ export function ScheduleReportView({
                   </Box>{" "}
                   {nextDeliveryDay} · {time} {timezone}
                 </Typography>
+              </Box>
               </Box>
             </Step>
 
@@ -816,7 +826,7 @@ export function ScheduleReportView({
                   Select a report to preview
                 </Typography>
               ) : (
-              <Card variant="outlined" sx={{ overflow: "hidden" }}>
+              <Card elevation={0} sx={{ overflow: "hidden" }}>
                 <Box sx={{ px: 3, py: 2.5, display: "flex", alignItems: "center", gap: 1.5 }}>
                   <Box
                     sx={{
@@ -836,8 +846,7 @@ export function ScheduleReportView({
                   </Box>
                   <Typography sx={{ fontWeight: 700 }}>{companyName}</Typography>
                 </Box>
-                <Divider />
-                <Box sx={{ px: 3, py: 2.5 }}>
+                <Box sx={{ px: 3, py: 2.5, pt: 0 }}>
                   <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
                     {frequency} Security Report
                   </Typography>
@@ -885,7 +894,7 @@ export function ScheduleReportView({
                     variant="overline"
                     sx={{ color: "text.secondary", display: "block", mb: 1 }}
                   >
-                    Attachments
+                    Attachments ({selectedReportDefs.length})
                   </Typography>
 
                   {selectedReportDefs.length === 0 ? (
