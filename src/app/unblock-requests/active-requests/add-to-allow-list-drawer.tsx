@@ -16,6 +16,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import { format as fnsFormat } from "date-fns";
 import { useState } from "react";
 
@@ -173,16 +174,20 @@ export function AddToAllowListDrawer({
               <Box
                 key={option.value}
                 onClick={() => setScope(option.value)}
-                sx={(theme) => ({
-                  display: "flex",
-                  bgcolor: "background.paper",
-                  border: "1px solid",
-                  borderColor:
-                    scope === option.value ? "primary.main" : "divider",
-                  borderRadius: 1,
-                  boxShadow: theme.shadows[1],
-                  cursor: "pointer",
-                })}
+                sx={(theme) => {
+                  const on = scope === option.value;
+                  return {
+                    display: "flex",
+                    bgcolor: "background.paper",
+                    borderRadius: 1,
+                    boxShadow: theme.shadows[1],
+                    cursor: "pointer",
+                    transition: "background 120ms",
+                    "&:hover": {
+                      bgcolor: alpha(theme.palette.primary.main, on ? 0.12 : 0.04),
+                    },
+                  };
+                }}
               >
                 <Box sx={{ pl: 1, pr: 0, py: 1 }}>
                   <Radio

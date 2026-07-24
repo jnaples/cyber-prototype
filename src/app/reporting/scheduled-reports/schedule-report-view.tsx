@@ -35,6 +35,8 @@ import { useState } from "react";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 
+import { SamplePreviewModal } from "./sample-preview-modal";
+
 type ReportDef = {
   key: string;
   title: string;
@@ -152,6 +154,7 @@ export function ScheduleReportView({
   const [replyTo, setReplyTo] = useState("reports@brightwaveit.com");
   const [footerNote, setFooterNote] = useState("");
   const [previewTab, setPreviewTab] = useState<"email" | "pdf">("email");
+  const [samplePreview, setSamplePreview] = useState<ReportDef | null>(null);
 
   const toggleReport = (key: string) =>
     setSelectedReports((prev) =>
@@ -251,6 +254,26 @@ export function ScheduleReportView({
                         display: "flex",
                         flexDirection: "column",
                         gap: 1,
+                        transition: "border-color 120ms, background 120ms",
+                        "&:hover": {
+                          borderColor: "primary.main",
+                          bgcolor: alpha(
+                            theme.palette.primary.main,
+                            selected ? 0.12 : 0.04,
+                          ),
+                        },
+                        ...theme.applyStyles("dark", {
+                          borderColor: selected
+                            ? theme.vars.palette.primary.light
+                            : theme.vars.palette.divider,
+                          "&:hover": {
+                            borderColor: theme.vars.palette.primary.light,
+                            bgcolor: alpha(
+                              theme.palette.primary.main,
+                              selected ? 0.12 : 0.04,
+                            ),
+                          },
+                        }),
                       })}
                     >
                       <Radio
@@ -282,7 +305,10 @@ export function ScheduleReportView({
                         component="button"
                         type="button"
                         underline="hover"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSamplePreview(r);
+                        }}
                         sx={{
                           display: "inline-flex",
                           alignItems: "center",
@@ -877,6 +903,13 @@ export function ScheduleReportView({
           </Card>
         </Box>
       </Box>
+
+      <SamplePreviewModal
+        open={Boolean(samplePreview)}
+        onClose={() => setSamplePreview(null)}
+        title={samplePreview?.title}
+        Icon={samplePreview?.Icon}
+      />
     </Box>
   );
 }

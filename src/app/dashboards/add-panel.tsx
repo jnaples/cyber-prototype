@@ -67,7 +67,6 @@ function WidgetListItem({
         transition: "border-color 120ms, background 120ms",
         ...(!added && {
           "&:hover": {
-            borderColor: "primary.main",
             bgcolor: alpha(theme.palette.primary.main, selected ? 0.12 : 0.04),
           },
         }),
@@ -77,7 +76,6 @@ function WidgetListItem({
             : theme.vars.palette.divider,
           ...(!added && {
             "&:hover": {
-              borderColor: theme.vars.palette.primary.light,
               bgcolor: alpha(theme.palette.primary.main, selected ? 0.12 : 0.04),
             },
           }),
