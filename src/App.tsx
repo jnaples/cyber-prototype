@@ -31,6 +31,7 @@ import CustomerActivityOverviewReport from "@/app/reports/customer-activity-over
 import ThreatTrendsReport from "@/app/reports/threat-trends/page";
 import CyberSightAiUsageReport from "@/app/reports/cybersight-ai-usage/page";
 import TimelineOverviewReport from "@/app/reports/timeline-overview/page";
+import FilterProtectionSummaryReport from "@/app/reports/filter-protection-summary/page";
 import { ReportPlaceholder } from "@/app/reports/report-placeholder";
 import SettingsPage from "@/app/settings/page";
 import UnblockRequestsLayout from "@/app/unblock-requests/layout";
@@ -113,7 +114,10 @@ function App() {
           element={<CustomerActivityOverviewReport />}
         />
         <Route path="endpoint-traffic-logs" element={<ReportPlaceholder />} />
-        <Route path="filter-protection-summary" element={<ReportPlaceholder />} />
+        <Route
+          path="filter-protection-summary"
+          element={<FilterProtectionSummaryReport />}
+        />
         <Route path="timeline-activity-logs" element={<ReportPlaceholder />} />
         <Route path="timeline-overview" element={<TimelineOverviewReport />} />
         <Route path="cybersight-ai-usage" element={<CyberSightAiUsageReport />} />

@@ -62,7 +62,7 @@ import "react-grid-layout/css/styles.css";
 // ---------------------------------------------------------------------------
 
 const COLS = 6;
-const LS_KEY = "dnsf_custom_dash_v12";
+const LS_KEY = "dnsf_custom_dash_v14";
 
 const clampSpan = (s: number) => Math.min(COLS, Math.max(1, Number(s) || 1));
 
@@ -277,16 +277,18 @@ const bumpUid = (ws: WidgetInstance[]) => {
 //   Row 4 — Composition (Threat Breakdown / Category Breakdown, half-width)
 //   Row 5 — Detail tables (Top Domains / Top Organizations, half-width)
 const DEFAULT_LAYOUT = (): WidgetInstance[] => [
-  // Row 1 — Threat posture (4 KPI cards)
-  { id: uid(), type: "kpi-threats", span: 1, x: 0, y: 0, h: 2 },
-  { id: uid(), type: "kpi-blocked", span: 1, x: 1, y: 0, h: 2 },
-  { id: uid(), type: "kpi-total", span: 1, x: 2, y: 0, h: 2 },
-  { id: uid(), type: "kpi-allowed", span: 1, x: 3, y: 0, h: 2 },
-  // Row 2 — Coverage health (4 status cards)
-  { id: uid(), type: "status-roaming", span: 1, x: 0, y: 2, h: 2 },
-  { id: uid(), type: "status-sites", span: 1, x: 1, y: 2, h: 2 },
-  { id: uid(), type: "status-users", span: 1, x: 2, y: 2, h: 2 },
-  { id: uid(), type: "status-relays", span: 1, x: 3, y: 2, h: 2 },
+  // Rows 1–2 left — Geo activity (2 cols, spans both card rows)
+  { id: uid(), type: "geo-activity", span: 2, x: 0, y: 0, h: 4 },
+  // Row 1 right — Threat posture (4 KPI cards)
+  { id: uid(), type: "kpi-threats", span: 1, x: 2, y: 0, h: 2 },
+  { id: uid(), type: "kpi-blocked", span: 1, x: 3, y: 0, h: 2 },
+  { id: uid(), type: "kpi-total", span: 1, x: 4, y: 0, h: 2 },
+  { id: uid(), type: "kpi-allowed", span: 1, x: 5, y: 0, h: 2 },
+  // Row 2 right — Coverage health (4 status cards)
+  { id: uid(), type: "status-roaming", span: 1, x: 2, y: 2, h: 2 },
+  { id: uid(), type: "status-sites", span: 1, x: 3, y: 2, h: 2 },
+  { id: uid(), type: "status-relays", span: 1, x: 4, y: 2, h: 2 },
+  { id: uid(), type: "status-users", span: 1, x: 5, y: 2, h: 2 },
   // Row 3 — Trends (half-width)
   { id: uid(), type: "threats-time", span: 3, x: 0, y: 4, h: 4 },
   { id: uid(), type: "request-activity", span: 3, x: 3, y: 4, h: 4 },

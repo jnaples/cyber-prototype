@@ -57,7 +57,9 @@ function WidgetListItem({
         width: "100%",
         border: "1px solid",
         borderColor: selected ? "primary.main" : "divider",
-        bgcolor: "background.paper",
+        bgcolor: selected
+          ? alpha(theme.palette.primary.main, 0.08)
+          : "background.paper",
         borderRadius: 1,
         p: 1.25,
         cursor: added ? "not-allowed" : "pointer",
@@ -66,7 +68,7 @@ function WidgetListItem({
         ...(!added && {
           "&:hover": {
             borderColor: "primary.main",
-            bgcolor: alpha(theme.palette.primary.main, 0.04),
+            bgcolor: alpha(theme.palette.primary.main, selected ? 0.12 : 0.04),
           },
         }),
         ...theme.applyStyles("dark", {
@@ -76,7 +78,7 @@ function WidgetListItem({
           ...(!added && {
             "&:hover": {
               borderColor: theme.vars.palette.primary.light,
-              bgcolor: alpha(theme.palette.primary.main, 0.04),
+              bgcolor: alpha(theme.palette.primary.main, selected ? 0.12 : 0.04),
             },
           }),
         }),
@@ -196,7 +198,10 @@ export function AddPanel({
       }
       secondaryAction={{ label: "Cancel", onClick: handleClose }}
       primaryAction={{
-        label: "Apply",
+        label:
+          pending.length === 0
+            ? "Add widget"
+            : `Add ${pending.length} widget${pending.length === 1 ? "" : "s"}`,
         onClick: handleApply,
         disabled: pending.length === 0,
         tooltip:
