@@ -24,11 +24,11 @@ import {
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import type { SvgIconComponent } from "@mui/icons-material";
-import InsightsOutlinedIcon from "@mui/icons-material/InsightsOutlined";
-import StorageOutlinedIcon from "@mui/icons-material/StorageOutlined";
+import StackedLineChartOutlinedIcon from "@mui/icons-material/StackedLineChartOutlined";
+import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
-import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
+import ShowChartOutlinedIcon from "@mui/icons-material/ShowChartOutlined";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import { useState } from "react";
 
@@ -50,13 +50,13 @@ const REPORTS: ReportDef[] = [
     key: "activity",
     title: "Customer Activity Overview",
     desc: "Requests, blocked traffic, and top categories across the period.",
-    Icon: InsightsOutlinedIcon,
+    Icon: StackedLineChartOutlinedIcon,
   },
   {
     key: "traffic",
     title: "Endpoint Traffic Logs",
     desc: "Full DNS request log for every endpoint, exported as tables.",
-    Icon: StorageOutlinedIcon,
+    Icon: TableChartOutlinedIcon,
   },
   {
     key: "protection",
@@ -75,7 +75,7 @@ const REPORTS: ReportDef[] = [
     key: "timeline-overview",
     title: "Timeline Overview",
     desc: "Summarized device timelines with notable activity called out.",
-    Icon: TimelineOutlinedIcon,
+    Icon: ShowChartOutlinedIcon,
     cybersight: true,
   },
   {
@@ -278,8 +278,13 @@ export function ScheduleReportView({
                     >
                       <Radio
                         checked={selected}
-                        size="small"
-                        sx={{ position: "absolute", top: 8, right: 8, p: 0.5 }}
+                        sx={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          p: 0.5,
+                          "& .MuiSvgIcon-root": { fontSize: 20 },
+                        }}
                       />
                       <Box
                         sx={{

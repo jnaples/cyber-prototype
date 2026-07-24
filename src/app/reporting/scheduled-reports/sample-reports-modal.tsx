@@ -476,7 +476,7 @@ export function SampleReportsModal({
                   },
                 })}
               >
-                <MaterialSymbol name={p.icon} size={16} sx={{ flexShrink: 0 }} />
+                <MaterialSymbol name={p.icon} size={20} sx={{ flexShrink: 0 }} />
                 {p.label}
               </Box>
             );

@@ -17,10 +17,12 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
+import SearchIcon from "@mui/icons-material/Search";
+
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { MaterialSymbol } from "@/components/material-symbol";
 
-import { DASHBOARD_NAMES, SHARED_DASHBOARDS } from "./lib";
+import { DASHBOARD_NAMES, SHARED_BY, SHARED_DASHBOARDS } from "./lib";
 
 const ALL_DASHBOARDS = DASHBOARD_NAMES;
 
@@ -49,12 +51,15 @@ function DashRow({
   name,
   current,
   isFav,
+  sharedBy,
   onPick,
   onToggleFav,
 }: {
   name: string;
   current: string;
   isFav: boolean;
+  /** When set, shows the sharer's name as a caption under the dashboard name. */
+  sharedBy?: string;
   onPick: (n: string) => void;
   onToggleFav: (e: React.MouseEvent, n: string) => void;
 }) {
@@ -81,16 +86,30 @@ function DashRow({
         },
       }}
     >
-      <Box
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-        }}
-      >
-        {name}
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Box
+          sx={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {name}
+        </Box>
+        {sharedBy && (
+          <Typography
+            variant="caption"
+            sx={{
+              display: "block",
+              color: "text.secondary",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Shared by {sharedBy}
+          </Typography>
+        )}
       </Box>
       <ArrowTooltip
         title={isFav ? "Remove from favorites." : "Add to favorites."}
@@ -179,16 +198,12 @@ export function DashSwitcher({
               size="small"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search dashboards"
+              placeholder="Search dashboards..."
               slotProps={{
                 input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <MaterialSymbol
-                        name="search"
-                        size={18}
-                        sx={{ color: "var(--dnsf-palette-text-disabled)" }}
-                      />
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
                     </InputAdornment>
                   ),
                 },
@@ -244,6 +259,7 @@ export function DashSwitcher({
                     name={n}
                     current={current}
                     isFav={false}
+                    sharedBy={SHARED_BY[n]}
                     onPick={onPick}
                     onToggleFav={toggleFav}
                   />

@@ -5,6 +5,7 @@ import {
   Chip,
   Divider,
   IconButton,
+  Link,
   ListItemIcon,
   Menu,
   MenuItem,
@@ -106,7 +107,19 @@ export default function ManageDashboardsPage() {
         <Box
           sx={{ display: "flex", alignItems: "center", gap: 1, height: "100%" }}
         >
-          <span>{params.row.name}</span>
+          <Link
+            component="button"
+            type="button"
+            underline="hover"
+            onClick={() =>
+              navigate("/dashboards", {
+                state: { dashboard: params.row.name },
+              })
+            }
+            sx={{ fontWeight: 500, textAlign: "left" }}
+          >
+            {params.row.name}
+          </Link>
           {params.row.name === defaultDashboard && (
             <Chip label="Default" size="small" />
           )}
@@ -120,8 +133,8 @@ export default function ManageDashboardsPage() {
       sortable: false,
       filterable: false,
       resizable: false,
-      align: "right",
-      headerAlign: "right",
+      align: "center",
+      headerAlign: "center",
       renderCell: (params) => (
         <ActionsCell
           name={params.row.name}

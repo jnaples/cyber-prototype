@@ -67,6 +67,13 @@ export const SHARED_DASHBOARDS = [
   "Roaming Clients",
 ];
 
+// Who shared each shared dashboard — shown as a caption in the switcher.
+export const SHARED_BY: Record<string, string> = {
+  "MSP Client Health": "Priya Natarajan",
+  "Threat Activity": "Marcus Bell",
+  "Roaming Clients": "Dana Mori",
+};
+
 export type WidgetCategory = "KPIs" | "Status" | "Charts" | "Tables" | "Other";
 export type WidgetDef = {
   type: string;

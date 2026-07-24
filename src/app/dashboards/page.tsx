@@ -28,7 +28,7 @@ import {
 import { GridLayout, useContainerWidth } from "react-grid-layout";
 import type { Layout, LayoutItem } from "react-grid-layout";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { MaterialSymbol } from "@/components/material-symbol";
@@ -51,6 +51,7 @@ import { WidgetBody } from "./widgets";
 import {
   CATALOG_BY_TYPE,
   HEADERLESS,
+  SHARED_BY,
   SHARED_DASHBOARDS,
   type WidgetInstance,
 } from "./lib";
@@ -453,8 +454,14 @@ function readPersisted(): {
 
 export default function DashboardsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const persisted = readPersisted();
-  const [name, setName] = useState(persisted.name ?? "FilterDNS Overview");
+  // A dashboard picked from the Manage Dashboards page arrives via router state.
+  const pickedDashboard = (location.state as { dashboard?: string } | null)
+    ?.dashboard;
+  const [name, setName] = useState(
+    pickedDashboard ?? persisted.name ?? "FilterDNS Overview",
+  );
   const [widgets, setWidgets] = useState<WidgetInstance[]>(
     () => persisted.widgets ?? DEFAULT_LAYOUT(),
   );
@@ -814,7 +821,7 @@ export default function DashboardsPage() {
                   sx={{ color: "text.secondary" }}
                 />
                 <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                  Shared by John Smith
+                  Shared by {SHARED_BY[name] ?? "another user"}
                 </Typography>
               </Box>
             </>
