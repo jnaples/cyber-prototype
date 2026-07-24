@@ -167,7 +167,7 @@ export function AddToAllowListDrawer({
               {
                 value: "universal" as const,
                 title: "Universal Allow List",
-                desc: "This affects all sites and users.",
+                desc: "Affects all sites and users",
               },
             ].map((option) => (
               <Box

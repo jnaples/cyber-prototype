@@ -54,37 +54,46 @@ export function DenyRequestDrawer({
         },
       }}
     >
-      {/* Request context */}
-      <Box>
-        <Typography sx={{ fontWeight: 600, fontSize: 16, color: "text.primary" }}>
-          {domain}
-        </Typography>
-        <Typography variant="body2" sx={{ color: "text.secondary", mt: 1 }}>
-          Requested by: {requester}
-        </Typography>
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          Reason: {reason && `“${reason}”`}
-        </Typography>
-      </Box>
-
-      <Divider />
-
       {/* Summary */}
       {ignore ? (
-        <Typography sx={{ color: "text.primary" }}>
+        <Typography variant="body1" sx={{ color: "text.primary" }}>
           Stop future requests for this domain from {requester}. No notification
           is sent.
         </Typography>
       ) : (
         <Box>
-          <Typography sx={{ color: "text.primary" }}>
+          <Typography variant="body1" sx={{ color: "text.primary" }}>
             Deny the request and notify the user via email.
           </Typography>
-          <Typography sx={{ color: "text.primary", mt: 0.5 }}>
+          <Typography variant="body1" sx={{ color: "text.primary", mt: 0.5 }}>
             {requester} can submit another request later.
           </Typography>
         </Box>
       )}
+
+      {/* Request context */}
+      <Box>
+        <Typography variant="body1" sx={{ color: "text.primary" }}>
+          <Box component="span" sx={{ fontWeight: 700 }}>
+            Domain:
+          </Box>{" "}
+          {domain}
+        </Typography>
+        <Typography variant="body1" sx={{ color: "text.primary" }}>
+          <Box component="span" sx={{ fontWeight: 700 }}>
+            Requested by:
+          </Box>{" "}
+          {requester}
+        </Typography>
+        <Typography variant="body1" sx={{ color: "text.primary" }}>
+          <Box component="span" sx={{ fontWeight: 700 }}>
+            Reason:
+          </Box>{" "}
+          {reason && `“${reason}”`}
+        </Typography>
+      </Box>
+
+      <Divider />
 
       {/* Message to requester — only when notifying. */}
       {!ignore && (
