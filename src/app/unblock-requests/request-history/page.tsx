@@ -13,7 +13,12 @@ const columns: GridColDef[] = [
     flex: 1,
     minWidth: 180,
     renderCell: (params) => (
-      <Link href="#" underline="hover">
+      <Link
+        href="/query-logs"
+        target="_blank"
+        rel="noopener"
+        underline="hover"
+      >
         {params.row.domain}
       </Link>
     ),

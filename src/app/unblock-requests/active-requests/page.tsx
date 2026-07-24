@@ -13,6 +13,7 @@ import {
 import type { GridColDef } from "@mui/x-data-grid";
 import { format as fnsFormat } from "date-fns";
 import { useState } from "react";
+import type { ReactNode } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
@@ -37,33 +38,48 @@ const MENU_ACTIONS: { label: string; icon: string }[] = [
   { label: "Report miscategorization", icon: "flag" },
 ];
 
+// Categories DNSFilter treats as threats — used to flag a malicious request.
+const THREAT_CATEGORIES = [
+  "Malware",
+  "Phishing",
+  "Botnet",
+  "Cryptomining",
+  "Command & Control",
+];
+
 function RowActionsCell({
   domain,
   requester,
   reason,
   policy,
+  category,
 }: {
   domain: string;
   requester: string;
   reason: string;
   policy: string;
+  category: string;
 }) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [denyAnchor, setDenyAnchor] = useState<HTMLElement | null>(null);
   const [allowOpen, setAllowOpen] = useState(false);
   const [denyOpen, setDenyOpen] = useState(false);
   const [denyIgnore, setDenyIgnore] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<ReactNode>(null);
   // Demo: this domain is already on the allow list, so the request is stale.
   const alreadyAllowed = domain === "nytimes.com";
+  // Flag the request when the site is classified under a threat category.
+  const threatCategory = THREAT_CATEGORIES.includes(category)
+    ? category
+    : undefined;
   const closeMenu = () => setMenuAnchor(null);
   const closeDeny = () => setDenyAnchor(null);
   return (
     <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-      <ArrowTooltip title="Add to Allow List">
+      <ArrowTooltip title="Approve Request">
         <IconButton
           size="small"
-          aria-label="Add to Allow List"
+          aria-label="Approve Request"
           onClick={() => setAllowOpen(true)}
         >
           <MaterialSymbol name="check" size={20} />
@@ -130,11 +146,16 @@ function RowActionsCell({
       <AddToAllowListDrawer
         open={allowOpen}
         onClose={() => setAllowOpen(false)}
-        onSubmit={() =>
+        onSubmit={(scope) =>
           setToast(
-            alreadyAllowed
-              ? "Request resolved."
-              : `${domain} added to the Allow List.`,
+            alreadyAllowed ? (
+              "Request resolved."
+            ) : (
+              <>
+                <strong>{domain}</strong> added to the{" "}
+                {scope === "universal" ? "Universal" : policy} Allow List.
+              </>
+            ),
           )
         }
         domain={domain}
@@ -142,6 +163,7 @@ function RowActionsCell({
         reason={reason}
         policy={policy}
         alreadyAllowed={alreadyAllowed}
+        threatCategory={threatCategory}
       />
 
       <DenyRequestDrawer
@@ -192,7 +214,12 @@ const columns: GridColDef[] = [
     flex: 1,
     minWidth: 180,
     renderCell: (params) => (
-      <Link href="#" underline="hover">
+      <Link
+        href="/query-logs"
+        target="_blank"
+        rel="noopener"
+        underline="hover"
+      >
         {params.row.domain}
       </Link>
     ),
@@ -244,7 +271,24 @@ const columns: GridColDef[] = [
       </Link>
     ),
   },
-  { field: "category", headerName: "Category", flex: 1, minWidth: 160 },
+  {
+    field: "category",
+    headerName: "Category",
+    flex: 1,
+    minWidth: 160,
+    renderCell: (params) => {
+      const threat = THREAT_CATEGORIES.includes(params.row.category);
+      if (!threat) return params.row.category;
+      return (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, height: "100%" }}>
+          <MaterialSymbol name="gpp_bad" size={18} sx={{ color: "error.main" }} />
+          <Typography variant="body2" sx={{ color: "error.main", fontWeight: 600 }}>
+            {params.row.category}
+          </Typography>
+        </Box>
+      );
+    },
+  },
   {
     field: "timeOfAttempt",
     headerName: "Time of Attempt",
@@ -271,14 +315,15 @@ const columns: GridColDef[] = [
     sortable: false,
     filterable: false,
     resizable: false,
-    align: "left",
-    headerAlign: "left",
+    align: "center",
+    headerAlign: "center",
     renderCell: (params) => (
       <RowActionsCell
         domain={params.row.domain}
         requester={params.row.loggedInUser}
         reason={params.row.requestReason}
         policy={params.row.policy}
+        category={params.row.category}
       />
     ),
   },
@@ -351,14 +396,14 @@ const REQUESTS: ActiveRequest[] = [
     requestReason: "Designing this quarter's promo graphics",
   },
   {
-    domain: "reddit.com",
+    domain: "secure-account-verify.com",
     organization: "Northwind Traders",
     site: "Portland DC",
     policy: "Support Policy",
-    category: "Forums",
+    category: "Phishing",
     loggedInUser: "Diego Silva",
     email: "diego.silva@northwind.com",
-    requestReason: "Customer reported a bug discussed in a thread",
+    requestReason: "Got an email asking me to verify my account here",
   },
   {
     domain: "wetransfer.com",
