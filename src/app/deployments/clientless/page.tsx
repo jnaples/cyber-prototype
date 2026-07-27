@@ -1,4 +1,4 @@
-import { Alert, Box, Button, Chip, IconButton, Link } from "@mui/material";
+import { Box, Button, IconButton, Link } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import { useNavigate } from "react-router";
 
@@ -112,24 +112,6 @@ const ROWS: DohRow[] = [
   },
 ];
 
-function StatusChip({ status }: { status: DohStatus }) {
-  const active = status === "Active";
-  return (
-    <Chip
-      size="small"
-      variant="outlined"
-      color={active ? "success" : "default"}
-      icon={
-        <MaterialSymbol
-          name={active ? "check_circle" : "hourglass_empty"}
-          size={16}
-        />
-      }
-      label={status}
-    />
-  );
-}
-
 function DohActionsCell() {
   return (
     <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
@@ -191,35 +173,6 @@ const columns: GridColDef<DohRow>[] = [
     ),
   },
   {
-    field: "endpointId",
-    headerName: "ID",
-    width: 120,
-    sortable: false,
-    renderCell: (params) => (
-      <Chip
-        size="small"
-        variant="outlined"
-        label={params.row.endpointId}
-        sx={{ fontFamily: "monospace" }}
-      />
-    ),
-  },
-  { field: "devices", headerName: "Devices", width: 110 },
-  {
-    field: "status",
-    headerName: "Status",
-    width: 140,
-    sortable: false,
-    renderCell: (params) => <StatusChip status={params.row.status} />,
-  },
-  {
-    field: "lastQuery",
-    headerName: "Last Query Received",
-    flex: 1,
-    minWidth: 200,
-    renderCell: (params) => params.row.lastQuery || "-",
-  },
-  {
     field: "actions",
     headerName: "Actions",
     width: 104,
@@ -245,11 +198,6 @@ export default function ClientlessPage() {
           Add Clientless
         </Button>
       </Box>
-
-      <Alert severity="info" variant="standard" sx={{ mb: 2 }}>
-        {/* TODO: replace with the full info banner text */}
-        Clientless info banner text goes here.
-      </Alert>
 
       <TabbedDataCard>
         <DataTable

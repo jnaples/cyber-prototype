@@ -2,9 +2,9 @@ import {
   Alert,
   Box,
   Button,
-  FormControl,
+  Card,
+  CardContent,
   FormLabel,
-  IconButton,
   MenuItem,
   Select,
   Snackbar,
@@ -15,83 +15,57 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
-import { CollapsibleCard } from "@/components/collapsible-card";
-import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 
 import { SetUpDeviceCard } from "./set-up-device-card";
 
-const POLICY_OPTIONS = [
-  "Standard Policy",
-  "Default Filtering",
-  "HIPAA Strict",
-  "Lincoln Middle School — CIPA Policy",
-  "K-12 Student Filtering",
+// Sites the deployment can inherit policy / schedule / block page from.
+const SITES = [
+  { name: "Seattle HQ", policy: "Standard Policy", blockPage: "Corporate Block Page" },
+  { name: "Portland DC", policy: "Restricted Policy", blockPage: "(Default)" },
+  { name: "Austin Clinic", policy: "HIPAA Strict", blockPage: "HIPAA Notice" },
+  {
+    name: "Lincoln Middle School",
+    policy: "CIPA Policy",
+    blockPage: "CIPA Notice",
+  },
 ];
-
-const BLOCK_PAGE_OPTIONS = [
-  "(Default)",
-  "Corporate Block Page",
-  "Guest Block Page",
-  "Minimal Block Page",
-];
-
-// Read-only endpoint row (label + value + copy button) shown after creation.
-function EndpointField({ label, value }: { label: string; value: string }) {
-  return (
-    <Box>
-      <Typography sx={{ fontWeight: 600, fontSize: 14, mb: 0.5 }}>
-        {label}
-      </Typography>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <Typography variant="body1" sx={{ wordBreak: "break-all" }}>
-          {value}
-        </Typography>
-        <ArrowTooltip title="Copy">
-          <IconButton
-            size="small"
-            aria-label={`Copy ${label}`}
-            onClick={() => navigator.clipboard?.writeText(value)}
-          >
-            <MaterialSymbol
-              name="content_copy"
-              size={16}
-              sx={{ color: "text.secondary" }}
-            />
-          </IconButton>
-        </ArrowTooltip>
-      </Box>
-    </Box>
-  );
-}
 
 export default function CreateClientlessPage() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
-  const [policy, setPolicy] = useState("");
-  const [blockPage, setBlockPage] = useState("(Default)");
-  const [deploymentId, setDeploymentId] = useState<string | null>(null);
+  const [site, setSite] = useState("");
   const [toastOpen, setToastOpen] = useState(false);
-  const [devices, setDevices] = useState<string[]>([]);
-  const [deviceName, setDeviceName] = useState("");
+  const [toastMsg, setToastMsg] = useState("Clientless deployment created.");
+  // The generated DoH endpoint token — set once the deployment is created.
+  const [token, setToken] = useState<string | null>(null);
+  // Snapshot of name/site at the last save — used to detect unsaved edits.
+  const [savedName, setSavedName] = useState("");
+  const [savedSite, setSavedSite] = useState("");
 
   const back = () => navigate("/deployments/clientless");
-  const created = deploymentId !== null;
-  const canSave = name.trim() !== "" && policy !== "";
+  const selectedSite = SITES.find((s) => s.name === site);
+  const createdEndpoint = token
+    ? `https://doh.dnsfilter.com/${token}`
+    : null;
+
+  const created = token !== null;
+  const valid = name.trim() !== "" && site !== "";
+  // After creation, there are unsaved changes if the name or site differs.
+  const dirty = created && (name !== savedName || site !== savedSite);
+  const canSave = valid && (!created || dirty);
 
   const handleSave = () => {
-    if (!deploymentId) {
-      setDeploymentId(Math.random().toString(16).slice(2, 8));
-    }
+    setToastMsg(
+      token
+        ? "Clientless deployment updated."
+        : "Clientless deployment created.",
+    );
+    if (!token) setToken(Math.random().toString(16).slice(2, 8));
+    setSavedName(name);
+    setSavedSite(site);
     setToastOpen(true);
-  };
-
-  const addDevice = () => {
-    const trimmed = deviceName.trim();
-    if (!trimmed) return;
-    setDevices((prev) => [...prev, trimmed]);
-    setDeviceName("");
   };
 
   return (
@@ -99,16 +73,22 @@ export default function CreateClientlessPage() {
       maxWidth="lg"
       header={
         <PageHeader
-          title="Add Clientless"
+          title={created ? savedName : "Add Clientless"}
           onBack={back}
           actions={
             <>
-              <Button variant="outlined" color="secondary" onClick={back}>
-                Cancel
-              </Button>
+              {!created && (
+                <Button variant="outlined" color="secondary" onClick={back}>
+                  Cancel
+                </Button>
+              )}
               <ArrowTooltip
                 title={
-                  canSave ? "" : "Fill out the required fields to enable Save."
+                  !valid
+                    ? "Fill out the required fields to enable Save."
+                    : created && !dirty
+                      ? "No changes to save."
+                      : ""
                 }
               >
                 <Box
@@ -120,6 +100,7 @@ export default function CreateClientlessPage() {
                     color="primary"
                     disabled={!canSave}
                     onClick={handleSave}
+                    sx={{ minWidth: 0 }}
                   >
                     Save
                   </Button>
@@ -130,168 +111,120 @@ export default function CreateClientlessPage() {
         />
       }
     >
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <CollapsibleCard title="Configuration">
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: created
-                ? { xs: "1fr", md: "1fr 1fr" }
-                : "1fr",
-              columnGap: 6,
-              rowGap: 2,
-            }}
-          >
-            {/* Left: editable configuration */}
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <FormControl fullWidth>
-                <FormLabel htmlFor="clientless-name">Name</FormLabel>
-                <TextField
-                  id="clientless-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  fullWidth
-                />
-              </FormControl>
+      <Card>
+        <CardContent
+          sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}
+        >
+          {/* Intro */}
+          <Box>
+            <Typography variant="cardTitle">Configuration</Typography>
+          </Box>
 
-              <FormControl fullWidth>
-                <FormLabel id="clientless-policy-label">
-                  Policy/Schedule
+          {/* Deployment name */}
+          <Box>
+            <FormLabel sx={{ display: "block", mb: 0.5 }}>
+              Deployment Name
+              <Box component="span" sx={{ ml: 0.25 }}>
+                *
+              </Box>
+            </FormLabel>
+            <TextField
+              fullWidth
+              placeholder="e.g. Guest WiFi - Lobby"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              sx={{
+                "& .MuiOutlinedInput-root:not(.Mui-disabled) input::placeholder":
+                  {
+                    color: "text.disabled",
+                    opacity: 1,
+                  },
+              }}
+            />
+          </Box>
+
+          {/* Site */}
+          <Box>
+            <FormLabel sx={{ display: "block", mb: 0.5 }}>
+              Site
+              <Box component="span" sx={{ ml: 0.25 }}>
+                *
+              </Box>
+            </FormLabel>
+            <Select
+              fullWidth
+              displayEmpty
+              value={site}
+              onChange={(e) => setSite(e.target.value)}
+              renderValue={(value) =>
+                value ? (
+                  value
+                ) : (
+                  <Box component="span" sx={{ color: "text.disabled" }}>
+                    Select a Site
+                  </Box>
+                )
+              }
+            >
+              {SITES.map((s) => (
+                <MenuItem key={s.name} value={s.name}>
+                  {s.name}
+                </MenuItem>
+              ))}
+            </Select>
+
+            <Box
+              sx={{
+                mt: 2,
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                gap: 2,
+              }}
+            >
+              <Box>
+                <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                  Policy / Schedule
                 </FormLabel>
-                <Select
-                  labelId="clientless-policy-label"
-                  displayEmpty
-                  value={policy}
-                  onChange={(e) => setPolicy(e.target.value)}
-                  renderValue={(value) =>
-                    value ? (
-                      value
-                    ) : (
-                      <Box component="span" sx={{ color: "text.disabled" }}>
-                        Select Policy/Schedule
-                      </Box>
-                    )
-                  }
-                >
-                  {POLICY_OPTIONS.map((opt) => (
-                    <MenuItem key={opt} value={opt}>
-                      {opt}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl fullWidth>
-                <FormLabel id="clientless-blockpage-label">
+                <TextField
+                  fullWidth
+                  value={selectedSite?.policy ?? ""}
+                  placeholder="-"
+                  slotProps={{ input: { readOnly: true } }}
+                  sx={{
+                    "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                    "& .MuiOutlinedInput-input": { px: 0 },
+                  }}
+                />
+              </Box>
+              <Box>
+                <FormLabel sx={{ display: "block", mb: 0.5 }}>
                   Block Page
                 </FormLabel>
-                <Select
-                  labelId="clientless-blockpage-label"
-                  value={blockPage}
-                  onChange={(e) => setBlockPage(e.target.value)}
-                >
-                  {BLOCK_PAGE_OPTIONS.map((opt) => (
-                    <MenuItem key={opt} value={opt}>
-                      {opt}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-
-            {/* Right: generated endpoints (after creation) */}
-            {created && deploymentId && (
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <EndpointField label="ID" value={deploymentId} />
-                <EndpointField
-                  label="DNS-over-HTTPS"
-                  value={`https://doh.dnsfilter.com/${deploymentId}`}
+                <TextField
+                  fullWidth
+                  value={selectedSite?.blockPage ?? ""}
+                  placeholder="-"
+                  slotProps={{ input: { readOnly: true } }}
+                  sx={{
+                    "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                    "& .MuiOutlinedInput-input": { px: 0 },
+                  }}
                 />
               </Box>
-            )}
-          </Box>
-        </CollapsibleCard>
-
-        {created && (
-          <CollapsibleCard title="Devices">
-            <Typography variant="body1" sx={{ color: "text.primary" }}>
-              Register named devices to identify their traffic in Analytics and
-              Logs. Every device shares this deployment&apos;s endpoint — the
-              name personalizes each one.
-            </Typography>
-
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 2 }}>
-              <TextField
-                size="small"
-                placeholder="Device name"
-                value={deviceName}
-                onChange={(e) => setDeviceName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addDevice();
-                  }
-                }}
-                sx={{ maxWidth: 320 }}
-              />
-              <Button
-                variant="outlined"
-                color="secondary"
-                disabled={deviceName.trim() === ""}
-                onClick={addDevice}
-                startIcon={<MaterialSymbol name="add" size={20} />}
-              >
-                Add Device
-              </Button>
             </Box>
+            <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
+              Inherited from the Site. Update the Site to change them.
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
 
-            {devices.length === 0 ? (
-              <Typography
-                variant="body2"
-                sx={{ color: "text.secondary", mt: 2 }}
-              >
-                No named devices yet — the base endpoints above work without a
-                name.
-              </Typography>
-            ) : (
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 1,
-                  mt: 2,
-                }}
-              >
-                {devices.map((d, i) => (
-                  <Box
-                    key={`${d}-${i}`}
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                  >
-                    <Typography variant="body2">{d}</Typography>
-                    <IconButton
-                      size="small"
-                      aria-label={`Remove ${d}`}
-                      onClick={() =>
-                        setDevices((prev) => prev.filter((_, j) => j !== i))
-                      }
-                    >
-                      <MaterialSymbol
-                        name="close"
-                        size={16}
-                        sx={{ color: "text.secondary" }}
-                      />
-                    </IconButton>
-                  </Box>
-                ))}
-              </Box>
-            )}
-          </CollapsibleCard>
-        )}
 
-        {created && deploymentId && (
-          <SetUpDeviceCard deploymentId={deploymentId} devices={devices} />
-        )}
-      </Box>
+      {createdEndpoint && (
+        <Box sx={{ mt: 3 }}>
+          <SetUpDeviceCard endpoint={createdEndpoint} />
+        </Box>
+      )}
 
       <Snackbar
         open={toastOpen}
@@ -305,7 +238,7 @@ export default function CreateClientlessPage() {
           elevation={8}
           onClose={() => setToastOpen(false)}
         >
-          Clientless created
+          {toastMsg}
         </Alert>
       </Snackbar>
     </PageShell>
