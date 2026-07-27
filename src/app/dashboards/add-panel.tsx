@@ -206,16 +206,12 @@ export function AddPanel({
           pending.length === 0 ? "Select a widget to add first" : undefined,
       }}
     >
-      <Typography variant="body2" sx={{ color: "text.primary" }}>
-        Pick a widget to add to your dashboard.
-      </Typography>
-
       <TextField
         size="small"
         fullWidth
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Search..."
+        placeholder="Search widgets"
         slotProps={{
           input: {
             startAdornment: (

@@ -99,7 +99,7 @@ export default function CreateClientlessPage() {
       maxWidth="lg"
       header={
         <PageHeader
-          title="Add DoH Endpoint"
+          title="Add Clientless"
           onBack={back}
           actions={
             <>
@@ -305,7 +305,7 @@ export default function CreateClientlessPage() {
           elevation={8}
           onClose={() => setToastOpen(false)}
         >
-          DoH Endpoint created
+          Clientless created
         </Alert>
       </Snackbar>
     </PageShell>

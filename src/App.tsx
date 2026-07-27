@@ -20,6 +20,7 @@ import PageHeaderDocsPage from "@/app/design-system/page-header/page";
 import TypographyDocsPage from "@/app/design-system/typography/page";
 import OverviewPage from "@/app/overview/page";
 import DashboardsPage from "@/app/dashboards/page";
+import DashboardsV2Page from "@/app/dashboards/v2/page";
 import OrganizationSettingsPage from "@/app/msp/settings/page";
 import ManageDashboardsPage from "@/app/dashboards/manage/page";
 import HomePage from "@/app/page";
@@ -54,6 +55,7 @@ function App() {
         <Route path="global-policies" element={<GlobalPoliciesPage />} />
         <Route path="global-policies/filter" element={<GlobalPoliciesPage />} />
         <Route path="dashboards" element={<DashboardsPage />} />
+        <Route path="dashboards/v2" element={<DashboardsV2Page />} />
         <Route path="dashboards/manage" element={<ManageDashboardsPage />} />
         <Route path="cybersight" element={<CybersightPage />} />
         <Route path="secureshield" element={<SecureShieldPage />} />

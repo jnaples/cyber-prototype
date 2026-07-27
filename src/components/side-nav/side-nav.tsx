@@ -309,6 +309,23 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Box>,
           )}
 
+          {/* Dashboards V2 Link */}
+          {withCollapsedTooltip(
+            "Dashboards V2",
+            <Box
+              sx={getItemStyles("dashboards-v2")}
+              onClick={() => {
+                handleItemClick("dashboards-v2");
+                navigate("/dashboards/v2");
+              }}
+            >
+              <Icon name="dashboard" size={isExpanded ? 20 : 24} />
+              {isExpanded && (
+                <span style={{ margin: "4px 0" }}>Dashboards V2</span>
+              )}
+            </Box>,
+          )}
+
           {/* Policies Links */}
           <Box sx={getDropdownWrapperStyles("policies")}>
             {withCollapsedTooltip(
@@ -527,7 +544,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                     navigate("/deployments/clientless");
                   }}
                 >
-                  <span style={{ margin: "4px 0" }}>DoH Endpoint</span>
+                  <span style={{ margin: "4px 0" }}>Clientless</span>
                 </Box>
                 <Box
                   sx={getSubItemStyles("deployments-relays")}

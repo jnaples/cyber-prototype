@@ -75,6 +75,9 @@ export interface DrawerProps {
 
   /** Remove default content padding (useful when children manage their own layout). */
   disableContentPadding?: boolean;
+
+  /** Suppress the dividers under the title and subheader (header flows into body). */
+  disableHeaderDivider?: boolean;
 }
 
 // Render a footer action button, wrapping it in a tooltip (via a span so the
@@ -125,6 +128,7 @@ export function Drawer({
   anchor = "right",
   drawerProps,
   disableContentPadding = false,
+  disableHeaderDivider = false,
 }: DrawerProps) {
   const paperWidth = width ?? DRAWER_SIZES[size];
   const hasActions =
@@ -205,18 +209,22 @@ export function Drawer({
                 <MaterialSymbol name="close" size={20} />
               </IconButton>
             </Box>
-            <Divider />
+            {!disableHeaderDivider && <Divider />}
           </>
         )}
 
         {subheader !== undefined && (
           <>
-            <Box sx={{ bgcolor: "background.paper", px: 2, py: 0.5 }}>
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            <Box sx={{ bgcolor: "background.paper", px: 2, py: 1 }}>
+              <Typography
+                variant="body2"
+                component="div"
+                sx={{ color: "text.secondary" }}
+              >
                 {subheader}
               </Typography>
             </Box>
-            <Divider />
+            {!disableHeaderDivider && <Divider />}
           </>
         )}
 

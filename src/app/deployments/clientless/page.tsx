@@ -148,7 +148,7 @@ function DohActionsCell() {
 const columns: GridColDef<DohRow>[] = [
   {
     field: "name",
-    headerName: "Deployment",
+    headerName: "Deployment name",
     flex: 1,
     minWidth: 160,
     renderCell: (params) => (
@@ -163,6 +163,32 @@ const columns: GridColDef<DohRow>[] = [
     flex: 1.2,
     minWidth: 200,
     renderCell: (params) => params.row.policy || "-",
+  },
+  {
+    field: "blockPage",
+    headerName: "Block page",
+    flex: 1,
+    minWidth: 160,
+    sortable: false,
+    renderCell: (params) => {
+      const policy = params.row.policy;
+      if (!policy) return "-";
+      if (policy.includes("CIPA")) return "CIPA Notice";
+      if (policy.includes("HIPAA")) return "HIPAA Notice";
+      return "Default Block Page";
+    },
+  },
+  {
+    field: "uniqueDoh",
+    headerName: "Unique DoH Endpoint",
+    flex: 1.4,
+    minWidth: 260,
+    sortable: false,
+    renderCell: (params) => (
+      <Box component="span" sx={{ fontFamily: "monospace", fontSize: 13 }}>
+        https://{params.row.endpointId}.doh.dnsfilter.net
+      </Box>
+    ),
   },
   {
     field: "endpointId",
@@ -216,13 +242,13 @@ export default function ClientlessPage() {
           startIcon={<MaterialSymbol name="add" size={20} />}
           onClick={() => navigate("/deployments/clientless/create")}
         >
-          Add DoH Endpoint
+          Add Clientless
         </Button>
       </Box>
 
       <Alert severity="info" variant="standard" sx={{ mb: 2 }}>
         {/* TODO: replace with the full info banner text */}
-        DoH Endpoint info banner text goes here.
+        Clientless info banner text goes here.
       </Alert>
 
       <TabbedDataCard>
