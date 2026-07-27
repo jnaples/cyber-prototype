@@ -184,14 +184,14 @@ function DohActionsCell({
           <ListItemIcon sx={{ color: "inherit" }}>
             <MaterialSymbol name="delete_forever" size={20} sx={{ color: "inherit" }} />
           </ListItemIcon>
-          Delete Clientless (DoH) Agent
+          Delete DoH Endpoint
         </MenuItem>
       </Menu>
 
       <Modal
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title="Delete Clientless (DoH) Agent"
+        title="Delete DoH Endpoint"
         width={420}
         secondaryAction={{
           label: "Cancel",
