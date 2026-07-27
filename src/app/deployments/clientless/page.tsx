@@ -1,10 +1,21 @@
-import { Box, Button, IconButton, Link } from "@mui/material";
+import {
+  Box,
+  Button,
+  IconButton,
+  Link,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  Typography,
+} from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
+import { Modal } from "@/components/modal";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
@@ -112,22 +123,107 @@ const ROWS: DohRow[] = [
   },
 ];
 
-function DohActionsCell() {
+// Sites the edit page can inherit from — mirrors the create page's list.
+const EDIT_SITES = [
+  "Seattle HQ",
+  "Portland DC",
+  "Austin Clinic",
+  "Lincoln Middle School",
+];
+
+function DohActionsCell({
+  row,
+  onDelete,
+}: {
+  row: DohRow;
+  onDelete: () => void;
+}) {
+  const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const closeMenu = () => setAnchorEl(null);
+
+  const openEdit = () =>
+    navigate("/deployments/clientless/create", {
+      state: {
+        editName: row.name,
+        editToken: row.endpointId,
+        editSite: EDIT_SITES[(row.id - 1) % EDIT_SITES.length],
+      },
+    });
+
   return (
     <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
       <ArrowTooltip title="Edit">
-        <IconButton size="small" aria-label="Edit">
+        <IconButton size="small" aria-label="Edit" onClick={openEdit}>
           <MaterialSymbol name="edit" size={20} />
         </IconButton>
       </ArrowTooltip>
-      <IconButton size="small" aria-label="more options">
+      <IconButton
+        size="small"
+        aria-label="more options"
+        onClick={(e) => setAnchorEl(e.currentTarget)}
+      >
         <MaterialSymbol name="more_horiz" size={20} />
       </IconButton>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={closeMenu}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <MenuItem
+          onClick={() => {
+            closeMenu();
+            setConfirmOpen(true);
+          }}
+          sx={{ color: "error.main" }}
+        >
+          <ListItemIcon sx={{ color: "inherit" }}>
+            <MaterialSymbol name="delete_forever" size={20} sx={{ color: "inherit" }} />
+          </ListItemIcon>
+          Delete Clientless (DoH) Agent
+        </MenuItem>
+      </Menu>
+
+      <Modal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Delete Clientless (DoH) Agent"
+        width={420}
+        secondaryAction={{
+          label: "Cancel",
+          onClick: () => setConfirmOpen(false),
+        }}
+        primaryAction={{
+          label: (
+            <Box
+              component="span"
+              sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}
+            >
+              <MaterialSymbol name="delete_forever" size={18} />
+              Delete
+            </Box>
+          ),
+          color: "error",
+          sx: { color: "common.white" },
+          onClick: () => {
+            onDelete();
+            setConfirmOpen(false);
+          },
+        }}
+      >
+        <Typography variant="body1" sx={{ color: "text.primary" }}>
+          This action cannot be undone.
+        </Typography>
+      </Modal>
     </Box>
   );
 }
 
-const columns: GridColDef<DohRow>[] = [
+const baseColumns: GridColDef<DohRow>[] = [
   {
     field: "name",
     headerName: "Deployment name",
@@ -172,20 +268,33 @@ const columns: GridColDef<DohRow>[] = [
       </Box>
     ),
   },
-  {
-    field: "actions",
-    headerName: "Actions",
-    width: 104,
-    sortable: false,
-    filterable: false,
-    resizable: false,
-    disableColumnMenu: true,
-    renderCell: () => <DohActionsCell />,
-  },
 ];
 
 export default function ClientlessPage() {
   const navigate = useNavigate();
+  const [rows, setRows] = useState<DohRow[]>(ROWS);
+
+  const columns: GridColDef<DohRow>[] = [
+    ...baseColumns,
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 104,
+      sortable: false,
+      filterable: false,
+      resizable: false,
+      disableColumnMenu: true,
+      renderCell: (params) => (
+        <DohActionsCell
+          row={params.row}
+          onDelete={() =>
+            setRows((prev) => prev.filter((r) => r.id !== params.row.id))
+          }
+        />
+      ),
+    },
+  ];
+
   return (
     <Box>
       <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
@@ -201,7 +310,7 @@ export default function ClientlessPage() {
 
       <TabbedDataCard>
         <DataTable
-          rows={ROWS}
+          rows={rows}
           columns={columns}
           checkboxSelection={false}
           showDefaultView={false}

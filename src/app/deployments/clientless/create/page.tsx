@@ -5,6 +5,7 @@ import {
   Card,
   CardContent,
   FormLabel,
+  IconButton,
   MenuItem,
   Select,
   Snackbar,
@@ -12,9 +13,10 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
+import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 
@@ -34,15 +36,24 @@ const SITES = [
 
 export default function CreateClientlessPage() {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [site, setSite] = useState("");
+  const location = useLocation();
+  // When opened via a grid Edit action, the row's data arrives as router state
+  // so the page loads in its already-created (editable) form.
+  const edit = (location.state ?? {}) as {
+    editName?: string;
+    editSite?: string;
+    editToken?: string;
+  };
+
+  const [name, setName] = useState(edit.editName ?? "");
+  const [site, setSite] = useState(edit.editSite ?? "");
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState("Clientless deployment created.");
   // The generated DoH endpoint token — set once the deployment is created.
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(edit.editToken ?? null);
   // Snapshot of name/site at the last save — used to detect unsaved edits.
-  const [savedName, setSavedName] = useState("");
-  const [savedSite, setSavedSite] = useState("");
+  const [savedName, setSavedName] = useState(edit.editName ?? "");
+  const [savedSite, setSavedSite] = useState(edit.editSite ?? "");
 
   const back = () => navigate("/deployments/clientless");
   const selectedSite = SITES.find((s) => s.name === site);
@@ -130,7 +141,7 @@ export default function CreateClientlessPage() {
             </FormLabel>
             <TextField
               fullWidth
-              placeholder="e.g. Guest WiFi - Lobby"
+              placeholder="e.g. Lobby Kiosks"
               value={name}
               onChange={(e) => setName(e.target.value)}
               sx={{
@@ -215,6 +226,58 @@ export default function CreateClientlessPage() {
             <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
               Inherited from the Site. Update the Site to change them.
             </Typography>
+
+            {createdEndpoint && (
+              <Box sx={{ mt: 2 }}>
+                <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                  DoH Endpoint URL
+                </FormLabel>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    maxWidth: 560,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      flex: 1,
+                      px: 1.5,
+                      py: 1,
+                      border: "1px solid",
+                      borderColor: "divider",
+                      borderRadius: 1,
+                      bgcolor: "background.neutral",
+                      fontFamily: "monospace",
+                      fontSize: 14,
+                      color: "text.primary",
+                      wordBreak: "break-all",
+                    }}
+                  >
+                    {createdEndpoint}
+                  </Box>
+                  <ArrowTooltip title="Copy">
+                    <IconButton
+                      aria-label="Copy DoH endpoint"
+                      onClick={() =>
+                        navigator.clipboard?.writeText(createdEndpoint)
+                      }
+                      sx={{ color: "primary.main" }}
+                    >
+                      <MaterialSymbol name="content_copy" size={20} />
+                    </IconButton>
+                  </ArrowTooltip>
+                </Box>
+                <Typography
+                  variant="body2"
+                  sx={{ color: "text.secondary", mt: 0.5 }}
+                >
+                  Point devices at this URL to filter DNS through the Site&apos;s
+                  policy.
+                </Typography>
+              </Box>
+            )}
           </Box>
         </CardContent>
       </Card>

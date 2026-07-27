@@ -93,7 +93,7 @@ export function DenyRequestDrawer({
         </Typography>
       </Box>
 
-      <Divider />
+      {!ignore && <Divider />}
 
       {/* Message to requester — only when notifying. */}
       {!ignore && (
