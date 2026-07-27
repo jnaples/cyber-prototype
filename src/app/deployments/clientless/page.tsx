@@ -304,7 +304,7 @@ export default function ClientlessPage() {
           startIcon={<MaterialSymbol name="add" size={20} />}
           onClick={() => navigate("/deployments/clientless/create")}
         >
-          Add Clientless
+          Add DoH Endpoint
         </Button>
       </Box>
 

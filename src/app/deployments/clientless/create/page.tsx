@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   FormLabel,
-  IconButton,
   MenuItem,
   Select,
   Snackbar,
@@ -16,7 +15,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
-import { MaterialSymbol } from "@/components/material-symbol";
+import { CopyButton } from "@/components/copy-button";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 
@@ -84,7 +83,7 @@ export default function CreateClientlessPage() {
       maxWidth="lg"
       header={
         <PageHeader
-          title={created ? savedName : "Add Clientless"}
+          title={created ? savedName : "Add DoH Endpoint"}
           onBack={back}
           actions={
             <>
@@ -257,17 +256,10 @@ export default function CreateClientlessPage() {
                   >
                     {createdEndpoint}
                   </Box>
-                  <ArrowTooltip title="Copy">
-                    <IconButton
-                      aria-label="Copy DoH endpoint"
-                      onClick={() =>
-                        navigator.clipboard?.writeText(createdEndpoint)
-                      }
-                      sx={{ color: "primary.main" }}
-                    >
-                      <MaterialSymbol name="content_copy" size={20} />
-                    </IconButton>
-                  </ArrowTooltip>
+                  <CopyButton
+                    value={createdEndpoint}
+                    label="Copy DoH endpoint"
+                  />
                 </Box>
                 <Typography
                   variant="body2"

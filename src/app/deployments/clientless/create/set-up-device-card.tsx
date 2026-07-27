@@ -4,17 +4,15 @@
 
 import {
   Box,
-  IconButton,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import { useState } from "react";
 
-import { ArrowTooltip } from "@/components/arrow-tooltip";
+import { CopyButton } from "@/components/copy-button";
 import { WindowsIcon } from "@/components/icons/os-icons";
 import { CollapsibleCard } from "@/components/collapsible-card";
-import { MaterialSymbol } from "@/components/material-symbol";
 
 type PlatformKey = "windows" | "chrome";
 
@@ -56,7 +54,7 @@ type SetupStep = { label: string; body: React.ReactNode; endpoint?: boolean };
 const STEPS: Record<PlatformKey, SetupStep[]> = {
   windows: [
     {
-      label: "Step 1 — Open DNS settings",
+      label: "Step 1 - Open DNS settings",
       body: (
         <>
           Open <B>Settings</B> and go to <B>Network &amp; internet</B>. Select{" "}
@@ -65,7 +63,7 @@ const STEPS: Record<PlatformKey, SetupStep[]> = {
       ),
     },
     {
-      label: "Step 2 — Assign the endpoint",
+      label: "Step 2 - Assign the endpoint",
       body: (
         <>
           Next to <B>DNS server assignment</B>, select <B>Edit</B>. Set{" "}
@@ -76,7 +74,7 @@ const STEPS: Record<PlatformKey, SetupStep[]> = {
       endpoint: true,
     },
     {
-      label: "Step 3 — Verify filtering",
+      label: "Step 3 - Verify filtering",
       body: (
         <>
           Browse to any site, then open the <B>DNS Query Log</B>. Traffic from
@@ -87,7 +85,7 @@ const STEPS: Record<PlatformKey, SetupStep[]> = {
   ],
   chrome: [
     {
-      label: "Step 1 — Open Secure DNS",
+      label: "Step 1 - Open Secure DNS",
       body: (
         <>
           Open <B>Settings</B> → <B>Privacy and security</B> → <B>Security</B>.
@@ -95,7 +93,7 @@ const STEPS: Record<PlatformKey, SetupStep[]> = {
       ),
     },
     {
-      label: "Step 2 — Assign the endpoint",
+      label: "Step 2 - Assign the endpoint",
       body: (
         <>
           Turn on <B>Use secure DNS</B>, choose <B>With a custom provider</B>,
@@ -105,7 +103,7 @@ const STEPS: Record<PlatformKey, SetupStep[]> = {
       endpoint: true,
     },
     {
-      label: "Step 3 — Verify filtering",
+      label: "Step 3 - Verify filtering",
       body: (
         <>
           Browse to any site, then open the <B>DNS Query Log</B>. Traffic from
@@ -144,15 +142,7 @@ function EndpointField({ value }: { value: string }) {
       >
         {value}
       </Box>
-      <ArrowTooltip title="Copy">
-        <IconButton
-          aria-label="Copy endpoint"
-          onClick={() => navigator.clipboard?.writeText(value)}
-          sx={{ color: "primary.main" }}
-        >
-          <MaterialSymbol name="content_copy" size={20} />
-        </IconButton>
-      </ArrowTooltip>
+      <CopyButton value={value} label="Copy endpoint" />
     </Box>
   );
 }
@@ -195,7 +185,7 @@ export function SetUpDeviceCard({ endpoint }: { endpoint: string }) {
           <Box key={step.label}>
             <Typography
               variant="overline"
-              sx={{ display: "block", color: "text.secondary", mb: 1 }}
+              sx={{ display: "block", color: "text.secondary" }}
             >
               {step.label}
             </Typography>

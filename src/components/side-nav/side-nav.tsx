@@ -544,7 +544,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                     navigate("/deployments/clientless");
                   }}
                 >
-                  <span style={{ margin: "4px 0" }}>Clientless</span>
+                  <span style={{ margin: "4px 0" }}>DoH Endpoint</span>
                 </Box>
                 <Box
                   sx={getSubItemStyles("deployments-relays")}
