@@ -22,7 +22,7 @@ const TABS = [
   {
     label: "DoH Endpoint",
     icon: "dns",
-    path: "/deployments/clientless",
+    path: "/deployments/doh-endpoint",
   },
 ] as const;
 

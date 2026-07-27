@@ -7,8 +7,8 @@ import SecureShieldPage from "@/app/secureshield/page";
 import DeploymentsLayout from "@/app/deployments/layout";
 import DeploymentsIndexPage from "@/app/deployments/page";
 import RoamingClientsPage from "@/app/deployments/roaming-clients/page";
-import ClientlessPage from "@/app/deployments/clientless/page";
-import CreateClientlessPage from "@/app/deployments/clientless/create/page";
+import ClientlessPage from "@/app/deployments/doh-endpoint/page";
+import CreateClientlessPage from "@/app/deployments/doh-endpoint/create/page";
 import SitesPage from "@/app/deployments/sites/page";
 import DesignSystemLayout from "@/app/design-system/layout";
 import AlertsDocsPage from "@/app/design-system/alerts/page";
@@ -79,10 +79,10 @@ function App() {
           <Route index element={<DeploymentsIndexPage />} />
           <Route path="sites" element={<SitesPage />} />
           <Route path="roaming-clients" element={<RoamingClientsPage />} />
-          <Route path="clientless" element={<ClientlessPage />} />
+          <Route path="doh-endpoint" element={<ClientlessPage />} />
         </Route>
         <Route
-          path="deployments/clientless/create"
+          path="deployments/doh-endpoint/create"
           element={<CreateClientlessPage />}
         />
 

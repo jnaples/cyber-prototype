@@ -144,7 +144,7 @@ function DohActionsCell({
   const closeMenu = () => setAnchorEl(null);
 
   const openEdit = () =>
-    navigate("/deployments/clientless/create", {
+    navigate("/deployments/doh-endpoint/create", {
       state: {
         editName: row.name,
         editToken: row.endpointId,
@@ -302,7 +302,7 @@ export default function ClientlessPage() {
           variant="contained"
           color="primary"
           startIcon={<MaterialSymbol name="add" size={20} />}
-          onClick={() => navigate("/deployments/clientless/create")}
+          onClick={() => navigate("/deployments/doh-endpoint/create")}
         >
           Add DoH Endpoint
         </Button>

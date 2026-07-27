@@ -54,7 +54,7 @@ export default function CreateClientlessPage() {
   const [savedName, setSavedName] = useState(edit.editName ?? "");
   const [savedSite, setSavedSite] = useState(edit.editSite ?? "");
 
-  const back = () => navigate("/deployments/clientless");
+  const back = () => navigate("/deployments/doh-endpoint");
   const selectedSite = SITES.find((s) => s.name === site);
   const createdEndpoint = token
     ? `https://doh.dnsfilter.com/${token}`
