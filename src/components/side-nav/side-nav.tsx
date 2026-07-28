@@ -541,10 +541,10 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   sx={getSubItemStyles("deployments-clientless")}
                   onClick={() => {
                     handleItemClick("deployments-clientless");
-                    navigate("/deployments/doh-endpoint");
+                    navigate("/deployments/clientless");
                   }}
                 >
-                  <span style={{ margin: "4px 0" }}>DoH Endpoint</span>
+                  <span style={{ margin: "4px 0" }}>Clientless</span>
                 </Box>
                 <Box
                   sx={getSubItemStyles("deployments-relays")}

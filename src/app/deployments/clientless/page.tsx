@@ -1,22 +1,27 @@
 import {
+  Alert,
   Box,
   Button,
+  Chip,
+  Divider,
   IconButton,
   Link,
   ListItemIcon,
   Menu,
   MenuItem,
+  Snackbar,
   Typography,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { Modal } from "@/components/modal";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
+import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
 type DohStatus = "Active" | "Pending";
@@ -61,7 +66,7 @@ const ROWS: DohRow[] = [
   {
     id: 4,
     name: "Lab Devices",
-    policy: "",
+    policy: "Default Policy",
     endpointId: "3c0f55",
     devices: 0,
     status: "Pending",
@@ -115,7 +120,7 @@ const ROWS: DohRow[] = [
   {
     id: 10,
     name: "Reception iPad",
-    policy: "",
+    policy: "Guest Wi-Fi Policy",
     endpointId: "24c9b1",
     devices: 0,
     status: "Pending",
@@ -144,7 +149,7 @@ function DohActionsCell({
   const closeMenu = () => setAnchorEl(null);
 
   const openEdit = () =>
-    navigate("/deployments/doh-endpoint/create", {
+    navigate("/deployments/clientless/create", {
       state: {
         editName: row.name,
         editToken: row.endpointId,
@@ -177,21 +182,55 @@ function DohActionsCell({
         <MenuItem
           onClick={() => {
             closeMenu();
+            navigate("/dashboards");
+          }}
+        >
+          <ListItemIcon>
+            <MaterialSymbol name="bar_chart" size={20} />
+          </ListItemIcon>
+          View In Insights
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            closeMenu();
+            navigate("/query-logs");
+          }}
+        >
+          <ListItemIcon>
+            <MaterialSymbol name="podcasts" size={20} />
+          </ListItemIcon>
+          View In Query Log
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            closeMenu();
+            navigate("/deployments/sites");
+          }}
+        >
+          <ListItemIcon>
+            <MaterialSymbol name="hub" size={20} />
+          </ListItemIcon>
+          View Site
+        </MenuItem>
+        <Divider />
+        <MenuItem
+          onClick={() => {
+            closeMenu();
             setConfirmOpen(true);
           }}
           sx={{ color: "error.main" }}
         >
           <ListItemIcon sx={{ color: "inherit" }}>
-            <MaterialSymbol name="delete_forever" size={20} sx={{ color: "inherit" }} />
+            <MaterialSymbol name="delete" size={20} sx={{ color: "inherit" }} />
           </ListItemIcon>
-          Delete DoH Endpoint
+          Delete
         </MenuItem>
       </Menu>
 
       <Modal
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title="Delete DoH Endpoint"
+        title="Delete Clientless Device"
         width={420}
         secondaryAction={{
           label: "Cancel",
@@ -223,10 +262,32 @@ function DohActionsCell({
   );
 }
 
+function StatusChip({ status }: { status: DohStatus }) {
+  const active = status === "Active";
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+      <Chip
+        size="small"
+        variant="outlined"
+        color={active ? "success" : "warning"}
+        icon={
+          <MaterialSymbol
+            name={active ? "check_circle" : "hourglass_empty"}
+            size={16}
+          />
+        }
+        label={status}
+      />
+    </Box>
+  );
+}
+
+const siteForRow = (id: number) => EDIT_SITES[(id - 1) % EDIT_SITES.length];
+
 const baseColumns: GridColDef<DohRow>[] = [
   {
     field: "name",
-    headerName: "Deployment name",
+    headerName: "Clientless Device Name",
     flex: 1,
     minWidth: 160,
     renderCell: (params) => (
@@ -234,6 +295,14 @@ const baseColumns: GridColDef<DohRow>[] = [
         {params.row.name}
       </Link>
     ),
+  },
+  {
+    field: "site",
+    headerName: "Site",
+    flex: 1,
+    minWidth: 150,
+    sortable: false,
+    renderCell: (params) => siteForRow(params.row.id),
   },
   {
     field: "policy",
@@ -258,21 +327,76 @@ const baseColumns: GridColDef<DohRow>[] = [
   },
   {
     field: "uniqueDoh",
-    headerName: "Unique DoH Endpoint",
-    flex: 1.4,
-    minWidth: 260,
+    headerName: "DoH ID",
+    width: 150,
     sortable: false,
     renderCell: (params) => (
-      <Box component="span" sx={{ fontFamily: "monospace", fontSize: 13 }}>
-        https://{params.row.endpointId}.doh.dnsfilter.net
+      <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+        <Chip
+          size="small"
+          variant="outlined"
+          label={params.row.endpointId}
+          sx={{ fontFamily: "monospace", fontSize: 13 }}
+        />
       </Box>
     ),
+  },
+  {
+    field: "status",
+    headerName: "Status",
+    width: 140,
+    sortable: false,
+    renderCell: (params) => <StatusChip status={params.row.status} />,
   },
 ];
 
 export default function ClientlessPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [rows, setRows] = useState<DohRow[]>(ROWS);
+  // Success toast passed from the create/edit page after saving.
+  const [toast, setToast] = useState<string | null>(
+    (location.state as { toast?: string } | null)?.toast ?? null,
+  );
+  const [cardTab, setCardTab] = useState(0);
+
+  const total = rows.length;
+  const activeCount = rows.filter((r) => r.status === "Active").length;
+  const pendingCount = rows.filter((r) => r.status === "Pending").length;
+
+  const tabsConfig: StatusTabConfig[] = [
+    {
+      icon: "format_list_bulleted",
+      count: total,
+      label: "All",
+      color: "primary.main",
+      iconColorVar: "var(--dnsf-palette-primary-main)",
+      progressValue: total ? 100 : 0,
+    },
+    {
+      icon: "check_circle",
+      count: activeCount,
+      label: "Active",
+      color: "success.main",
+      iconColorVar: "var(--dnsf-palette-success-main)",
+      progressValue: total ? (activeCount / total) * 100 : 0,
+    },
+    {
+      icon: "hourglass_empty",
+      count: pendingCount,
+      label: "Pending",
+      color: "warning.main",
+      iconColorVar: "var(--dnsf-palette-warning-main)",
+      progressValue: total ? (pendingCount / total) * 100 : 0,
+    },
+  ];
+
+  const visibleRows =
+    cardTab === 1
+      ? rows.filter((r) => r.status === "Active")
+      : cardTab === 2
+        ? rows.filter((r) => r.status === "Pending")
+        : rows;
 
   const columns: GridColDef<DohRow>[] = [
     ...baseColumns,
@@ -302,15 +426,19 @@ export default function ClientlessPage() {
           variant="contained"
           color="primary"
           startIcon={<MaterialSymbol name="add" size={20} />}
-          onClick={() => navigate("/deployments/doh-endpoint/create")}
+          onClick={() => navigate("/deployments/clientless/create")}
         >
-          Add DoH Endpoint
+          Add Clientless Device
         </Button>
       </Box>
 
-      <TabbedDataCard>
+      <TabbedDataCard
+        tabs={tabsConfig}
+        activeTab={cardTab}
+        onTabChange={(_, newValue) => setCardTab(newValue)}
+      >
         <DataTable
-          rows={rows}
+          rows={visibleRows}
           columns={columns}
           checkboxSelection={false}
           showDefaultView={false}
@@ -318,6 +446,22 @@ export default function ClientlessPage() {
           pinnedShadowFields={{ left: "name", right: "actions" }}
         />
       </TabbedDataCard>
+
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={4000}
+        onClose={() => setToast(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          severity="success"
+          variant="standard"
+          elevation={8}
+          onClose={() => setToast(null)}
+        >
+          {toast}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -20,9 +20,9 @@ const TABS = [
     path: "/deployments/roaming-clients",
   },
   {
-    label: "DoH Endpoint",
+    label: "Clientless",
     icon: "dns",
-    path: "/deployments/doh-endpoint",
+    path: "/deployments/clientless",
   },
 ] as const;
 

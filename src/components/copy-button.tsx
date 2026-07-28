@@ -11,10 +11,13 @@ export function CopyButton({
   value,
   size = 20,
   label = "Copy",
+  onCopy,
 }: {
   value: string;
   size?: number;
   label?: string;
+  /** Called after a successful copy. */
+  onCopy?: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const timer = useRef<number | null>(null);
@@ -22,6 +25,7 @@ export function CopyButton({
   const copy = () => {
     navigator.clipboard?.writeText(value);
     setCopied(true);
+    onCopy?.();
     if (timer.current) window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setCopied(false), 1200);
   };
