@@ -174,7 +174,6 @@ export default function FilterProtectionSummaryReport() {
           </Box>
           <Box>
             <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>Brightwave IT</Box>
-            <Box sx={{ fontSize: 16, color: TEXT2, mt: "2px" }}>Managed security reporting</Box>
           </Box>
         </Box>
         <Box sx={{ textAlign: "right" }}>
