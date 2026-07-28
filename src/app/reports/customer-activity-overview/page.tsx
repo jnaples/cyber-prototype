@@ -248,18 +248,18 @@ export default function CustomerActivityOverviewReport() {
               width: 56,
               height: 56,
               borderRadius: "6px",
-              bgcolor: PRIMARY,
-              color: "#fff",
+              border: `2px dashed ${TEXT3}`,
+              color: TEXT3,
               fontFamily: montserrat,
               fontWeight: 700,
-              fontSize: 24,
-              letterSpacing: "0.5px",
+              fontSize: 12,
+              letterSpacing: "1px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            BI
+            LOGO
           </Box>
           <Box>
             <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>
@@ -323,14 +323,21 @@ export default function CustomerActivityOverviewReport() {
         }}
       >
         {[
-          { num: "254h 30m", cap: "Total active time" },
-          { num: "8.5h", cap: "Avg active time / day" },
+          { num: "8.5h", cap: "Avg active time per device per day" },
           { num: "10", cap: "Active devices" },
           { num: "3", cap: "Active users" },
+          { num: "254h 30m", cap: "Total active time" },
         ].map((k) => (
           <Box
             key={k.cap}
-            sx={{ border: `1px solid ${DIVIDER}`, borderRadius: "6px", p: "28px 32px 24px" }}
+            sx={{
+              border: `1px solid ${DIVIDER}`,
+              borderRadius: "6px",
+              p: "28px 32px 24px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-end",
+            }}
           >
             <Box
               sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 52, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}
@@ -451,12 +458,9 @@ export default function CustomerActivityOverviewReport() {
       >
         <Box>
           <Box sx={{ fontSize: 17, fontWeight: 600 }}>Prepared by Brightwave IT</Box>
-          <Box sx={{ fontSize: 15, color: TEXT3, mt: "6px" }}>Powered by DNSFilter</Box>
         </Box>
         <Box sx={{ fontSize: 16, color: TEXT2, textAlign: "right" }}>
           Generated Jul 23, 2026 · Data period Jun 23 – Jul 22, 2026
-          <br />
-          Full activity detail is available in the CyberSight dashboard
         </Box>
       </Box>
     </Box>

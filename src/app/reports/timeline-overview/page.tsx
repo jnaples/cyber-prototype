@@ -166,18 +166,18 @@ export default function TimelineOverviewReport() {
               width: 56,
               height: 56,
               borderRadius: "6px",
-              bgcolor: PRIMARY,
-              color: "#fff",
+              border: `2px dashed ${TEXT3}`,
+              color: TEXT3,
               fontFamily: montserrat,
               fontWeight: 700,
-              fontSize: 24,
-              letterSpacing: "0.5px",
+              fontSize: 12,
+              letterSpacing: "1px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            BI
+            LOGO
           </Box>
           <Box>
             <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>Brightwave IT</Box>
@@ -214,7 +214,7 @@ export default function TimelineOverviewReport() {
           { num: "43h 46m", cap: "Idle time" },
           { num: "145h 14m", cap: "Machine locked" },
         ].map((k) => (
-          <Box key={k.cap} sx={{ border: `1px solid ${DIVIDER}`, borderRadius: "6px", p: "28px 32px 24px" }}>
+          <Box key={k.cap} sx={{ border: `1px solid ${DIVIDER}`, borderRadius: "6px", p: "28px 32px 24px", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
             <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 52, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
               {k.num}
             </Box>
@@ -419,12 +419,9 @@ export default function TimelineOverviewReport() {
       >
         <Box>
           <Box sx={{ fontSize: 17, fontWeight: 600 }}>Prepared by Brightwave IT</Box>
-          <Box sx={{ fontSize: 15, color: TEXT3, mt: "6px" }}>Powered by DNSFilter</Box>
         </Box>
         <Box sx={{ fontSize: 16, color: TEXT2, textAlign: "right" }}>
           Generated Jul 23, 2026 · Data period Jun 23 – Jul 22, 2026
-          <br />
-          Per-day device timelines are available in the CyberSight dashboard
         </Box>
       </Box>
     </Box>

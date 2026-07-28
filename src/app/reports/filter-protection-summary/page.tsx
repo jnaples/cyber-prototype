@@ -159,18 +159,18 @@ export default function FilterProtectionSummaryReport() {
               width: 56,
               height: 56,
               borderRadius: "6px",
-              bgcolor: PRIMARY,
-              color: "#fff",
+              border: `2px dashed ${TEXT3}`,
+              color: TEXT3,
               fontFamily: montserrat,
               fontWeight: 700,
-              fontSize: 24,
-              letterSpacing: "0.5px",
+              fontSize: 12,
+              letterSpacing: "1px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            BI
+            LOGO
           </Box>
           <Box>
             <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>Brightwave IT</Box>
@@ -200,10 +200,10 @@ export default function FilterProtectionSummaryReport() {
       {/* KPI band */}
       <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "24px", mb: "64px" }}>
         {KPIS.map((k) => (
-          <Box key={k.cap} sx={{ border: `1px solid ${DIVIDER}`, borderRadius: "6px", p: "28px 32px 24px" }}>
+          <Box key={k.cap} sx={{ border: `1px solid ${DIVIDER}`, borderRadius: "6px", p: "28px 32px 24px", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
             <Box
               component={k.Icon}
-              sx={{ fontSize: 36, color: k.iconColor, mb: "12px", display: "block" }}
+              sx={{ fontSize: 36, color: k.iconColor, mb: "20px", display: "block" }}
             />
             <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 52, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
               {k.num}
@@ -336,12 +336,9 @@ export default function FilterProtectionSummaryReport() {
       >
         <Box>
           <Box sx={{ fontSize: 17, fontWeight: 600 }}>Prepared by Brightwave IT</Box>
-          <Box sx={{ fontSize: 15, color: TEXT3, mt: "6px" }}>Powered by DNSFilter</Box>
         </Box>
         <Box sx={{ fontSize: 16, color: TEXT2, textAlign: "right" }}>
           Generated Jul 23, 2026 · Data period Jun 23 – Jul 22, 2026
-          <br />
-          Detailed query data is available from Brightwave IT
         </Box>
       </Box>
     </Box>
