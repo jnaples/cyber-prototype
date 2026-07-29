@@ -34,6 +34,7 @@ import CyberSightAiUsageReport from "@/app/reports/cybersight-ai-usage/page";
 import TimelineOverviewReport from "@/app/reports/timeline-overview/page";
 import FilterProtectionSummaryReport from "@/app/reports/filter-protection-summary/page";
 import { ReportPlaceholder } from "@/app/reports/report-placeholder";
+import EndUserBlockedPage from "@/app/end-user-blocked-page/page";
 import SettingsPage from "@/app/settings/page";
 import UnblockRequestsLayout from "@/app/unblock-requests/layout";
 import UnblockRequestsIndexPage from "@/app/unblock-requests/page";
@@ -125,6 +126,9 @@ function App() {
         <Route path="cybersight-ai-usage" element={<CyberSightAiUsageReport />} />
         <Route path="threat-trends" element={<ThreatTrendsReport />} />
       </Route>
+
+      {/* Standalone end-user block page — no app shell, direct URL only. */}
+      <Route path="end-user-blocked-page" element={<EndUserBlockedPage />} />
     </Routes>
   );
 }

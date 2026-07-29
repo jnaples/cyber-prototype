@@ -295,7 +295,13 @@ export function WidgetBody({ type }: { type: string }) {
 
     case "cat-breakdown":
       return (
-        <Donut slices={scaleSlices(catSlices)} donut size={170} label="domains" />
+        <Donut
+          slices={scaleSlices(catSlices)}
+          donut
+          size={170}
+          label="domains"
+          legendValue="count"
+        />
       );
     case "threat-breakdown":
       return <Donut slices={scaleSlices(threatSlices)} size={170} />;

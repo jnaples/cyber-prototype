@@ -253,11 +253,14 @@ export function Donut({
   donut = false,
   size = 200,
   label,
+  legendValue = "percent",
 }: {
   slices: DonutSlice[];
   donut?: boolean;
   size?: number;
   label?: string;
+  /** Whether the legend shows each slice's share (%) or raw count. */
+  legendValue?: "percent" | "count";
 }) {
   const total = slices.reduce((s, x) => s + x.value, 0) || 1;
   const r = size / 2;
@@ -351,7 +354,9 @@ export function Donut({
               component="span"
               sx={{ color: "text.secondary" }}
             >
-              {Math.round((s.value / total) * 100)}%
+              {legendValue === "count"
+                ? fmt(s.value)
+                : `${Math.round((s.value / total) * 100)}%`}
             </Typography>
           </Box>
         ))}
