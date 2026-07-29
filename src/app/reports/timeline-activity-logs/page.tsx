@@ -20,7 +20,6 @@ const C = {
 };
 
 const montserrat = (theme: Theme) => theme.typography.fontSecondaryFamily;
-const TOTAL_PAGES = 16;
 
 type EventRow = {
   type: string;
@@ -84,7 +83,7 @@ const SHEETS: Sheet[] = [
   {
     page: 1,
     blocks: [{ header: KT_HEAD, rows: KT_ROWS_1 }],
-    contnote: "Table continues on the next page — column headers repeat.",
+    contnote: "",
   },
   {
     page: 2,
@@ -92,8 +91,7 @@ const SHEETS: Sheet[] = [
       { rows: KT_ROWS_2 },
       { header: BSMITH_HEAD, rows: BSMITH_ROWS },
     ],
-    contnote:
-      "Remaining devices (px-home, LOWES-LAPTOP-04, HD-LAPTOP-24, smith-j, …) continue on pages 3–16, capped at 25 devices by tracked time.",
+    contnote: "",
   },
 ];
 
@@ -265,7 +263,7 @@ function SheetShell({ children, page }: { children: React.ReactNode; page: numbe
           fontVariantNumeric: "tabular-nums",
         }}
       >
-        Page {page} of {TOTAL_PAGES}
+        Page {page} of {SHEETS.length}
       </Box>
     </Box>
   );
@@ -295,7 +293,7 @@ function RunHead() {
         />
         Timeline Activity Logs · Acme Manufacturing
       </Box>
-      <Box sx={{ fontSize: 15, color: TEXT2 }}>Jun 23 – Jul 22, 2026 · times in EST</Box>
+      <Box sx={{ fontSize: 15, color: TEXT2 }}>Jun 23 – Jul 22, 2026</Box>
     </Box>
   );
 }
@@ -385,7 +383,7 @@ export default function TimelineActivityLogsReport() {
                 Timeline Activity Logs
               </Box>
               <Box sx={{ fontSize: 18, color: TEXT2, mb: "28px" }}>
-                Prepared for Acme Manufacturing · Top events by duration, per device · times in EST
+                Prepared for Acme Manufacturing · Top events by duration, per device
               </Box>
 
               {/* KPI band */}
@@ -431,11 +429,13 @@ export default function TimelineActivityLogsReport() {
             <TableBlockView key={i} block={block} />
           ))}
 
-          <Box
-            sx={{ fontSize: 15, color: TEXT3, fontStyle: "italic", mt: "-14px", mb: "20px" }}
-          >
-            {sheet.contnote}
-          </Box>
+          {sheet.contnote && (
+            <Box
+              sx={{ fontSize: 15, color: TEXT3, fontStyle: "italic", mt: "-14px", mb: "20px" }}
+            >
+              {sheet.contnote}
+            </Box>
+          )}
         </SheetShell>
       ))}
     </Box>

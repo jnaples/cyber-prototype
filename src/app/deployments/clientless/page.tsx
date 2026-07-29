@@ -306,7 +306,9 @@ const STATUS_OPTIONS: DohStatus[] = ["Active", "Pending"];
 // the operators we intend to ship. "INCLUDES" = singleSelect "is any of"
 // (multi-pick dropdown); "IS" = singleSelect "is" (single-pick dropdown).
 const singleSelectOperators = getGridSingleSelectOperators();
-const INCLUDES_OP = singleSelectOperators.filter((op) => op.value === "isAnyOf");
+const INCLUDES_OP = singleSelectOperators
+  .filter((op) => op.value === "isAnyOf")
+  .map((op) => ({ ...op, label: "includes" }));
 const IS_OP = singleSelectOperators.filter((op) => op.value === "is");
 
 const baseColumns: GridColDef<DohRow>[] = [
