@@ -467,6 +467,11 @@ export default function EndUserBlockedPage() {
 
               {statusBox}
 
+              <Typography
+                sx={{ fontSize: 16, color: "rgba(3,22,37,.62)", mt: 3 }}
+              >
+                You may be contacted at {effectiveEmail}
+              </Typography>
               {submitAnotherButton}
             </Box>
             {footer}
