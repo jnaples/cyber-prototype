@@ -23,6 +23,8 @@ import { MaterialSymbol } from "@/components/material-symbol";
 
 const DOMAIN = "surfshark.com";
 const CATEGORY = "Proxy & Filter Avoidance";
+const POLICY = "Default Security Policy";
+const SITE = "Austin HQ";
 const IP = "107.199.32.155";
 // Block time reflects the moment the page loads (prototype). Computed at module
 // scope so it stays out of render (react-hooks purity).
@@ -250,7 +252,8 @@ export default function EndUserBlockedPage() {
                 }}
               />
               <Typography sx={{ fontSize: 14, color: "rgba(3,22,37,.62)", mt: 1, mb: 3 }}>
-                Category: {CATEGORY} · Blocked {TIME_OF_BLOCK}
+                Category: {CATEGORY} | Policy: {POLICY} | Site: {SITE} | Blocked{" "}
+                {TIME_OF_BLOCK}
               </Typography>
 
               {/* Email */}

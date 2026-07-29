@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
+import { getGridSingleSelectOperators } from "@mui/x-data-grid";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
@@ -284,12 +285,39 @@ function StatusChip({ status }: { status: DohStatus }) {
 
 const siteForRow = (id: number) => EDIT_SITES[(id - 1) % EDIT_SITES.length];
 
+const blockPageFor = (policy: string) => {
+  if (!policy) return "-";
+  if (policy.includes("CIPA")) return "CIPA Notice";
+  if (policy.includes("HIPAA")) return "HIPAA Notice";
+  return "Default Block Page";
+};
+
+// Filter value pickers are dropdowns of the actual values present in the grid.
+const NAME_OPTIONS = ROWS.map((r) => r.name);
+const SITE_OPTIONS = EDIT_SITES;
+const POLICY_OPTIONS = [...new Set(ROWS.map((r) => r.policy).filter(Boolean))];
+const BLOCK_PAGE_OPTIONS = [
+  ...new Set(ROWS.map((r) => blockPageFor(r.policy))),
+];
+const DOH_OPTIONS = ROWS.map((r) => r.endpointId);
+const STATUS_OPTIONS: DohStatus[] = ["Active", "Pending"];
+
+// Constrain each column to a single filter operator so the build only offers
+// the operators we intend to ship. "INCLUDES" = singleSelect "is any of"
+// (multi-pick dropdown); "IS" = singleSelect "is" (single-pick dropdown).
+const singleSelectOperators = getGridSingleSelectOperators();
+const INCLUDES_OP = singleSelectOperators.filter((op) => op.value === "isAnyOf");
+const IS_OP = singleSelectOperators.filter((op) => op.value === "is");
+
 const baseColumns: GridColDef<DohRow>[] = [
   {
     field: "name",
     headerName: "Clientless Device Name",
     flex: 1,
     minWidth: 160,
+    type: "singleSelect",
+    valueOptions: NAME_OPTIONS,
+    filterOperators: INCLUDES_OP,
     renderCell: (params) => (
       <Link href="#" underline="hover">
         {params.row.name}
@@ -302,6 +330,10 @@ const baseColumns: GridColDef<DohRow>[] = [
     flex: 1,
     minWidth: 150,
     sortable: false,
+    type: "singleSelect",
+    valueOptions: SITE_OPTIONS,
+    valueGetter: (_v, row) => siteForRow(row.id),
+    filterOperators: IS_OP,
     renderCell: (params) => siteForRow(params.row.id),
   },
   {
@@ -309,6 +341,9 @@ const baseColumns: GridColDef<DohRow>[] = [
     headerName: "Policy/Schedule",
     flex: 1.2,
     minWidth: 200,
+    type: "singleSelect",
+    valueOptions: POLICY_OPTIONS,
+    filterOperators: INCLUDES_OP,
     renderCell: (params) => params.row.policy || "-",
   },
   {
@@ -317,19 +352,21 @@ const baseColumns: GridColDef<DohRow>[] = [
     flex: 1,
     minWidth: 160,
     sortable: false,
-    renderCell: (params) => {
-      const policy = params.row.policy;
-      if (!policy) return "-";
-      if (policy.includes("CIPA")) return "CIPA Notice";
-      if (policy.includes("HIPAA")) return "HIPAA Notice";
-      return "Default Block Page";
-    },
+    type: "singleSelect",
+    valueOptions: BLOCK_PAGE_OPTIONS,
+    valueGetter: (_v, row) => blockPageFor(row.policy),
+    filterOperators: INCLUDES_OP,
+    renderCell: (params) => blockPageFor(params.row.policy),
   },
   {
     field: "uniqueDoh",
     headerName: "DoH ID",
     width: 150,
     sortable: false,
+    type: "singleSelect",
+    valueOptions: DOH_OPTIONS,
+    valueGetter: (_v, row) => row.endpointId,
+    filterOperators: IS_OP,
     renderCell: (params) => (
       <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
         <Chip
@@ -346,6 +383,9 @@ const baseColumns: GridColDef<DohRow>[] = [
     headerName: "Status",
     width: 140,
     sortable: false,
+    type: "singleSelect",
+    valueOptions: STATUS_OPTIONS,
+    filterOperators: IS_OP,
     renderCell: (params) => <StatusChip status={params.row.status} />,
   },
 ];
@@ -442,6 +482,7 @@ export default function ClientlessPage() {
           columns={columns}
           checkboxSelection={false}
           showDefaultView={false}
+          deferFilterApply
           noRowsOverlay={NoResultsOverlay}
           pinnedShadowFields={{ left: "name", right: "actions" }}
         />
