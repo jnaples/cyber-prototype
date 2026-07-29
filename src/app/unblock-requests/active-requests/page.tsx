@@ -215,9 +215,9 @@ const columns: GridColDef[] = [
     minWidth: 180,
     renderCell: (params) => (
       <Link
-        href="/query-logs"
+        href={`https://${params.row.domain}`}
         target="_blank"
-        rel="noopener"
+        rel="noopener noreferrer"
         underline="hover"
       >
         {params.row.domain}

@@ -74,6 +74,11 @@ export default function EndUserBlockedPage() {
   const [reason, setReason] = useState("");
   // Once a request exists, re-submitting shows the "already submitted" state.
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  // Reveals the request-access form inline below the banner.
+  const [formOpen, setFormOpen] = useState(false);
+  // Confirmation view to return to when the form is cancelled after being
+  // reopened via "Submit another request" (null = came from the initial banner).
+  const [returnView, setReturnView] = useState<"done" | "already" | null>(null);
   // Prototype toggle: "known" pre-fills a read-only requester email.
   const [requesterKnown, setRequesterKnown] = useState(false);
 
@@ -179,7 +184,10 @@ export default function EndUserBlockedPage() {
         setName("");
         setReason("");
         setEmailTouched(false);
-        setView("form");
+        // Remember the confirmation to return to if the form is cancelled.
+        setReturnView(view === "already" ? "already" : "done");
+        setFormOpen(true);
+        setView("block");
       }}
     >
       Submit another request
@@ -210,29 +218,33 @@ export default function EndUserBlockedPage() {
         {view === "block" && (
           <>
             {banner}
-            <Typography sx={{ textAlign: "center", mt: 4, fontSize: 16 }}>
-              If you feel you&apos;ve reached this page in error, you can ask
-              your network administrator to unblock it.
-            </Typography>
-            <Box sx={{ textAlign: "center", mt: 3 }}>
-              <Button
-                variant="contained"
-                color="secondary"
-                size="medium"
-                onClick={() => setView("form")}
-              >
-                Request access
-              </Button>
-            </Box>
-            {footer}
+            {!formOpen && (
+              <>
+                <Typography sx={{ textAlign: "center", mt: 4, fontSize: 16 }}>
+                  If you feel you&apos;ve reached this page in error, you can ask
+                  your network administrator to unblock it.
+                </Typography>
+                <Box sx={{ textAlign: "center", mt: 3 }}>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    size="medium"
+                    onClick={() => setFormOpen(true)}
+                  >
+                    Request access
+                  </Button>
+                </Box>
+              </>
+            )}
           </>
         )}
 
-        {view === "form" && (
+        {view === "block" && formOpen && (
           <Box
             sx={{
               maxWidth: 640,
               mx: "auto",
+              mt: 4,
               border: "1px solid rgba(3,22,37,.12)",
               borderRadius: "6px",
               overflow: "hidden",
@@ -359,7 +371,10 @@ export default function EndUserBlockedPage() {
                   variant="text"
                   color="secondary"
                   size="medium"
-                  onClick={() => setView("block")}
+                  onClick={() => {
+                    setFormOpen(false);
+                    if (returnView) setView(returnView);
+                  }}
                 >
                   Cancel
                 </Button>
@@ -397,6 +412,8 @@ export default function EndUserBlockedPage() {
             </Box>
           </Box>
         )}
+
+        {view === "block" && footer}
 
         {view === "done" && (
           <>
@@ -491,7 +508,7 @@ export default function EndUserBlockedPage() {
       </Box>
 
       {/* Prototype state toolbar — toggles the requester email state. */}
-      {view === "form" && (
+      {view === "block" && formOpen && (
         <Card
           elevation={7}
           sx={{

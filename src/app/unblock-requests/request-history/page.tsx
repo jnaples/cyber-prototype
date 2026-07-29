@@ -1,4 +1,4 @@
-import { Box, Chip, IconButton, Link, Typography } from "@mui/material";
+import { Box, Chip, Link, Typography } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import { format as fnsFormat } from "date-fns";
 
@@ -14,9 +14,9 @@ const columns: GridColDef[] = [
     minWidth: 180,
     renderCell: (params) => (
       <Link
-        href="/query-logs"
+        href={`https://${params.row.domain}`}
         target="_blank"
-        rel="noopener"
+        rel="noopener noreferrer"
         underline="hover"
       >
         {params.row.domain}
@@ -129,21 +129,6 @@ const columns: GridColDef[] = [
         </Box>
       );
     },
-  },
-  {
-    field: "actions",
-    headerName: "Actions",
-    width: 80,
-    sortable: false,
-    filterable: false,
-    resizable: false,
-    align: "center",
-    headerAlign: "center",
-    renderCell: () => (
-      <IconButton size="small" aria-label="more options">
-        <MaterialSymbol name="more_horiz" size={20} />
-      </IconButton>
-    ),
   },
 ];
 
