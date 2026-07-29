@@ -23,8 +23,6 @@ import { MaterialSymbol } from "@/components/material-symbol";
 
 const DOMAIN = "surfshark.com";
 const CATEGORY = "Proxy & Filter Avoidance";
-const POLICY = "Default Security Policy";
-const SITE = "Austin HQ";
 const IP = "107.199.32.155";
 // Block time reflects the moment the page loads (prototype). Computed at module
 // scope so it stays out of render (react-hooks purity).
@@ -39,6 +37,17 @@ const TIME_OF_BLOCK = `${NOW.toLocaleDateString("en-US", {
   hour: "numeric",
   minute: "2-digit",
   timeZoneName: "short",
+})}`;
+// Same block time without the timezone suffix, for the form's metadata line.
+const TIME_OF_BLOCK_NO_TZ = `${NOW.toLocaleDateString("en-US", {
+  timeZone: "America/New_York",
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+})} at ${NOW.toLocaleTimeString("en-US", {
+  timeZone: "America/New_York",
+  hour: "numeric",
+  minute: "2-digit",
 })}`;
 const SUBMITTED_TIME = NOW.toLocaleTimeString("en-US", {
   timeZone: "America/New_York",
@@ -252,8 +261,7 @@ export default function EndUserBlockedPage() {
                 }}
               />
               <Typography sx={{ fontSize: 14, color: "rgba(3,22,37,.62)", mt: 1, mb: 3 }}>
-                Category: {CATEGORY} | Policy: {POLICY} | Site: {SITE} | Blocked{" "}
-                {TIME_OF_BLOCK}
+                Category: {CATEGORY} · Blocked: {TIME_OF_BLOCK_NO_TZ}
               </Typography>
 
               {/* Email */}
