@@ -145,21 +145,21 @@ export function Drawer({
       slotProps={{
         ...(drawerProps?.slotProps ?? {}),
         paper: {
-          // Match Card's surface treatment so the dark-mode body color is
-          // the same as a card (background.paper + elevation-1 overlay ≈
-          // #273039). Drawer's default elevation (16) brightens the paper
-          // too much for our spec.
-          elevation: 1,
+          // The body is the darkest surface so the header/footer bands
+          // (background.paper) and content cards (paper + overlay) read as
+          // lighter surfaces raised on top of it. elevation 0 keeps MUI's
+          // dark overlay off the body so it stays the pure token color.
+          elevation: 0,
           ...(drawerProps?.slotProps?.paper ?? {}),
-          // Light mode keeps the spec'd neutral so header/footer (paper)
-          // stand out against the scrolling body. Dark mode swaps to paper
-          // and lets the elevation-1 overlay produce the card-like color.
+          // Light: neutral body under white chrome/cards.
+          // Dark: `background.default` (#141A21) body under `background.paper`
+          // chrome (#1C252E) and card surfaces (≈#273039).
           sx: (theme: Theme) => ({
             width: paperWidth,
             maxWidth: "100vw",
             bgcolor: "background.neutral",
             ...theme.applyStyles("dark", {
-              backgroundColor: theme.vars.palette.background.paper,
+              backgroundColor: theme.vars.palette.background.default,
             }),
             ...((drawerProps?.slotProps?.paper as { sx?: object } | undefined)
               ?.sx ?? {}),
