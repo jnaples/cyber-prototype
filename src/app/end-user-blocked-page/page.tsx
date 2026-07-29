@@ -254,7 +254,7 @@ export default function EndUserBlockedPage() {
               <Typography sx={{ fontSize: 24, fontWeight: 700 }}>
                 Request access
               </Typography>
-              <Typography sx={{ fontSize: 16, color: "rgba(3,22,37,.7)", mb: 3 }}>
+              <Typography sx={{ fontSize: 16, color: "text.secondary", mb: 3 }}>
                 This request will be sent to your network administrator for
                 review.
               </Typography>
@@ -272,7 +272,7 @@ export default function EndUserBlockedPage() {
                   "& .MuiOutlinedInput-notchedOutline": { border: "none" },
                 }}
               />
-              <Typography sx={{ fontSize: 14, color: "rgba(3,22,37,.62)", mt: 1, mb: 3 }}>
+              <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 1, mb: 3 }}>
                 Category: {CATEGORY} · Blocked: {TIME_OF_BLOCK_NO_TZ}
               </Typography>
 
@@ -348,7 +348,7 @@ export default function EndUserBlockedPage() {
                   justifyContent: "space-between",
                   mt: 0.5,
                   fontSize: 14,
-                  color: "rgba(3,22,37,.62)",
+                  color: "text.secondary",
                 }}
               >
                 <span>Min 10 characters</span>
@@ -443,14 +443,14 @@ export default function EndUserBlockedPage() {
               <Typography sx={{ fontSize: 22, fontWeight: 700, mb: 1 }}>
                 Request sent
               </Typography>
-              <Typography sx={{ fontSize: 16, color: "rgba(3,22,37,.7)" }}>
+              <Typography sx={{ fontSize: 16, color: "text.secondary" }}>
                 Your request has been sent to your administrator.
               </Typography>
 
               {statusBox}
 
               <Typography
-                sx={{ fontSize: 16, color: "rgba(3,22,37,.62)", mt: 3 }}
+                sx={{ fontSize: 16, color: "text.secondary", mt: 3 }}
               >
                 You may be contacted at {effectiveEmail}
               </Typography>
@@ -488,7 +488,7 @@ export default function EndUserBlockedPage() {
               <Typography sx={{ fontSize: 22, fontWeight: 700, mb: 1 }}>
                 Request already submitted
               </Typography>
-              <Typography sx={{ fontSize: 16, color: "rgba(3,22,37,.7)" }}>
+              <Typography sx={{ fontSize: 16, color: "text.secondary" }}>
                 You&apos;ve already requested access to this site. It&apos;s
                 waiting for your administrator&apos;s review.
               </Typography>
@@ -496,11 +496,10 @@ export default function EndUserBlockedPage() {
               {statusBox}
 
               <Typography
-                sx={{ fontSize: 16, color: "rgba(3,22,37,.62)", mt: 3 }}
+                sx={{ fontSize: 16, color: "text.secondary", mt: 3 }}
               >
                 You may be contacted at {effectiveEmail}
               </Typography>
-              {submitAnotherButton}
             </Box>
             {footer}
           </>
