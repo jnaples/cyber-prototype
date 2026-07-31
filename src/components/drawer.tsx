@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import type { ButtonProps, DrawerProps as MuiDrawerProps } from "@mui/material";
-import type { Theme } from "@mui/material/styles";
+import type { SxProps, Theme } from "@mui/material/styles";
 import type React from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
@@ -33,6 +33,8 @@ export interface DrawerActionConfig {
   loading?: boolean;
   /** Tooltip shown on hover — works even while the button is disabled. */
   tooltip?: string;
+  /** Style overrides for the action button. */
+  sx?: SxProps<Theme>;
 }
 
 export interface DrawerProps {
@@ -95,6 +97,7 @@ function renderAction(
       variant={cfg.variant ?? defaultVariant}
       color={cfg.color ?? defaultColor}
       size="small"
+      sx={cfg.sx}
     >
       {cfg.label}
     </Button>

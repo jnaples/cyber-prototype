@@ -158,7 +158,7 @@ export function ManagePanel({
           }}
         >
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            {selected.length} of {ALL_TYPES.length} on dashboard
+            {selected.length} of {ALL_TYPES.length} selected
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <Link
@@ -166,7 +166,21 @@ export function ManagePanel({
               type="button"
               underline="hover"
               onClick={selectAll}
-              sx={{ fontWeight: 600, fontSize: 14 }}
+              sx={(theme) => ({
+                fontWeight: 600,
+                fontSize: 14,
+                color:
+                  selected.length === ALL_TYPES.length
+                    ? "text.disabled"
+                    : "primary.main",
+                ...(selected.length === ALL_TYPES.length
+                  ? {}
+                  : theme.applyStyles("dark", {
+                      color: theme.vars.palette.primary.light,
+                    })),
+                pointerEvents:
+                  selected.length === ALL_TYPES.length ? "none" : "auto",
+              })}
             >
               Select all
             </Link>
@@ -175,12 +189,17 @@ export function ManagePanel({
               type="button"
               underline="hover"
               onClick={clearAll}
-              sx={{
+              sx={(theme) => ({
                 fontWeight: 600,
                 fontSize: 14,
                 color: selected.length === 0 ? "text.disabled" : "primary.main",
+                ...(selected.length === 0
+                  ? {}
+                  : theme.applyStyles("dark", {
+                      color: theme.vars.palette.primary.light,
+                    })),
                 pointerEvents: selected.length === 0 ? "none" : "auto",
-              }}
+              })}
             >
               Clear all
             </Link>
@@ -190,6 +209,7 @@ export function ManagePanel({
       secondaryAction={{ label: "Cancel", onClick: handleClose }}
       primaryAction={{
         label: "Save",
+        sx: { minWidth: 0 },
         onClick: () => {
           onApply(selected);
           handleClose();
@@ -221,7 +241,7 @@ export function ManagePanel({
             <Box key={cat}>
               <Typography
                 variant="overline"
-                sx={{ color: "text.secondary", display: "block", mb: 1 }}
+                sx={{ color: "text.secondary", display: "block" }}
               >
                 {cat}
               </Typography>

@@ -9,6 +9,7 @@ import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import DragIndicatorOutlinedIcon from "@mui/icons-material/DragIndicatorOutlined";
 import LibraryAddOutlinedIcon from "@mui/icons-material/LibraryAddOutlined";
+import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
 import {
   Alert,
   Box,
@@ -1016,7 +1017,7 @@ export default function DashboardsV2Page() {
               variant="contained"
               color="primary"
               onClick={() => setAddOpen(true)}
-              startIcon={<MaterialSymbol name="tune" size={16} />}
+              startIcon={<WidgetsOutlinedIcon sx={{ fontSize: 16 }} />}
             >
               Manage widgets
             </Button>

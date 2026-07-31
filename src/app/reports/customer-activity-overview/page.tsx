@@ -14,12 +14,12 @@ const PRIMARY = "#3527fd";
 const DIVIDER = "rgba(3,22,37,.12)";
 const TRACK = "#edf0f6";
 const C = {
-  web: "#3527fd",
-  app: "#238cd2",
-  cat: "#ce008e",
-  stream: "#0f8a80",
-  ai: "#7b3ff2",
-  client: "#1e7d4f",
+  web: "#207BBE", // secureBlue[800]
+  app: "#9435EC", // pairingPurple.main (purple[400])
+  cat: "#EF6C00", // orange[800]
+  stream: "#05C6C6", // teal[500]
+  ai: "#CE008E", // threatMagenta[700]
+  client: "#05864A", // green[800]
 };
 
 const montserrat = (theme: Theme) => theme.typography.fontSecondaryFamily;
@@ -105,20 +105,17 @@ function UserIcon() {
   );
 }
 
-function SecHead({ color, title, sub }: { color: string; title: string; sub: string }) {
+function SecHead({ title, sub }: { color?: string; title: string; sub: string }) {
   return (
-    <Box sx={{ display: "flex", alignItems: "flex-start", gap: "12px", mb: "24px" }}>
-      <Box sx={{ width: 14, height: 14, borderRadius: "4px", mt: "5px", flex: "none", bgcolor: color }} />
-      <Box>
-        <Box
-          component="h2"
-          sx={{ m: 0, fontSize: 19, fontWeight: 700, letterSpacing: "1.8px", textTransform: "uppercase" }}
-        >
-          {title}
-        </Box>
-        <Box component="p" sx={{ m: 0, fontSize: 16, color: TEXT2, mt: "4px" }}>
-          {sub}
-        </Box>
+    <Box sx={{ mb: "24px" }}>
+      <Box
+        component="h2"
+        sx={{ m: 0, fontFamily: montserrat, fontSize: 24, fontWeight: 600, textTransform: "capitalize" }}
+      >
+        {title}
+      </Box>
+      <Box component="p" sx={{ m: 0, fontSize: 16, color: TEXT2, mt: "4px" }}>
+        {sub}
       </Box>
     </Box>
   );
@@ -141,10 +138,9 @@ function BarRow({ row, color }: { row: Row; color: string }) {
           sx={{
             fontSize: 20,
             fontWeight: 500,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
             minWidth: 0,
+            overflowWrap: "anywhere",
+            wordBreak: "break-word",
           }}
         >
           {row.nm}
@@ -429,14 +425,14 @@ export default function CustomerActivityOverviewReport() {
       </Box>
 
       {/* Top-N grid 1 */}
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "48px", mb: "72px" }}>
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "48px", mb: "72px" }}>
         <TopNColumn color={C.web} title="Top websites" sub="Top 10 of 40,000+ visits recorded" rows={TOP_WEBSITES} />
         <TopNColumn color={C.app} title="Top applications" sub="Top 10 of 142 applications detected" rows={TOP_APPS} />
         <TopNColumn color={C.cat} title="Top categories" sub="Top 10 of 38 categories triggered" rows={TOP_CATEGORIES} />
       </Box>
 
       {/* Top-N grid 2 */}
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "48px", mb: "72px" }}>
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "48px", mb: "72px" }}>
         <TopNColumn color={C.stream} title="Top streaming activities" sub="5 streaming sources detected" rows={TOP_STREAMING} />
         <TopNColumn color={C.ai} title="Top AI tools" sub="8 AI tools detected" rows={TOP_AI} />
         <TopNColumn color={C.client} title="Top active clients" sub="All 10 monitored devices" rows={TOP_CLIENTS} />
