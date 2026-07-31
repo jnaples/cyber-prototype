@@ -487,7 +487,6 @@ export default function DashboardsPage() {
   // Organizations this dashboard is currently shared with (in-memory only).
   const [sharedOrgs, setSharedOrgs] = useState<string[]>([]);
   const [dashDeleteOpen, setDashDeleteOpen] = useState(false);
-  const [resetOpen, setResetOpen] = useState(false);
   const [switcherAnchor, setSwitcherAnchor] = useState<HTMLElement | null>(
     null,
   );
@@ -962,22 +961,6 @@ export default function DashboardsPage() {
 
           <Divider />
 
-          <MenuItem
-            onClick={() => {
-              setActionsAnchor(null);
-              setResetOpen(true);
-            }}
-          >
-            <MaterialSymbol
-              name="restart_alt"
-              size={16}
-              sx={{ mr: "8px", opacity: 0.7 }}
-            />
-            Reset to standard layout
-          </MenuItem>
-
-          <Divider />
-
           {/* Destructive */}
           <MenuItem
             onClick={() => {
@@ -1399,32 +1382,6 @@ export default function DashboardsPage() {
           </Box>{" "}
           and all of its widgets will be permanently deleted. This can&apos;t be
           undone.
-        </Typography>
-      </Modal>
-
-      {/* Reset-to-default confirmation */}
-      <Modal
-        open={resetOpen}
-        onClose={() => setResetOpen(false)}
-        title="Reset to standard layout"
-        secondaryAction={{
-          label: "Cancel",
-          onClick: () => setResetOpen(false),
-        }}
-        primaryAction={{
-          label: "Reset to standard",
-          onClick: () => {
-            replaceWidgets(DEFAULT_LAYOUT());
-            setResetOpen(false);
-          },
-        }}
-      >
-        <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
-          <Box component="b" sx={{ color: "text.primary" }}>
-            {name}
-          </Box>{" "}
-          will be restored to the standard layout. Your current widget selection
-          and arrangement on this dashboard will be replaced.
         </Typography>
       </Modal>
 

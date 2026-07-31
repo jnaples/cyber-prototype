@@ -17,9 +17,11 @@ const TEXT3 = "rgba(3,22,37,.45)";
 const PRIMARY = "#3527fd";
 const DIVIDER = "rgba(3,22,37,.12)";
 const TRACK = "#edf0f6";
-const C_THREAT = "#ce008e";
-const C_CONTENT = "#ef6c00";
-const C_SITE = "#238cd2";
+const C_THREAT = "#D32F2F"; // red[700]
+const C_THREAT_SUMMARY = "#CE008E"; // threatMagenta[700]
+const C_CONTENT_DOMAINS = "#EF6C00"; // orange[800]
+const C_CONTENT = PRIMARY;
+const C_SITE = "#0AB36F"; // green[700]
 const C_TREND = "#0f8a80";
 const C_OTHER = "#8b93a7";
 
@@ -285,9 +287,9 @@ export default function FilterProtectionSummaryReport() {
       {/* Threat + content summaries */}
       <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "48px", mb: "72px" }}>
         <Box>
-          <SecHead color={C_THREAT} title="Threat summary" sub="214 threat requests blocked · 7 threat types" />
+          <SecHead color={C_THREAT_SUMMARY} title="Threat summary" sub="214 threat requests blocked · 7 threat types" />
           {THREATS.map((r) => (
-            <BarRow key={r.nm} row={r} color={C_THREAT} />
+            <BarRow key={r.nm} row={r} color={C_THREAT_SUMMARY} />
           ))}
         </Box>
         <Box>
@@ -307,9 +309,9 @@ export default function FilterProtectionSummaryReport() {
           ))}
         </Box>
         <Box>
-          <SecHead color={C_CONTENT} title="Top blocked content domains" sub="Share of 12,186 blocked content requests" />
+          <SecHead color={C_CONTENT_DOMAINS} title="Top blocked content domains" sub="Share of 12,186 blocked content requests" />
           {CONTENT_DOMAINS.map((r) => (
-            <BarRow key={r.nm} row={r} color={C_CONTENT} />
+            <BarRow key={r.nm} row={r} color={C_CONTENT_DOMAINS} />
           ))}
         </Box>
       </Box>

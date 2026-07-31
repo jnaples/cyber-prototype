@@ -343,7 +343,13 @@ function sanitize(arr: unknown): WidgetInstance[] | null {
 // Empty state
 // ---------------------------------------------------------------------------
 
-function EmptyState({ onAdd }: { onAdd: () => void }) {
+function EmptyState({
+  onAdd,
+  onStartStandard,
+}: {
+  onAdd: () => void;
+  onStartStandard: () => void;
+}) {
   return (
     <Box
       sx={{
@@ -399,13 +405,22 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
             to track exactly what matters to you.
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          onClick={onAdd}
-          startIcon={<MaterialSymbol name="add" size={18} />}
-        >
-          Add your first widget
-        </Button>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Button
+            variant="contained"
+            onClick={onAdd}
+            startIcon={<MaterialSymbol name="add" size={18} />}
+          >
+            Add your first widget
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={onStartStandard}
+          >
+            Use standard layout
+          </Button>
+        </Box>
       </Box>
     </Box>
   );
@@ -488,7 +503,6 @@ export default function DashboardsV2Page() {
   // Organizations this dashboard is currently shared with (in-memory only).
   const [sharedOrgs, setSharedOrgs] = useState<string[]>([]);
   const [dashDeleteOpen, setDashDeleteOpen] = useState(false);
-  const [resetOpen, setResetOpen] = useState(false);
   const [switcherAnchor, setSwitcherAnchor] = useState<HTMLElement | null>(
     null,
   );
@@ -954,22 +968,6 @@ export default function DashboardsV2Page() {
 
           <Divider />
 
-          <MenuItem
-            onClick={() => {
-              setActionsAnchor(null);
-              setResetOpen(true);
-            }}
-          >
-            <MaterialSymbol
-              name="restart_alt"
-              size={16}
-              sx={{ mr: "8px", opacity: 0.7 }}
-            />
-            Reset to standard layout
-          </MenuItem>
-
-          <Divider />
-
           {/* Destructive */}
           <MenuItem
             onClick={() => {
@@ -1205,7 +1203,10 @@ export default function DashboardsV2Page() {
 
       {/* Widget grid / empty state */}
       {widgets.length === 0 ? (
-        <EmptyState onAdd={() => setAddOpen(true)} />
+        <EmptyState
+          onAdd={() => setAddOpen(true)}
+          onStartStandard={() => replaceWidgets(DEFAULT_LAYOUT())}
+        />
       ) : (
         <DashboardFactorContext.Provider value={filterFactor(filters)}>
          <DashboardOrgCountContext.Provider value={filters.organizations.length}>
@@ -1245,7 +1246,7 @@ export default function DashboardsV2Page() {
                 },
             }}
           >
-            {mounted && (
+            {mounted && width > 0 && (
               <GridLayout
                 // Remount when the widget set changes (add/remove/reset) so rgl
                 // re-reads the freshly packed layout instead of dropping the
@@ -1400,32 +1401,6 @@ export default function DashboardsV2Page() {
           </Box>{" "}
           and all of its widgets will be permanently deleted. This can&apos;t be
           undone.
-        </Typography>
-      </Modal>
-
-      {/* Reset-to-default confirmation */}
-      <Modal
-        open={resetOpen}
-        onClose={() => setResetOpen(false)}
-        title="Reset to standard layout"
-        secondaryAction={{
-          label: "Cancel",
-          onClick: () => setResetOpen(false),
-        }}
-        primaryAction={{
-          label: "Reset to standard",
-          onClick: () => {
-            replaceWidgets(DEFAULT_LAYOUT());
-            setResetOpen(false);
-          },
-        }}
-      >
-        <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
-          <Box component="b" sx={{ color: "text.primary" }}>
-            {name}
-          </Box>{" "}
-          will be restored to the standard layout. Your current widget selection
-          and arrangement on this dashboard will be replaced.
         </Typography>
       </Modal>
 
