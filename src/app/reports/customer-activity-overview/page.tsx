@@ -412,7 +412,7 @@ export default function CustomerActivityOverviewReport() {
             <text x="1163" y="356">Jul 20</text>
           </g>
         </Box>
-        <Box sx={{ display: "flex", gap: "32px", mt: "16px", fontSize: 16, color: TEXT2 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", gap: "32px", mt: "16px", fontSize: 16, color: TEXT2 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <Box sx={{ width: 28, height: 4, borderRadius: "2px", bgcolor: PRIMARY }} />
             Active time

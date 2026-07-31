@@ -111,17 +111,17 @@ const DEVICES: Device[] = [
   { nm: "LOWES-MACBOOK-07", tracked: "6h 30m tracked", aw: 51.5, iw: 10.3, lw: 38.2, active: "3h 21m", activeP: "52%", idle: "40m", idleP: "10%", lock: "2h 29m", lockP: "38%", streaming: "3m" },
 ];
 
-function SecHead({ color, title, sub }: { color: string; title: string; sub: string }) {
+function SecHead({ title, sub }: { color?: string; title: string; sub: string }) {
   return (
-    <Box sx={{ display: "flex", alignItems: "flex-start", gap: "12px", mb: "24px" }}>
-      <Box sx={{ width: 14, height: 14, borderRadius: "4px", mt: "5px", flex: "none", bgcolor: color }} />
-      <Box>
-        <Box component="h2" sx={{ m: 0, fontSize: 19, fontWeight: 700, letterSpacing: "1.8px", textTransform: "uppercase" }}>
-          {title}
-        </Box>
-        <Box component="p" sx={{ m: 0, fontSize: 16, color: TEXT2, mt: "4px" }}>
-          {sub}
-        </Box>
+    <Box sx={{ mb: "24px" }}>
+      <Box
+        component="h2"
+        sx={{ m: 0, fontFamily: montserrat, fontSize: 24, fontWeight: 600, textTransform: "capitalize" }}
+      >
+        {title}
+      </Box>
+      <Box component="p" sx={{ m: 0, fontSize: 16, color: TEXT2, mt: "4px" }}>
+        {sub}
       </Box>
     </Box>
   );
@@ -266,9 +266,6 @@ export default function TimelineOverviewReport() {
               <rect x={x} y={s[0]} width="26" height={s[1]} fill={C.stream} />
             </g>
           ))}
-          <text className="peak" x="472" y="44" textAnchor="middle">
-            Peak 21.8h · Fri Jul 3
-          </text>
           <g textAnchor="middle">
             <text x="76" y="356">Jun 23</text>
             <text x="314" y="356">Jun 29</text>
@@ -277,7 +274,7 @@ export default function TimelineOverviewReport() {
             <text x="1145" y="356">Jul 20</text>
           </g>
         </Box>
-        <Box sx={{ display: "flex", gap: "32px", mt: "16px", fontSize: 16, color: TEXT2 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", gap: "32px", mt: "16px", fontSize: 16, color: TEXT2 }}>
           <LegendSquare color={C.web} label="Websites" />
           <LegendSquare color={C.app} label="Applications" />
           <LegendSquare color={C.stream} label="Streaming" />

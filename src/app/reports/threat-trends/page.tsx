@@ -58,17 +58,17 @@ function UserIcon() {
   );
 }
 
-function SecHead({ color, title, sub }: { color: string; title: string; sub: string }) {
+function SecHead({ title, sub }: { color?: string; title: string; sub: string }) {
   return (
-    <Box sx={{ display: "flex", alignItems: "flex-start", gap: "12px", mb: "24px" }}>
-      <Box sx={{ width: 14, height: 14, borderRadius: "4px", mt: "5px", flex: "none", bgcolor: color }} />
-      <Box>
-        <Box component="h2" sx={{ m: 0, fontSize: 19, fontWeight: 700, letterSpacing: "1.8px", textTransform: "uppercase" }}>
-          {title}
-        </Box>
-        <Box component="p" sx={{ m: 0, fontSize: 16, color: TEXT2, mt: "4px" }}>
-          {sub}
-        </Box>
+    <Box sx={{ mb: "24px" }}>
+      <Box
+        component="h2"
+        sx={{ m: 0, fontFamily: montserrat, fontSize: 24, fontWeight: 600, textTransform: "capitalize" }}
+      >
+        {title}
+      </Box>
+      <Box component="p" sx={{ m: 0, fontSize: 16, color: TEXT2, mt: "4px" }}>
+        {sub}
       </Box>
     </Box>
   );
@@ -274,7 +274,7 @@ export default function ThreatTrendsReport() {
             <text x="1163" y="356">Jul 20</text>
           </g>
         </Box>
-        <Box sx={{ display: "flex", gap: "32px", mt: "16px", fontSize: 16, color: TEXT2 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", gap: "32px", mt: "16px", fontSize: 16, color: TEXT2 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <Box sx={{ width: 28, height: 4, borderRadius: "2px", bgcolor: C.threat }} />
             Threat events
