@@ -14,7 +14,6 @@ const BASE = "/reports";
 
 const REPORTS = [
   { label: "Customer Activity Overview", path: `${BASE}/customer-activity-overview` },
-  { label: "Endpoint Traffic Logs", path: `${BASE}/endpoint-traffic-logs` },
   { label: "Filter Protection Summary", path: `${BASE}/filter-protection-summary` },
   { label: "Timeline Activity Logs", path: `${BASE}/timeline-activity-logs` },
   { label: "Timeline Overview", path: `${BASE}/timeline-overview` },
