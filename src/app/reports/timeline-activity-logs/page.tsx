@@ -9,7 +9,6 @@ import type { Theme } from "@mui/material/styles";
 const TEXT = "#031625";
 const TEXT2 = "rgba(3,22,37,.62)";
 const TEXT3 = "rgba(3,22,37,.45)";
-const PRIMARY = "#3527fd";
 const DIVIDER = "rgba(3,22,37,.12)";
 const C = {
   web: "#238cd2",
@@ -270,17 +269,6 @@ export default function TimelineActivityLogsReport() {
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
         <Box
-          sx={{
-            fontSize: 17,
-            fontWeight: 700,
-            letterSpacing: "2.5px",
-            textTransform: "uppercase",
-            color: PRIMARY,
-          }}
-        >
-          Endpoint monitoring · Monthly report
-        </Box>
-        <Box
           component="h1"
           sx={{
             fontFamily: montserrat,
@@ -293,7 +281,7 @@ export default function TimelineActivityLogsReport() {
           Timeline Activity Logs
         </Box>
         <Box sx={{ fontSize: 21, color: TEXT2 }}>
-          Prepared for Acme Manufacturing · Top events by duration, per device
+          Prepared for Acme Manufacturing
         </Box>
       </Box>
 
@@ -313,13 +301,16 @@ export default function TimelineActivityLogsReport() {
               border: `1px solid ${DIVIDER}`,
               borderRadius: "6px",
               p: "28px 32px 24px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-end",
             }}
           >
             <Box
               sx={{
                 fontFamily: montserrat,
                 fontWeight: 600,
-                fontSize: 52,
+                fontSize: 40,
                 lineHeight: 1,
                 fontVariantNumeric: "tabular-nums",
               }}

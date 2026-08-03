@@ -96,9 +96,11 @@ function SecHead({ title, sub }: { color?: string; title: string; sub: string })
       >
         {title}
       </Box>
-      <Box component="p" sx={{ m: 0, fontSize: 16, color: TEXT2, mt: "4px" }}>
-        {sub}
-      </Box>
+      {sub && (
+        <Box component="p" sx={{ m: 0, fontSize: 16, color: TEXT2, mt: "4px" }}>
+          {sub}
+        </Box>
+      )}
     </Box>
   );
 }
@@ -189,13 +191,10 @@ export default function FilterProtectionSummaryReport() {
 
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
-        <Box sx={{ fontSize: 17, fontWeight: 700, letterSpacing: "2.5px", textTransform: "uppercase", color: PRIMARY }}>
-          Network protection · Monthly report
-        </Box>
         <Box component="h1" sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 44, lineHeight: 1.2, m: "10px 0 12px" }}>
           Filter Protection Summary
         </Box>
-        <Box sx={{ fontSize: 21, color: TEXT2 }}>Prepared for Acme Manufacturing · 30-day filtering summary</Box>
+        <Box sx={{ fontSize: 21, color: TEXT2 }}>Prepared for Acme Manufacturing</Box>
       </Box>
 
       {/* KPI band */}
@@ -206,7 +205,7 @@ export default function FilterProtectionSummaryReport() {
               component={k.Icon}
               sx={{ fontSize: 36, color: k.iconColor, mb: "20px", display: "block" }}
             />
-            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 52, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 40, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
               {k.num}
             </Box>
             <Box sx={{ fontSize: 16, fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: TEXT2, mt: "12px" }}>
@@ -218,7 +217,7 @@ export default function FilterProtectionSummaryReport() {
 
       {/* Requests over time */}
       <Box sx={{ mb: "72px" }}>
-        <SecHead color={PRIMARY} title="Requests over time" sub="DNS requests resolved per day · average 10.2K per day" />
+        <SecHead color={PRIMARY} title="Requests over time" sub="DNS requests resolved per day · Average 10.2K per day" />
         <Box
           component="svg"
           viewBox="0 0 1272 372"
@@ -260,10 +259,6 @@ export default function FilterProtectionSummaryReport() {
             strokeLinecap="round"
             points="56,95.5 97,82.4 138,73 179,99.3 220,283 261,288.6 302,80.5 343,88 384,76.8 425,63.6 466,31.8 507,279.3 548,284.9 589,84.3 630,91.8 671,86.1 712,101.1 753,78.6 794,277.4 835,286.8 876,89.9 917,71.1 958,97.4 999,86.1 1040,93.6 1081,275.5 1122,283 1163,82.4 1204,91.8 1245,95.5"
           />
-          <circle cx="466" cy="31.8" r="5" fill={PRIMARY} />
-          <text className="peak" x="480" y="30">
-            Peak 15.8K · Fri Jul 3
-          </text>
           <g textAnchor="middle">
             <text x="56" y="356">Jun 23</text>
             <text x="302" y="356">Jun 29</text>
@@ -318,7 +313,7 @@ export default function FilterProtectionSummaryReport() {
 
       {/* Top active sites */}
       <Box sx={{ mb: "8px" }}>
-        <SecHead color={C_SITE} title="Top active sites" sub="All 4 sites · requests resolved and blocked per site" />
+        <SecHead color={C_SITE} title="Top active sites" sub="" />
         {SITES.map((r) => (
           <BarRow key={r.nm} row={r} color={C_SITE} />
         ))}
@@ -339,7 +334,7 @@ export default function FilterProtectionSummaryReport() {
           <Box sx={{ fontSize: 17, fontWeight: 600 }}>Prepared by Brightwave IT</Box>
         </Box>
         <Box sx={{ fontSize: 16, color: TEXT2, textAlign: "right" }}>
-          Generated Jul 23, 2026 · Data period Jun 23 – Jul 22, 2026
+          Data period Jun 23 – Jul 22, 2026
         </Box>
       </Box>
     </Box>

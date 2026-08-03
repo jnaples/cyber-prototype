@@ -9,7 +9,6 @@ import type { Theme } from "@mui/material/styles";
 const TEXT = "#031625";
 const TEXT2 = "rgba(3,22,37,.62)";
 const TEXT3 = "rgba(3,22,37,.45)";
-const PRIMARY = "#3527fd";
 const DIVIDER = "rgba(3,22,37,.12)";
 const TRACK = "#edf0f6";
 const C = { site: "#238cd2", app: "#7b3ff2", client: "#1e7d4f", trend: "#0f8a80" };
@@ -190,14 +189,11 @@ export default function CyberSightAiUsageReport() {
 
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
-        <Box sx={{ fontSize: 17, fontWeight: 700, letterSpacing: "2.5px", textTransform: "uppercase", color: PRIMARY }}>
-          CyberSight · Monthly report
-        </Box>
         <Box component="h1" sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 44, lineHeight: 1.2, m: "10px 0 12px" }}>
           AI Usage
         </Box>
         <Box sx={{ fontSize: 21, color: TEXT2 }}>
-          Prepared for Acme Manufacturing · 30-day AI usage summary
+          Prepared for Acme Manufacturing
         </Box>
       </Box>
 
@@ -210,7 +206,7 @@ export default function CyberSightAiUsageReport() {
           { num: "10", cap: "Devices using AI" },
         ].map((k) => (
           <Box key={k.cap} sx={{ border: `1px solid ${DIVIDER}`, borderRadius: "6px", p: "28px 32px 24px", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 52, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 40, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
               {k.num}
             </Box>
             <Box sx={{ fontSize: 16, fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: TEXT2, mt: "12px" }}>
@@ -225,7 +221,7 @@ export default function CyberSightAiUsageReport() {
         <SecHead
           color={C.app}
           title="AI tool usage over time"
-          sub="Combined AI tool time across all devices · average 2.6 hours per day"
+          sub="Combined AI tool time across all devices · Average 2.6 hours per day"
         />
         <Box
           component="svg"
@@ -272,10 +268,6 @@ export default function CyberSightAiUsageReport() {
             strokeLinecap="round"
             points="56,268 97,253 138,238 179,248 220,308 261,318 302,228 343,213 384,198 425,178 466,158 507,283 548,303 589,188 630,153 671,178 712,168 753,133 794,273 835,293 876,138 917,118 958,103 999,113 1040,88 1081,263 1122,293 1163,78 1204,68 1245,48"
           />
-          <circle cx="1245" cy="48" r="5" fill={C.app} />
-          <text className="peak" x="1231" y="40" textAnchor="end">
-            Peak 5.6h · Wed Jul 22
-          </text>
           <g textAnchor="middle">
             <text x="56" y="356">Jun 23</text>
             <text x="302" y="356">Jun 29</text>
@@ -318,7 +310,7 @@ export default function CyberSightAiUsageReport() {
           <Box sx={{ fontSize: 17, fontWeight: 600 }}>Prepared by Brightwave IT</Box>
         </Box>
         <Box sx={{ fontSize: 16, color: TEXT2, textAlign: "right" }}>
-          Generated Jul 23, 2026 · Data period Jun 23 – Jul 22, 2026
+          Data period Jun 23 – Jul 22, 2026
         </Box>
       </Box>
     </Box>

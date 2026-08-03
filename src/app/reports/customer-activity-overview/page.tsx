@@ -285,24 +285,13 @@ export default function CustomerActivityOverviewReport() {
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
         <Box
-          sx={{
-            fontSize: 17,
-            fontWeight: 700,
-            letterSpacing: "2.5px",
-            textTransform: "uppercase",
-            color: PRIMARY,
-          }}
-        >
-          CyberSight · Monthly report
-        </Box>
-        <Box
           component="h1"
           sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 44, lineHeight: 1.2, m: "10px 0 12px" }}
         >
           Activity Overview
         </Box>
         <Box sx={{ fontSize: 21, color: TEXT2 }}>
-          Prepared for Acme Manufacturing · 30-day activity summary
+          Prepared for Acme Manufacturing
         </Box>
       </Box>
 
@@ -333,7 +322,7 @@ export default function CustomerActivityOverviewReport() {
             }}
           >
             <Box
-              sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 52, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}
+              sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 40, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}
             >
               {k.num}
             </Box>
@@ -351,7 +340,7 @@ export default function CustomerActivityOverviewReport() {
         <SecHead
           color={PRIMARY}
           title="Active time trend"
-          sub="Combined active time across all devices · average 8.5 hours per day"
+          sub="Combined active time across all devices · Average 8.5 hours per day"
         />
         <Box
           component="svg"
@@ -400,10 +389,6 @@ export default function CustomerActivityOverviewReport() {
             strokeLinecap="round"
             points="56,250.5 97,235.5 138,214 179,243 220,313 261,323 302,208 343,198 384,180.5 425,133 466,55.5 507,295.5 548,318 589,160.5 630,188 671,183 712,205.5 753,192 794,289 835,310.5 876,180.5 917,170.5 958,210.5 999,188 1040,214 1081,300.5 1122,320.5 1163,185.5 1204,188 1245,204"
           />
-          <circle cx="466" cy="55.5" r="5" fill={PRIMARY} />
-          <text className="peak" x="480" y="50">
-            Peak 21.8h · Fri Jul 3
-          </text>
           <g textAnchor="middle">
             <text x="56" y="356">Jun 23</text>
             <text x="302" y="356">Jun 29</text>
@@ -453,7 +438,7 @@ export default function CustomerActivityOverviewReport() {
           <Box sx={{ fontSize: 17, fontWeight: 600 }}>Prepared by Brightwave IT</Box>
         </Box>
         <Box sx={{ fontSize: 16, color: TEXT2, textAlign: "right" }}>
-          Generated Jul 23, 2026 · Data period Jun 23 – Jul 22, 2026
+          Data period Jun 23 – Jul 22, 2026
         </Box>
       </Box>
     </Box>

@@ -3,15 +3,15 @@
 // Activities donut, a Notable panel, and per-device Active/Idle/Locked
 // composition bars. Screen-only annex omitted. Light-mode (PDF-style) document.
 
+import ComputerOutlinedIcon from "@mui/icons-material/ComputerOutlined";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutlined";
 import { Box } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 
 const TEXT = "#031625";
 const TEXT2 = "rgba(3,22,37,.62)";
 const TEXT3 = "rgba(3,22,37,.45)";
-const PRIMARY = "#3527fd";
 const DIVIDER = "rgba(3,22,37,.12)";
-const TRACK = "#edf0f6";
 const C = {
   web: "#238cd2",
   app: "#7b3ff2",
@@ -22,6 +22,17 @@ const C = {
 };
 
 const montserrat = (theme: Theme) => theme.typography.fontSecondaryFamily;
+
+// Timeline (device time composition) — shared hour axis + segment colors.
+const STREAM = "#05C6C6"; // teal[500] — streaming segment
+const AXIS_MAX_MIN = 8100; // 135h — largest device rounded up
+const AXIS_TICKS = [0, 900, 1800, 2700, 3600, 4500, 5400, 6300, 7200, 8100];
+// Format whole minutes as "Xh Ym" (pure — no Date).
+const fmtMin = (m: number) => {
+  const h = Math.floor(m / 60);
+  const mm = m % 60;
+  return h > 0 ? `${h}h ${mm}m` : `${mm}m`;
+};
 
 // Stacked daily events: [x, [webY, webH], [appY, appH], [streamY, streamH]].
 const EVENTS: [number, [number, number], [number, number], [number, number]][] = [
@@ -76,32 +87,29 @@ const DONUT_LEGEND = [
   { c: "#c3cad8", nm: "Other", typ: "163 activities", val: "30h 33m", sub: "(12.0%)" },
 ];
 
+// Per-device timeline. Segment values are whole minutes; the bar fills against
+// AXIS_MAX_MIN so devices are comparable on a shared hour axis. Active is the
+// non-streaming portion (streaming is its own segment).
 type Device = {
   nm: string;
-  tracked: string;
-  aw: number;
-  iw: number;
-  lw: number;
-  active: string;
-  activeP: string;
-  idle: string;
-  idleP: string;
-  lock: string;
-  lockP: string;
-  streaming: string;
+  user: string;
+  activeMin: number;
+  streamingMin: number;
+  idleMin: number;
+  lockMin: number;
 };
 
 const DEVICES: Device[] = [
-  { nm: "z-ktrojanowski", tracked: "130h 30m tracked", aw: 60.6, iw: 8.7, lw: 30.7, active: "79h 4m", activeP: "60%", idle: "11h 20m", idleP: "9%", lock: "40h 6m", lockP: "31%", streaming: "22h 30m" },
-  { nm: "YOGA-BSMITH", tracked: "96h 0m tracked", aw: 57.9, iw: 10.2, lw: 31.9, active: "55h 34m", activeP: "58%", idle: "9h 50m", idleP: "10%", lock: "30h 36m", lockP: "32%", streaming: "18h 40m" },
-  { nm: "px-home", tracked: "62h 30m tracked", aw: 56.4, iw: 9.7, lw: 33.9, active: "35h 16m", activeP: "56%", idle: "6h 4m", idleP: "10%", lock: "21h 10m", lockP: "34%", streaming: "9h 12m" },
-  { nm: "LOWES-LAPTOP-04", tracked: "41h 30m tracked", aw: 54.6, iw: 10.7, lw: 34.7, active: "22h 40m", activeP: "54%", idle: "4h 26m", idleP: "11%", lock: "14h 24m", lockP: "35%", streaming: "6h 30m" },
-  { nm: "HD-LAPTOP-24", tracked: "33h 0m tracked", aw: 55.2, iw: 10.8, lw: 34, active: "18h 12m", activeP: "55%", idle: "3h 34m", idleP: "11%", lock: "11h 14m", lockP: "34%", streaming: "4h 5m" },
-  { nm: "smith-j", tracked: "27h 0m tracked", aw: 55.2, iw: 11, lw: 33.8, active: "14h 55m", activeP: "55%", idle: "2h 58m", idleP: "11%", lock: "9h 7m", lockP: "34%", streaming: "2h 49m" },
-  { nm: "CC-LAPTOP-3", tracked: "20h 0m tracked", aw: 55.7, iw: 10.9, lw: 33.4, active: "11h 8m", activeP: "56%", idle: "2h 11m", idleP: "11%", lock: "6h 41m", lockP: "33%", streaming: "1h 20m" },
-  { nm: "LOWES-DESKTOP-11", tracked: "16h 0m tracked", aw: 53.4, iw: 10.3, lw: 36.3, active: "8h 33m", activeP: "54%", idle: "1h 39m", idleP: "10%", lock: "5h 48m", lockP: "36%", streaming: "28m" },
-  { nm: "LOWES-SURFACE-09", tracked: "10h 30m tracked", aw: 55.1, iw: 10.2, lw: 34.8, active: "5h 47m", activeP: "55%", idle: "1h 4m", idleP: "10%", lock: "3h 39m", lockP: "35%", streaming: "9m" },
-  { nm: "LOWES-MACBOOK-07", tracked: "6h 30m tracked", aw: 51.5, iw: 10.3, lw: 38.2, active: "3h 21m", activeP: "52%", idle: "40m", idleP: "10%", lock: "2h 29m", lockP: "38%", streaming: "3m" },
+  { nm: "z-ktrojanowski", user: "Kaya Trojanowski", activeMin: 3394, streamingMin: 1350, idleMin: 680, lockMin: 2406 },
+  { nm: "YOGA-BSMITH", user: "Bob Smith", activeMin: 2214, streamingMin: 1120, idleMin: 590, lockMin: 1836 },
+  { nm: "px-home", user: "Priya Xu", activeMin: 1564, streamingMin: 552, idleMin: 364, lockMin: 1270 },
+  { nm: "LOWES-LAPTOP-04", user: "Dana Lowe", activeMin: 970, streamingMin: 390, idleMin: 266, lockMin: 864 },
+  { nm: "HD-LAPTOP-24", user: "Hiro Davis", activeMin: 847, streamingMin: 245, idleMin: 214, lockMin: 674 },
+  { nm: "smith-j", user: "Jamie Smith", activeMin: 726, streamingMin: 169, idleMin: 178, lockMin: 547 },
+  { nm: "CC-LAPTOP-3", user: "Chris Cole", activeMin: 588, streamingMin: 80, idleMin: 131, lockMin: 401 },
+  { nm: "LOWES-DESKTOP-11", user: "Morgan Reed", activeMin: 485, streamingMin: 28, idleMin: 99, lockMin: 348 },
+  { nm: "LOWES-SURFACE-09", user: "Sam Ortiz", activeMin: 338, streamingMin: 9, idleMin: 64, lockMin: 219 },
+  { nm: "LOWES-MACBOOK-07", user: "Alex Kim", activeMin: 198, streamingMin: 3, idleMin: 40, lockMin: 149 },
 ];
 
 function SecHead({ title, sub }: { color?: string; title: string; sub: string }) {
@@ -123,7 +131,7 @@ function SecHead({ title, sub }: { color?: string; title: string; sub: string })
 function LegendSquare({ color, label }: { color: string; label: string }) {
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
-      <Box sx={{ width: 16, height: 16, borderRadius: "4px", bgcolor: color }} />
+      <Box sx={{ width: 16, height: 16, borderRadius: "999px", bgcolor: color }} />
       {label}
     </Box>
   );
@@ -131,7 +139,7 @@ function LegendSquare({ color, label }: { color: string; label: string }) {
 
 function Dot({ color }: { color: string }) {
   return (
-    <Box component="i" sx={{ display: "inline-block", width: 10, height: 10, borderRadius: "3px", mr: "7px", verticalAlign: "1px", bgcolor: color }} />
+    <Box component="i" sx={{ display: "inline-block", width: 10, height: 10, borderRadius: "999px", mr: "7px", verticalAlign: "1px", bgcolor: color }} />
   );
 }
 
@@ -187,14 +195,11 @@ export default function TimelineOverviewReport() {
 
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
-        <Box sx={{ fontSize: 17, fontWeight: 700, letterSpacing: "2.5px", textTransform: "uppercase", color: PRIMARY }}>
-          CyberSight · Monthly report
-        </Box>
         <Box component="h1" sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 44, lineHeight: 1.2, m: "10px 0 12px" }}>
           Timeline Overview
         </Box>
         <Box sx={{ fontSize: 21, color: TEXT2 }}>
-          Prepared for Acme Manufacturing · 30-day device activity composition
+          Prepared for Acme Manufacturing
         </Box>
       </Box>
 
@@ -207,7 +212,7 @@ export default function TimelineOverviewReport() {
           { num: "145h 14m", cap: "Machine locked" },
         ].map((k) => (
           <Box key={k.cap} sx={{ border: `1px solid ${DIVIDER}`, borderRadius: "6px", p: "28px 32px 24px", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 52, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 40, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
               {k.num}
             </Box>
             <Box sx={{ fontSize: 16, fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: TEXT2, mt: "12px" }}>
@@ -222,7 +227,7 @@ export default function TimelineOverviewReport() {
         <SecHead
           color={C.active}
           title="Events"
-          sub="Daily active time by activity type · totals match the Activity Overview trend"
+          sub="Daily active time by activity type"
         />
         <Box
           component="svg"
@@ -280,7 +285,7 @@ export default function TimelineOverviewReport() {
           <SecHead
             color={C.app}
             title="Top activities"
-            sub="Top 5 of 168 activities · share of 254h 30m active time"
+            sub="Top 5 of 168 activities"
           />
           <Box sx={{ display: "flex", alignItems: "center", gap: "48px" }}>
             <Box component="svg" viewBox="0 0 300 300" sx={{ flex: "none", width: 300, height: 300 }}>
@@ -335,33 +340,106 @@ export default function TimelineOverviewReport() {
       <Box sx={{ mb: "8px" }}>
         <SecHead color={C.idle} title="Timeline" sub="10 devices" />
 
-        {DEVICES.map((d) => (
-          <Box key={d.nm} sx={{ mb: "32px" }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", mb: "8px" }}>
-              <Box sx={{ fontSize: 20, fontWeight: 600 }}>{d.nm}</Box>
-              <Box sx={{ fontSize: 17, color: TEXT2, fontVariantNumeric: "tabular-nums" }}>{d.tracked}</Box>
+        {DEVICES.map((d) => {
+          const total = d.activeMin + d.streamingMin + d.idleMin + d.lockMin;
+          const w = (m: number) => `${(m / AXIS_MAX_MIN) * 100}%`;
+          const pct = (m: number) => `${Math.round((m / total) * 100)}%`;
+          const legend = [
+            { label: "Active Time", c: C.active, m: d.activeMin },
+            { label: "Idle Time", c: C.idle, m: d.idleMin },
+            { label: "Streaming", c: STREAM, m: d.streamingMin },
+            { label: "Machine Locks", c: C.lock, m: d.lockMin },
+          ];
+          return (
+            <Box key={d.nm} sx={{ mb: "36px" }}>
+              {/* Device · user */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: "8px", mb: "10px", fontSize: 16 }}>
+                <ComputerOutlinedIcon sx={{ fontSize: 20, color: TEXT2 }} />
+                <Box component="span" sx={{ fontWeight: 400, color: TEXT }}>{d.nm}</Box>
+                <Box component="span" sx={{ color: DIVIDER, px: "2px" }}>|</Box>
+                <PersonOutlineIcon sx={{ fontSize: 20, color: TEXT2 }} />
+                <Box component="span" sx={{ color: TEXT }}>{d.user}</Box>
+              </Box>
+
+              {/* Bar on the shared hour axis */}
+              <Box
+                sx={{
+                  position: "relative",
+                  height: 24,
+                  border: `1px solid ${DIVIDER}`,
+                  borderRadius: "6px",
+                  bgcolor: "#fff",
+                  overflow: "hidden",
+                }}
+              >
+                {/* gridlines */}
+                {AXIS_TICKS.slice(1, -1).map((t) => (
+                  <Box
+                    key={t}
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      bottom: 0,
+                      left: `${(t / AXIS_MAX_MIN) * 100}%`,
+                      width: "1px",
+                      bgcolor: DIVIDER,
+                    }}
+                  />
+                ))}
+                {/* colored fill */}
+                <Box sx={{ position: "absolute", inset: 0, display: "flex" }}>
+                  <Box sx={{ width: w(d.activeMin), bgcolor: C.active }} />
+                  <Box sx={{ width: w(d.streamingMin), bgcolor: STREAM }} />
+                  <Box sx={{ width: w(d.idleMin), bgcolor: C.idle }} />
+                  <Box sx={{ width: w(d.lockMin), bgcolor: C.lock }} />
+                </Box>
+              </Box>
+
+              {/* Hour axis labels */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  mt: "6px",
+                  fontSize: 13,
+                  color: TEXT2,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {AXIS_TICKS.map((t) => (
+                  <Box component="span" key={t}>
+                    {t / 60}h
+                  </Box>
+                ))}
+              </Box>
+
+              {/* Centered legend */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  gap: "6px 28px",
+                  mt: "10px",
+                  fontSize: 14,
+                  color: TEXT2,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {legend.map((it) => (
+                  <Box component="span" key={it.label}>
+                    <Dot color={it.c} />
+                    {it.label}:{" "}
+                    <Box component="b" sx={{ color: TEXT2, fontWeight: 400 }}>
+                      {fmtMin(it.m)}
+                    </Box>{" "}
+                    ({pct(it.m)})
+                  </Box>
+                ))}
+              </Box>
             </Box>
-            <Box sx={{ display: "flex", height: 18, borderRadius: "6px", overflow: "hidden", bgcolor: TRACK }}>
-              <Box sx={{ width: `${d.aw}%`, bgcolor: C.active }} />
-              <Box sx={{ width: `${d.iw}%`, bgcolor: C.idle }} />
-              <Box sx={{ width: `${d.lw}%`, bgcolor: C.lock }} />
-            </Box>
-            <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "6px 28px", mt: "9px", fontSize: 16, color: TEXT2, fontVariantNumeric: "tabular-nums" }}>
-              <Box component="span">
-                <Dot color={C.active} />Active <Box component="b" sx={{ color: TEXT, fontWeight: 600 }}>{d.active}</Box> ({d.activeP})
-              </Box>
-              <Box component="span">
-                <Dot color={C.idle} />Idle <Box component="b" sx={{ color: TEXT, fontWeight: 600 }}>{d.idle}</Box> ({d.idleP})
-              </Box>
-              <Box component="span">
-                <Dot color={C.lock} />Locked <Box component="b" sx={{ color: TEXT, fontWeight: 600 }}>{d.lock}</Box> ({d.lockP})
-              </Box>
-              <Box component="span">
-                Streaming <Box component="b" sx={{ color: TEXT, fontWeight: 600 }}>{d.streaming}</Box>
-              </Box>
-            </Box>
-          </Box>
-        ))}
+          );
+        })}
       </Box>
 
       {/* Footer */}
@@ -379,7 +457,7 @@ export default function TimelineOverviewReport() {
           <Box sx={{ fontSize: 17, fontWeight: 600 }}>Prepared by Brightwave IT</Box>
         </Box>
         <Box sx={{ fontSize: 16, color: TEXT2, textAlign: "right" }}>
-          Generated Jul 23, 2026 · Data period Jun 23 – Jul 22, 2026
+          Data period Jun 23 – Jul 22, 2026
         </Box>
       </Box>
     </Box>

@@ -9,7 +9,6 @@ import type { Theme } from "@mui/material/styles";
 const TEXT = "#031625";
 const TEXT2 = "rgba(3,22,37,.62)";
 const TEXT3 = "rgba(3,22,37,.45)";
-const PRIMARY = "#3527fd";
 const DIVIDER = "rgba(3,22,37,.12)";
 const TRACK = "#edf0f6";
 const C = { threat: "#ce008e", cat: "#ef6c00", user: "#d32f2f" };
@@ -178,14 +177,11 @@ export default function ThreatTrendsReport() {
 
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
-        <Box sx={{ fontSize: 17, fontWeight: 700, letterSpacing: "2.5px", textTransform: "uppercase", color: PRIMARY }}>
-          CyberSight · Monthly report
-        </Box>
         <Box component="h1" sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 44, lineHeight: 1.2, m: "10px 0 12px" }}>
           Threat Overview
         </Box>
         <Box sx={{ fontSize: 21, color: TEXT2 }}>
-          Prepared for Acme Manufacturing · 30-day threat summary
+          Prepared for Acme Manufacturing
         </Box>
       </Box>
 
@@ -198,7 +194,7 @@ export default function ThreatTrendsReport() {
           { num: "13", cap: "Avg threat events / day" },
         ].map((k) => (
           <Box key={k.cap} sx={{ border: `1px solid ${DIVIDER}`, borderRadius: "6px", p: "28px 32px 24px", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 52, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 40, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
               {k.num}
             </Box>
             <Box sx={{ fontSize: 16, fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: TEXT2, mt: "12px" }}>
@@ -213,7 +209,7 @@ export default function ThreatTrendsReport() {
         <SecHead
           color={C.threat}
           title="Observed threat activity"
-          sub="Malicious events observed across all devices · average 13 per day"
+          sub="Malicious events observed across all devices · Average 13 per day"
         />
         <Box
           component="svg"
@@ -262,10 +258,6 @@ export default function ThreatTrendsReport() {
             strokeLinecap="round"
             points="56,190.5 97,165.5 138,115.5 179,178 220,253 261,290.5 302,153 343,115.5 384,78 425,53 466,40.5 507,240.5 548,278 589,103 630,128 671,140.5 712,153 753,140.5 794,253 835,290.5 876,115.5 917,103 958,140.5 999,140.5 1040,153 1081,265.5 1122,290.5 1163,128 1204,103 1245,165.5"
           />
-          <circle cx="466" cy="40.5" r="5" fill={C.threat} />
-          <text className="peak" x="480" y="36">
-            Peak 23 events · Fri Jul 3
-          </text>
           <g textAnchor="middle">
             <text x="56" y="356">Jun 23</text>
             <text x="302" y="356">Jun 29</text>
@@ -308,7 +300,7 @@ export default function ThreatTrendsReport() {
           <Box sx={{ fontSize: 17, fontWeight: 600 }}>Prepared by Brightwave IT</Box>
         </Box>
         <Box sx={{ fontSize: 16, color: TEXT2, textAlign: "right" }}>
-          Generated Jul 23, 2026 · Data period Jun 23 – Jul 22, 2026
+          Data period Jun 23 – Jul 22, 2026
         </Box>
       </Box>
     </Box>
