@@ -57,13 +57,14 @@ const EVENTS: [number, [number, number], [number, number], [number, number]][] =
   [1211.4, [271.1, 56.9], [236.4, 34.7], [204.3, 32.1]],
 ];
 
+// Arc lengths for a radius-112 donut (circumference 703.72).
 const DONUT_ARCS = [
-  { stroke: "#3527fd", dash: "162.29 565.49", offset: -0.0 },
-  { stroke: "#7b3ff2", dash: "118.75 565.49", offset: -162.29 },
-  { stroke: "#0f8a80", dash: "109.14 565.49", offset: -281.04 },
-  { stroke: "#238cd2", dash: "59.38 565.49", offset: -390.18 },
-  { stroke: "#ce008e", dash: "48.07 565.49", offset: -449.56 },
-  { stroke: "#c3cad8", dash: "67.86 565.49", offset: -497.63 },
+  { stroke: "#3527fd", dash: "201.96 703.72", offset: -0.0 },
+  { stroke: "#7b3ff2", dash: "147.78 703.72", offset: -201.96 },
+  { stroke: "#0f8a80", dash: "135.82 703.72", offset: -349.74 },
+  { stroke: "#238cd2", dash: "73.90 703.72", offset: -485.56 },
+  { stroke: "#ce008e", dash: "59.82 703.72", offset: -559.46 },
+  { stroke: "#c3cad8", dash: "84.45 703.72", offset: -619.28 },
 ];
 
 const DONUT_LEGEND = [
@@ -73,14 +74,6 @@ const DONUT_LEGEND = [
   { c: "#238cd2", nm: "Google Chrome", typ: "Application", val: "26h 45m", sub: "(10.5%)" },
   { c: "#ce008e", nm: "dnsfilter.atlassian.net", typ: "Website", val: "21h 33m", sub: "(8.5%)" },
   { c: "#c3cad8", nm: "Other", typ: "163 activities", val: "30h 33m", sub: "(12.0%)" },
-];
-
-const NOTABLE = [
-  { k: "Busiest hour of day", v: "10 AM · 55 min avg active" },
-  { k: "Midday dip", v: "12 PM · 30 min avg active" },
-  { k: "Most active device", v: "z-ktrojanowski · 79h 4m" },
-  { k: "Streaming share of active time", v: "26% · 65h 46m" },
-  { k: "Locked share of tracked time", v: "33% · 145h 14m" },
 ];
 
 type Device = {
@@ -281,34 +274,34 @@ export default function TimelineOverviewReport() {
         </Box>
       </Box>
 
-      {/* Top activities + Notable */}
-      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "48px", mb: "72px" }}>
+      {/* Top activities */}
+      <Box sx={{ mb: "72px" }}>
         <Box>
           <SecHead
             color={C.app}
             title="Top activities"
             sub="Top 5 of 168 activities · share of 254h 30m active time"
           />
-          <Box sx={{ display: "flex", alignItems: "center", gap: "32px" }}>
-            <Box component="svg" viewBox="0 0 260 260" sx={{ flex: "none", width: 260, height: 260 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: "48px" }}>
+            <Box component="svg" viewBox="0 0 300 300" sx={{ flex: "none", width: 300, height: 300 }}>
               {DONUT_ARCS.map((arc, i) => (
                 <circle
                   key={i}
-                  r="90"
-                  cx="130"
-                  cy="130"
+                  r="112"
+                  cx="150"
+                  cy="150"
                   fill="none"
                   stroke={arc.stroke}
                   strokeWidth="44"
                   strokeDasharray={arc.dash}
                   strokeDashoffset={arc.offset}
-                  transform="rotate(-90 130 130)"
+                  transform="rotate(-90 150 150)"
                 />
               ))}
-              <text x="130" y="126" textAnchor="middle" style={{ font: "600 30px 'Montserrat Variable',sans-serif" }} fill={TEXT}>
+              <text x="150" y="146" textAnchor="middle" style={{ font: "600 24px 'Montserrat Variable',sans-serif" }} fill={TEXT}>
                 254h 30m
               </text>
-              <text x="130" y="152" textAnchor="middle" style={{ font: "600 13px 'Inter Variable',sans-serif", letterSpacing: "1.5px" }} fill={TEXT2}>
+              <text x="150" y="174" textAnchor="middle" style={{ font: "600 13px 'Inter Variable',sans-serif", letterSpacing: "1.5px" }} fill={TEXT2}>
                 ACTIVE TIME
               </text>
             </Box>
@@ -336,42 +329,11 @@ export default function TimelineOverviewReport() {
             </Box>
           </Box>
         </Box>
-
-        <Box>
-          <SecHead color={PRIMARY} title="Notable this period" sub="Called out from the timeline data" />
-          <Box sx={{ border: `1px solid ${DIVIDER}`, borderRadius: "6px", px: "28px", py: "8px" }}>
-            {NOTABLE.map((n, i) => (
-              <Box
-                key={n.k}
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "baseline",
-                  gap: "16px",
-                  py: "18px",
-                  borderBottom: i < NOTABLE.length - 1 ? `1px solid ${DIVIDER}` : "none",
-                }}
-              >
-                <Box sx={{ fontSize: 17, color: TEXT2 }}>{n.k}</Box>
-                <Box sx={{ fontSize: 19, fontWeight: 600, textAlign: "right", whiteSpace: "nowrap" }}>{n.v}</Box>
-              </Box>
-            ))}
-          </Box>
-        </Box>
       </Box>
 
       {/* Device time composition */}
       <Box sx={{ mb: "8px" }}>
-        <SecHead
-          color={C.idle}
-          title="Device time composition"
-          sub="All 10 monitored devices · share of tracked time, Jun 23 – Jul 22"
-        />
-        <Box sx={{ display: "flex", gap: "32px", mb: "28px", fontSize: 16, color: TEXT2 }}>
-          <LegendSquare color={C.active} label="Active" />
-          <LegendSquare color={C.idle} label="Idle" />
-          <LegendSquare color={C.lock} label="Machine locked" />
-        </Box>
+        <SecHead color={C.idle} title="Timeline" sub="10 devices" />
 
         {DEVICES.map((d) => (
           <Box key={d.nm} sx={{ mb: "32px" }}>
@@ -384,7 +346,7 @@ export default function TimelineOverviewReport() {
               <Box sx={{ width: `${d.iw}%`, bgcolor: C.idle }} />
               <Box sx={{ width: `${d.lw}%`, bgcolor: C.lock }} />
             </Box>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: "6px 28px", mt: "9px", fontSize: 16, color: TEXT2, fontVariantNumeric: "tabular-nums" }}>
+            <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "6px 28px", mt: "9px", fontSize: 16, color: TEXT2, fontVariantNumeric: "tabular-nums" }}>
               <Box component="span">
                 <Dot color={C.active} />Active <Box component="b" sx={{ color: TEXT, fontWeight: 600 }}>{d.active}</Box> ({d.activeP})
               </Box>
@@ -395,7 +357,7 @@ export default function TimelineOverviewReport() {
                 <Dot color={C.lock} />Locked <Box component="b" sx={{ color: TEXT, fontWeight: 600 }}>{d.lock}</Box> ({d.lockP})
               </Box>
               <Box component="span">
-                incl. <Box component="b" sx={{ color: TEXT, fontWeight: 600 }}>{d.streaming}</Box> streaming
+                Streaming <Box component="b" sx={{ color: TEXT, fontWeight: 600 }}>{d.streaming}</Box>
               </Box>
             </Box>
           </Box>
