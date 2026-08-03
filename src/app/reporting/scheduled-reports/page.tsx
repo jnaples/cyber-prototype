@@ -7,6 +7,7 @@ import {
   Box,
   Button,
   Chip,
+  Divider,
   IconButton,
   InputAdornment,
   MenuItem,
@@ -230,8 +231,7 @@ const columns: GridColDef<Schedule>[] = [
   {
     field: "name",
     headerName: "Schedule",
-    flex: 1.5,
-    minWidth: 240,
+    width: 320,
     renderCell: (params) => (
       <ScheduleCell name={params.row.name} tags={params.row.tags} />
     ),
@@ -417,8 +417,8 @@ export default function ScheduledReportsPage() {
       icon: "error",
       count: counts.issue,
       label: "Delivery Issues",
-      color: "warning.main",
-      iconColorVar: "var(--dnsf-palette-warning-main)",
+      color: "error.main",
+      iconColorVar: "var(--dnsf-palette-error-main)",
       progressValue: counts.all ? (counts.issue / counts.all) * 100 : 0,
     },
   ];
@@ -438,18 +438,30 @@ export default function ScheduledReportsPage() {
         <PageHeader
           title="Scheduled Reports"
           leftSlot={
-            <>
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <Typography variant="body2" color="text.secondary">
                 All Organizations
               </Typography>
-              <Chip
-                size="small"
-                icon={<MaterialSymbol name="filter_alt" size={16} />}
-                label="Managing 8 Organizations"
-                variant="outlined"
-                sx={{ ml: 1 }}
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ borderColor: "divider", mx: "8px" }}
               />
-            </>
+              <Chip
+                label="Managing 8 Organizations"
+                onClick={() => {}}
+                sx={{ borderRadius: "8px", fontSize: "14px" }}
+                deleteIcon={
+                  <MaterialSymbol
+                    name="filter_list"
+                    size={20}
+                    sx={{ color: "text.primary" }}
+                  />
+                }
+                onDelete={() => {}}
+                size="small"
+              />
+            </div>
           }
         />
       }

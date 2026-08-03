@@ -114,13 +114,6 @@ const PORTAL_USERS = [
 
 const PERIODS = ["Previous month", "Previous week", "Previous quarter", "Previous 30 days"];
 const DAYS = ["1st", "5th", "15th", "Last day"];
-const TIMES = ["6:00 AM", "8:00 AM", "12:00 PM", "5:00 PM"];
-const TIMEZONES = [
-  { value: "ET", label: "Eastern (ET)" },
-  { value: "CT", label: "Central (CT)" },
-  { value: "MT", label: "Mountain (MT)" },
-  { value: "PT", label: "Pacific (PT)" },
-];
 const FREQUENCIES = ["Daily", "Weekly", "Monthly", "Quarterly"] as const;
 
 // Section wrapper — overline "STEP n — TITLE" then content.
@@ -163,12 +156,9 @@ export function ScheduleReportView({
   const [externalEmails, setExternalEmails] = useState<string[]>([]);
   const [frequency, setFrequency] = useState<(typeof FREQUENCIES)[number]>("Monthly");
   const [day, setDay] = useState(DAYS[0]);
-  const [time, setTime] = useState(TIMES[1]);
-  const [timezone, setTimezone] = useState(TIMEZONES[0].value);
   const [whitelabel, setWhitelabel] = useState(false);
   const [companyName, setCompanyName] = useState("Brightwave IT");
   const [replyTo, setReplyTo] = useState("reports@brightwaveit.com");
-  const [footerNote, setFooterNote] = useState("");
   const [previewTab, setPreviewTab] = useState<"email" | "pdf">("email");
   const [samplePreview, setSamplePreview] = useState<ReportDef | null>(null);
 
@@ -544,7 +534,7 @@ export function ScheduleReportView({
                   ))}
                 </Box>
               )}
-              <Typography variant="body2" sx={{ color: "text.secondary", mt: 1.5 }}>
+              <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
                 Delivering to {recipientCount} recipient{recipientCount === 1 ? "" : "s"}
                 {orgContacts ? ` — ${orgContactCount} organization contacts.` : "."}
               </Typography>
@@ -575,80 +565,42 @@ export function ScheduleReportView({
                 ))}
               </ToggleButtonGroup>
 
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
-                  gap: 2,
-                }}
-              >
-                <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>Day of month</FormLabel>
-                  <Select
-                    fullWidth
-                    size="small"
-                    value={day}
-                    onChange={(e) => setDay(e.target.value)}
-                  >
-                    {DAYS.map((d) => (
-                      <MenuItem key={d} value={d}>
-                        {d}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </Box>
-                <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>Time</FormLabel>
-                  <Select
-                    fullWidth
-                    size="small"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                  >
-                    {TIMES.map((t) => (
-                      <MenuItem key={t} value={t}>
-                        {t}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </Box>
-                <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>Timezone</FormLabel>
-                  <Select
-                    fullWidth
-                    size="small"
-                    value={timezone}
-                    onChange={(e) => setTimezone(e.target.value)}
-                  >
-                    {TIMEZONES.map((t) => (
-                      <MenuItem key={t.value} value={t.value}>
-                        {t.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </Box>
-              </Box>
+              <Box>
+                <FormLabel sx={{ display: "block", mb: 0.5 }}>Day of month</FormLabel>
+                <Select
+                  fullWidth
+                  size="small"
+                  value={day}
+                  onChange={(e) => setDay(e.target.value)}
+                >
+                  {DAYS.map((d) => (
+                    <MenuItem key={d} value={d}>
+                      {d}
+                    </MenuItem>
+                  ))}
+                </Select>
 
-              <Box
-                sx={(theme) => ({
-                  display: "inline-flex",
-                  alignSelf: "flex-start",
-                  alignItems: "center",
-                  gap: 1,
-                  px: 1.5,
-                  py: 1,
-                  borderRadius: 1,
-                  bgcolor: theme.vars.palette.Alert.infoStandardBg,
-                  color: theme.vars.palette.Alert.infoColor,
-                })}
-              >
-                <MaterialSymbol name="event_repeat" size={20} />
-                <Typography variant="body2">
-                  <Box component="span" sx={{ fontWeight: 700 }}>
-                    Next delivery:
-                  </Box>{" "}
-                  {nextDeliveryDay} · {time} {timezone}
-                </Typography>
+                <Box
+                  sx={(theme) => ({
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 1,
+                    mt: 1,
+                    px: 1.5,
+                    py: 1,
+                    borderRadius: 1,
+                    bgcolor: theme.vars.palette.Alert.infoStandardBg,
+                    color: theme.vars.palette.Alert.infoColor,
+                  })}
+                >
+                  <MaterialSymbol name="event_repeat" size={20} />
+                  <Typography variant="body2">
+                    <Box component="span" sx={{ fontWeight: 700 }}>
+                      Next delivery:
+                    </Box>{" "}
+                    {nextDeliveryDay}
+                  </Typography>
+                </Box>
               </Box>
               </Box>
             </Step>
@@ -721,16 +673,6 @@ export function ScheduleReportView({
                         PNG or SVG, 512px wide recommended
                       </Typography>
                     </Box>
-                  </Box>
-                  <Box>
-                    <FormLabel sx={{ display: "block", mb: 0.5 }}>Email footer note</FormLabel>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      placeholder="e.g. Questions? Reply to this email."
-                      value={footerNote}
-                      onChange={(e) => setFooterNote(e.target.value)}
-                    />
                   </Box>
                 </Box>
               )}

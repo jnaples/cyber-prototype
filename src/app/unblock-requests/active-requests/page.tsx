@@ -282,7 +282,7 @@ const columns: GridColDef[] = [
       return (
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, height: "100%" }}>
           <MaterialSymbol name="gpp_bad" size={18} sx={{ color: "error.main" }} />
-          <Typography variant="body2" sx={{ color: "error.main", fontWeight: 600 }}>
+          <Typography variant="body2" sx={{ color: "error.main", fontWeight: 400 }}>
             {params.row.category}
           </Typography>
         </Box>

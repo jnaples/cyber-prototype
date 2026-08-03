@@ -15,7 +15,6 @@ const BASE = "/reports";
 const REPORTS = [
   { label: "Customer Activity Overview", path: `${BASE}/customer-activity-overview` },
   { label: "Filter Protection Summary", path: `${BASE}/filter-protection-summary` },
-  { label: "Timeline Activity Logs", path: `${BASE}/timeline-activity-logs` },
   { label: "Timeline Overview", path: `${BASE}/timeline-overview` },
   { label: "CyberSight AI Usage", path: `${BASE}/cybersight-ai-usage` },
   { label: "Threat Trends", path: `${BASE}/threat-trends` },
