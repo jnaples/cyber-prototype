@@ -105,12 +105,12 @@ const SCHEDULES: Schedule[] = [
   },
   {
     id: 4,
-    name: "Quarterly Business Review Packet",
+    name: "Business Review Packet",
     tags: ["Activity Overview", "Protection Summary", "Traffic Logs", "AI Usage"],
     organizations: "All organizations (6)",
     recipients: 6,
-    freqPrimary: "Quarterly",
-    freqSecondary: "1st of quarter · 9:00 AM ET",
+    freqPrimary: "Monthly",
+    freqSecondary: "1st · 9:00 AM ET",
     nextDelivery: "Paused",
     lastDate: "Apr 1 · 9:00 AM",
     lastStatus: "sent",
@@ -134,26 +134,6 @@ const SCHEDULES: Schedule[] = [
 // ---------------------------------------------------------------------------
 // Cells
 // ---------------------------------------------------------------------------
-
-function TwoLineCell({ primary, secondary }: { primary: string; secondary: string }) {
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        height: "100%",
-      }}
-    >
-      <Typography variant="body2" sx={{ color: "text.primary" }}>
-        {primary}
-      </Typography>
-      <Typography variant="caption" sx={{ color: "text.secondary" }}>
-        {secondary}
-      </Typography>
-    </Box>
-  );
-}
 
 // Schedule name + report-type tag chips (first two, then a +N overflow chip).
 function ScheduleCell({ name, tags }: { name: string; tags: string[] }) {
@@ -252,10 +232,11 @@ const columns: GridColDef<Schedule>[] = [
     minWidth: 150,
     sortable: false,
     renderCell: (params) => (
-      <TwoLineCell
-        primary={params.row.freqPrimary}
-        secondary={params.row.freqSecondary}
-      />
+      <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
+          {params.row.freqPrimary}
+        </Typography>
+      </Box>
     ),
   },
   {
@@ -287,19 +268,28 @@ const columns: GridColDef<Schedule>[] = [
     renderCell: (params) => {
       const failed = params.row.lastStatus === "failed";
       return (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, height: "100%" }}>
-          <MaterialSymbol
-            name={failed ? "error" : "check_circle"}
-            size={18}
-            sx={{ color: failed ? "error.main" : "success.main", flexShrink: 0 }}
-          />
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography variant="body2" sx={{ color: "text.primary" }}>
-              {params.row.lastDate}
-            </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+          <Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <MaterialSymbol
+                name={failed ? "error" : "check_circle"}
+                size={18}
+                sx={{
+                  color: failed ? "error.main" : "success.main",
+                  flexShrink: 0,
+                }}
+              />
+              <Typography variant="body2" sx={{ color: "text.primary" }}>
+                {params.row.lastDate}
+              </Typography>
+            </Box>
             <Typography
               variant="caption"
-              sx={{ color: failed ? "error.main" : "text.secondary" }}
+              sx={{
+                display: "block",
+                ml: "26px",
+                color: failed ? "error.main" : "text.secondary",
+              }}
             >
               {failed ? "Failed" : "Sent"}
             </Typography>

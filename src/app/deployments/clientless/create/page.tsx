@@ -24,13 +24,27 @@ import { PageShell } from "@/components/page-shell";
 // Sites the deployment can inherit policy / schedule / block page from.
 const SITES = [
   { name: "Seattle HQ", policy: "Standard Policy", blockPage: "Corporate Block Page" },
-  { name: "Portland DC", policy: "Restricted Policy", blockPage: "(Default)" },
+  { name: "Portland DC", policy: "Restricted Policy", blockPage: "Default Appearance" },
   { name: "Austin Clinic", policy: "HIPAA Strict", blockPage: "HIPAA Notice" },
   {
     name: "Lincoln Middle School",
     policy: "CIPA Policy",
     blockPage: "CIPA Notice",
   },
+];
+
+const POLICY_OPTIONS = [
+  "Standard Policy",
+  "Restricted Policy",
+  "HIPAA Strict",
+  "CIPA Policy",
+  "Default Policy",
+];
+const BLOCK_PAGE_OPTIONS = [
+  "Corporate Block Page",
+  "HIPAA Notice",
+  "CIPA Notice",
+  "Default Appearance",
 ];
 
 // Deterministic 6-char token derived from the deployment's name + site.
@@ -53,37 +67,6 @@ function StepOverline({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Read-only, Site-inherited field: filled neutral box with a muted placeholder.
-function ReadonlyField({
-  value,
-  placeholder,
-}: {
-  value: string;
-  placeholder: string;
-}) {
-  return (
-    <TextField
-      fullWidth
-      disabled
-      value={value}
-      placeholder={placeholder}
-      sx={{
-        "& .MuiOutlinedInput-root": { bgcolor: "background.neutral" },
-        // Keep the inherited value readable even though the field is disabled.
-        "& .MuiOutlinedInput-input.Mui-disabled": {
-          WebkitTextFillColor: value
-            ? "var(--dnsf-palette-text-primary)"
-            : undefined,
-        },
-        "& .MuiOutlinedInput-input::placeholder": {
-          color: "text.disabled",
-          opacity: 1,
-        },
-      }}
-    />
-  );
-}
-
 export default function CreateClientlessPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -97,18 +80,26 @@ export default function CreateClientlessPage() {
 
   const [name, setName] = useState(edit.editName ?? "");
   const [site, setSite] = useState(edit.editSite ?? "");
+  // Policy / Block page default to the site's inherited values but can be
+  // changed once a site is selected.
+  const initialSite = SITES.find((s) => s.name === (edit.editSite ?? ""));
+  const [policy, setPolicy] = useState(initialSite?.policy ?? "");
+  const [blockPage, setBlockPage] = useState(initialSite?.blockPage ?? "");
+
+  const handleSiteChange = (next: string) => {
+    setSite(next);
+    const s = SITES.find((x) => x.name === next);
+    setPolicy(s?.policy ?? "");
+    setBlockPage(s?.blockPage ?? "");
+  };
   // The generated DoH endpoint token — set once the form first becomes valid.
   const [token, setToken] = useState<string | null>(edit.editToken ?? null);
-  // Whether the user has copied the generated endpoint (required to save).
-  const [hasCopied, setHasCopied] = useState(Boolean(edit.editToken));
 
   // Editing an existing deployment (arrived from the grid Edit action).
   const saved = Boolean(edit.editToken);
   const savedName = edit.editName ?? "";
-  const savedSite = edit.editSite ?? "";
 
   const back = () => navigate("/deployments/clientless");
-  const selectedSite = SITES.find((s) => s.name === site);
   const valid = name.trim() !== "" && site !== "";
 
   // Generate the endpoint token the first time the form becomes valid.
@@ -116,11 +107,6 @@ export default function CreateClientlessPage() {
 
   const createdEndpoint =
     valid && token ? `https://doh.dnsfilter.com/${token}` : null;
-
-  const dirty = saved && (name !== savedName || site !== savedSite);
-  // Save unlocks once required fields are filled and the endpoint is copied;
-  // after the first save it re-enables only when there are unsaved edits.
-  const canSave = valid && ((!saved && hasCopied) || (saved && dirty));
 
   const handleSave = () => {
     navigate("/deployments/clientless", {
@@ -140,37 +126,14 @@ export default function CreateClientlessPage() {
           title={saved ? savedName : "Add Clientless Device"}
           onBack={back}
           actions={
-            <>
-              <Button variant="outlined" color="secondary" onClick={back}>
-                Cancel
-              </Button>
-              <ArrowTooltip
-                title={
-                  !valid
-                    ? "Enter a name and select a Site, then copy the DoH endpoint to enable Save."
-                    : !saved && !hasCopied
-                      ? "Copy the DoH endpoint to enable Save."
-                      : saved && !dirty
-                        ? "No changes to save."
-                        : ""
-                }
-              >
-                <Box
-                  component="span"
-                  sx={{ cursor: canSave ? undefined : "not-allowed" }}
-                >
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    disabled={!canSave}
-                    onClick={handleSave}
-                    sx={{ minWidth: 0 }}
-                  >
-                    Save
-                  </Button>
-                </Box>
-              </ArrowTooltip>
-            </>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleSave}
+              sx={{ minWidth: 0 }}
+            >
+              Done
+            </Button>
           }
         />
       }
@@ -244,27 +207,39 @@ export default function CreateClientlessPage() {
                   *
                 </Box>
               </FormLabel>
-              <Select
-                fullWidth
-                displayEmpty
-                value={site}
-                onChange={(e) => setSite(e.target.value)}
-                renderValue={(value) =>
-                  value ? (
-                    value
-                  ) : (
-                    <Box component="span" sx={{ color: "text.disabled" }}>
-                      Select a Site
-                    </Box>
-                  )
-                }
-              >
-                {SITES.map((s) => (
-                  <MenuItem key={s.name} value={s.name}>
-                    {s.name}
-                  </MenuItem>
-                ))}
-              </Select>
+              {saved ? (
+                <TextField
+                  fullWidth
+                  value={site}
+                  slotProps={{ input: { readOnly: true } }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": { bgcolor: "background.neutral" },
+                    "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                  }}
+                />
+              ) : (
+                <Select
+                  fullWidth
+                  displayEmpty
+                  value={site}
+                  onChange={(e) => handleSiteChange(e.target.value)}
+                  renderValue={(value) =>
+                    value ? (
+                      value
+                    ) : (
+                      <Box component="span" sx={{ color: "text.disabled" }}>
+                        Select a Site
+                      </Box>
+                    )
+                  }
+                >
+                  {SITES.map((s) => (
+                    <MenuItem key={s.name} value={s.name}>
+                      {s.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
             </Box>
 
             <Box>
@@ -279,27 +254,99 @@ export default function CreateClientlessPage() {
                   <FormLabel sx={{ display: "block", mb: 0.5 }}>
                     Policy/Schedule
                   </FormLabel>
-                  <ReadonlyField
-                    value={selectedSite?.policy ?? ""}
-                    placeholder="-"
-                  />
+                  <ArrowTooltip title={!site ? "Select a Site first." : ""}>
+                    <Box
+                      component="span"
+                      sx={{
+                        display: "block",
+                        cursor: !site ? "not-allowed" : undefined,
+                      }}
+                    >
+                      <Select
+                        fullWidth
+                        displayEmpty
+                        disabled={!site}
+                        sx={{ pointerEvents: !site ? "none" : undefined }}
+                        value={policy}
+                        onChange={(e) => setPolicy(e.target.value)}
+                        renderValue={(v) =>
+                          v ? (
+                            v
+                          ) : (
+                            <Box component="span" sx={{ color: "text.disabled" }}>
+                              -
+                            </Box>
+                          )
+                        }
+                      >
+                        {POLICY_OPTIONS.map((p) => (
+                          <MenuItem key={p} value={p}>
+                            {p}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </Box>
+                  </ArrowTooltip>
                 </Box>
                 <Box>
                   <FormLabel sx={{ display: "block", mb: 0.5 }}>
                     Block Page
                   </FormLabel>
-                  <ReadonlyField
-                    value={selectedSite?.blockPage ?? ""}
-                    placeholder="-"
-                  />
+                  <ArrowTooltip title={!site ? "Select a Site first." : ""}>
+                    <Box
+                      component="span"
+                      sx={{
+                        display: "block",
+                        cursor: !site ? "not-allowed" : undefined,
+                      }}
+                    >
+                      <Select
+                        fullWidth
+                        displayEmpty
+                        disabled={!site}
+                        sx={{ pointerEvents: !site ? "none" : undefined }}
+                        value={blockPage}
+                        onChange={(e) => setBlockPage(e.target.value)}
+                        renderValue={(v) =>
+                          v ? (
+                            v
+                          ) : (
+                            <Box component="span" sx={{ color: "text.disabled" }}>
+                              -
+                            </Box>
+                          )
+                        }
+                      >
+                        {BLOCK_PAGE_OPTIONS.map((b) => (
+                          <MenuItem key={b} value={b}>
+                            {b}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </Box>
+                  </ArrowTooltip>
                 </Box>
               </Box>
-              <Typography
-                variant="body2"
-                sx={{ color: "text.secondary", mt: 0.5 }}
-              >
-                Inherited from the Site. Update the Site to change them.
-              </Typography>
+              <ArrowTooltip title={!site ? "Select a Site first." : ""}>
+                <Box
+                  component="span"
+                  sx={{
+                    mt: 2,
+                    alignSelf: "flex-start",
+                    display: "inline-flex",
+                    cursor: !site ? "not-allowed" : undefined,
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    disabled={!site}
+                    sx={{ pointerEvents: !site ? "none" : undefined }}
+                  >
+                    Create DoH Endpoint
+                  </Button>
+                </Box>
+              </ArrowTooltip>
             </Box>
             </Box>
           </Box>
@@ -333,11 +380,7 @@ export default function CreateClientlessPage() {
                 }}
               />
               {createdEndpoint ? (
-                <CopyButton
-                  value={createdEndpoint}
-                  label="Copy DoH endpoint"
-                  onCopy={() => setHasCopied(true)}
-                />
+                <CopyButton value={createdEndpoint} label="Copy DoH endpoint" />
               ) : (
                 <IconButton
                   disabled

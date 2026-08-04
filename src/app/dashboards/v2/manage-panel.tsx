@@ -12,12 +12,22 @@ import {
   Typography,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type React from "react";
 
 import { Drawer } from "@/components/drawer";
 import { MaterialSymbol } from "@/components/material-symbol";
 
 import { WIDGET_CATALOG, type WidgetCategory, type WidgetDef } from "../lib";
+import { WidgetPreview } from "../widget-preview";
+
+// How long the pointer must dwell on a row before its preview appears.
+const HOVER_DELAY_MS = 150;
+
+type HoverProps = {
+  onMouseEnter: (e: React.MouseEvent<HTMLElement>) => void;
+  onMouseLeave: () => void;
+};
 
 const CATEGORY_ORDER: WidgetCategory[] = [
   "KPIs",
@@ -33,15 +43,18 @@ function WidgetRow({
   widget,
   checked,
   onToggle,
+  hoverProps,
 }: {
   widget: WidgetDef;
   checked: boolean;
   onToggle: () => void;
+  hoverProps: HoverProps;
 }) {
   return (
     <Box
       role="button"
       aria-pressed={checked}
+      {...hoverProps}
       onClick={onToggle}
       sx={(theme) => ({
         display: "flex",
@@ -116,6 +129,33 @@ export function ManagePanel({
   const [q, setQ] = useState("");
   // The desired on-dashboard set, seeded from the current dashboard each open.
   const [selected, setSelected] = useState<string[]>(dashboardTypes);
+  // Currently hovered widget (drives the floating preview).
+  const [hovered, setHovered] = useState<{ type: string; anchorY: number } | null>(
+    null,
+  );
+  const hoverTimer = useRef<number | null>(null);
+
+  const clearHoverTimer = () => {
+    if (hoverTimer.current !== null) {
+      window.clearTimeout(hoverTimer.current);
+      hoverTimer.current = null;
+    }
+  };
+
+  const hoverProps = (type: string): HoverProps => ({
+    onMouseEnter: (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const anchorY = rect.top + rect.height / 2;
+      clearHoverTimer();
+      hoverTimer.current = window.setTimeout(() => {
+        setHovered({ type, anchorY });
+      }, HOVER_DELAY_MS);
+    },
+    onMouseLeave: () => {
+      clearHoverTimer();
+      setHovered(null);
+    },
+  });
 
   // Re-seed when the drawer transitions to open.
   const [wasOpen, setWasOpen] = useState(open);
@@ -138,6 +178,8 @@ export function ManagePanel({
   const clearAll = () => setSelected([]);
 
   const handleClose = () => {
+    clearHoverTimer();
+    setHovered(null);
     setQ("");
     onClose();
   };
@@ -252,6 +294,7 @@ export function ManagePanel({
                     widget={w}
                     checked={selected.includes(w.type)}
                     onToggle={() => toggle(w.type)}
+                    hoverProps={hoverProps(w.type)}
                   />
                 ))}
               </Box>
@@ -259,6 +302,14 @@ export function ManagePanel({
           );
         })}
       </Box>
+
+      {hovered && (
+        <WidgetPreview
+          key={hovered.type}
+          type={hovered.type}
+          anchorY={hovered.anchorY}
+        />
+      )}
     </Drawer>
   );
 }

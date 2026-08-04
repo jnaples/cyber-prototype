@@ -31,8 +31,10 @@ import {
   DEPLOYMENT_TYPE_OPTIONS,
   ORGANIZATION_OPTIONS,
   RESULT_OPTIONS,
+  ROAMING_RELAY_OPTIONS,
   SITE_OPTIONS,
   TIME_RANGE_OPTIONS,
+  USER_OPTIONS,
   type DashboardFilters,
   type TimeRangeKey,
 } from "./dashboard-filters";
@@ -100,6 +102,8 @@ type GroupKey =
   | "organizations"
   | "results"
   | "sites"
+  | "roamingRelays"
+  | "users"
   | "deploymentTypes"
   | "categories";
 
@@ -160,11 +164,14 @@ export function QuickFilters({
   onClose,
   filters,
   onApply,
+  hideTimeRange = false,
 }: {
   open: boolean;
   onClose: () => void;
   filters: DashboardFilters;
   onApply: (next: DashboardFilters) => void;
+  /** Hide the Time range control (e.g. when it lives in the page toolbar). */
+  hideTimeRange?: boolean;
 }) {
   const [draft, setDraft] = useState<DashboardFilters>(filters);
   // Custom date range (prototype: not persisted to DashboardFilters).
@@ -210,6 +217,7 @@ export function QuickFilters({
         onChange={(v) => setGroup("organizations", v)}
       />
 
+      {!hideTimeRange && (
       <FormControl fullWidth size="small">
         <FormLabel>Time range</FormLabel>
         {draft.timeRange === "custom" ? (
@@ -271,6 +279,7 @@ export function QuickFilters({
           </Select>
         )}
       </FormControl>
+      )}
 
       <MultiSelect
         label="Result"
@@ -279,10 +288,22 @@ export function QuickFilters({
         onChange={(v) => setGroup("results", v)}
       />
       <MultiSelect
-        label="Site / Network"
+        label="Sites"
         options={SITE_OPTIONS}
         selected={draft.sites}
         onChange={(v) => setGroup("sites", v)}
+      />
+      <MultiSelect
+        label="Roaming Clients / Relays"
+        options={ROAMING_RELAY_OPTIONS}
+        selected={draft.roamingRelays}
+        onChange={(v) => setGroup("roamingRelays", v)}
+      />
+      <MultiSelect
+        label="Users"
+        options={USER_OPTIONS}
+        selected={draft.users}
+        onChange={(v) => setGroup("users", v)}
       />
       <MultiSelect
         label="Deployment type"

@@ -17,6 +17,8 @@ export type DashboardFilters = {
   timeRange: TimeRangeKey;
   results: string[];
   sites: string[];
+  roamingRelays: string[];
+  users: string[];
   deploymentTypes: string[];
   categories: string[];
 };
@@ -40,6 +42,19 @@ export const SITE_OPTIONS = [
   "Remote VPN",
   "Branch Offices",
 ];
+export const ROAMING_RELAY_OPTIONS = [
+  "z-ktrojanowski",
+  "YOGA-BSMITH",
+  "px-home",
+  "US-East Relay",
+  "EU-West Relay",
+];
+export const USER_OPTIONS = [
+  "Kaya Trojanowski",
+  "Bob Smith",
+  "Priya Xu",
+  "Dana Lowe",
+];
 export const DEPLOYMENT_TYPE_OPTIONS = [
   "Roaming Clients",
   "Sites",
@@ -58,6 +73,8 @@ export const DEFAULT_FILTERS: DashboardFilters = {
   timeRange: "24h",
   results: [],
   sites: [],
+  roamingRelays: [],
+  users: [],
   deploymentTypes: [],
   categories: [],
 };
@@ -80,6 +97,8 @@ export function filterFactor(f: DashboardFilters): number {
     factor *= f.results.length / RESULT_OPTIONS.length;
   }
   if (f.sites.length) factor *= 0.6;
+  if (f.roamingRelays.length) factor *= 0.6;
+  if (f.users.length) factor *= 0.6;
   if (f.deploymentTypes.length) {
     factor *= f.deploymentTypes.length / DEPLOYMENT_TYPE_OPTIONS.length;
   }
@@ -99,6 +118,8 @@ export function activeFilterChips(f: DashboardFilters): string[] {
     ...chips,
     ...f.results,
     ...f.sites,
+    ...f.roamingRelays,
+    ...f.users,
     ...f.deploymentTypes,
     ...f.categories,
   ];

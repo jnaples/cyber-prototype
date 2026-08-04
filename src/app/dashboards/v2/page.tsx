@@ -40,12 +40,11 @@ import {
   DEFAULT_FILTERS,
   DashboardFactorContext,
   DashboardOrgCountContext,
-  TIME_RANGE_OPTIONS,
   filterFactor,
   type DashboardFilters,
 } from "../dashboard-filters";
-import { AdvancedFilters, type AppliedAdvancedFilter } from "../advanced-filters";
 import { QuickFilters } from "../quick-filters";
+import { TimeRangeSelect } from "../time-range-select";
 import { DashSwitcher } from "../dash-switcher";
 import { ShareWithOrganizationsDrawer } from "../share-with-organizations-drawer";
 import { WidgetBody } from "../widgets";
@@ -436,7 +435,6 @@ function readPersisted(): {
   name?: string;
   widgets?: WidgetInstance[];
   filters?: DashboardFilters;
-  advancedFilters?: AppliedAdvancedFilter[];
 } {
   try {
     const raw = localStorage.getItem(LS_KEY);
@@ -445,7 +443,6 @@ function readPersisted(): {
       name?: unknown;
       widgets?: unknown;
       filters?: unknown;
-      advancedFilters?: unknown;
     };
     const widgets = sanitize(parsed.widgets) ?? undefined;
     if (widgets) bumpUid(widgets);
@@ -459,9 +456,6 @@ function readPersisted(): {
               ...(parsed.filters as Partial<DashboardFilters>),
             } as DashboardFilters)
           : undefined,
-      advancedFilters: Array.isArray(parsed.advancedFilters)
-        ? (parsed.advancedFilters as AppliedAdvancedFilter[])
-        : undefined,
     };
   } catch {
     return {};
@@ -510,19 +504,14 @@ export default function DashboardsV2Page() {
   // Snapshot of the filters cleared by the Clear button, so the toast can undo.
   const [clearedFilters, setClearedFilters] = useState<{
     filters: DashboardFilters;
-    advancedFilters: AppliedAdvancedFilter[];
   } | null>(null);
   const [favorited, setFavorited] = useState(false);
   // Name of the dashboard currently set as the default landing view.
   const [defaultDashboard, setDefaultDashboard] = useState<string | null>(null);
   const [quickFiltersOpen, setQuickFiltersOpen] = useState(false);
-  const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<DashboardFilters>(
     persisted.filters ?? DEFAULT_FILTERS,
   );
-  const [advancedFilters, setAdvancedFilters] = useState<
-    AppliedAdvancedFilter[]
-  >(persisted.advancedFilters ?? []);
 
   // Autosave indicator — shown only when filters change (apply/clear). Spins
   // "Autosaving" for 1.5s, then settles on "Autosaved".
@@ -543,7 +532,9 @@ export default function DashboardsV2Page() {
   const QUICK_FILTER_LABELS: Record<string, string> = {
     organizations: "Organizations",
     results: "Result",
-    sites: "Site / Network",
+    sites: "Sites",
+    roamingRelays: "Roaming Clients / Relays",
+    users: "Users",
     deploymentTypes: "Deployment type",
     categories: "Top categories",
   };
@@ -554,7 +545,14 @@ export default function DashboardsV2Page() {
     onRemove?: () => void;
   }[] = [];
   const pushDim = (
-    key: "organizations" | "results" | "sites" | "deploymentTypes" | "categories",
+    key:
+      | "organizations"
+      | "results"
+      | "sites"
+      | "roamingRelays"
+      | "users"
+      | "deploymentTypes"
+      | "categories",
   ) =>
     filters[key].forEach((value) =>
       activeFilters.push({
@@ -571,38 +569,12 @@ export default function DashboardsV2Page() {
   // Order mirrors the Quick Filters drawer: Organizations, Time range, Result,
   // Site / Network, Deployment type, Top categories.
   pushDim("organizations");
-  // Always surface the time range so users know the window they're viewing.
-  // The default (last 24 hours) shows as a non-removable chip; a changed value
-  // gets a ✕ that resets back to the default.
-  activeFilters.push({
-    key: "timeRange",
-    fieldLabel: "Time range",
-    valueLabel:
-      TIME_RANGE_OPTIONS.find((o) => o.value === filters.timeRange)?.label ??
-      filters.timeRange,
-    onRemove:
-      filters.timeRange === DEFAULT_FILTERS.timeRange
-        ? undefined
-        : () =>
-            setFilters((f) => ({ ...f, timeRange: DEFAULT_FILTERS.timeRange })),
-  });
   pushDim("results");
   pushDim("sites");
+  pushDim("roamingRelays");
+  pushDim("users");
   pushDim("deploymentTypes");
   pushDim("categories");
-  advancedFilters.forEach((af) =>
-    activeFilters.push({
-      key: `adv-${af.id}`,
-      fieldLabel: af.fieldLabel,
-      valueLabel: `${af.operatorLabel} ${af.value}`,
-      onRemove: () =>
-        setAdvancedFilters((prev) => {
-          const next = prev.filter((x) => x.id !== af.id);
-          if (next.length === 0) setNoResults(false);
-          return next;
-        }),
-    }),
-  );
 
   // Group active filters by field so multiple values of the same field (e.g.
   // several Organizations) sit together in one dashed chip.
@@ -617,9 +589,8 @@ export default function DashboardsV2Page() {
   }
 
   const clearAllFilters = () => {
-    setClearedFilters({ filters, advancedFilters });
+    setClearedFilters({ filters });
     setFilters(DEFAULT_FILTERS);
-    setAdvancedFilters([]);
     setNoResults(false);
     triggerAutosave();
     setToast("Filters cleared.");
@@ -628,8 +599,7 @@ export default function DashboardsV2Page() {
   const undoClearFilters = () => {
     if (!clearedFilters) return;
     setFilters(clearedFilters.filters);
-    setAdvancedFilters(clearedFilters.advancedFilters);
-    setNoResults(clearedFilters.advancedFilters.length > 0);
+    setNoResults(false);
     setClearedFilters(null);
     setToast(null);
   };
@@ -637,14 +607,11 @@ export default function DashboardsV2Page() {
   // Persist name + widgets + filters to the browser.
   useEffect(() => {
     try {
-      localStorage.setItem(
-        LS_KEY,
-        JSON.stringify({ name, widgets, filters, advancedFilters }),
-      );
+      localStorage.setItem(LS_KEY, JSON.stringify({ name, widgets, filters }));
     } catch {
       /* noop */
     }
-  }, [name, widgets, filters, advancedFilters]);
+  }, [name, widgets, filters]);
 
   const removeWidget = (id: string) =>
     setWidgets((ws) => ws.filter((w) => w.id !== id));
@@ -1035,11 +1002,11 @@ export default function DashboardsV2Page() {
           gap: 1,
           px: 2,
           pt: 2,
-          mb: activeFilters.length > 0 ? 1 : 2,
+          mb: 2,
           fontSize: 14,
         }}
       >
-        <ArrowTooltip title={editMode ? editLockTooltip("Quick Filters") : ""}>
+        <ArrowTooltip title={editMode ? editLockTooltip("Filters") : ""}>
           <span
             style={{
               display: "inline-flex",
@@ -1054,29 +1021,7 @@ export default function DashboardsV2Page() {
               onClick={() => setQuickFiltersOpen(true)}
               startIcon={<MaterialSymbol name="filter_alt" size={16} />}
             >
-              Quick filters
-            </Button>
-          </span>
-        </ArrowTooltip>
-        <Box sx={{ width: "1px", height: 16, bgcolor: "divider" }} />
-        <ArrowTooltip
-          title={editMode ? editLockTooltip("Advanced Filters") : ""}
-        >
-          <span
-            style={{
-              display: "inline-flex",
-              cursor: editMode ? "not-allowed" : undefined,
-            }}
-          >
-            <Button
-              variant="text"
-              color="secondary"
-              size="small"
-              disabled={editMode}
-              onClick={() => setAdvancedFiltersOpen(true)}
-              startIcon={<MaterialSymbol name="tune" size={16} />}
-            >
-              Advanced filters
+              Filters
             </Button>
           </span>
         </ArrowTooltip>
@@ -1101,6 +1046,14 @@ export default function DashboardsV2Page() {
             </Typography>
           </Box>
         )}
+        <TimeRangeSelect
+          value={filters.timeRange}
+          disabled={editMode}
+          onChange={(tr) => {
+            setFilters((f) => ({ ...f, timeRange: tr }));
+            triggerAutosave();
+          }}
+        />
         <ArrowTooltip title={editMode ? editLockTooltip("Refresh") : ""}>
           <span
             style={{
@@ -1317,19 +1270,10 @@ export default function DashboardsV2Page() {
         open={quickFiltersOpen}
         onClose={() => setQuickFiltersOpen(false)}
         filters={filters}
+        hideTimeRange
         onApply={(next) => {
           setFilters(next);
           setNoResults(false);
-          triggerAutosave();
-        }}
-      />
-
-      <AdvancedFilters
-        open={advancedFiltersOpen}
-        onClose={() => setAdvancedFiltersOpen(false)}
-        onApply={(applied) => {
-          setAdvancedFilters(applied);
-          setNoResults(applied.length > 0);
           triggerAutosave();
         }}
       />
