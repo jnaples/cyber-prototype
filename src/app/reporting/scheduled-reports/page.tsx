@@ -21,6 +21,7 @@ import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import type { Theme } from "@mui/material/styles";
 import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 
 import { DataTable } from "@/components/data-table";
 import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
@@ -31,7 +32,6 @@ import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
 import { SampleReportsModal } from "./sample-reports-modal";
-import { ScheduleReportView } from "./schedule-report-view";
 
 // ---------------------------------------------------------------------------
 // Types + data
@@ -347,7 +347,7 @@ export default function ScheduledReportsPage() {
   const [search, setSearch] = useState("");
   const [reportType, setReportType] = useState("all");
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [view, setView] = useState<"list" | "schedule">("list");
+  const navigate = useNavigate();
   const [rowSelection, setRowSelection] = useState<GridRowSelectionModel>({
     type: "include",
     ids: new Set(),
@@ -423,15 +423,6 @@ export default function ScheduledReportsPage() {
     },
   ];
 
-  if (view === "schedule") {
-    return (
-      <ScheduleReportView
-        onCancel={() => setView("list")}
-        onSave={() => setView("list")}
-      />
-    );
-  }
-
   return (
     <PageShell
       header={
@@ -473,7 +464,7 @@ export default function ScheduledReportsPage() {
           color="primary"
           size="small"
           startIcon={<MaterialSymbol name="add" size={18} />}
-          onClick={() => setView("schedule")}
+          onClick={() => navigate("/reporting/report-scheduler")}
         >
           Schedule Report
         </Button>

@@ -4,6 +4,7 @@
 // constrained to a 1400px max width.
 
 import { Box, Typography } from "@mui/material";
+import { Fragment } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 
 import { Logo } from "@/components/logo";
@@ -12,19 +13,32 @@ import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 
 const BASE = "/reports";
 
-const REPORTS = [
-  { label: "Customer Activity Overview", path: `${BASE}/customer-activity-overview` },
-  { label: "Filter Protection Summary", path: `${BASE}/filter-protection-summary` },
-  { label: "Timeline Overview", path: `${BASE}/timeline-overview` },
-  { label: "CyberSight AI Usage", path: `${BASE}/cybersight-ai-usage` },
-  { label: "Threat Trends", path: `${BASE}/threat-trends` },
-] as const;
+const REPORT_GROUPS = [
+  {
+    header: "CyberSight Reports",
+    items: [
+      { label: "Customer Activity Overview", path: `${BASE}/customer-activity-overview` },
+      { label: "Timeline Overview", path: `${BASE}/timeline-overview` },
+      { label: "CyberSight AI Usage", path: `${BASE}/cybersight-ai-usage` },
+      { label: "Threat Trends", path: `${BASE}/threat-trends` },
+    ],
+  },
+  {
+    header: "Legacy Reports",
+    items: [
+      { label: "Filter Protection Summary", path: `${BASE}/filter-protection-summary` },
+    ],
+  },
+];
+
+const ALL_REPORTS = REPORT_GROUPS.flatMap((g) => g.items);
 
 export default function ReportsLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const active = REPORTS.find((r) => pathname.startsWith(r.path)) ?? REPORTS[0];
+  const active =
+    ALL_REPORTS.find((r) => pathname.startsWith(r.path)) ?? ALL_REPORTS[0];
 
   return (
     <Box sx={{ display: "flex", height: "100vh", minHeight: 0 }}>
@@ -57,49 +71,54 @@ export default function ReportsLayout() {
           <ThemeModeToggle inline />
         </Box>
 
-        <Typography
-          variant="overline"
-          sx={{
-            display: "block",
-            px: 1,
-            py: 0,
-            color: "rgba(255, 255, 255, 0.6)",
-          }}
-        >
-          Reports
-        </Typography>
-        {REPORTS.map((r) => {
-          const selected = r.path === active.path;
-          return (
-            <Box
-              key={r.path}
-              role="button"
-              onClick={() => navigate(r.path)}
-              sx={(theme) => ({
-                display: "flex",
-                alignItems: "center",
+        {REPORT_GROUPS.map((group, gi) => (
+          <Fragment key={group.header}>
+            <Typography
+              variant="overline"
+              sx={{
+                display: "block",
                 px: 1,
-                py: "6px",
-                borderRadius: "6px",
-                cursor: "pointer",
-                fontSize: 16,
-                fontWeight: selected ? 600 : 400,
-                color: "#ffffff",
-                backgroundColor: selected
-                  ? theme.palette.primary.main
-                  : "transparent",
-                transition: "background-color 0.2s",
-                "&:hover": {
-                  backgroundColor: selected
-                    ? theme.palette.primary.main
-                    : "rgba(255, 255, 255, 0.1)",
-                },
-              })}
+                py: 0,
+                mt: gi === 0 ? 0 : 1.5,
+                color: "rgba(255, 255, 255, 0.6)",
+              }}
             >
-              {r.label}
-            </Box>
-          );
-        })}
+              {group.header}
+            </Typography>
+            {group.items.map((r) => {
+              const selected = r.path === active.path;
+              return (
+                <Box
+                  key={r.path}
+                  role="button"
+                  onClick={() => navigate(r.path)}
+                  sx={(theme) => ({
+                    display: "flex",
+                    alignItems: "center",
+                    px: 1,
+                    py: "6px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: 16,
+                    fontWeight: selected ? 600 : 400,
+                    color: "#ffffff",
+                    backgroundColor: selected
+                      ? theme.palette.primary.main
+                      : "transparent",
+                    transition: "background-color 0.2s",
+                    "&:hover": {
+                      backgroundColor: selected
+                        ? theme.palette.primary.main
+                        : "rgba(255, 255, 255, 0.1)",
+                    },
+                  })}
+                >
+                  {r.label}
+                </Box>
+              );
+            })}
+          </Fragment>
+        ))}
       </Box>
 
       {/* Content: page header (report name) + scrollable, 1400px-constrained body */}

@@ -27,6 +27,7 @@ import HomePage from "@/app/page";
 import QueryLogsPage from "@/app/query-logs/page";
 import CustomReportsPage from "@/app/reporting/custom-reports/page";
 import ScheduledReportsPage from "@/app/reporting/scheduled-reports/page";
+import ReportSchedulerPage from "@/app/reporting/report-scheduler/page";
 import ReportsLayout from "@/app/reports/layout";
 import CustomerActivityOverviewReport from "@/app/reports/customer-activity-overview/page";
 import ThreatTrendsReport from "@/app/reports/threat-trends/page";
@@ -65,6 +66,7 @@ function App() {
         <Route path="reporting">
           <Route path="custom-reports" element={<CustomReportsPage />} />
           <Route path="scheduled-reports" element={<ScheduledReportsPage />} />
+          <Route path="report-scheduler" element={<ReportSchedulerPage />} />
         </Route>
         <Route path="settings" element={<SettingsPage />} />
         <Route path="msp/settings" element={<OrganizationSettingsPage />} />

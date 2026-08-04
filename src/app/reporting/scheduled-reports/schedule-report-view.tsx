@@ -122,7 +122,7 @@ const ORGS = [
 
 const PERIODS = ["Previous month", "Previous week", "Previous quarter", "Previous 30 days"];
 const DAYS = ["1st", "5th", "15th", "Last day"];
-const FREQUENCIES = ["Daily", "Weekly", "Monthly", "Quarterly"] as const;
+const FREQUENCIES = ["Daily", "Weekly", "Monthly"] as const;
 
 // Section wrapper — overline "STEP n — TITLE" then content.
 function Step({
