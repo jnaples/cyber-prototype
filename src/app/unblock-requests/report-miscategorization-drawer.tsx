@@ -124,7 +124,7 @@ export function ReportMiscategorizationDrawer({
         </Typography>
         <Typography variant="body1" sx={{ color: "text.primary" }}>
           <Box component="span" sx={{ fontWeight: 700 }}>
-            Categories:
+            {isThreat ? "Threat Categories:" : "Content Categories:"}
           </Box>{" "}
           {currentCategory}
         </Typography>

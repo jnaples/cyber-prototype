@@ -191,7 +191,7 @@ const HISTORY: HistoryRequest[] = [
     organization: "Initech Legal",
     site: "Chicago Office",
     policy: "Standard Policy",
-    category: "Proxy / Anonymizer",
+    category: "Proxy, Anonymizer",
     loggedInUser: "David Park",
     email: "david.park@initechlegal.com",
     requestReason: "Miscategorized — needed for internal dev tooling",
