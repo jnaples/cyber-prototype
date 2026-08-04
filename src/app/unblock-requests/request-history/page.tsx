@@ -10,8 +10,7 @@ const columns: GridColDef[] = [
   {
     field: "domain",
     headerName: "Domain",
-    flex: 1,
-    minWidth: 180,
+    width: 240,
     renderCell: (params) => (
       <Link
         href={`https://${params.row.domain}`}
