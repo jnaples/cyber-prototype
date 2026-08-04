@@ -1,6 +1,7 @@
 import {
   Alert,
   Box,
+  Chip,
   IconButton,
   Link,
   ListItemIcon,
@@ -10,6 +11,7 @@ import {
   Snackbar,
   Typography,
 } from "@mui/material";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import type { GridColDef } from "@mui/x-data-grid";
 import { format as fnsFormat } from "date-fns";
 import { useState } from "react";
@@ -303,11 +305,14 @@ const columns: GridColDef[] = [
       const threat = THREAT_CATEGORIES.includes(params.row.category);
       if (!threat) return params.row.category;
       return (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, height: "100%" }}>
-          <MaterialSymbol name="gpp_bad" size={18} sx={{ color: "error.main" }} />
-          <Typography variant="body2" sx={{ color: "error.main", fontWeight: 400 }}>
-            {params.row.category}
-          </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+          <Chip
+            size="small"
+            variant="outlined"
+            color="error"
+            icon={<WarningAmberIcon sx={{ fontSize: 16 }} />}
+            label={params.row.category}
+          />
         </Box>
       );
     },

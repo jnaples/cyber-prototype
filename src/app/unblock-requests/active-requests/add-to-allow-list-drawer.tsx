@@ -17,6 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { format as fnsFormat } from "date-fns";
 import { useState } from "react";
 
@@ -89,7 +90,7 @@ export function AddToAllowListDrawer({
       }}
     >
       {threatCategory && (
-        <Alert severity="error">
+        <Alert severity="error" icon={<WarningAmberIcon />}>
           <AlertTitle>Flagged as {threatCategory}</AlertTitle>
           <Box component="strong" sx={{ fontWeight: 700 }}>
             {domain}

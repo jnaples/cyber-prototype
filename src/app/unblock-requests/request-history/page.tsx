@@ -99,7 +99,7 @@ const columns: GridColDef[] = [
   },
   {
     field: "action",
-    headerName: "Action",
+    headerName: "Decision",
     flex: 1,
     minWidth: 120,
     renderCell: (params) => {
