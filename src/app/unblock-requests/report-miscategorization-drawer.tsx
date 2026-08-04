@@ -3,7 +3,6 @@
 
 import {
   Box,
-  Checkbox,
   Divider,
   FormLabel,
   MenuItem,
@@ -77,8 +76,7 @@ export function ReportMiscategorizationDrawer({
   isThreat?: boolean;
   onSubmit?: () => void;
 }) {
-  // A domain can be proposed for multiple categories.
-  const [categories, setCategories] = useState<string[]>([]);
+  const [category, setCategory] = useState("");
   const [issueType, setIssueType] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -87,13 +85,13 @@ export function ReportMiscategorizationDrawer({
   if (open !== wasOpen) {
     setWasOpen(open);
     if (open) {
-      setCategories([]);
+      setCategory("");
       setIssueType("");
       setNotes("");
     }
   }
 
-  const canSave = isThreat ? issueType !== "" : categories.length > 0;
+  const canSave = isThreat ? issueType !== "" : category !== "";
 
   return (
     <Drawer
@@ -176,18 +174,14 @@ export function ReportMiscategorizationDrawer({
           </FormLabel>
           <Select
             fullWidth
-            multiple
             size="small"
             displayEmpty
-            value={categories}
-            onChange={(e) => {
-              const v = e.target.value;
-              setCategories(typeof v === "string" ? v.split(",") : v);
-            }}
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
             sx={{ bgcolor: "background.paper" }}
-            renderValue={(selected) =>
-              selected.length ? (
-                selected.join(", ")
+            renderValue={(v) =>
+              v ? (
+                (v as string)
               ) : (
                 <Box component="span" sx={{ color: "text.secondary" }}>
                   Select proposed category...
@@ -197,11 +191,6 @@ export function ReportMiscategorizationDrawer({
           >
             {CATEGORIES.map((c) => (
               <MenuItem key={c} value={c}>
-                <Checkbox
-                  size="small"
-                  checked={categories.includes(c)}
-                  sx={{ p: 0.5, mr: 1 }}
-                />
                 {c}
               </MenuItem>
             ))}
