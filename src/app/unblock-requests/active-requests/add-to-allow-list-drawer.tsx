@@ -81,6 +81,7 @@ export function AddToAllowListDrawer({
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{
         label: alreadyAllowed ? "Resolve Request" : "Add to Allow List",
+        sx: { minWidth: 0 },
         onClick: () => {
           onSubmit?.(scope);
           onClose();

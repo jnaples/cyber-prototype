@@ -15,7 +15,6 @@ import {
   IconButton,
   Link,
   MenuItem,
-  Radio,
   Select,
   Switch,
   TextField,
@@ -112,6 +111,15 @@ const PORTAL_USERS = [
   { name: "Marcus Bell", email: "marcus.b@initech.io", org: "Initech Software" },
 ];
 
+const ORGS = [
+  "Austin Office",
+  "Berlin Hub",
+  "Boston Lab",
+  "Chicago HQ",
+  "Headquarters",
+  "London Branch",
+];
+
 const PERIODS = ["Previous month", "Previous week", "Previous quarter", "Previous 30 days"];
 const DAYS = ["1st", "5th", "15th", "Last day"];
 const FREQUENCIES = ["Daily", "Weekly", "Monthly", "Quarterly"] as const;
@@ -132,7 +140,7 @@ function Step({
         variant="overline"
         sx={{ display: "block", color: "text.secondary", lineHeight: 1.5 }}
       >
-        Step {n} — {title}
+        Step {n} - {title}
       </Typography>
       <Box sx={{ mt: 2 }}>{children}</Box>
     </Box>
@@ -149,7 +157,7 @@ export function ScheduleReportView({
   const [name, setName] = useState("");
   const [selectedReports, setSelectedReports] = useState<string[]>([]);
   const [period, setPeriod] = useState(PERIODS[0]);
-  const [orgScope, setOrgScope] = useState<"all" | "selected">("all");
+  const [selectedOrgs, setSelectedOrgs] = useState<string[]>([]);
   const [orgContacts, setOrgContacts] = useState(true);
   const [portalUsers, setPortalUsers] = useState<string[]>([]);
   const [externalEmail, setExternalEmail] = useState("");
@@ -343,12 +351,14 @@ export function ScheduleReportView({
                       >
                         <Box component={r.Icon} sx={{ fontSize: 20 }} />
                       </Box>
-                      <Typography sx={{ fontWeight: 700, fontSize: 15, pr: 3 }}>
-                        {r.title}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                        {r.desc}
-                      </Typography>
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                        <Typography sx={{ fontWeight: 700, fontSize: 15, pr: 3 }}>
+                          {r.title}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                          {r.desc}
+                        </Typography>
+                      </Box>
                       <Link
                         component="button"
                         type="button"
@@ -402,30 +412,64 @@ export function ScheduleReportView({
 
             {/* STEP 2 — Organizations */}
             <Step n={2} title="Organizations">
-              <Box
-                onClick={() => setOrgScope("all")}
-                sx={{ display: "flex", gap: 1, cursor: "pointer", mb: 1.5 }}
+              <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                Select Organizations
+              </FormLabel>
+              <Select
+                multiple
+                displayEmpty
+                fullWidth
+                size="small"
+                value={selectedOrgs}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setSelectedOrgs(typeof v === "string" ? v.split(",") : v);
+                }}
+                renderValue={(selected) =>
+                  selected.length === 0 ? (
+                    <Box component="span" sx={{ color: "text.secondary" }}>
+                      Select organizations
+                    </Box>
+                  ) : selected.length === ORGS.length ? (
+                    "All organizations"
+                  ) : (
+                    `${selected.length} selected`
+                  )
+                }
               >
-                <Radio checked={orgScope === "all"} size="small" sx={{ p: 0, mt: 0.25 }} />
-                <Box>
-                  <Typography sx={{ color: "text.primary" }}>All organizations (6)</Typography>
-                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                    Includes organizations added later.
-                  </Typography>
-                </Box>
-              </Box>
-              <Box
-                onClick={() => setOrgScope("selected")}
-                sx={{ display: "flex", gap: 1, cursor: "pointer" }}
-              >
-                <Radio
-                  checked={orgScope === "selected"}
-                  size="small"
-                  sx={{ p: 0, mt: 0.25 }}
-                />
-                <Typography sx={{ color: "text.primary" }}>Selected organizations</Typography>
-              </Box>
-              <Typography variant="body2" sx={{ color: "text.secondary", mt: 1.5 }}>
+                <MenuItem
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setSelectedOrgs(
+                      selectedOrgs.length === ORGS.length ? [] : [...ORGS],
+                    );
+                  }}
+                >
+                  <Checkbox
+                    size="small"
+                    checked={selectedOrgs.length === ORGS.length}
+                    indeterminate={
+                      selectedOrgs.length > 0 &&
+                      selectedOrgs.length < ORGS.length
+                    }
+                    sx={{ p: 0.5, mr: 1 }}
+                  />
+                  Select all
+                </MenuItem>
+                <Divider />
+                {ORGS.map((org) => (
+                  <MenuItem key={org} value={org}>
+                    <Checkbox
+                      size="small"
+                      checked={selectedOrgs.includes(org)}
+                      sx={{ p: 0.5, mr: 1 }}
+                    />
+                    {org}
+                  </MenuItem>
+                ))}
+              </Select>
+              <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
                 Each organization receives a PDF built from its own data.
               </Typography>
             </Step>

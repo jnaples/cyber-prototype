@@ -20,6 +20,7 @@ import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
+import { ReportMiscategorizationDrawer } from "../report-miscategorization-drawer";
 import { AddToAllowListDrawer } from "./add-to-allow-list-drawer";
 import { DenyRequestDrawer } from "./deny-request-drawer";
 
@@ -65,6 +66,7 @@ function RowActionsCell({
   const [allowOpen, setAllowOpen] = useState(false);
   const [denyOpen, setDenyOpen] = useState(false);
   const [denyIgnore, setDenyIgnore] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [toast, setToast] = useState<ReactNode>(null);
   // Demo: this domain is already on the allow list, so the request is stale.
   const alreadyAllowed = domain === "nytimes.com";
@@ -134,7 +136,13 @@ function RowActionsCell({
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
         {MENU_ACTIONS.map(({ label, icon }) => (
-          <MenuItem key={label} onClick={closeMenu}>
+          <MenuItem
+            key={label}
+            onClick={() => {
+              closeMenu();
+              setReportOpen(true);
+            }}
+          >
             <ListItemIcon>
               <MaterialSymbol name={icon} size={20} />
             </ListItemIcon>
@@ -180,6 +188,21 @@ function RowActionsCell({
         domain={domain}
         requester={requester}
         reason={reason}
+      />
+
+      <ReportMiscategorizationDrawer
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        domain={domain}
+        currentCategory={category}
+        isThreat={Boolean(threatCategory)}
+        onSubmit={() =>
+          setToast(
+            <>
+              Miscategorization report submitted for <strong>{domain}</strong>.
+            </>,
+          )
+        }
       />
 
       <Portal>

@@ -535,7 +535,7 @@ export default function DashboardsPage() {
     key: string;
     fieldLabel: string;
     valueLabel: string;
-    onRemove: () => void;
+    onRemove?: () => void;
   }[] = [];
   const pushDim = (
     key: "organizations" | "results" | "sites" | "deploymentTypes" | "categories",
@@ -555,17 +555,21 @@ export default function DashboardsPage() {
   // Order mirrors the Quick Filters drawer: Organizations, Time range, Result,
   // Site / Network, Deployment type, Top categories.
   pushDim("organizations");
-  if (filters.timeRange !== DEFAULT_FILTERS.timeRange) {
-    activeFilters.push({
-      key: "timeRange",
-      fieldLabel: "Time range",
-      valueLabel:
-        TIME_RANGE_OPTIONS.find((o) => o.value === filters.timeRange)?.label ??
-        filters.timeRange,
-      onRemove: () =>
-        setFilters((f) => ({ ...f, timeRange: DEFAULT_FILTERS.timeRange })),
-    });
-  }
+  // Always surface the time range so users know the window they're viewing.
+  // The default (last 24 hours) shows as a non-removable chip; a changed value
+  // gets a ✕ that resets back to the default.
+  activeFilters.push({
+    key: "timeRange",
+    fieldLabel: "Time range",
+    valueLabel:
+      TIME_RANGE_OPTIONS.find((o) => o.value === filters.timeRange)?.label ??
+      filters.timeRange,
+    onRemove:
+      filters.timeRange === DEFAULT_FILTERS.timeRange
+        ? undefined
+        : () =>
+            setFilters((f) => ({ ...f, timeRange: DEFAULT_FILTERS.timeRange })),
+  });
   pushDim("results");
   pushDim("sites");
   pushDim("deploymentTypes");
