@@ -484,7 +484,9 @@ export default function CreateClientlessPage() {
           {/* Step 2 — Create */}
           <Box>
             <StepOverline>Step 2 - Create DoH Endpoint</StepOverline>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box
+              sx={{ mt: 0.5, display: "flex", flexDirection: "column", gap: 2 }}
+            >
               {!saved && (
                 <ArrowTooltip title={!site ? "Select a Site first." : ""}>
                   <Box
