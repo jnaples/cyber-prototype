@@ -27,8 +27,16 @@ import { PageShell } from "@/components/page-shell";
 
 // Sites the deployment can inherit policy / schedule / block page from.
 const SITES = [
-  { name: "Seattle HQ", policy: "Standard Policy", blockPage: "Corporate Block Page" },
-  { name: "Portland DC", policy: "Restricted Policy", blockPage: "Default Appearance" },
+  {
+    name: "Seattle HQ",
+    policy: "Standard Policy",
+    blockPage: "Corporate Block Page",
+  },
+  {
+    name: "Portland DC",
+    policy: "Restricted Policy",
+    blockPage: "Default Appearance",
+  },
   { name: "Austin Clinic", policy: "HIPAA Strict", blockPage: "HIPAA Notice" },
   {
     name: "Lincoln Middle School",
@@ -118,8 +126,9 @@ export default function CreateClientlessPage() {
   const [creating, setCreating] = useState(false);
   // True once the user copies the generated DoH endpoint (gates Done).
   const [hasCopied, setHasCopied] = useState(false);
-  // Collapsible card body (edit page).
+  // Collapsible card bodies (edit page).
   const [overviewOpen, setOverviewOpen] = useState(true);
+  const [configOpen, setConfigOpen] = useState(true);
 
   // Changing the Site resets the endpoint so it must be re-created.
   const handleSiteChange = (next: string) => {
@@ -163,9 +172,7 @@ export default function CreateClientlessPage() {
 
   const back = () => navigate("/deployments/clientless");
 
-  const createdEndpoint = token
-    ? `https://doh.dnsfilter.com/${token}`
-    : null;
+  const createdEndpoint = token ? `https://doh.dnsfilter.com/${token}` : null;
 
   const handleSave = () => {
     // Only the edit-page Save surfaces a toast; the add-page Done does not.
@@ -173,6 +180,187 @@ export default function CreateClientlessPage() {
       state: saved ? { toast: "Clientless Device updated." } : undefined,
     });
   };
+
+  // Field blocks shared by the add page (inside its numbered steps) and the
+  // edit page (inside the Configuration card).
+  const nameField = (
+    <Box>
+      <FormLabel sx={{ display: "block", mb: 0.5 }}>
+        Name
+        <Box component="span" sx={{ ml: 0.25 }}>
+          *
+        </Box>
+      </FormLabel>
+      <TextField
+        fullWidth
+        placeholder="e.g. Lobby Kiosks"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        sx={{
+          "& .MuiOutlinedInput-root:not(.Mui-disabled) input::placeholder": {
+            color: "text.disabled",
+            opacity: 1,
+          },
+        }}
+      />
+    </Box>
+  );
+
+  const policyAndBlockPageFields = (
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+        gap: 2,
+      }}
+    >
+      <Box>
+        <FormLabel sx={{ display: "block", mb: 0.5 }}>
+          Policy/Schedule
+        </FormLabel>
+        <ArrowTooltip title={!site ? "Select a Site first." : ""}>
+          <Box
+            component="span"
+            sx={{
+              display: "block",
+              cursor: !site ? "not-allowed" : undefined,
+            }}
+          >
+            <Select
+              fullWidth
+              displayEmpty
+              disabled={!site}
+              sx={{ pointerEvents: !site ? "none" : undefined }}
+              value={policy}
+              onChange={(e) => setPolicy(e.target.value)}
+              renderValue={(v) =>
+                v ? (
+                  v
+                ) : (
+                  <Box component="span" sx={{ color: "text.disabled" }}>
+                    -
+                  </Box>
+                )
+              }
+            >
+              <ListSubheader sx={subheaderSx}>Organization</ListSubheader>
+              {POLICY_OPTIONS.map((p) => (
+                <MenuItem key={p} value={p} sx={policyItemSx}>
+                  {p}
+                </MenuItem>
+              ))}
+              <ListSubheader sx={subheaderSx}>Global</ListSubheader>
+              {GLOBAL_POLICY_OPTIONS.map((p) => (
+                <MenuItem key={p} value={p} sx={policyItemSx}>
+                  {p}
+                  <MaterialSymbol
+                    name="globe"
+                    size={16}
+                    sx={{ ml: 0.75, color: "text.secondary" }}
+                  />
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+        </ArrowTooltip>
+      </Box>
+      <Box>
+        <FormLabel sx={{ display: "block", mb: 0.5 }}>Block Page</FormLabel>
+        <ArrowTooltip title={!site ? "Select a Site first." : ""}>
+          <Box
+            component="span"
+            sx={{
+              display: "block",
+              cursor: !site ? "not-allowed" : undefined,
+            }}
+          >
+            <Select
+              fullWidth
+              displayEmpty
+              disabled={!site}
+              sx={{ pointerEvents: !site ? "none" : undefined }}
+              value={blockPage}
+              onChange={(e) => setBlockPage(e.target.value)}
+              renderValue={(v) =>
+                v ? (
+                  v
+                ) : (
+                  <Box component="span" sx={{ color: "text.disabled" }}>
+                    Default Appearance
+                  </Box>
+                )
+              }
+            >
+              {BLOCK_PAGE_OPTIONS.map((b) => (
+                <MenuItem key={b} value={b}>
+                  {b}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+        </ArrowTooltip>
+      </Box>
+    </Box>
+  );
+
+  const dohEndpointField = createdEndpoint && (
+    <Box>
+      <FormLabel sx={{ display: "block", mb: 0.5 }}>
+        DoH Endpoint
+        <Box component="span" sx={{ ml: 0.25 }}>
+          *
+        </Box>
+      </FormLabel>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <TextField
+          fullWidth
+          disabled={!saved}
+          value={createdEndpoint}
+          slotProps={{ input: { readOnly: saved } }}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              bgcolor: "background.neutral",
+            },
+            "& .MuiOutlinedInput-input": {
+              fontFamily: "monospace",
+            },
+            "& .MuiOutlinedInput-input.Mui-disabled": {
+              WebkitTextFillColor: "var(--dnsf-palette-text-primary)",
+            },
+          }}
+        />
+        <CopyButton
+          value={createdEndpoint}
+          label="Copy DoH endpoint"
+          onCopy={() => setHasCopied(true)}
+        />
+      </Box>
+      <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
+        <Box component="span" sx={{ fontWeight: 600 }}>
+          Copy this DoH address
+        </Box>{" "}
+        to apply the assigned Filtering Policy.
+      </Typography>
+      {hasCopied && (
+        <Box
+          sx={(theme) => ({
+            mt: 1,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 1,
+            px: 1.5,
+            py: 1,
+            borderRadius: 1,
+            bgcolor: theme.vars.palette.Alert.successStandardBg,
+            color: theme.vars.palette.Alert.successColor,
+          })}
+        >
+          <MaterialSymbol name="check_circle" size={20} />
+          <Typography variant="body2">DoH Endpoint has been copied.</Typography>
+        </Box>
+      )}
+    </Box>
+  );
 
   return (
     <PageShell
@@ -275,322 +463,200 @@ export default function CreateClientlessPage() {
             )}
           </Box>
           <Collapse in={saved ? overviewOpen : true}>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}>
-          {/* Intro */}
-          <Box>
-            <Typography
-              variant="body1"
-              sx={{ color: "text.primary", maxWidth: "65ch" }}
-            >
-              Filter DNS on devices where a Roaming Client can&apos;t be
-              installed.
-              {!saved &&
-                " Each deployment creates a DoH endpoint URL that applies the assigned filtering policy."}
-            </Typography>
-            <Link
-              href="#"
-              underline="hover"
-              sx={(theme) => ({
-                display: "inline-block",
-                fontWeight: 600,
-                ...theme.applyStyles("dark", {
-                  color: theme.vars.palette.primary.light,
-                }),
-              })}
-            >
-              View step-by-step Clientless setup instructions
-            </Link>
-          </Box>
-
-          {saved && (
-            <Box>
-              <FormLabel sx={{ display: "block", mb: 0.5 }}>Site</FormLabel>
-              <Typography
-                sx={{
-                  fontSize: 16,
-                  color: "text.primary",
-                  minHeight: 40,
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                {site}
-              </Typography>
-            </Box>
-          )}
-
-          {/* Step 1 — Configure */}
-          <Box>
-            <StepOverline>Step 1 - Configure Clientless Device</StepOverline>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Box>
-              <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                Name
-                <Box component="span" sx={{ ml: 0.25 }}>
-                  *
-                </Box>
-              </FormLabel>
-              <TextField
-                fullWidth
-                placeholder="e.g. Lobby Kiosks"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                sx={{
-                  "& .MuiOutlinedInput-root:not(.Mui-disabled) input::placeholder":
-                    {
-                      color: "text.disabled",
-                      opacity: 1,
-                    },
-                }}
-              />
-            </Box>
-            {!saved && (
-              <Box>
-                <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                  Site
-                  <Box component="span" sx={{ ml: 0.25 }}>
-                    *
-                  </Box>
-                </FormLabel>
-                <Select
-                  fullWidth
-                  displayEmpty
-                  value={site}
-                  onChange={(e) => handleSiteChange(e.target.value)}
-                  renderValue={(value) =>
-                    value ? (
-                      value
-                    ) : (
-                      <Box component="span" sx={{ color: "text.disabled" }}>
-                        Select a Site
-                      </Box>
-                    )
-                  }
-                >
-                  {SITES.map((s) => (
-                    <MenuItem key={s.name} value={s.name}>
-                      {s.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </Box>
-            )}
-
-            <Box>
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 2,
-                }}
-              >
-                <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                    Policy/Schedule
-                  </FormLabel>
-                  <ArrowTooltip title={!site ? "Select a Site first." : ""}>
-                    <Box
-                      component="span"
-                      sx={{
-                        display: "block",
-                        cursor: !site ? "not-allowed" : undefined,
-                      }}
-                    >
-                      <Select
-                        fullWidth
-                        displayEmpty
-                        disabled={!site}
-                        sx={{ pointerEvents: !site ? "none" : undefined }}
-                        value={policy}
-                        onChange={(e) => setPolicy(e.target.value)}
-                        renderValue={(v) =>
-                          v ? (
-                            v
-                          ) : (
-                            <Box component="span" sx={{ color: "text.disabled" }}>
-                              -
-                            </Box>
-                          )
-                        }
-                      >
-                        <ListSubheader sx={subheaderSx}>
-                          Organization
-                        </ListSubheader>
-                        {POLICY_OPTIONS.map((p) => (
-                          <MenuItem key={p} value={p} sx={policyItemSx}>
-                            {p}
-                          </MenuItem>
-                        ))}
-                        <ListSubheader sx={subheaderSx}>Global</ListSubheader>
-                        {GLOBAL_POLICY_OPTIONS.map((p) => (
-                          <MenuItem key={p} value={p} sx={policyItemSx}>
-                            {p}
-                            <MaterialSymbol
-                              name="globe"
-                              size={16}
-                              sx={{ ml: 0.75, color: "text.secondary" }}
-                            />
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </Box>
-                  </ArrowTooltip>
-                </Box>
-                <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                    Block Page
-                  </FormLabel>
-                  <ArrowTooltip title={!site ? "Select a Site first." : ""}>
-                    <Box
-                      component="span"
-                      sx={{
-                        display: "block",
-                        cursor: !site ? "not-allowed" : undefined,
-                      }}
-                    >
-                      <Select
-                        fullWidth
-                        displayEmpty
-                        disabled={!site}
-                        sx={{ pointerEvents: !site ? "none" : undefined }}
-                        value={blockPage}
-                        onChange={(e) => setBlockPage(e.target.value)}
-                        renderValue={(v) =>
-                          v ? (
-                            v
-                          ) : (
-                            <Box component="span" sx={{ color: "text.disabled" }}>
-                              Default Appearance
-                            </Box>
-                          )
-                        }
-                      >
-                        {BLOCK_PAGE_OPTIONS.map((b) => (
-                          <MenuItem key={b} value={b}>
-                            {b}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </Box>
-                  </ArrowTooltip>
-                </Box>
-              </Box>
-            </Box>
-            </Box>
-          </Box>
-
-          <Divider sx={{ mt: 1 }} />
-
-          {/* Step 2 — Create */}
-          <Box>
-            <StepOverline>Step 2 - Create DoH Endpoint</StepOverline>
             <Box
-              sx={{ mt: 0.5, display: "flex", flexDirection: "column", gap: 2 }}
+              sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}
             >
-              {!saved && (
-                <ArrowTooltip title={!site ? "Select a Site first." : ""}>
-                  <Box
-                    component="span"
-                    sx={{
-                      alignSelf: "flex-start",
-                      display: "inline-flex",
-                      cursor:
-                        !site || creating || token ? "not-allowed" : undefined,
-                    }}
-                  >
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      disabled={!site || creating || Boolean(token)}
-                      onClick={handleCreateEndpoint}
-                      startIcon={
-                        creating ? (
-                          <CircularProgress size={16} color="inherit" />
-                        ) : undefined
-                      }
+              {/* Intro */}
+              <Box>
+                <Typography
+                  variant="body1"
+                  sx={{ color: "text.primary", maxWidth: "65ch" }}
+                >
+                  Filter DNS on devices where a Roaming Client can&apos;t be
+                  installed.
+                  {!saved &&
+                    " Each deployment creates a DoH endpoint URL that applies the assigned filtering policy."}
+                </Typography>
+                <Link
+                  href="#"
+                  underline="hover"
+                  sx={(theme) => ({
+                    display: "inline-block",
+                    fontWeight: 600,
+                    ...theme.applyStyles("dark", {
+                      color: theme.vars.palette.primary.light,
+                    }),
+                  })}
+                >
+                  View step-by-step Clientless setup instructions
+                </Link>
+              </Box>
+
+              {saved && (
+                <>
+                  <Box>
+                    <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                      Site
+                    </FormLabel>
+                    <Typography
                       sx={{
-                        whiteSpace: "nowrap",
-                        pointerEvents:
-                          !site || creating || token ? "none" : undefined,
-                      }}
-                    >
-                      {creating
-                        ? "Generating DoH Endpoint"
-                        : "Generate DoH Endpoint"}
-                    </Button>
-                  </Box>
-                </ArrowTooltip>
-              )}
-              {createdEndpoint && (
-                <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                    DoH Endpoint
-                    <Box component="span" sx={{ ml: 0.25 }}>
-                      *
-                    </Box>
-                  </FormLabel>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <TextField
-                      fullWidth
-                      disabled={!saved}
-                      value={createdEndpoint}
-                      slotProps={{ input: { readOnly: saved } }}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          bgcolor: "background.neutral",
-                        },
-                        "& .MuiOutlinedInput-input": {
-                          fontFamily: "monospace",
-                        },
-                        "& .MuiOutlinedInput-input.Mui-disabled": {
-                          WebkitTextFillColor:
-                            "var(--dnsf-palette-text-primary)",
-                        },
-                      }}
-                    />
-                    <CopyButton
-                      value={createdEndpoint}
-                      label="Copy DoH endpoint"
-                      onCopy={() => setHasCopied(true)}
-                    />
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "text.secondary", mt: 0.5 }}
-                  >
-                    <Box component="span" sx={{ fontWeight: 600 }}>
-                      Copy this DoH address
-                    </Box>{" "}
-                    to apply the assigned Filtering Policy.
-                  </Typography>
-                  {hasCopied && (
-                    <Box
-                      sx={(theme) => ({
-                        mt: 1,
-                        display: "inline-flex",
+                        fontSize: 16,
+                        color: "text.primary",
+                        minHeight: 40,
+                        display: "flex",
                         alignItems: "center",
-                        gap: 1,
-                        px: 1.5,
-                        py: 1,
-                        borderRadius: 1,
-                        bgcolor: theme.vars.palette.Alert.successStandardBg,
-                        color: theme.vars.palette.Alert.successColor,
-                      })}
+                      }}
                     >
-                      <MaterialSymbol name="check_circle" size={20} />
-                      <Typography variant="body2">
-                        DoH Endpoint has been copied.
-                      </Typography>
-                    </Box>
-                  )}
-                </Box>
+                      {site}
+                    </Typography>
+                  </Box>
+                  {dohEndpointField}
+                </>
               )}
-            </Box>
-          </Box>
+
+              {!saved && (
+                <>
+                  {/* Step 1 — Configure */}
+                  <Box>
+                    <StepOverline>
+                      Step 1 - Configure Clientless Device
+                    </StepOverline>
+                    <Box
+                      sx={{
+                        mt: 0.5,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 2,
+                      }}
+                    >
+                      {nameField}
+                      <Box>
+                        <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                          Site
+                          <Box component="span" sx={{ ml: 0.25 }}>
+                            *
+                          </Box>
+                        </FormLabel>
+                        <Select
+                          fullWidth
+                          displayEmpty
+                          value={site}
+                          onChange={(e) => handleSiteChange(e.target.value)}
+                          renderValue={(value) =>
+                            value ? (
+                              value
+                            ) : (
+                              <Box
+                                component="span"
+                                sx={{ color: "text.disabled" }}
+                              >
+                                Select a Site
+                              </Box>
+                            )
+                          }
+                        >
+                          {SITES.map((s) => (
+                            <MenuItem key={s.name} value={s.name}>
+                              {s.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </Box>
+                      {policyAndBlockPageFields}
+                    </Box>
+                  </Box>
+
+                  <Divider sx={{ mt: 1 }} />
+
+                  {/* Step 2 — Create */}
+                  <Box>
+                    <StepOverline>Step 2 - Create DoH Endpoint</StepOverline>
+                    <Box
+                      sx={{
+                        mt: 0.5,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 2,
+                      }}
+                    >
+                      <ArrowTooltip title={!site ? "Select a Site first." : ""}>
+                        <Box
+                          component="span"
+                          sx={{
+                            alignSelf: "flex-start",
+                            display: "inline-flex",
+                            cursor:
+                              !site || creating || token
+                                ? "not-allowed"
+                                : undefined,
+                          }}
+                        >
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            disabled={!site || creating || Boolean(token)}
+                            onClick={handleCreateEndpoint}
+                            startIcon={
+                              creating ? (
+                                <CircularProgress size={16} color="inherit" />
+                              ) : undefined
+                            }
+                            sx={{
+                              whiteSpace: "nowrap",
+                              pointerEvents:
+                                !site || creating || token ? "none" : undefined,
+                            }}
+                          >
+                            {creating
+                              ? "Generating DoH Endpoint"
+                              : "Generate DoH Endpoint"}
+                          </Button>
+                        </Box>
+                      </ArrowTooltip>
+                      {dohEndpointField}
+                    </Box>
+                  </Box>
+                </>
+              )}
             </Box>
           </Collapse>
         </CardContent>
       </Card>
+
+      {saved && (
+        <Card sx={{ mt: 2 }}>
+          <CardContent sx={{ p: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 1,
+              }}
+            >
+              <Typography variant="cardTitle">Configuration</Typography>
+              <IconButton
+                size="small"
+                aria-label={configOpen ? "Collapse" : "Expand"}
+                onClick={() => setConfigOpen((o) => !o)}
+              >
+                <MaterialSymbol
+                  name={configOpen ? "expand_less" : "expand_more"}
+                  size={20}
+                />
+              </IconButton>
+            </Box>
+            <Collapse in={configOpen}>
+              <Box
+                sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}
+              >
+                {nameField}
+                {policyAndBlockPageFields}
+              </Box>
+            </Collapse>
+          </CardContent>
+        </Card>
+      )}
     </PageShell>
   );
 }
