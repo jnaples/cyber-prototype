@@ -165,12 +165,9 @@ export default function CreateClientlessPage() {
     : null;
 
   const handleSave = () => {
+    // Only the edit-page Save surfaces a toast; the add-page Done does not.
     navigate("/deployments/clientless", {
-      state: {
-        toast: saved
-          ? "Clientless Device updated."
-          : "Clientless Device created.",
-      },
+      state: saved ? { toast: "Clientless Device updated." } : undefined,
     });
   };
 
@@ -212,7 +209,13 @@ export default function CreateClientlessPage() {
               </>
             ) : (
               <ArrowTooltip
-                title={canDone ? "" : "Complete all required steps first."}
+                title={
+                  canDone
+                    ? ""
+                    : token && !hasCopied
+                      ? "Copy the DoH endpoint URL first."
+                      : "Complete all required steps first."
+                }
               >
                 <Box
                   component="span"
@@ -272,36 +275,31 @@ export default function CreateClientlessPage() {
             </Link>
           </Box>
 
-          {/* Step 1 — Name */}
+          {/* Step 1 — Configure */}
           <Box>
-            <StepOverline>Step 1 - Name Deployment</StepOverline>
-            <FormLabel sx={{ display: "block", mb: 0.5 }}>
-              Name
-              <Box component="span" sx={{ ml: 0.25 }}>
-                *
-              </Box>
-            </FormLabel>
-            <TextField
-              fullWidth
-              placeholder="e.g. Lobby Kiosks"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              sx={{
-                "& .MuiOutlinedInput-root:not(.Mui-disabled) input::placeholder":
-                  {
-                    color: "text.disabled",
-                    opacity: 1,
-                  },
-              }}
-            />
-          </Box>
-
-          <Divider sx={{ mt: 1 }} />
-
-          {/* Step 2 — Site & policy */}
-          <Box>
-            <StepOverline>Step 2 - Assign Site &amp; Policy</StepOverline>
+            <StepOverline>Step 1 - Configure Clientless Device</StepOverline>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box>
+              <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                Name
+                <Box component="span" sx={{ ml: 0.25 }}>
+                  *
+                </Box>
+              </FormLabel>
+              <TextField
+                fullWidth
+                placeholder="e.g. Lobby Kiosks"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                sx={{
+                  "& .MuiOutlinedInput-root:not(.Mui-disabled) input::placeholder":
+                    {
+                      color: "text.disabled",
+                      opacity: 1,
+                    },
+                }}
+              />
+            </Box>
             <Box>
               <FormLabel sx={{ display: "block", mb: 0.5 }}>
                 Site
@@ -447,86 +445,15 @@ export default function CreateClientlessPage() {
                   </ArrowTooltip>
                 </Box>
               </Box>
-              {!saved && (
-                <Box
-                  sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 1 }}
-                >
-                  <ArrowTooltip title={!site ? "Select a Site first." : ""}>
-                    <Box
-                      component="span"
-                      sx={{
-                        alignSelf: "flex-start",
-                        display: "inline-flex",
-                        cursor:
-                          !site || creating || token
-                            ? "not-allowed"
-                            : undefined,
-                      }}
-                    >
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        disabled={!site || creating || Boolean(token)}
-                        onClick={handleCreateEndpoint}
-                        startIcon={
-                          creating ? (
-                            <CircularProgress size={16} color="inherit" />
-                          ) : token ? (
-                            <MaterialSymbol name="check" size={18} />
-                          ) : undefined
-                        }
-                        sx={{
-                          pointerEvents:
-                            !site || creating || token ? "none" : undefined,
-                        }}
-                      >
-                        {creating
-                          ? "Creating"
-                          : token
-                            ? "Created"
-                            : "Create DoH Endpoint"}
-                      </Button>
-                    </Box>
-                  </ArrowTooltip>
-                  {token && (
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                        gap: 2,
-                      }}
-                    >
-                      <Box
-                        sx={(theme) => ({
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                          px: 1.5,
-                          py: 1,
-                          borderRadius: 1,
-                          bgcolor: theme.vars.palette.Alert.successStandardBg,
-                          color: theme.vars.palette.Alert.successColor,
-                        })}
-                      >
-                        <MaterialSymbol name="check_circle" size={20} />
-                        <Typography variant="body2">
-                          Success: Clientless Device created.
-                        </Typography>
-                      </Box>
-                      <Box />
-                    </Box>
-                  )}
-                </Box>
-              )}
             </Box>
             </Box>
           </Box>
 
           <Divider sx={{ mt: 1 }} />
 
-          {/* Step 3 — DoH endpoint */}
+          {/* Step 2 — DoH endpoint */}
           <Box>
-            <StepOverline>Step 3 - Copy DoH Endpoint</StepOverline>
+            <StepOverline>Step 2 - Create DoH Endpoint</StepOverline>
             <FormLabel sx={{ display: "block", mb: 0.5 }}>
               DoH Endpoint
               <Box component="span" sx={{ ml: 0.25 }}>
@@ -577,9 +504,78 @@ export default function CreateClientlessPage() {
                 variant="body2"
                 sx={{ color: "text.secondary", mt: 0.5 }}
               >
-                Point devices at this URL to filter DNS through the Site&apos;s
-                policy.
+                Use this DoH address to apply the assigned Filtering Policy.
               </Typography>
+            )}
+            {!saved && (
+              <Box
+                sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 1 }}
+              >
+                <ArrowTooltip title={!site ? "Select a Site first." : ""}>
+                  <Box
+                    component="span"
+                    sx={{
+                      alignSelf: "flex-start",
+                      display: "inline-flex",
+                      cursor:
+                        !site || creating || token ? "not-allowed" : undefined,
+                    }}
+                  >
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      disabled={!site || creating || Boolean(token)}
+                      onClick={handleCreateEndpoint}
+                      startIcon={
+                        creating ? (
+                          <CircularProgress size={16} color="inherit" />
+                        ) : token ? (
+                          <MaterialSymbol name="check" size={18} />
+                        ) : undefined
+                      }
+                      sx={{
+                        pointerEvents:
+                          !site || creating || token ? "none" : undefined,
+                      }}
+                    >
+                      {creating
+                        ? "Generating"
+                        : token
+                          ? "Generated"
+                          : "Generate DoH Endpoint"}
+                    </Button>
+                  </Box>
+                </ArrowTooltip>
+                {token && (
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                      gap: 2,
+                    }}
+                  >
+                    <Box
+                      sx={(theme) => ({
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        px: 1.5,
+                        py: 1,
+                        borderRadius: 1,
+                        bgcolor: theme.vars.palette.Alert.successStandardBg,
+                        color: theme.vars.palette.Alert.successColor,
+                      })}
+                    >
+                      <MaterialSymbol name="check_circle" size={20} />
+                      <Typography variant="body2">
+                        Success: Clientless endpoint created. Copy to complete
+                        in-app setup.
+                      </Typography>
+                    </Box>
+                    <Box />
+                  </Box>
+                )}
+              </Box>
             )}
           </Box>
         </CardContent>
