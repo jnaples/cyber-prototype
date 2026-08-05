@@ -484,101 +484,82 @@ export default function CreateClientlessPage() {
           {/* Step 2 — Create */}
           <Box>
             <StepOverline>Step 2 - Create DoH Endpoint</StepOverline>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              <Box>
-                <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                  DoH Endpoint
-                  <Box component="span" sx={{ ml: 0.25 }}>
-                    *
-                  </Box>
-                </FormLabel>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <TextField
-                    fullWidth
-                    disabled={!saved}
-                    value={createdEndpoint ?? ""}
-                    placeholder="Not yet created"
-                    slotProps={{ input: { readOnly: saved } }}
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {!saved && (
+                <ArrowTooltip title={!site ? "Select a Site first." : ""}>
+                  <Box
+                    component="span"
                     sx={{
-                      "& .MuiOutlinedInput-root": {
-                        bgcolor: "background.neutral",
-                      },
-                      "& .MuiOutlinedInput-input": {
-                        fontFamily: createdEndpoint ? "monospace" : undefined,
-                      },
-                      "& .MuiOutlinedInput-input.Mui-disabled": {
-                        WebkitTextFillColor: createdEndpoint
-                          ? "var(--dnsf-palette-text-primary)"
-                          : undefined,
-                      },
-                      "& .MuiOutlinedInput-input::placeholder": {
-                        color: "text.disabled",
-                        opacity: 1,
-                      },
+                      alignSelf: "flex-start",
+                      display: "inline-flex",
+                      cursor:
+                        !site || creating || token ? "not-allowed" : undefined,
                     }}
-                  />
-                  {createdEndpoint ? (
+                  >
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      disabled={!site || creating || Boolean(token)}
+                      onClick={handleCreateEndpoint}
+                      startIcon={
+                        creating ? (
+                          <CircularProgress size={16} color="inherit" />
+                        ) : undefined
+                      }
+                      sx={{
+                        whiteSpace: "nowrap",
+                        pointerEvents:
+                          !site || creating || token ? "none" : undefined,
+                      }}
+                    >
+                      {creating
+                        ? "Generating DoH Endpoint"
+                        : "Generate DoH Endpoint"}
+                    </Button>
+                  </Box>
+                </ArrowTooltip>
+              )}
+              {createdEndpoint && (
+                <Box>
+                  <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                    DoH Endpoint
+                    <Box component="span" sx={{ ml: 0.25 }}>
+                      *
+                    </Box>
+                  </FormLabel>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <TextField
+                      fullWidth
+                      disabled={!saved}
+                      value={createdEndpoint}
+                      slotProps={{ input: { readOnly: saved } }}
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          bgcolor: "background.neutral",
+                        },
+                        "& .MuiOutlinedInput-input": {
+                          fontFamily: "monospace",
+                        },
+                        "& .MuiOutlinedInput-input.Mui-disabled": {
+                          WebkitTextFillColor:
+                            "var(--dnsf-palette-text-primary)",
+                        },
+                      }}
+                    />
                     <CopyButton
                       value={createdEndpoint}
                       label="Copy DoH endpoint"
                       onCopy={() => setHasCopied(true)}
                     />
-                  ) : (
-                    <ArrowTooltip title={!site ? "Select a Site first." : ""}>
-                      <Box
-                        component="span"
-                        sx={{
-                          display: "inline-flex",
-                          cursor:
-                            !site || creating ? "not-allowed" : undefined,
-                        }}
-                      >
-                        <Button
-                          variant="contained"
-                          color="secondary"
-                          disabled={!site || creating}
-                          onClick={handleCreateEndpoint}
-                          startIcon={
-                            creating ? (
-                              <CircularProgress size={16} color="inherit" />
-                            ) : undefined
-                          }
-                          sx={{
-                            whiteSpace: "nowrap",
-                            pointerEvents:
-                              !site || creating ? "none" : undefined,
-                          }}
-                        >
-                          {creating ? "Generating" : "Generate"}
-                        </Button>
-                      </Box>
-                    </ArrowTooltip>
-                  )}
-                </Box>
-              </Box>
-              {createdEndpoint && (
-                <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                  Use this DoH address to apply the assigned Filtering Policy.
-                </Typography>
-              )}
-              {!saved && token && (
-                <Box
-                  sx={(theme) => ({
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    px: 1.5,
-                    py: 1,
-                    borderRadius: 1,
-                    alignSelf: "flex-start",
-                    bgcolor: theme.vars.palette.Alert.successStandardBg,
-                    color: theme.vars.palette.Alert.successColor,
-                  })}
-                >
-                  <MaterialSymbol name="check_circle" size={20} />
-                  <Typography variant="body2">
-                    Success: DoH endpoint generated. Copy the URL below to
-                    complete setup.
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "text.secondary", mt: 0.5 }}
+                  >
+                    <Box component="span" sx={{ fontWeight: 600 }}>
+                      Copy this DoH address
+                    </Box>{" "}
+                    to apply the assigned Filtering Policy.
                   </Typography>
                 </Box>
               )}
