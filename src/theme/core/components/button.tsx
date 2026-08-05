@@ -5,7 +5,7 @@ const MuiButton: Components<Theme>["MuiButton"] = {
     size: "small",
   },
   styleOverrides: {
-    root: {
+    root: ({ theme }) => ({
       lineHeight: "22px",
       // Show the not-allowed cursor on hover for disabled buttons (MUI
       // disables pointer events by default, so no cursor shows). The disabled
@@ -22,7 +22,17 @@ const MuiButton: Components<Theme>["MuiButton"] = {
             "rgba(0, 0, 0, 0.2) 0px 2px 4px -1px, rgba(0, 0, 0, 0.14) 0px 4px 5px 0px, rgba(0, 0, 0, 0.12) 0px 1px 10px 0px",
         },
       },
-    },
+      // Re-enabling pointer events (above) also re-enables MUI's hover
+      // background/shadow on disabled buttons — suppress that so a disabled
+      // button looks identical hovered or not.
+      "&.Mui-disabled:hover": {
+        backgroundColor: "transparent",
+        boxShadow: "none",
+      },
+      "&.MuiButton-contained.Mui-disabled:hover": {
+        backgroundColor: theme.vars.palette.action.disabledBackground,
+      },
+    }),
     sizeSmall: {
       fontSize: "13px",
     },
