@@ -75,12 +75,16 @@ export default function DeploymentsLayout() {
               <Chip
                 label="Managing 90 Organizations"
                 onClick={() => {}}
-                sx={{ borderRadius: "8px", fontSize: "14px" }}
+                sx={{
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  "& .MuiChip-deleteIcon": { color: "primary.main" },
+                }}
                 deleteIcon={
                   <MaterialSymbol
                     name="filter_list"
                     size={20}
-                    sx={{ color: "text.primary" }}
+                    sx={{ color: "primary.main" }}
                   />
                 }
                 onDelete={() => {}}

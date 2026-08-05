@@ -263,22 +263,24 @@ function DohActionsCell({
   );
 }
 
-function StatusChip({ status }: { status: DohStatus }) {
-  const active = status === "Active";
+function StatusChip() {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-      <Chip
-        size="small"
-        variant="outlined"
-        color={active ? "success" : "warning"}
-        icon={
-          <MaterialSymbol
-            name={active ? "check_circle" : "hourglass_empty"}
-            size={16}
-          />
-        }
-        label={status}
-      />
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100%",
+      }}
+    >
+      <ArrowTooltip title="Protected" direction="top">
+        <MaterialSymbol
+          name="verified_user"
+          size={22}
+          sx={{ color: "var(--dnsf-palette-success-main)" }}
+        />
+      </ArrowTooltip>
     </Box>
   );
 }
@@ -385,10 +387,11 @@ const baseColumns: GridColDef<DohRow>[] = [
     headerName: "Status",
     width: 140,
     sortable: false,
+    headerAlign: "center",
     type: "singleSelect",
     valueOptions: STATUS_OPTIONS,
     filterOperators: IS_OP,
-    renderCell: (params) => <StatusChip status={params.row.status} />,
+    renderCell: () => <StatusChip />,
   },
 ];
 

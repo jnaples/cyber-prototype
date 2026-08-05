@@ -157,8 +157,7 @@ export function ScheduleReportView({
   const [name, setName] = useState("");
   const [selectedReports, setSelectedReports] = useState<string[]>([]);
   const [period, setPeriod] = useState(PERIODS[0]);
-  const [selectedOrgs, setSelectedOrgs] = useState<string[]>([]);
-  const [orgContacts, setOrgContacts] = useState(true);
+  const [selectedOrg, setSelectedOrg] = useState("");
   const [portalUsers, setPortalUsers] = useState<string[]>([]);
   const [externalEmail, setExternalEmail] = useState("");
   const [externalEmails, setExternalEmails] = useState<string[]>([]);
@@ -179,9 +178,7 @@ export function ScheduleReportView({
       prev.includes(email) ? prev.filter((e) => e !== email) : [...prev, email],
     );
 
-  const orgContactCount = 6;
-  const recipientCount =
-    (orgContacts ? orgContactCount : 0) + portalUsers.length + externalEmails.length;
+  const recipientCount = portalUsers.length + externalEmails.length;
   const nextDeliveryDay = day === "Last day" ? "Jul 31" : "Aug 1";
   const selectedReportDefs = REPORTS.filter((r) => selectedReports.includes(r.key));
 
@@ -416,62 +413,28 @@ export function ScheduleReportView({
                 Select Organizations
               </FormLabel>
               <Select
-                multiple
                 displayEmpty
                 fullWidth
                 size="small"
-                value={selectedOrgs}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setSelectedOrgs(typeof v === "string" ? v.split(",") : v);
-                }}
-                renderValue={(selected) =>
-                  selected.length === 0 ? (
-                    <Box component="span" sx={{ color: "text.secondary" }}>
-                      Select organizations
-                    </Box>
-                  ) : selected.length === ORGS.length ? (
-                    "All organizations"
+                value={selectedOrg}
+                onChange={(e) => setSelectedOrg(e.target.value)}
+                renderValue={(v) =>
+                  v ? (
+                    v
                   ) : (
-                    `${selected.length} selected`
+                    <Box component="span" sx={{ color: "text.secondary" }}>
+                      Select organization
+                    </Box>
                   )
                 }
               >
-                <MenuItem
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setSelectedOrgs(
-                      selectedOrgs.length === ORGS.length ? [] : [...ORGS],
-                    );
-                  }}
-                >
-                  <Checkbox
-                    size="small"
-                    checked={selectedOrgs.length === ORGS.length}
-                    indeterminate={
-                      selectedOrgs.length > 0 &&
-                      selectedOrgs.length < ORGS.length
-                    }
-                    sx={{ p: 0.5, mr: 1 }}
-                  />
-                  Select all
-                </MenuItem>
-                <Divider />
+                <MenuItem value="All Organizations">All Organizations</MenuItem>
                 {ORGS.map((org) => (
                   <MenuItem key={org} value={org}>
-                    <Checkbox
-                      size="small"
-                      checked={selectedOrgs.includes(org)}
-                      sx={{ p: 0.5, mr: 1 }}
-                    />
                     {org}
                   </MenuItem>
                 ))}
               </Select>
-              <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-                Each organization receives a PDF built from its own data.
-              </Typography>
             </Step>
 
             <Divider />
@@ -479,25 +442,6 @@ export function ScheduleReportView({
             {/* STEP 3 — Recipients */}
             <Step n={3} title="Recipients">
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={orgContacts}
-                    onChange={(e) => setOrgContacts(e.target.checked)}
-                  />
-                }
-                label={
-                  <Box>
-                    <Typography sx={{ fontWeight: 600 }}>Organization contacts</Typography>
-                    <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                      Delivers to the billing and technical contacts saved on each
-                      organization.
-                    </Typography>
-                  </Box>
-                }
-                sx={{ alignItems: "flex-start", m: 0, gap: 1.5 }}
-              />
-
               <Box>
                 <FormLabel sx={{ display: "block", mb: 0.5 }}>Portal users</FormLabel>
                 <Box
@@ -579,8 +523,8 @@ export function ScheduleReportView({
                 </Box>
               )}
               <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-                Delivering to {recipientCount} recipient{recipientCount === 1 ? "" : "s"}
-                {orgContacts ? ` — ${orgContactCount} organization contacts.` : "."}
+                Delivering to {recipientCount} recipient
+                {recipientCount === 1 ? "" : "s"}.
               </Typography>
               </Box>
               </Box>

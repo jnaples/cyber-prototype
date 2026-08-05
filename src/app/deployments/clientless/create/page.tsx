@@ -3,15 +3,18 @@ import {
   Button,
   Card,
   CardContent,
+  CircularProgress,
   Divider,
   FormLabel,
   IconButton,
   Link,
+  ListSubheader,
   MenuItem,
   Select,
   TextField,
   Typography,
 } from "@mui/material";
+import type { Theme } from "@mui/material/styles";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
@@ -40,6 +43,23 @@ const POLICY_OPTIONS = [
   "CIPA Policy",
   "Default Policy",
 ];
+const GLOBAL_POLICY_OPTIONS = [
+  "Global Baseline",
+  "Global Threat Defense",
+  "Global Compliance",
+];
+
+// Caption-style section header inside the Policy dropdown (slightly indented).
+const subheaderSx = (theme: Theme) => ({
+  ...theme.typography.caption,
+  pl: 2,
+  lineHeight: "32px",
+  textTransform: "uppercase" as const,
+  color: theme.vars.palette.text.secondary,
+});
+
+// Items sit more indented than their section header.
+const policyItemSx = { pl: 3.5 } as const;
 const BLOCK_PAGE_OPTIONS = [
   "Corporate Block Page",
   "HIPAA Notice",
@@ -86,34 +106,53 @@ export default function CreateClientlessPage() {
   const [policy, setPolicy] = useState(initialSite?.policy ?? "");
   const [blockPage, setBlockPage] = useState(initialSite?.blockPage ?? "");
 
+  // The DoH endpoint token — only set after the user clicks "Create DoH
+  // Endpoint" (or, in edit mode, seeded from the saved deployment).
+  const [token, setToken] = useState<string | null>(edit.editToken ?? null);
+  // True while the 1.5s "creating" spinner runs.
+  const [creating, setCreating] = useState(false);
+
+  // Changing the Site resets the endpoint so it must be re-created.
   const handleSiteChange = (next: string) => {
     setSite(next);
     const s = SITES.find((x) => x.name === next);
     setPolicy(s?.policy ?? "");
     setBlockPage(s?.blockPage ?? "");
+    setToken(null);
+    setCreating(false);
   };
-  // The generated DoH endpoint token — set once the form first becomes valid.
-  const [token, setToken] = useState<string | null>(edit.editToken ?? null);
+
+  const handleCreateEndpoint = () => {
+    setCreating(true);
+    window.setTimeout(() => {
+      setToken(tokenFrom(name + site));
+      setCreating(false);
+    }, 1500);
+  };
 
   // Editing an existing deployment (arrived from the grid Edit action).
   const saved = Boolean(edit.editToken);
   const savedName = edit.editName ?? "";
 
+  // Save (edit mode) is enabled only once something changes from the saved state.
+  const dirty =
+    name !== savedName ||
+    site !== (edit.editSite ?? "") ||
+    policy !== (initialSite?.policy ?? "") ||
+    blockPage !== (initialSite?.blockPage ?? "");
+
   const back = () => navigate("/deployments/clientless");
-  const valid = name.trim() !== "" && site !== "";
 
-  // Generate the endpoint token the first time the form becomes valid.
-  if (valid && token === null) setToken(tokenFrom(name + site));
-
-  const createdEndpoint =
-    valid && token ? `https://doh.dnsfilter.com/${token}` : null;
+  const createdEndpoint = token
+    ? `https://doh.dnsfilter.com/${token}`
+    : null;
 
   const handleSave = () => {
     navigate("/deployments/clientless", {
       state: {
         toast: saved
-          ? "Clientless deployment updated."
-          : "Clientless deployment created.",
+          ? "Clientless Device updated."
+          : "Clientless Device created.",
       },
     });
   };
@@ -126,14 +165,44 @@ export default function CreateClientlessPage() {
           title={saved ? savedName : "Add Clientless Device"}
           onBack={back}
           actions={
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={handleSave}
-              sx={{ minWidth: 0 }}
-            >
-              Done
-            </Button>
+            saved ? (
+              <>
+                <Button variant="outlined" color="secondary" onClick={back}>
+                  Cancel
+                </Button>
+                <ArrowTooltip title={dirty ? "" : "No changes to save."}>
+                  <Box
+                    component="span"
+                    sx={{
+                      display: "inline-flex",
+                      cursor: dirty ? undefined : "not-allowed",
+                    }}
+                  >
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      disabled={!dirty}
+                      onClick={handleSave}
+                      sx={{
+                        minWidth: 0,
+                        pointerEvents: dirty ? undefined : "none",
+                      }}
+                    >
+                      Save
+                    </Button>
+                  </Box>
+                </ArrowTooltip>
+              </>
+            ) : (
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleSave}
+                sx={{ minWidth: 0 }}
+              >
+                Done
+              </Button>
+            )
           }
         />
       }
@@ -203,20 +272,24 @@ export default function CreateClientlessPage() {
             <Box>
               <FormLabel sx={{ display: "block", mb: 0.5 }}>
                 Site
-                <Box component="span" sx={{ ml: 0.25 }}>
-                  *
-                </Box>
+                {!saved && (
+                  <Box component="span" sx={{ ml: 0.25 }}>
+                    *
+                  </Box>
+                )}
               </FormLabel>
               {saved ? (
-                <TextField
-                  fullWidth
-                  value={site}
-                  slotProps={{ input: { readOnly: true } }}
+                <Typography
                   sx={{
-                    "& .MuiOutlinedInput-root": { bgcolor: "background.neutral" },
-                    "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                    fontSize: 16,
+                    color: "text.primary",
+                    minHeight: 40,
+                    display: "flex",
+                    alignItems: "center",
                   }}
-                />
+                >
+                  {site}
+                </Typography>
               ) : (
                 <Select
                   fullWidth
@@ -279,9 +352,23 @@ export default function CreateClientlessPage() {
                           )
                         }
                       >
+                        <ListSubheader sx={subheaderSx}>
+                          Organization
+                        </ListSubheader>
                         {POLICY_OPTIONS.map((p) => (
-                          <MenuItem key={p} value={p}>
+                          <MenuItem key={p} value={p} sx={policyItemSx}>
                             {p}
+                          </MenuItem>
+                        ))}
+                        <ListSubheader sx={subheaderSx}>Global</ListSubheader>
+                        {GLOBAL_POLICY_OPTIONS.map((p) => (
+                          <MenuItem key={p} value={p} sx={policyItemSx}>
+                            {p}
+                            <MaterialSymbol
+                              name="globe"
+                              size={16}
+                              sx={{ ml: 0.75, color: "text.secondary" }}
+                            />
                           </MenuItem>
                         ))}
                       </Select>
@@ -312,7 +399,7 @@ export default function CreateClientlessPage() {
                             v
                           ) : (
                             <Box component="span" sx={{ color: "text.disabled" }}>
-                              -
+                              Default Appearance
                             </Box>
                           )
                         }
@@ -327,26 +414,77 @@ export default function CreateClientlessPage() {
                   </ArrowTooltip>
                 </Box>
               </Box>
-              <ArrowTooltip title={!site ? "Select a Site first." : ""}>
+              {!saved && (
                 <Box
-                  component="span"
-                  sx={{
-                    mt: 2,
-                    alignSelf: "flex-start",
-                    display: "inline-flex",
-                    cursor: !site ? "not-allowed" : undefined,
-                  }}
+                  sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 1 }}
                 >
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    disabled={!site}
-                    sx={{ pointerEvents: !site ? "none" : undefined }}
-                  >
-                    Create DoH Endpoint
-                  </Button>
+                  <ArrowTooltip title={!site ? "Select a Site first." : ""}>
+                    <Box
+                      component="span"
+                      sx={{
+                        alignSelf: "flex-start",
+                        display: "inline-flex",
+                        cursor:
+                          !site || creating || token
+                            ? "not-allowed"
+                            : undefined,
+                      }}
+                    >
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        disabled={!site || creating || Boolean(token)}
+                        onClick={handleCreateEndpoint}
+                        startIcon={
+                          creating ? (
+                            <CircularProgress size={16} color="inherit" />
+                          ) : token ? (
+                            <MaterialSymbol name="check" size={18} />
+                          ) : undefined
+                        }
+                        sx={{
+                          pointerEvents:
+                            !site || creating || token ? "none" : undefined,
+                        }}
+                      >
+                        {creating
+                          ? "Creating"
+                          : token
+                            ? "Created"
+                            : "Create DoH Endpoint"}
+                      </Button>
+                    </Box>
+                  </ArrowTooltip>
+                  {token && (
+                    <Box
+                      sx={{
+                        display: "grid",
+                        gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                        gap: 2,
+                      }}
+                    >
+                      <Box
+                        sx={(theme) => ({
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          px: 1.5,
+                          py: 1,
+                          borderRadius: 1,
+                          bgcolor: theme.vars.palette.Alert.successStandardBg,
+                          color: theme.vars.palette.Alert.successColor,
+                        })}
+                      >
+                        <MaterialSymbol name="check_circle" size={20} />
+                        <Typography variant="body2">
+                          Success: Clientless Device created.
+                        </Typography>
+                      </Box>
+                      <Box />
+                    </Box>
+                  )}
                 </Box>
-              </ArrowTooltip>
+              )}
             </Box>
             </Box>
           </Box>
@@ -362,13 +500,16 @@ export default function CreateClientlessPage() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
               <TextField
                 fullWidth
-                disabled
+                disabled={!saved}
                 value={createdEndpoint ?? ""}
-                placeholder="Select a site to generate key"
+                placeholder="Not yet created"
+                slotProps={{ input: { readOnly: saved } }}
                 sx={{
                   "& .MuiOutlinedInput-root": { bgcolor: "background.neutral" },
-                  "& .MuiOutlinedInput-input.Mui-disabled": {
+                  "& .MuiOutlinedInput-input": {
                     fontFamily: createdEndpoint ? "monospace" : undefined,
+                  },
+                  "& .MuiOutlinedInput-input.Mui-disabled": {
                     WebkitTextFillColor: createdEndpoint
                       ? "var(--dnsf-palette-text-primary)"
                       : undefined,
@@ -391,14 +532,15 @@ export default function CreateClientlessPage() {
                 </IconButton>
               )}
             </Box>
-            <Typography
-              variant="body2"
-              sx={{ color: "text.secondary", mt: 0.5 }}
-            >
-              {createdEndpoint
-                ? "Point devices at this URL to filter DNS through the Site's policy."
-                : "Generates when a name is entered and a Site is selected."}
-            </Typography>
+            {createdEndpoint && (
+              <Typography
+                variant="body2"
+                sx={{ color: "text.secondary", mt: 0.5 }}
+              >
+                Point devices at this URL to filter DNS through the Site&apos;s
+                policy.
+              </Typography>
+            )}
           </Box>
         </CardContent>
       </Card>

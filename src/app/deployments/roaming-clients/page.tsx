@@ -33,7 +33,7 @@ const columns: GridColDef[] = [
     headerAlign: "center",
     renderCell: () => (
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
-        <ArrowTooltip title="Protected" direction="bottom">
+        <ArrowTooltip title="Protected" direction="top">
           <MaterialSymbol
             name="verified_user"
             size={22}
