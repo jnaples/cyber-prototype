@@ -561,6 +561,26 @@ export default function CreateClientlessPage() {
                     </Box>{" "}
                     to apply the assigned Filtering Policy.
                   </Typography>
+                  {hasCopied && (
+                    <Box
+                      sx={(theme) => ({
+                        mt: 1,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 1,
+                        px: 1.5,
+                        py: 1,
+                        borderRadius: 1,
+                        bgcolor: theme.vars.palette.Alert.successStandardBg,
+                        color: theme.vars.palette.Alert.successColor,
+                      })}
+                    >
+                      <MaterialSymbol name="check_circle" size={20} />
+                      <Typography variant="body2">
+                        DoH Endpoint has been copied.
+                      </Typography>
+                    </Box>
+                  )}
                 </Box>
               )}
             </Box>
