@@ -104,22 +104,29 @@ export default function CreateClientlessPage() {
   // changed once a site is selected.
   const initialSite = SITES.find((s) => s.name === (edit.editSite ?? ""));
   const [policy, setPolicy] = useState(initialSite?.policy ?? "");
-  const [blockPage, setBlockPage] = useState(initialSite?.blockPage ?? "");
+  // Block page defaults to "Default Appearance" regardless of the Site; it only
+  // changes when the user explicitly picks a different block page.
+  const [blockPage, setBlockPage] = useState(
+    initialSite?.blockPage ?? "Default Appearance",
+  );
 
   // The DoH endpoint token — only set after the user clicks "Create DoH
   // Endpoint" (or, in edit mode, seeded from the saved deployment).
   const [token, setToken] = useState<string | null>(edit.editToken ?? null);
   // True while the 1.5s "creating" spinner runs.
   const [creating, setCreating] = useState(false);
+  // True once the user copies the generated DoH endpoint (gates Done).
+  const [hasCopied, setHasCopied] = useState(false);
 
   // Changing the Site resets the endpoint so it must be re-created.
   const handleSiteChange = (next: string) => {
     setSite(next);
     const s = SITES.find((x) => x.name === next);
     setPolicy(s?.policy ?? "");
-    setBlockPage(s?.blockPage ?? "");
+    // Block page stays as-is (defaults to "Default Appearance") — not inherited.
     setToken(null);
     setCreating(false);
+    setHasCopied(false);
   };
 
   const handleCreateEndpoint = () => {
@@ -140,6 +147,16 @@ export default function CreateClientlessPage() {
     site !== (edit.editSite ?? "") ||
     policy !== (initialSite?.policy ?? "") ||
     blockPage !== (initialSite?.blockPage ?? "");
+
+  // Done (add mode) unlocks once every field is filled, the endpoint is
+  // created, and the user has copied it.
+  const canDone =
+    name.trim() !== "" &&
+    site !== "" &&
+    policy !== "" &&
+    blockPage !== "" &&
+    Boolean(token) &&
+    hasCopied;
 
   const back = () => navigate("/deployments/clientless");
 
@@ -194,14 +211,30 @@ export default function CreateClientlessPage() {
                 </ArrowTooltip>
               </>
             ) : (
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={handleSave}
-                sx={{ minWidth: 0 }}
+              <ArrowTooltip
+                title={canDone ? "" : "Complete all required steps first."}
               >
-                Done
-              </Button>
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    cursor: canDone ? undefined : "not-allowed",
+                  }}
+                >
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    disabled={!canDone}
+                    onClick={handleSave}
+                    sx={{
+                      minWidth: 0,
+                      pointerEvents: canDone ? undefined : "none",
+                    }}
+                  >
+                    Done
+                  </Button>
+                </Box>
+              </ArrowTooltip>
             )
           }
         />
@@ -496,6 +529,9 @@ export default function CreateClientlessPage() {
             <StepOverline>Step 3 - Copy DoH Endpoint</StepOverline>
             <FormLabel sx={{ display: "block", mb: 0.5 }}>
               DoH Endpoint
+              <Box component="span" sx={{ ml: 0.25 }}>
+                *
+              </Box>
             </FormLabel>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
               <TextField
@@ -521,7 +557,11 @@ export default function CreateClientlessPage() {
                 }}
               />
               {createdEndpoint ? (
-                <CopyButton value={createdEndpoint} label="Copy DoH endpoint" />
+                <CopyButton
+                  value={createdEndpoint}
+                  label="Copy DoH endpoint"
+                  onCopy={() => setHasCopied(true)}
+                />
               ) : (
                 <IconButton
                   disabled
