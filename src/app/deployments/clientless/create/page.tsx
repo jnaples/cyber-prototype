@@ -304,61 +304,81 @@ export default function CreateClientlessPage() {
   );
 
   const dohEndpointField = createdEndpoint && (
-    <Box>
-      <FormLabel sx={{ display: "block", mb: 0.5 }}>
-        DoH Endpoint
-        <Box component="span" sx={{ ml: 0.25 }}>
-          *
+    // Half-width so the field lines up with the Policy/Block Page pair above;
+    // the empty second cell holds the other half of the row.
+    <Box
+      sx={{
+        display: "flex",
+        gap: 2,
+        flexDirection: { xs: "column", sm: "row" },
+      }}
+    >
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <FormLabel sx={{ display: "block", mb: 0.5 }}>
+          DoH Endpoint
+          <Box component="span" sx={{ ml: 0.25 }}>
+            *
+          </Box>
+        </FormLabel>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <TextField
+            fullWidth
+            disabled
+            // The URL renders as the placeholder (styled to look like a real
+            // value) so it can't be selected or copied with the cursor at all —
+            // the copy button is the only way to take it, which keeps
+            // `hasCopied` accurate.
+            value=""
+            placeholder={createdEndpoint}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                bgcolor: "background.neutral",
+              },
+              "& .MuiOutlinedInput-input": {
+                fontFamily: "monospace",
+                userSelect: "none",
+              },
+              "& .MuiOutlinedInput-input::placeholder": {
+                color: "var(--dnsf-palette-text-secondary)",
+                WebkitTextFillColor: "var(--dnsf-palette-text-secondary)",
+                opacity: 1,
+              },
+            }}
+          />
+          <CopyButton
+            value={createdEndpoint}
+            label="Copy DoH endpoint"
+            onCopy={() => setHasCopied(true)}
+          />
         </Box>
-      </FormLabel>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <TextField
-          fullWidth
-          disabled={!saved}
-          value={createdEndpoint}
-          slotProps={{ input: { readOnly: saved } }}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              bgcolor: "background.neutral",
-            },
-            "& .MuiOutlinedInput-input": {
-              fontFamily: "monospace",
-            },
-            "& .MuiOutlinedInput-input.Mui-disabled": {
-              WebkitTextFillColor: "var(--dnsf-palette-text-primary)",
-            },
-          }}
-        />
-        <CopyButton
-          value={createdEndpoint}
-          label="Copy DoH endpoint"
-          onCopy={() => setHasCopied(true)}
-        />
+        <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
+          <Box component="span" sx={{ fontWeight: 600 }}>
+            Copy this DoH address
+          </Box>{" "}
+          to apply the assigned Filtering Policy.
+        </Typography>
+        {hasCopied && (
+          <Box
+            sx={(theme) => ({
+              mt: 1,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 1,
+              px: 1.5,
+              py: 1,
+              borderRadius: 1,
+              bgcolor: theme.vars.palette.Alert.successStandardBg,
+              color: theme.vars.palette.Alert.successColor,
+            })}
+          >
+            <MaterialSymbol name="check_circle" size={20} />
+            <Typography variant="body2">
+              DoH Endpoint has been copied.
+            </Typography>
+          </Box>
+        )}
       </Box>
-      <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-        <Box component="span" sx={{ fontWeight: 600 }}>
-          Copy this DoH address
-        </Box>{" "}
-        to apply the assigned Filtering Policy.
-      </Typography>
-      {hasCopied && (
-        <Box
-          sx={(theme) => ({
-            mt: 1,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 1,
-            px: 1.5,
-            py: 1,
-            borderRadius: 1,
-            bgcolor: theme.vars.palette.Alert.successStandardBg,
-            color: theme.vars.palette.Alert.successColor,
-          })}
-        >
-          <MaterialSymbol name="check_circle" size={20} />
-          <Typography variant="body2">DoH Endpoint has been copied.</Typography>
-        </Box>
-      )}
+      <Box sx={{ flex: 1, minWidth: 0 }} />
     </Box>
   );
 

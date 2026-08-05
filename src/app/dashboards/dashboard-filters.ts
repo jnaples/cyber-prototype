@@ -5,22 +5,18 @@
 import { createContext, useContext } from "react";
 
 export type TimeRangeKey =
-  | "today"
-  | "24h"
-  | "yesterday"
-  | "7d"
-  | "30d"
-  | "custom";
+  "today" | "24h" | "yesterday" | "7d" | "30d" | "custom";
 
 export type DashboardFilters = {
   organizations: string[];
   timeRange: TimeRangeKey;
   results: string[];
+  policies: string[];
   sites: string[];
   roamingRelays: string[];
   users: string[];
-  deploymentTypes: string[];
   categories: string[];
+  threatCategories: string[];
 };
 
 // Organizations — mirrors the Query Logs organization selector.
@@ -36,6 +32,13 @@ export const TIME_RANGE_OPTIONS: { value: TimeRangeKey; label: string }[] = [
 ];
 
 export const RESULT_OPTIONS = ["Allowed", "Blocked", "Threats"];
+export const POLICY_OPTIONS = [
+  "Standard Policy",
+  "Default Filtering",
+  "HIPAA Strict",
+  "Marketing Policy",
+  "Engineering Policy",
+];
 export const SITE_OPTIONS = [
   "HQ",
   "East Campus",
@@ -60,23 +63,73 @@ export const DEPLOYMENT_TYPE_OPTIONS = [
   "Sites",
   "Collections",
 ];
-export const CATEGORY_OPTIONS = [
-  "Threats only",
-  "Malware",
-  "Phishing",
+// DNSFilter content categories (same list the miscategorization drawer uses).
+export const CONTENT_CATEGORY_OPTIONS = [
+  "Abortion",
   "Adult Content",
-  "Botnets",
+  "Alcohol & Tobacco",
+  "Blogs & Personal Sites",
+  "Business",
+  "Contentious & Misinformation",
+  "Dating & Personals",
+  "Drugs",
+  "Economy & Finance",
+  "Education & Self Help",
+  "Entertainment",
+  "Food & Recipes",
+  "Gambling",
+  "Games",
+  "Generative AI Tools",
+  "Government",
+  "Hacking & Cracking",
+  "Health",
+  "Humor",
+  "Information Technology",
+  "Jobs & Careers",
+  "Media Sharing",
+  "Message Boards & Forums",
+  "News & Media",
+  "P2P & Illegal",
+  "Real Estate",
+  "Religion",
+  "Search Engines & Portals",
+  "Self Harm",
+  "Shopping",
+  "Social Networking",
+  "Sports",
+  "Streaming Media",
+  "Terrorism & Hate",
+  "Travel",
+  "Vehicles",
+  "Virtual Reality",
+  "Weapons",
+  "Webmail & Chat",
+];
+
+export const THREAT_CATEGORY_OPTIONS = [
+  "Botnet",
+  "Cryptomining",
+  "Malicious Domain Protection",
+  "Malware",
+  "New Domains",
+  "Newly Observed Domains",
+  "Phishing",
+  "Proxy & Filter Avoidance",
+  "Suspicious & Deceptive",
+  "Translation Sites",
+  "Very New Domains",
 ];
 
 export const DEFAULT_FILTERS: DashboardFilters = {
   organizations: [],
   timeRange: "24h",
   results: [],
+  policies: [],
   sites: [],
   roamingRelays: [],
   users: [],
-  deploymentTypes: [],
   categories: [],
+  threatCategories: [],
 };
 
 const TIME_FACTOR: Record<TimeRangeKey, number> = {
@@ -96,13 +149,12 @@ export function filterFactor(f: DashboardFilters): number {
   if (f.results.length) {
     factor *= f.results.length / RESULT_OPTIONS.length;
   }
+  if (f.policies.length) factor *= 0.6;
   if (f.sites.length) factor *= 0.6;
   if (f.roamingRelays.length) factor *= 0.6;
   if (f.users.length) factor *= 0.6;
-  if (f.deploymentTypes.length) {
-    factor *= f.deploymentTypes.length / DEPLOYMENT_TYPE_OPTIONS.length;
-  }
   if (f.categories.length) factor *= 0.7;
+  if (f.threatCategories.length) factor *= 0.7;
   return factor;
 }
 
@@ -110,18 +162,21 @@ export function filterFactor(f: DashboardFilters): number {
 export function activeFilterChips(f: DashboardFilters): string[] {
   const chips: string[] = [];
   if (f.timeRange !== DEFAULT_FILTERS.timeRange) {
-    const label = TIME_RANGE_OPTIONS.find((o) => o.value === f.timeRange)?.label;
+    const label = TIME_RANGE_OPTIONS.find(
+      (o) => o.value === f.timeRange,
+    )?.label;
     if (label) chips.push(label);
   }
   return [
     ...f.organizations,
     ...chips,
     ...f.results,
+    ...f.policies,
     ...f.sites,
     ...f.roamingRelays,
     ...f.users,
-    ...f.deploymentTypes,
     ...f.categories,
+    ...f.threatCategories,
   ];
 }
 

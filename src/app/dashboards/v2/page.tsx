@@ -217,7 +217,9 @@ function V2Card({
             gap: 1,
           }}
         >
-          <Typography sx={{ fontWeight: 600, fontSize: 16, color: "text.primary" }}>
+          <Typography
+            sx={{ fontWeight: 600, fontSize: 16, color: "text.primary" }}
+          >
             {def?.name ?? widget.type}
           </Typography>
           {widget.type === "geo-activity" && (
@@ -362,7 +364,12 @@ function EmptyState({
         textAlign: "center",
       }}
     >
-      <Box component="img" src="/dashboard.svg" alt="" sx={{ width: 80, height: 80 }} />
+      <Box
+        component="img"
+        src="/dashboard.svg"
+        alt=""
+        sx={{ width: 80, height: 80 }}
+      />
       <Box
         sx={{
           display: "flex",
@@ -478,7 +485,9 @@ export default function DashboardsV2Page() {
 
   // react-grid-layout state — positions/sizes managed by the grid. Reconciled
   // when widgets are added/removed.
-  const [rglLayout, setRglLayout] = useState<Layout>(() => buildLayout(widgets));
+  const [rglLayout, setRglLayout] = useState<Layout>(() =>
+    buildLayout(widgets),
+  );
   const { width, containerRef, mounted } = useContainerWidth();
 
   const [addOpen, setAddOpen] = useState(false);
@@ -532,11 +541,12 @@ export default function DashboardsV2Page() {
   const QUICK_FILTER_LABELS: Record<string, string> = {
     organizations: "Organizations",
     results: "Result",
+    policies: "Policy",
     sites: "Sites",
     roamingRelays: "Roaming Clients / Relays",
     users: "Users",
-    deploymentTypes: "Deployment type",
-    categories: "Top categories",
+    categories: "Content Categories",
+    threatCategories: "Threat Categories",
   };
   const activeFilters: {
     key: string;
@@ -548,11 +558,12 @@ export default function DashboardsV2Page() {
     key:
       | "organizations"
       | "results"
+      | "policies"
       | "sites"
       | "roamingRelays"
       | "users"
-      | "deploymentTypes"
-      | "categories",
+      | "categories"
+      | "threatCategories",
   ) =>
     filters[key].forEach((value) =>
       activeFilters.push({
@@ -570,11 +581,12 @@ export default function DashboardsV2Page() {
   // Site / Network, Deployment type, Top categories.
   pushDim("organizations");
   pushDim("results");
+  pushDim("policies");
   pushDim("sites");
   pushDim("roamingRelays");
   pushDim("users");
-  pushDim("deploymentTypes");
   pushDim("categories");
+  pushDim("threatCategories");
 
   // Group active filters by field so multiple values of the same field (e.g.
   // several Organizations) sit together in one dashed chip.
@@ -690,120 +702,122 @@ export default function DashboardsV2Page() {
             minWidth: 0,
           }}
         >
-        <IconButton
-          size="small"
-          aria-label={favorited ? "Remove from favorites" : "Add to favorites"}
-          aria-pressed={favorited}
-          onClick={() => {
-            setFavorited((prev) => !prev);
-            setToast(
-              favorited ? "Removed from favorites." : "Added to favorites.",
-            );
-          }}
-        >
-          <MaterialSymbol
-            name="star"
-            size={20}
-            sx={{
-              color: favorited
-                ? "var(--dnsf-palette-warning-main)"
-                : "var(--dnsf-palette-text-disabled)",
-              fontVariationSettings: favorited ? '"FILL" 1' : '"FILL" 0',
-            }}
-          />
-        </IconButton>
-
-        {renaming ? (
-          <ClickAwayListener onClickAway={() => setRenaming(false)}>
-            <TextField
-              autoFocus
-              size="small"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && setRenaming(false)}
-              sx={(theme) => ({
-                "& .MuiOutlinedInput-input": {
-                  ...theme.typography.pageTitle,
-                  py: 0.5,
-                  px: 1,
-                },
-              })}
-            />
-          </ClickAwayListener>
-        ) : (
-          <Box
-            role="button"
-            onClick={(e) =>
-              setSwitcherAnchor((cur) =>
-                cur ? null : (e.currentTarget as HTMLElement),
-              )
+          <IconButton
+            size="small"
+            aria-label={
+              favorited ? "Remove from favorites" : "Add to favorites"
             }
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 1,
-              cursor: "pointer",
-              userSelect: "none",
+            aria-pressed={favorited}
+            onClick={() => {
+              setFavorited((prev) => !prev);
+              setToast(
+                favorited ? "Removed from favorites." : "Added to favorites.",
+              );
             }}
           >
-            <Typography variant="pageTitle" sx={{ color: "text.primary" }}>
-              {name}
-            </Typography>
             <MaterialSymbol
-              name={switcherAnchor ? "expand_less" : "expand_more"}
-              size={18}
-              sx={{ color: "var(--dnsf-palette-text-disabled)" }}
+              name="star"
+              size={20}
+              sx={{
+                color: favorited
+                  ? "var(--dnsf-palette-warning-main)"
+                  : "var(--dnsf-palette-text-disabled)",
+                fontVariationSettings: favorited ? '"FILL" 1' : '"FILL" 0',
+              }}
             />
-          </Box>
-        )}
+          </IconButton>
 
-        {/* Metadata — the active organization context, to the right of name */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 1 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-            <MaterialSymbol
-              name="corporate_fare"
-              size={18}
-              sx={{ color: "text.secondary" }}
-            />
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              {filters.organizations.length === 0
-                ? "All Organizations"
-                : filters.organizations.length === 1
-                  ? filters.organizations[0]
-                  : `${filters.organizations.length} Organizations`}
-            </Typography>
-          </Box>
-          {SHARED_DASHBOARDS.includes(name) && (
-            <>
-              <Divider
-                component="hr"
-                orientation="vertical"
-                flexItem
+          {renaming ? (
+            <ClickAwayListener onClickAway={() => setRenaming(false)}>
+              <TextField
+                autoFocus
+                size="small"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && setRenaming(false)}
                 sx={(theme) => ({
-                  // Match the prod divider color for this scenario.
-                  borderColor: "rgba(3, 22, 37, 0.6)",
-                  mx: 0.5,
-                  // <hr> carries a default vertical UA margin that shrinks the
-                  // flex-item; zero it so it stretches the parent's full height.
-                  my: 0,
-                  ...theme.applyStyles("dark", {
-                    borderColor: "rgba(236, 241, 250, 0.7)",
-                  }),
+                  "& .MuiOutlinedInput-input": {
+                    ...theme.typography.pageTitle,
+                    py: 0.5,
+                    px: 1,
+                  },
                 })}
               />
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <MaterialSymbol
-                  name="share"
-                  size={18}
-                  sx={{ color: "text.secondary" }}
-                />
-                <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                  Shared by {SHARED_BY[name] ?? "another user"}
-                </Typography>
-              </Box>
-            </>
+            </ClickAwayListener>
+          ) : (
+            <Box
+              role="button"
+              onClick={(e) =>
+                setSwitcherAnchor((cur) =>
+                  cur ? null : (e.currentTarget as HTMLElement),
+                )
+              }
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 1,
+                cursor: "pointer",
+                userSelect: "none",
+              }}
+            >
+              <Typography variant="pageTitle" sx={{ color: "text.primary" }}>
+                {name}
+              </Typography>
+              <MaterialSymbol
+                name={switcherAnchor ? "expand_less" : "expand_more"}
+                size={18}
+                sx={{ color: "var(--dnsf-palette-text-disabled)" }}
+              />
+            </Box>
           )}
-        </Box>
+
+          {/* Metadata — the active organization context, to the right of name */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 1 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+              <MaterialSymbol
+                name="corporate_fare"
+                size={18}
+                sx={{ color: "text.secondary" }}
+              />
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                {filters.organizations.length === 0
+                  ? "All Organizations"
+                  : filters.organizations.length === 1
+                    ? filters.organizations[0]
+                    : `${filters.organizations.length} Organizations`}
+              </Typography>
+            </Box>
+            {SHARED_DASHBOARDS.includes(name) && (
+              <>
+                <Divider
+                  component="hr"
+                  orientation="vertical"
+                  flexItem
+                  sx={(theme) => ({
+                    // Match the prod divider color for this scenario.
+                    borderColor: "rgba(3, 22, 37, 0.6)",
+                    mx: 0.5,
+                    // <hr> carries a default vertical UA margin that shrinks the
+                    // flex-item; zero it so it stretches the parent's full height.
+                    my: 0,
+                    ...theme.applyStyles("dark", {
+                      borderColor: "rgba(236, 241, 250, 0.7)",
+                    }),
+                  })}
+                />
+                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                  <MaterialSymbol
+                    name="share"
+                    size={18}
+                    sx={{ color: "text.secondary" }}
+                  />
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    Shared by {SHARED_BY[name] ?? "another user"}
+                  </Typography>
+                </Box>
+              </>
+            )}
+          </Box>
         </Box>
 
         <DashSwitcher
@@ -856,7 +870,11 @@ export default function DashboardsV2Page() {
               setSwitcherAnchor(null);
             }}
           >
-            <MaterialSymbol name="edit" size={16} sx={{ mr: "8px", opacity: 0.7 }} />
+            <MaterialSymbol
+              name="edit"
+              size={16}
+              sx={{ mr: "8px", opacity: 0.7 }}
+            />
             Rename
           </MenuItem>
           <MenuItem
@@ -1166,81 +1184,83 @@ export default function DashboardsV2Page() {
         />
       ) : (
         <DashboardFactorContext.Provider value={filterFactor(filters)}>
-         <DashboardOrgCountContext.Provider value={filters.organizations.length}>
-          <Box
-            ref={containerRef}
-            sx={{
-              px: 2,
-              pb: 10,
-              minWidth: 0,
-              // Drop target — override rgl's default red placeholder with the
-              // selected-item blue tint (alpha(primary.main, 0.24)).
-              "& .react-grid-placeholder": {
-                backgroundColor: "rgba(53, 39, 253, 0.08)",
-                opacity: 1,
-                borderRadius: 1,
-              },
-              // Inset the resize gripper 8px from the card's bottom-right.
-              // rgl's own `-se` rule uses three classes, so match its
-              // specificity to win; nudge the ::after mark to the handle
-              // corner so the visible gripper lands exactly 8px in.
-              "& .react-grid-item > .react-resizable-handle.react-resizable-handle-se":
-                {
-                  bottom: 8,
-                  right: 8,
-                },
-              "& .react-grid-item > .react-resizable-handle.react-resizable-handle-se::after":
-                {
-                  right: 0,
-                  bottom: 0,
-                  // Scale the corner bracket up to roughly the delete icon's
-                  // footprint (~20px).
-                  width: 14,
-                  height: 14,
-                  // Match the top-left drag handle (text.disabled).
-                  borderRightColor: "var(--dnsf-palette-text-disabled)",
-                  borderBottomColor: "var(--dnsf-palette-text-disabled)",
-                },
-            }}
+          <DashboardOrgCountContext.Provider
+            value={filters.organizations.length}
           >
-            {mounted && width > 0 && (
-              <GridLayout
-                // Remount when the widget set changes (add/remove/reset) so rgl
-                // re-reads the freshly packed layout instead of dropping the
-                // new, unmatched children to x:0. Stable during drag/resize
-                // (those don't change widget ids).
-                key={widgetKey}
-                width={width}
-                layout={rglLayout}
-                onLayoutChange={setRglLayout}
-                gridConfig={{
-                  cols: COLS,
-                  rowHeight: ROW_HEIGHT,
-                  margin: [16, 16],
-                  containerPadding: [0, 0],
-                  maxRows: Infinity,
-                }}
-                dragConfig={{
-                  enabled: editMode,
-                  cancel: ".rgl-no-drag",
-                  bounded: true,
-                }}
-                resizeConfig={{ enabled: editMode, handles: ["se"] }}
-              >
-                {widgets.map((w) => (
-                  <div key={w.id}>
-                    <V2Card
-                      widget={w}
-                      editing={editMode}
-                      noResults={noResults}
-                      onRemove={() => setPendingDelete(w)}
-                    />
-                  </div>
-                ))}
-              </GridLayout>
-            )}
-          </Box>
-         </DashboardOrgCountContext.Provider>
+            <Box
+              ref={containerRef}
+              sx={{
+                px: 2,
+                pb: 10,
+                minWidth: 0,
+                // Drop target — override rgl's default red placeholder with the
+                // selected-item blue tint (alpha(primary.main, 0.24)).
+                "& .react-grid-placeholder": {
+                  backgroundColor: "rgba(53, 39, 253, 0.08)",
+                  opacity: 1,
+                  borderRadius: 1,
+                },
+                // Inset the resize gripper 8px from the card's bottom-right.
+                // rgl's own `-se` rule uses three classes, so match its
+                // specificity to win; nudge the ::after mark to the handle
+                // corner so the visible gripper lands exactly 8px in.
+                "& .react-grid-item > .react-resizable-handle.react-resizable-handle-se":
+                  {
+                    bottom: 8,
+                    right: 8,
+                  },
+                "& .react-grid-item > .react-resizable-handle.react-resizable-handle-se::after":
+                  {
+                    right: 0,
+                    bottom: 0,
+                    // Scale the corner bracket up to roughly the delete icon's
+                    // footprint (~20px).
+                    width: 14,
+                    height: 14,
+                    // Match the top-left drag handle (text.disabled).
+                    borderRightColor: "var(--dnsf-palette-text-disabled)",
+                    borderBottomColor: "var(--dnsf-palette-text-disabled)",
+                  },
+              }}
+            >
+              {mounted && width > 0 && (
+                <GridLayout
+                  // Remount when the widget set changes (add/remove/reset) so rgl
+                  // re-reads the freshly packed layout instead of dropping the
+                  // new, unmatched children to x:0. Stable during drag/resize
+                  // (those don't change widget ids).
+                  key={widgetKey}
+                  width={width}
+                  layout={rglLayout}
+                  onLayoutChange={setRglLayout}
+                  gridConfig={{
+                    cols: COLS,
+                    rowHeight: ROW_HEIGHT,
+                    margin: [16, 16],
+                    containerPadding: [0, 0],
+                    maxRows: Infinity,
+                  }}
+                  dragConfig={{
+                    enabled: editMode,
+                    cancel: ".rgl-no-drag",
+                    bounded: true,
+                  }}
+                  resizeConfig={{ enabled: editMode, handles: ["se"] }}
+                >
+                  {widgets.map((w) => (
+                    <div key={w.id}>
+                      <V2Card
+                        widget={w}
+                        editing={editMode}
+                        noResults={noResults}
+                        onRemove={() => setPendingDelete(w)}
+                      />
+                    </div>
+                  ))}
+                </GridLayout>
+              )}
+            </Box>
+          </DashboardOrgCountContext.Provider>
         </DashboardFactorContext.Provider>
       )}
 
@@ -1308,7 +1328,8 @@ export default function DashboardsV2Page() {
           onClick: () => {
             if (pendingDelete) {
               removeWidget(pendingDelete.id);
-              const name = CATALOG_BY_TYPE[pendingDelete.type]?.name ?? "Widget";
+              const name =
+                CATALOG_BY_TYPE[pendingDelete.type]?.name ?? "Widget";
               setToast(`${name} removed.`);
             }
             setPendingDelete(null);
