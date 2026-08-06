@@ -9,6 +9,7 @@ import { BarChart as MuiBarChart } from "@mui/x-charts/BarChart";
 import { LineChart as MuiLineChart } from "@mui/x-charts/LineChart";
 import { PieChart } from "@mui/x-charts/PieChart";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { MaterialSymbol } from "@/components/material-symbol";
 
 import {
@@ -63,7 +64,7 @@ export function StatCard({
           fontWeight: 700,
           fontSize: 24,
           lineHeight: 1,
-          letterSpacing: "-0.5px",
+          letterSpacing: "0.9px",
           color: "text.primary",
           mt: 2,
           mb: 1,
@@ -73,9 +74,8 @@ export function StatCard({
       </Typography>
       <Typography
         sx={{
-          fontSize: 14,
-          color: "text.secondary",
-          opacity: 0.75,
+          fontSize: (t) => t.typography.body1.fontSize,
+          color: "text.primary",
           fontWeight: 500,
         }}
       >
@@ -121,28 +121,53 @@ export function FractionCard({
           fontWeight: 700,
           fontSize: 24,
           lineHeight: 1,
-          letterSpacing: "-0.5px",
+          letterSpacing: "0.9px",
           color: "text.primary",
           mt: 2,
           mb: 1,
         }}
       >
         {num}
-        <Box component="span" sx={{ color: "text.disabled", fontWeight: 500 }}>
-          {" "}
-          / {denom}
-        </Box>
+        {/* Matches the numerator — same primary color and weight. */}
+        <Box component="span"> / {denom}</Box>
       </Typography>
       <Typography
         sx={{
-          fontSize: 14,
-          color: "text.secondary",
-          opacity: 0.75,
+          fontSize: (t) => t.typography.body1.fontSize,
+          color: "text.primary",
           fontWeight: 500,
         }}
       >
         {label}
       </Typography>
+      {/* Fractions are a point-in-time count, so flag that the time range
+          doesn't apply to them. */}
+      <Box
+        sx={{
+          mt: 0.25,
+          display: "flex",
+          alignItems: "center",
+          gap: 0.5,
+          color: "text.secondary",
+        }}
+      >
+        <Typography variant="body2" sx={{ color: "inherit" }}>
+          Current
+        </Typography>
+        <ArrowTooltip
+          title={
+            <>
+              Shows current deployment status.
+              <br />
+              Not affected by the time range.
+            </>
+          }
+        >
+          <Box component="span" sx={{ display: "inline-flex" }}>
+            <MaterialSymbol name="info" size={16} />
+          </Box>
+        </ArrowTooltip>
+      </Box>
     </Box>
   );
 }

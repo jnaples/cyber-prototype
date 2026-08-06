@@ -1,4 +1,4 @@
-import { Box, Button, IconButton, InputAdornment, Link, TextField } from "@mui/material";
+import { Box, Button, IconButton, InputAdornment, Link } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import type { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
@@ -9,6 +9,7 @@ import { MaterialSymbol } from "@/components/material-symbol";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+import { TextField } from "@/components/text-field";
 
 type Protection = "protected" | "unprotected" | "offline";
 
@@ -24,15 +25,80 @@ type SiteRow = {
 };
 
 const ROWS: SiteRow[] = [
-  { id: 1, name: "0", protection: "offline", ipHostname: "", policy: "z", blockPage: "Default Appearance" },
-  { id: 2, name: "123", protection: "offline", ipHostname: "", policy: "", blockPage: "Default Appearance" },
-  { id: 3, name: "ai", protection: "offline", ipHostname: "", policy: "z", blockPage: "Default Appearance" },
-  { id: 4, name: "CleanUpTest1", protection: "offline", ipHostname: "", policy: "", blockPage: "Default Appearance" },
-  { id: 5, name: "DNSF-4336 Site", protection: "offline", ipHostname: "", policy: "DNSF-4336 Pol", blockPage: "Default Appearance" },
-  { id: 6, name: "MSP Scheduled Site", protection: "offline", ipHostname: "", policy: "MSP Scheduled Filter", blockPage: "Default Appearance" },
-  { id: 7, name: "MSP Site", protection: "offline", ipHostname: "", policy: "msp global policy", globalPolicy: true, blockPage: "Default Appearance" },
-  { id: 8, name: "MSP Site - No Policy", protection: "offline", ipHostname: "", policy: "", blockPage: "Default Appearance" },
-  { id: 9, name: "z", protection: "offline", ipHostname: "", policy: "msp global policy", globalPolicy: true, blockPage: "Default Appearance" },
+  {
+    id: 1,
+    name: "0",
+    protection: "offline",
+    ipHostname: "",
+    policy: "z",
+    blockPage: "Default Appearance",
+  },
+  {
+    id: 2,
+    name: "123",
+    protection: "offline",
+    ipHostname: "",
+    policy: "",
+    blockPage: "Default Appearance",
+  },
+  {
+    id: 3,
+    name: "ai",
+    protection: "offline",
+    ipHostname: "",
+    policy: "z",
+    blockPage: "Default Appearance",
+  },
+  {
+    id: 4,
+    name: "CleanUpTest1",
+    protection: "offline",
+    ipHostname: "",
+    policy: "",
+    blockPage: "Default Appearance",
+  },
+  {
+    id: 5,
+    name: "DNSF-4336 Site",
+    protection: "offline",
+    ipHostname: "",
+    policy: "DNSF-4336 Pol",
+    blockPage: "Default Appearance",
+  },
+  {
+    id: 6,
+    name: "MSP Scheduled Site",
+    protection: "offline",
+    ipHostname: "",
+    policy: "MSP Scheduled Filter",
+    blockPage: "Default Appearance",
+  },
+  {
+    id: 7,
+    name: "MSP Site",
+    protection: "offline",
+    ipHostname: "",
+    policy: "msp global policy",
+    globalPolicy: true,
+    blockPage: "Default Appearance",
+  },
+  {
+    id: 8,
+    name: "MSP Site - No Policy",
+    protection: "offline",
+    ipHostname: "",
+    policy: "",
+    blockPage: "Default Appearance",
+  },
+  {
+    id: 9,
+    name: "z",
+    protection: "offline",
+    ipHostname: "",
+    policy: "msp global policy",
+    globalPolicy: true,
+    blockPage: "Default Appearance",
+  },
 ];
 
 // Status icon per protection state (icon-only, like the screenshot).
@@ -113,7 +179,12 @@ const columns: GridColDef<SiteRow>[] = [
       if (!params.row.policy) return "-";
       return (
         <Box
-          sx={{ display: "flex", alignItems: "center", gap: 0.5, height: "100%" }}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0.5,
+            height: "100%",
+          }}
         >
           <span>{params.row.policy}</span>
           {params.row.globalPolicy && (
@@ -149,7 +220,8 @@ const columns: GridColDef<SiteRow>[] = [
 
 function buildTabs(rows: SiteRow[]): StatusTabConfig[] {
   const total = rows.length;
-  const count = (p: Protection) => rows.filter((r) => r.protection === p).length;
+  const count = (p: Protection) =>
+    rows.filter((r) => r.protection === p).length;
   const protectedCount = count("protected");
   const unprotectedCount = count("unprotected");
   const offlineCount = count("offline");

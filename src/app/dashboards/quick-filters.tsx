@@ -13,8 +13,6 @@ import {
   ListItemText,
   ListSubheader,
   MenuItem,
-  Select,
-  TextField,
   Typography,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
@@ -29,6 +27,8 @@ import { endOfDay, startOfDay, subDays } from "date-fns";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
+import { Select } from "@/components/select";
+import { TextField } from "@/components/text-field";
 
 import {
   CONTENT_CATEGORY_OPTIONS,
@@ -141,14 +141,18 @@ function MultiSelect({
   options,
   selected,
   onChange,
-  searchable = false,
+  searchable = true,
+  allLabel,
 }: {
   label: string;
   options: string[];
   selected: string[];
   onChange: (values: string[]) => void;
-  /** Long lists get the Query Logs treatment: search box + Select all + rule. */
+  /** The Query Logs treatment: search box + Select all + rule. On by default. */
   searchable?: boolean;
+  /** Empty-state text; defaults to "All {label}". Set it where the label is
+   *  singular and wouldn't read right (e.g. Result -> "All Results"). */
+  allLabel?: string;
 }) {
   const [search, setSearch] = useState("");
   const allSelected = options.length > 0 && selected.length === options.length;
@@ -187,7 +191,7 @@ function MultiSelect({
               variant="body1"
               sx={{ color: "text.secondary" }}
             >
-              All
+              {allLabel ?? `All ${label}`}
             </Typography>
           ) : (
             sel.join(", ")
@@ -224,21 +228,20 @@ function MultiSelect({
               size="small"
               checked={allSelected}
               indeterminate={someSelected}
+              sx={{ p: 0.5, mr: 1 }}
             />
-            <ListItemText
-              primary="Select all"
-              slotProps={{ primary: { variant: "body2" } }}
-            />
+            <ListItemText primary="Select all" />
           </MenuItem>
         )}
         {searchable && <Divider />}
         {visibleOptions.map((option) => (
           <MenuItem key={option} value={option}>
-            <Checkbox size="small" checked={selected.includes(option)} />
-            <ListItemText
-              primary={option}
-              slotProps={{ primary: { variant: "body2" } }}
+            <Checkbox
+              size="small"
+              checked={selected.includes(option)}
+              sx={{ p: 0.5, mr: 1 }}
             />
+            <ListItemText primary={option} />
           </MenuItem>
         ))}
       </Select>
@@ -293,7 +296,7 @@ export function QuickFilters({
       open={open}
       onClose={onClose}
       width={380}
-      title="Quick Filters"
+      title="Filters"
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{ label: "Apply", onClick: handleApply }}
     >
@@ -401,26 +404,28 @@ export function QuickFilters({
           options={RESULT_OPTIONS}
           selected={draft.results}
           onChange={(v) => setGroup("results", v)}
+          allLabel="All Results"
+          // Only ever three options — no need for search / Select all.
+          searchable={false}
         />
         <MultiSelect
           label="Policy"
           options={POLICY_OPTIONS}
           selected={draft.policies}
           onChange={(v) => setGroup("policies", v)}
+          allLabel="All Policies"
         />
         <MultiSelect
           label="Content Categories"
           options={CONTENT_CATEGORY_OPTIONS}
           selected={draft.categories}
           onChange={(v) => setGroup("categories", v)}
-          searchable
         />
         <MultiSelect
           label="Threat Categories"
           options={THREAT_CATEGORY_OPTIONS}
           selected={draft.threatCategories}
           onChange={(v) => setGroup("threatCategories", v)}
-          searchable
         />
       </FilterGroup>
     </Drawer>

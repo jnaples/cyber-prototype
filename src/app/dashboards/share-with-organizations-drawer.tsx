@@ -13,8 +13,6 @@ import {
   ListItemText,
   ListSubheader,
   MenuItem,
-  Select,
-  TextField,
   Typography,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
@@ -23,6 +21,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
+import { Select } from "@/components/select";
+import { TextField } from "@/components/text-field";
 import { MSP_ORGANIZATIONS } from "@/data/organizations";
 
 const SELECT_ALL_VALUE = "__select_all__";

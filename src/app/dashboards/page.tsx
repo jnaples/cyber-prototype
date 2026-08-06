@@ -9,6 +9,7 @@ import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import DragIndicatorOutlinedIcon from "@mui/icons-material/DragIndicatorOutlined";
 import LibraryAddOutlinedIcon from "@mui/icons-material/LibraryAddOutlined";
+import WidgetsOutlinedIcon from "@mui/icons-material/WidgetsOutlined";
 import {
   Alert,
   Box,
@@ -22,7 +23,6 @@ import {
   MenuItem,
   Paper,
   Snackbar,
-  TextField,
   Typography,
 } from "@mui/material";
 import { GridLayout, useContainerWidth } from "react-grid-layout";
@@ -33,21 +33,18 @@ import { useLocation, useNavigate } from "react-router";
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { Modal } from "@/components/modal";
+import { TextField } from "@/components/text-field";
 
-import { AddPanel } from "./add-panel";
+import { ManagePanel } from "./manage-panel";
 import {
   DEFAULT_FILTERS,
   DashboardFactorContext,
   DashboardOrgCountContext,
-  TIME_RANGE_OPTIONS,
   filterFactor,
   type DashboardFilters,
 } from "./dashboard-filters";
-import {
-  AdvancedFilters,
-  type AppliedAdvancedFilter,
-} from "./advanced-filters";
 import { QuickFilters } from "./quick-filters";
+import { TimeRangeSelect } from "./time-range-select";
 import { DashSwitcher } from "./dash-switcher";
 import { ShareWithOrganizationsDrawer } from "./share-with-organizations-drawer";
 import { WidgetBody } from "./widgets";
@@ -66,12 +63,13 @@ import "react-grid-layout/css/styles.css";
 // ---------------------------------------------------------------------------
 
 const COLS = 6;
-const LS_KEY = "dnsf_custom_dash_v14";
+const LS_KEY = "dnsf_custom_dash";
 
 const clampSpan = (s: number) => Math.min(COLS, Math.max(1, Number(s) || 1));
 
-// react-grid-layout tuning.
-const ROW_HEIGHT = 78;
+// react-grid-layout tuning. Widget height = rows * ROW_HEIGHT + (rows - 1) * 16
+// (the row margin), so the 2-row KPI / status cards come out at 180px.
+const ROW_HEIGHT = 82;
 
 // Height (in grid rows) per widget type — KPIs/status are short; charts,
 // donuts, and tables need room.
@@ -213,7 +211,7 @@ function V2Card({
         <Box
           sx={{
             p: 2,
-            pb: 1,
+            pb: 2,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -221,7 +219,12 @@ function V2Card({
           }}
         >
           <Typography
-            sx={{ fontWeight: 600, fontSize: 16, color: "text.primary" }}
+            sx={{
+              fontFamily: (t) => t.typography.fontSecondaryFamily,
+              fontWeight: 600,
+              fontSize: 16,
+              color: "text.primary",
+            }}
           >
             {def?.name ?? widget.type}
           </Typography>
@@ -347,7 +350,13 @@ function sanitize(arr: unknown): WidgetInstance[] | null {
 // Empty state
 // ---------------------------------------------------------------------------
 
-function EmptyState({ onAdd }: { onAdd: () => void }) {
+function EmptyState({
+  onAdd,
+  onStartStandard,
+}: {
+  onAdd: () => void;
+  onStartStandard: () => void;
+}) {
   return (
     <Box
       sx={{
@@ -408,13 +417,22 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
             to track exactly what matters to you.
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          onClick={onAdd}
-          startIcon={<MaterialSymbol name="add" size={18} />}
-        >
-          Add your first widget
-        </Button>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Button
+            variant="contained"
+            onClick={onAdd}
+            startIcon={<MaterialSymbol name="add" size={18} />}
+          >
+            Add your first widget
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={onStartStandard}
+          >
+            Use standard layout
+          </Button>
+        </Box>
       </Box>
     </Box>
   );
@@ -430,7 +448,6 @@ function readPersisted(): {
   name?: string;
   widgets?: WidgetInstance[];
   filters?: DashboardFilters;
-  advancedFilters?: AppliedAdvancedFilter[];
 } {
   try {
     const raw = localStorage.getItem(LS_KEY);
@@ -439,7 +456,6 @@ function readPersisted(): {
       name?: unknown;
       widgets?: unknown;
       filters?: unknown;
-      advancedFilters?: unknown;
     };
     const widgets = sanitize(parsed.widgets) ?? undefined;
     if (widgets) bumpUid(widgets);
@@ -453,9 +469,6 @@ function readPersisted(): {
               ...(parsed.filters as Partial<DashboardFilters>),
             } as DashboardFilters)
           : undefined,
-      advancedFilters: Array.isArray(parsed.advancedFilters)
-        ? (parsed.advancedFilters as AppliedAdvancedFilter[])
-        : undefined,
     };
   } catch {
     return {};
@@ -506,19 +519,14 @@ export default function DashboardsPage() {
   // Snapshot of the filters cleared by the Clear button, so the toast can undo.
   const [clearedFilters, setClearedFilters] = useState<{
     filters: DashboardFilters;
-    advancedFilters: AppliedAdvancedFilter[];
   } | null>(null);
   const [favorited, setFavorited] = useState(false);
   // Name of the dashboard currently set as the default landing view.
   const [defaultDashboard, setDefaultDashboard] = useState<string | null>(null);
   const [quickFiltersOpen, setQuickFiltersOpen] = useState(false);
-  const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
   const [filters, setFilters] = useState<DashboardFilters>(
     persisted.filters ?? DEFAULT_FILTERS,
   );
-  const [advancedFilters, setAdvancedFilters] = useState<
-    AppliedAdvancedFilter[]
-  >(persisted.advancedFilters ?? []);
 
   // Autosave indicator — shown only when filters change (apply/clear). Spins
   // "Autosaving" for 1.5s, then settles on "Autosaved".
@@ -540,7 +548,9 @@ export default function DashboardsPage() {
     organizations: "Organizations",
     results: "Result",
     policies: "Policy",
-    sites: "Site / Network",
+    sites: "Sites",
+    roamingRelays: "Roaming Clients / Relays",
+    users: "Users",
     categories: "Content Categories",
     threatCategories: "Threat Categories",
   };
@@ -556,6 +566,8 @@ export default function DashboardsPage() {
       | "results"
       | "policies"
       | "sites"
+      | "roamingRelays"
+      | "users"
       | "categories"
       | "threatCategories",
   ) =>
@@ -574,39 +586,13 @@ export default function DashboardsPage() {
   // Order mirrors the Quick Filters drawer: Organizations, Time range, Result,
   // Site / Network, Deployment type, Top categories.
   pushDim("organizations");
-  // Always surface the time range so users know the window they're viewing.
-  // The default (last 24 hours) shows as a non-removable chip; a changed value
-  // gets a ✕ that resets back to the default.
-  activeFilters.push({
-    key: "timeRange",
-    fieldLabel: "Time range",
-    valueLabel:
-      TIME_RANGE_OPTIONS.find((o) => o.value === filters.timeRange)?.label ??
-      filters.timeRange,
-    onRemove:
-      filters.timeRange === DEFAULT_FILTERS.timeRange
-        ? undefined
-        : () =>
-            setFilters((f) => ({ ...f, timeRange: DEFAULT_FILTERS.timeRange })),
-  });
   pushDim("results");
   pushDim("policies");
   pushDim("sites");
+  pushDim("roamingRelays");
+  pushDim("users");
   pushDim("categories");
   pushDim("threatCategories");
-  advancedFilters.forEach((af) =>
-    activeFilters.push({
-      key: `adv-${af.id}`,
-      fieldLabel: af.fieldLabel,
-      valueLabel: `${af.operatorLabel} ${af.value}`,
-      onRemove: () =>
-        setAdvancedFilters((prev) => {
-          const next = prev.filter((x) => x.id !== af.id);
-          if (next.length === 0) setNoResults(false);
-          return next;
-        }),
-    }),
-  );
 
   // Group active filters by field so multiple values of the same field (e.g.
   // several Organizations) sit together in one dashed chip.
@@ -621,9 +607,8 @@ export default function DashboardsPage() {
   }
 
   const clearAllFilters = () => {
-    setClearedFilters({ filters, advancedFilters });
+    setClearedFilters({ filters });
     setFilters(DEFAULT_FILTERS);
-    setAdvancedFilters([]);
     setNoResults(false);
     triggerAutosave();
     setToast("Filters cleared.");
@@ -632,8 +617,7 @@ export default function DashboardsPage() {
   const undoClearFilters = () => {
     if (!clearedFilters) return;
     setFilters(clearedFilters.filters);
-    setAdvancedFilters(clearedFilters.advancedFilters);
-    setNoResults(clearedFilters.advancedFilters.length > 0);
+    setNoResults(false);
     setClearedFilters(null);
     setToast(null);
   };
@@ -641,21 +625,12 @@ export default function DashboardsPage() {
   // Persist name + widgets + filters to the browser.
   useEffect(() => {
     try {
-      localStorage.setItem(
-        LS_KEY,
-        JSON.stringify({ name, widgets, filters, advancedFilters }),
-      );
+      localStorage.setItem(LS_KEY, JSON.stringify({ name, widgets, filters }));
     } catch {
       /* noop */
     }
-  }, [name, widgets, filters, advancedFilters]);
+  }, [name, widgets, filters]);
 
-  const addWidget = (type: string) => {
-    const def = CATALOG_BY_TYPE[type];
-    if (!def) return;
-    setWidgets((ws) => [...ws, { id: uid(), type, span: clampSpan(def.span) }]);
-    triggerAutosave();
-  };
   const removeWidget = (id: string) =>
     setWidgets((ws) => ws.filter((w) => w.id !== id));
 
@@ -1035,9 +1010,9 @@ export default function DashboardsPage() {
               variant="contained"
               color="primary"
               onClick={() => setAddOpen(true)}
-              startIcon={<MaterialSymbol name="add" size={16} />}
+              startIcon={<WidgetsOutlinedIcon sx={{ fontSize: 16 }} />}
             >
-              Add widget
+              Manage widgets
             </Button>
           </>
         )}
@@ -1051,11 +1026,11 @@ export default function DashboardsPage() {
           gap: 1,
           px: 2,
           pt: 2,
-          mb: activeFilters.length > 0 ? 1 : 2,
+          mb: 2,
           fontSize: 14,
         }}
       >
-        <ArrowTooltip title={editMode ? editLockTooltip("Quick Filters") : ""}>
+        <ArrowTooltip title={editMode ? editLockTooltip("Filters") : ""}>
           <span
             style={{
               display: "inline-flex",
@@ -1070,29 +1045,7 @@ export default function DashboardsPage() {
               onClick={() => setQuickFiltersOpen(true)}
               startIcon={<MaterialSymbol name="filter_alt" size={16} />}
             >
-              Quick filters
-            </Button>
-          </span>
-        </ArrowTooltip>
-        <Box sx={{ width: "1px", height: 16, bgcolor: "divider" }} />
-        <ArrowTooltip
-          title={editMode ? editLockTooltip("Advanced Filters") : ""}
-        >
-          <span
-            style={{
-              display: "inline-flex",
-              cursor: editMode ? "not-allowed" : undefined,
-            }}
-          >
-            <Button
-              variant="text"
-              color="secondary"
-              size="small"
-              disabled={editMode}
-              onClick={() => setAdvancedFiltersOpen(true)}
-              startIcon={<MaterialSymbol name="tune" size={16} />}
-            >
-              Advanced filters
+              Filters
             </Button>
           </span>
         </ArrowTooltip>
@@ -1117,6 +1070,14 @@ export default function DashboardsPage() {
             </Typography>
           </Box>
         )}
+        <TimeRangeSelect
+          value={filters.timeRange}
+          disabled={editMode}
+          onChange={(tr) => {
+            setFilters((f) => ({ ...f, timeRange: tr }));
+            triggerAutosave();
+          }}
+        />
         <ArrowTooltip title={editMode ? editLockTooltip("Refresh") : ""}>
           <span
             style={{
@@ -1223,7 +1184,10 @@ export default function DashboardsPage() {
 
       {/* Widget grid / empty state */}
       {widgets.length === 0 ? (
-        <EmptyState onAdd={() => setAddOpen(true)} />
+        <EmptyState
+          onAdd={() => setAddOpen(true)}
+          onStartStandard={() => replaceWidgets(DEFAULT_LAYOUT())}
+        />
       ) : (
         <DashboardFactorContext.Provider value={filterFactor(filters)}>
           <DashboardOrgCountContext.Provider
@@ -1265,7 +1229,7 @@ export default function DashboardsPage() {
                   },
               }}
             >
-              {mounted && (
+              {mounted && width > 0 && (
                 <GridLayout
                   // Remount when the widget set changes (add/remove/reset) so rgl
                   // re-reads the freshly packed layout instead of dropping the
@@ -1307,15 +1271,24 @@ export default function DashboardsPage() {
       )}
 
       {/* Slide-out add widget panel */}
-      <AddPanel
+      <ManagePanel
         open={addOpen}
         onClose={() => setAddOpen(false)}
-        existingTypes={widgets.map((w) => w.type)}
+        dashboardTypes={widgets.map((w) => w.type)}
         onApply={(types) => {
-          types.forEach((t) => addWidget(t));
-          setToast(
-            `${types.length} widget${types.length === 1 ? "" : "s"} added.`,
-          );
+          // Reconcile: keep on-dashboard widgets still checked, add newly
+          // checked ones, drop unchecked ones.
+          const kept = widgets.filter((w) => types.includes(w.type));
+          const present = new Set(widgets.map((w) => w.type));
+          const added = types
+            .filter((t) => !present.has(t) && CATALOG_BY_TYPE[t])
+            .map((t) => ({
+              id: uid(),
+              type: t,
+              span: clampSpan(CATALOG_BY_TYPE[t].span),
+            }));
+          replaceWidgets([...kept, ...added]);
+          setToast("Dashboard updated.");
         }}
       />
 
@@ -1323,19 +1296,10 @@ export default function DashboardsPage() {
         open={quickFiltersOpen}
         onClose={() => setQuickFiltersOpen(false)}
         filters={filters}
+        hideTimeRange
         onApply={(next) => {
           setFilters(next);
           setNoResults(false);
-          triggerAutosave();
-        }}
-      />
-
-      <AdvancedFilters
-        open={advancedFiltersOpen}
-        onClose={() => setAdvancedFiltersOpen(false)}
-        onApply={(applied) => {
-          setAdvancedFilters(applied);
-          setNoResults(applied.length > 0);
           triggerAutosave();
         }}
       />
@@ -1384,7 +1348,7 @@ export default function DashboardsPage() {
           </Box>{" "}
           will be removed from this dashboard. You can add it back any time from{" "}
           <Box component="b" sx={{ color: "text.primary" }}>
-            Add Widget
+            Manage widgets
           </Box>
           .
         </Typography>

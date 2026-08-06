@@ -10,11 +10,9 @@ import {
   IconButton,
   InputAdornment,
   MenuItem,
-  Select,
   Switch,
   Tab,
   Tabs,
-  TextField,
   Typography,
 } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -32,6 +30,8 @@ import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+import { Select } from "@/components/select";
+import { TextField } from "@/components/text-field";
 
 import { SampleReportsModal } from "./sample-reports-modal";
 

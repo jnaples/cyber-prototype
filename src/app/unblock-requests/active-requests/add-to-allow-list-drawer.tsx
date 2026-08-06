@@ -13,7 +13,6 @@ import {
   FormLabel,
   Radio,
   RadioGroup,
-  TextField,
   Typography,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
@@ -22,6 +21,7 @@ import { format as fnsFormat } from "date-fns";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
+import { TextField } from "@/components/text-field";
 
 // Placeholder impact figure for the policy scope.
 const POLICY_IMPACT = "7 sites, 142 users on this policy";
@@ -154,67 +154,72 @@ export function AddToAllowListDrawer({
           <Divider />
           <Box>
             <FormLabel sx={{ display: "block", mb: 1 }}>
-            Select Allow List
-          </FormLabel>
-          <RadioGroup
-            value={scope}
-            onChange={(e) => setScope(e.target.value as "policy" | "universal")}
-            sx={{ gap: 1 }}
-          >
-            {[
-              {
-                value: "policy" as const,
-                title: `${policy} Allow List`,
-                desc: POLICY_IMPACT,
-              },
-              {
-                value: "universal" as const,
-                title: "Universal Allow List",
-                desc: "Affects all sites and users",
-              },
-            ].map((option) => (
-              <Box
-                key={option.value}
-                onClick={() => setScope(option.value)}
-                sx={(theme) => {
-                  const on = scope === option.value;
-                  return {
-                    display: "flex",
-                    bgcolor: "background.paper",
-                    borderRadius: 1,
-                    boxShadow: theme.shadows[1],
-                    cursor: "pointer",
-                    transition: "background 120ms",
-                    "&:hover": {
-                      bgcolor: alpha(theme.palette.primary.main, on ? 0.12 : 0.04),
-                    },
-                  };
-                }}
-              >
-                <Box sx={{ pl: 1, pr: 0, py: 1 }}>
-                  <Radio
-                    value={option.value}
-                    checked={scope === option.value}
-                    sx={{
-                      p: "2px 12px",
-                      "& .MuiSvgIcon-root": { fontSize: 20 },
-                    }}
-                  />
+              Select Allow List
+            </FormLabel>
+            <RadioGroup
+              value={scope}
+              onChange={(e) =>
+                setScope(e.target.value as "policy" | "universal")
+              }
+              sx={{ gap: 1 }}
+            >
+              {[
+                {
+                  value: "policy" as const,
+                  title: `${policy} Allow List`,
+                  desc: POLICY_IMPACT,
+                },
+                {
+                  value: "universal" as const,
+                  title: "Universal Allow List",
+                  desc: "Affects all sites and users",
+                },
+              ].map((option) => (
+                <Box
+                  key={option.value}
+                  onClick={() => setScope(option.value)}
+                  sx={(theme) => {
+                    const on = scope === option.value;
+                    return {
+                      display: "flex",
+                      bgcolor: "background.paper",
+                      borderRadius: 1,
+                      boxShadow: theme.shadows[1],
+                      cursor: "pointer",
+                      transition: "background 120ms",
+                      "&:hover": {
+                        bgcolor: alpha(
+                          theme.palette.primary.main,
+                          on ? 0.12 : 0.04,
+                        ),
+                      },
+                    };
+                  }}
+                >
+                  <Box sx={{ pl: 1, pr: 0, py: 1 }}>
+                    <Radio
+                      value={option.value}
+                      checked={scope === option.value}
+                      sx={{
+                        p: "2px 12px",
+                        "& .MuiSvgIcon-root": { fontSize: 20 },
+                      }}
+                    />
+                  </Box>
+                  <Box sx={{ pl: 0, pr: 1, py: 1 }}>
+                    <Typography sx={{ color: "text.primary", mb: 0.5 }}>
+                      {option.title}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary" }}
+                    >
+                      {option.desc}
+                    </Typography>
+                  </Box>
                 </Box>
-                <Box sx={{ pl: 0, pr: 1, py: 1 }}>
-                  <Typography sx={{ color: "text.primary", mb: 0.5 }}>
-                    {option.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "text.secondary" }}
-                  >
-                    {option.desc}
-                  </Typography>
-                </Box>
-              </Box>
-            ))}
-          </RadioGroup>
+              ))}
+            </RadioGroup>
           </Box>
         </>
       )}
@@ -268,7 +273,6 @@ export function AddToAllowListDrawer({
           </Box>
         </>
       )}
-
     </Drawer>
   );
 }

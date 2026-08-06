@@ -30,10 +30,22 @@ type Preview = {
   stats: Stat[];
   bars?: { title: string; data: Bar[] };
   list?: { title: string; data: ListItem[] };
-  table?: { title: string; heads: [string, string, string, string]; rows: Row[] };
+  table?: {
+    title: string;
+    heads: [string, string, string, string];
+    rows: Row[];
+  };
 };
 
-const BAR_LABELS = ["Jul 1", "Jul 8", "Jul 15", "Jul 22", "Jul 29", "Aug 5", "Aug 12"];
+const BAR_LABELS = [
+  "Jul 1",
+  "Jul 8",
+  "Jul 15",
+  "Jul 22",
+  "Jul 29",
+  "Aug 5",
+  "Aug 12",
+];
 
 const PREVIEWS: Preview[] = [
   {
@@ -51,7 +63,10 @@ const PREVIEWS: Preview[] = [
     ],
     bars: {
       title: "Requests over time",
-      data: [72, 88, 64, 95, 80, 40, 30].map((h, i) => ({ h, label: BAR_LABELS[i] })),
+      data: [72, 88, 64, 95, 80, 40, 30].map((h, i) => ({
+        h,
+        label: BAR_LABELS[i],
+      })),
     },
   },
   {
@@ -69,7 +84,10 @@ const PREVIEWS: Preview[] = [
     ],
     bars: {
       title: "Threats blocked over time",
-      data: [40, 55, 48, 70, 62, 35, 28].map((h, i) => ({ h, label: BAR_LABELS[i] })),
+      data: [40, 55, 48, 70, 62, 35, 28].map((h, i) => ({
+        h,
+        label: BAR_LABELS[i],
+      })),
     },
   },
   {
@@ -89,11 +107,33 @@ const PREVIEWS: Preview[] = [
       title: "Recent queries",
       heads: ["Domain", "Category", "Site", "Result"],
       rows: [
-        { a: "app.salesforce.com", b: "Business, CRM", c: "NYC Office", d: "Allowed" },
-        { a: "drive.google.com", b: "Productivity", c: "Headquarters", d: "Allowed" },
-        { a: "www.facebook.com", b: "Social Networking", c: "Miami Office", d: "Blocked", danger: true },
+        {
+          a: "app.salesforce.com",
+          b: "Business, CRM",
+          c: "NYC Office",
+          d: "Allowed",
+        },
+        {
+          a: "drive.google.com",
+          b: "Productivity",
+          c: "Headquarters",
+          d: "Allowed",
+        },
+        {
+          a: "www.facebook.com",
+          b: "Social Networking",
+          c: "Miami Office",
+          d: "Blocked",
+          danger: true,
+        },
         { a: "slack.com", b: "Collaboration", c: "Headquarters", d: "Allowed" },
-        { a: "coin-hive.com", b: "Cryptomining", c: "SF Campus", d: "Threat", danger: true },
+        {
+          a: "coin-hive.com",
+          b: "Cryptomining",
+          c: "SF Campus",
+          d: "Threat",
+          danger: true,
+        },
       ],
     },
   },
@@ -199,18 +239,24 @@ function ReportPreview({ p }: { p: Preview }) {
         }}
       >
         <MaterialSymbol name="lan" size={22} sx={{ color: "primary.main" }} />
-        <Typography sx={{ fontWeight: 600, fontSize: 14 }}>Dunder Mifflin</Typography>
+        <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
+          Dunder Mifflin
+        </Typography>
         <Typography sx={{ fontSize: 11, color: "text.secondary" }}>
           Managed DNS Security
         </Typography>
         <Box sx={{ flex: 1 }} />
-        <Typography sx={{ fontSize: 11, color: "text.secondary" }}>{p.range}</Typography>
+        <Typography sx={{ fontSize: 11, color: "text.secondary" }}>
+          {p.range}
+        </Typography>
       </Box>
 
       <Typography sx={{ fontWeight: 600, fontSize: 20, mt: 2.25, mb: 0.5 }}>
         {p.title}
       </Typography>
-      <Typography sx={{ fontSize: 12, color: "text.secondary", lineHeight: 1.5 }}>
+      <Typography
+        sx={{ fontSize: 12, color: "text.secondary", lineHeight: 1.5 }}
+      >
         {p.desc}
       </Typography>
 
@@ -226,12 +272,25 @@ function ReportPreview({ p }: { p: Preview }) {
         {p.stats.map((s) => (
           <Box
             key={s.l}
-            sx={{ border: "1px solid", borderColor: "divider", borderRadius: 1, p: 1.5 }}
+            sx={{
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 1,
+              p: 1.5,
+            }}
           >
-            <Typography sx={{ fontSize: 18, fontWeight: 600, fontVariantNumeric: "tabular-nums" }}>
+            <Typography
+              sx={{
+                fontSize: 18,
+                fontWeight: 600,
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
               {s.v}
             </Typography>
-            <Typography sx={{ fontSize: 11, color: "text.secondary", mt: 0.25 }}>
+            <Typography
+              sx={{ fontSize: 11, color: "text.secondary", mt: 0.25 }}
+            >
               {s.l}
             </Typography>
           </Box>
@@ -254,7 +313,16 @@ function ReportPreview({ p }: { p: Preview }) {
             }}
           >
             {p.bars.data.map((b, i) => (
-              <Box key={i} sx={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%" }}>
+              <Box
+                key={i}
+                sx={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-end",
+                  height: "100%",
+                }}
+              >
                 <Box
                   sx={{
                     height: `${b.h}%`,
@@ -268,7 +336,15 @@ function ReportPreview({ p }: { p: Preview }) {
           </Box>
           <Box sx={{ display: "flex", gap: 1, px: 0.5, pt: 0.75 }}>
             {p.bars.data.map((b, i) => (
-              <Typography key={i} sx={{ flex: 1, textAlign: "center", fontSize: 10, color: "text.secondary" }}>
+              <Typography
+                key={i}
+                sx={{
+                  flex: 1,
+                  textAlign: "center",
+                  fontSize: 10,
+                  color: "text.secondary",
+                }}
+              >
                 {b.label}
               </Typography>
             ))}
@@ -284,13 +360,40 @@ function ReportPreview({ p }: { p: Preview }) {
             {p.list.data.map((i) => (
               <Box
                 key={i.label}
-                sx={{ display: "grid", gridTemplateColumns: "170px 1fr 64px", gap: 1.5, alignItems: "center" }}
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "170px 1fr 64px",
+                  gap: 1.5,
+                  alignItems: "center",
+                }}
               >
-                <Typography noWrap sx={{ fontSize: 12 }}>{i.label}</Typography>
-                <Box sx={{ height: 8, bgcolor: "background.default", borderRadius: 999, overflow: "hidden" }}>
-                  <Box sx={{ height: "100%", width: `${i.pct}%`, bgcolor: "primary.main", borderRadius: 999 }} />
+                <Typography noWrap sx={{ fontSize: 12 }}>
+                  {i.label}
+                </Typography>
+                <Box
+                  sx={{
+                    height: 8,
+                    bgcolor: "background.default",
+                    borderRadius: 999,
+                    overflow: "hidden",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      height: "100%",
+                      width: `${i.pct}%`,
+                      bgcolor: "primary.main",
+                      borderRadius: 999,
+                    }}
+                  />
                 </Box>
-                <Typography sx={{ fontSize: 11, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                <Typography
+                  sx={{
+                    fontSize: 11,
+                    textAlign: "right",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
                   {i.val}
                 </Typography>
               </Box>
@@ -319,7 +422,9 @@ function ReportPreview({ p }: { p: Preview }) {
             }}
           >
             {p.table.heads.map((h) => (
-              <Box component="span" key={h}>{h}</Box>
+              <Box component="span" key={h}>
+                {h}
+              </Box>
             ))}
           </Box>
           {p.table.rows.map((r, i) => (
@@ -335,10 +440,20 @@ function ReportPreview({ p }: { p: Preview }) {
                 fontSize: 12,
               }}
             >
-              <Typography noWrap sx={{ fontSize: 12 }}>{r.a}</Typography>
-              <Typography noWrap sx={{ fontSize: 12 }}>{r.b}</Typography>
+              <Typography noWrap sx={{ fontSize: 12 }}>
+                {r.a}
+              </Typography>
+              <Typography noWrap sx={{ fontSize: 12 }}>
+                {r.b}
+              </Typography>
               <Typography sx={{ fontSize: 12 }}>{r.c}</Typography>
-              <Typography sx={{ fontSize: 12, fontWeight: 600, color: r.danger ? "error.main" : "success.main" }}>
+              <Typography
+                sx={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: r.danger ? "error.main" : "success.main",
+                }}
+              >
                 {r.d}
               </Typography>
             </Box>
@@ -407,7 +522,9 @@ export function SampleReportsModal({
           pb: 0.5,
         }}
       >
-        <Typography sx={{ fontSize: 18, fontWeight: 600 }}>Sample Reports</Typography>
+        <Typography sx={{ fontSize: 18, fontWeight: 600 }}>
+          Sample Reports
+        </Typography>
         <Box sx={{ flex: 1 }} />
         <IconButton size="small" aria-label="Close" onClick={onClose}>
           <MaterialSymbol name="close" size={20} />
@@ -430,8 +547,8 @@ export function SampleReportsModal({
         }}
       >
         <MaterialSymbol name="info" size={16} sx={{ color: "primary.light" }} />
-        Previews use sample data — scheduled reports include your customer&apos;s
-        live data.
+        Previews use sample data — scheduled reports include your
+        customer&apos;s live data.
       </Box>
 
       {/* Body */}
@@ -476,7 +593,11 @@ export function SampleReportsModal({
                   },
                 })}
               >
-                <MaterialSymbol name={p.icon} size={20} sx={{ flexShrink: 0 }} />
+                <MaterialSymbol
+                  name={p.icon}
+                  size={20}
+                  sx={{ flexShrink: 0 }}
+                />
                 {p.label}
               </Box>
             );
@@ -513,11 +634,21 @@ export function SampleReportsModal({
           borderColor: "divider",
         }}
       >
-        <Button variant="outlined" color="secondary" size="small" onClick={onClose}>
+        <Button
+          variant="outlined"
+          color="secondary"
+          size="small"
+          onClick={onClose}
+        >
           Close
         </Button>
         <Box sx={{ flex: 1 }} />
-        <Button variant="contained" color="primary" size="small" onClick={onClose}>
+        <Button
+          variant="contained"
+          color="primary"
+          size="small"
+          onClick={onClose}
+        >
           Schedule this report
         </Button>
       </Box>

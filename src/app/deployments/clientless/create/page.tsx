@@ -11,8 +11,6 @@ import {
   Link,
   ListSubheader,
   MenuItem,
-  Select,
-  TextField,
   Typography,
 } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
@@ -24,6 +22,8 @@ import { CopyButton } from "@/components/copy-button";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
+import { Select } from "@/components/select";
+import { TextField } from "@/components/text-field";
 
 // Sites the deployment can inherit policy / schedule / block page from.
 const SITES = [

@@ -10,7 +10,6 @@ import {
   Chip,
   Divider,
   FormLabel,
-  TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
@@ -20,6 +19,7 @@ import { useState } from "react";
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { Logo } from "@/components/logo";
 import { MaterialSymbol } from "@/components/material-symbol";
+import { TextField } from "@/components/text-field";
 
 const DOMAIN = "surfshark.com";
 const CATEGORY = "Proxy & Filter Avoidance";
@@ -221,8 +221,8 @@ export default function EndUserBlockedPage() {
             {!formOpen && (
               <>
                 <Typography sx={{ textAlign: "center", mt: 4, fontSize: 16 }}>
-                  If you feel you&apos;ve reached this page in error, you can ask
-                  your network administrator to unblock it.
+                  If you feel you&apos;ve reached this page in error, you can
+                  ask your network administrator to unblock it.
                 </Typography>
                 <Box sx={{ textAlign: "center", mt: 3 }}>
                   <Button
@@ -260,7 +260,14 @@ export default function EndUserBlockedPage() {
               </Typography>
 
               {/* Domain (read-only) */}
-              <FormLabel sx={{ display: "block", fontWeight: 700, mb: 0.5, color: "#031625" }}>
+              <FormLabel
+                sx={{
+                  display: "block",
+                  fontWeight: 700,
+                  mb: 0.5,
+                  color: "#031625",
+                }}
+              >
                 Domain
               </FormLabel>
               <TextField
@@ -272,12 +279,21 @@ export default function EndUserBlockedPage() {
                   "& .MuiOutlinedInput-notchedOutline": { border: "none" },
                 }}
               />
-              <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 1, mb: 3 }}>
+              <Typography
+                sx={{ fontSize: 14, color: "text.secondary", mt: 1, mb: 3 }}
+              >
                 Category: {CATEGORY} · Blocked: {TIME_OF_BLOCK_NO_TZ}
               </Typography>
 
               {/* Email */}
-              <FormLabel sx={{ display: "block", fontWeight: 700, mb: 0.5, color: "#031625" }}>
+              <FormLabel
+                sx={{
+                  display: "block",
+                  fontWeight: 700,
+                  mb: 0.5,
+                  color: "#031625",
+                }}
+              >
                 Email
                 <Box component="span" sx={{ ml: 0.25 }}>
                   *
@@ -313,7 +329,14 @@ export default function EndUserBlockedPage() {
               )}
 
               {/* Name */}
-              <FormLabel sx={{ display: "block", fontWeight: 700, mb: 0.5, color: "#031625" }}>
+              <FormLabel
+                sx={{
+                  display: "block",
+                  fontWeight: 700,
+                  mb: 0.5,
+                  color: "#031625",
+                }}
+              >
                 Name (optional)
               </FormLabel>
               <TextField
@@ -326,7 +349,14 @@ export default function EndUserBlockedPage() {
               />
 
               {/* Reason */}
-              <FormLabel sx={{ display: "block", fontWeight: 700, mb: 0.5, color: "#031625" }}>
+              <FormLabel
+                sx={{
+                  display: "block",
+                  fontWeight: 700,
+                  mb: 0.5,
+                  color: "#031625",
+                }}
+              >
                 Reason
                 <Box component="span" sx={{ ml: 0.25 }}>
                   *
@@ -449,9 +479,7 @@ export default function EndUserBlockedPage() {
 
               {statusBox}
 
-              <Typography
-                sx={{ fontSize: 16, color: "text.secondary", mt: 3 }}
-              >
+              <Typography sx={{ fontSize: 16, color: "text.secondary", mt: 3 }}>
                 You may be contacted at {effectiveEmail}
               </Typography>
               {submitAnotherButton}
@@ -495,9 +523,7 @@ export default function EndUserBlockedPage() {
 
               {statusBox}
 
-              <Typography
-                sx={{ fontSize: 16, color: "text.secondary", mt: 3 }}
-              >
+              <Typography sx={{ fontSize: 16, color: "text.secondary", mt: 3 }}>
                 You may be contacted at {effectiveEmail}
               </Typography>
             </Box>

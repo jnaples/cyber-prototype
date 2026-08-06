@@ -13,7 +13,6 @@ import {
   Button,
   IconButton,
   Popover,
-  TextField,
   Typography,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
@@ -21,6 +20,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
+import { TextField } from "@/components/text-field";
 import { sites as SITE_OPTIONS } from "@/data/query-logs";
 
 import {
@@ -66,7 +66,8 @@ const ROAMING_CLIENT_OPTIONS = CLIENTS.map((c) => c.name);
 const SCENARIO_BY_CLIENT: Record<string, ScenarioId> = Object.fromEntries(
   CLIENTS.map((c) => [c.name, c.id]),
 );
-const FILTERS_DISABLED_TOOLTIP = "Select an Organization to enable this filter.";
+const FILTERS_DISABLED_TOOLTIP =
+  "Select an Organization to enable this filter.";
 
 type NodeState = "done" | "active" | "pending";
 
@@ -220,9 +221,7 @@ function EventNode({
           }}
         >
           <Ico name="schedule" size={14} />
-          <span style={{ fontFamily: "Inter, sans-serif" }}>
-            {event.time}
-          </span>
+          <span style={{ fontFamily: "Inter, sans-serif" }}>{event.time}</span>
         </Box>
       </Box>
       <Box
@@ -332,10 +331,7 @@ function NodeDetail({
               borderBottom: `1px solid ${C_BORDER}`,
             }}
           >
-            <Typography
-              variant="body2"
-              sx={{ color: C_MUTED, flexShrink: 0 }}
-            >
+            <Typography variant="body2" sx={{ color: C_MUTED, flexShrink: 0 }}>
               {row.k}
             </Typography>
             <Typography
@@ -384,9 +380,12 @@ export default function SecureShieldPage() {
   const stepRef = useRef(step);
   const scenarioRef = useRef(scenario);
   const playingRef = useRef(false);
-  const panRef = useRef<{ x: number; y: number; tx: number; ty: number } | null>(
-    null,
-  );
+  const panRef = useRef<{
+    x: number;
+    y: number;
+    tx: number;
+    ty: number;
+  } | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const cancelRef = useRef<(() => void) | null>(null);
 
@@ -395,9 +394,7 @@ export default function SecureShieldPage() {
 
   // ---- shared setters that keep refs in sync ----
   const applyView = (
-    next:
-      | typeof view
-      | ((prev: typeof view) => typeof view),
+    next: typeof view | ((prev: typeof view) => typeof view),
   ) =>
     setView((prev) => {
       const nv = typeof next === "function" ? next(prev) : next;
@@ -804,7 +801,12 @@ export default function SecureShieldPage() {
           <svg
             width={worldW}
             height={worldH}
-            style={{ position: "absolute", top: 0, left: 0, overflow: "visible" }}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              overflow: "visible",
+            }}
           >
             {segs.map((s) => (
               <path
@@ -906,10 +908,18 @@ export default function SecureShieldPage() {
             p: "6px 10px",
           }}
         >
-          <IconButton onClick={toStart} aria-label="Jump to start" sx={{ color: C_MUTED }}>
+          <IconButton
+            onClick={toStart}
+            aria-label="Jump to start"
+            sx={{ color: C_MUTED }}
+          >
             <Ico name="first_page" size={24} />
           </IconButton>
-          <IconButton onClick={stepBack} aria-label="Step back" sx={{ color: C_MUTED }}>
+          <IconButton
+            onClick={stepBack}
+            aria-label="Step back"
+            sx={{ color: C_MUTED }}
+          >
             <Ico name="chevron_left" size={24} />
           </IconButton>
           <IconButton
@@ -925,10 +935,18 @@ export default function SecureShieldPage() {
           >
             <Ico name={playing ? "pause" : "play_arrow"} size={28} />
           </IconButton>
-          <IconButton onClick={stepForward} aria-label="Step forward" sx={{ color: C_MUTED }}>
+          <IconButton
+            onClick={stepForward}
+            aria-label="Step forward"
+            sx={{ color: C_MUTED }}
+          >
             <Ico name="chevron_right" size={24} />
           </IconButton>
-          <IconButton onClick={toEnd} aria-label="Jump to end" sx={{ color: C_MUTED }}>
+          <IconButton
+            onClick={toEnd}
+            aria-label="Jump to end"
+            sx={{ color: C_MUTED }}
+          >
             <Ico name="last_page" size={24} />
           </IconButton>
           <Box sx={{ width: "1px", height: 26, bgcolor: C_BORDER, mx: 0.75 }} />

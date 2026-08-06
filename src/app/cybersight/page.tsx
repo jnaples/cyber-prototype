@@ -12,7 +12,6 @@ import {
   Switch,
   Tab,
   Tabs,
-  TextField,
   Typography,
 } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
@@ -25,6 +24,7 @@ import type {
 } from "@/app/dashboards/advanced-filters";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
+import { TextField } from "@/components/text-field";
 import { lightPalette } from "@/theme/core/palette";
 
 function MaterialIcon({

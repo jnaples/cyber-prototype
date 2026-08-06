@@ -10,13 +10,13 @@ import {
   FormLabel,
   IconButton,
   MenuItem,
-  TextField,
   Tooltip,
 } from "@mui/material";
 import { type ReactNode, useState } from "react";
 
 import { Drawer } from "@/components/drawer";
 import { MaterialSymbol } from "@/components/material-symbol";
+import { TextField } from "@/components/text-field";
 
 import {
   DEPLOYMENT_TYPE_OPTIONS,
@@ -122,13 +122,7 @@ function makeItem(id: number, field: string): FilterItem {
 // rows (the first row leaves it empty).
 const CONJ_WIDTH = 96;
 
-function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <Box
       sx={{ flex: 1, minWidth: 120, display: "flex", flexDirection: "column" }}

@@ -8,7 +8,6 @@ import {
   CircularProgress,
   Divider,
   Link,
-  TextField,
   Typography,
 } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
@@ -16,6 +15,7 @@ import { Fragment, useState } from "react";
 
 import { MaterialSymbol } from "@/components/material-symbol";
 import { QuantityStepper } from "@/components/quantity-stepper";
+import { TextField } from "@/components/text-field";
 
 type Plan = {
   name: string;
@@ -43,7 +43,7 @@ const DAYS_REMAINING = Math.max(
   Math.ceil((RENEWAL_DATE.getTime() - Date.now()) / MS_PER_DAY),
 );
 
-const usd =(value: number, options?: Intl.NumberFormatOptions) =>
+const usd = (value: number, options?: Intl.NumberFormatOptions) =>
   value.toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
@@ -233,7 +233,10 @@ function RecurringLine({ amount }: { amount: number }) {
   return (
     <Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
-        <Typography variant="body2" sx={{ minWidth: 0, wordBreak: "break-word" }}>
+        <Typography
+          variant="body2"
+          sx={{ minWidth: 0, wordBreak: "break-word" }}
+        >
           New annual recurring
         </Typography>
         <Typography
@@ -770,7 +773,9 @@ function FeaturesCard({
               feature={feature}
               owned={owned[feature.name]}
               quantity={quantities[feature.name]}
-              onQuantityChange={(value) => onQuantityChange(feature.name, value)}
+              onQuantityChange={(value) =>
+                onQuantityChange(feature.name, value)
+              }
             />
           )}
         />

@@ -1,17 +1,27 @@
-// Slide-out "Add widget" drawer. Categorized list of all widgets in the
-// catalog with a search box, an "already added" state, and a floating preview
-// (see WidgetPreview) shown on hover.
+// "Manage widgets" drawer (v2). Unlike the Add panel, every catalog widget is
+// shown with a checkbox reflecting whether it's currently on the dashboard —
+// checking adds, unchecking removes. Apply commits the full desired set.
 
 import SearchIcon from "@mui/icons-material/Search";
-import { Box, Chip, InputAdornment, TextField, Typography } from "@mui/material";
+import { Box, Checkbox, InputAdornment, Link, Typography } from "@mui/material";
 import { alpha } from "@mui/material/styles";
 import { useRef, useState } from "react";
+import type React from "react";
 
 import { Drawer } from "@/components/drawer";
 import { MaterialSymbol } from "@/components/material-symbol";
+import { TextField } from "@/components/text-field";
 
 import { WIDGET_CATALOG, type WidgetCategory, type WidgetDef } from "./lib";
 import { WidgetPreview } from "./widget-preview";
+
+// How long the pointer must dwell on a row before its preview appears.
+const HOVER_DELAY_MS = 150;
+
+type HoverProps = {
+  onMouseEnter: (e: React.MouseEvent<HTMLElement>) => void;
+  onMouseLeave: () => void;
+};
 
 const CATEGORY_ORDER: WidgetCategory[] = [
   "KPIs",
@@ -21,67 +31,57 @@ const CATEGORY_ORDER: WidgetCategory[] = [
   "Other",
 ];
 
-// How long the pointer must dwell on an item before its preview appears.
-const HOVER_DELAY_MS = 150;
+const ALL_TYPES = WIDGET_CATALOG.map((w) => w.type);
 
-type HoverProps = {
-  onMouseEnter: (e: React.MouseEvent<HTMLElement>) => void;
-  onMouseLeave: () => void;
-};
-
-function WidgetListItem({
+function WidgetRow({
   widget,
-  added,
-  selected,
+  checked,
   onToggle,
   hoverProps,
 }: {
   widget: WidgetDef;
-  added: boolean;
-  selected: boolean;
+  checked: boolean;
   onToggle: () => void;
   hoverProps: HoverProps;
 }) {
   return (
     <Box
       role="button"
-      aria-pressed={selected}
-      aria-disabled={added || undefined}
+      aria-pressed={checked}
       {...hoverProps}
-      onClick={added ? undefined : onToggle}
+      onClick={onToggle}
       sx={(theme) => ({
         display: "flex",
         alignItems: "center",
         gap: 1.5,
-        textAlign: "left",
         width: "100%",
+        textAlign: "left",
         border: "1px solid",
-        borderColor: selected ? "primary.main" : "divider",
-        bgcolor: selected
+        borderColor: checked ? "primary.main" : "divider",
+        bgcolor: checked
           ? alpha(theme.palette.primary.main, 0.08)
           : "background.paper",
         borderRadius: 1,
         p: 1.25,
-        cursor: added ? "not-allowed" : "pointer",
-        opacity: added ? 0.6 : 1,
+        cursor: "pointer",
         transition: "border-color 120ms, background 120ms",
-        ...(!added && {
-          "&:hover": {
-            bgcolor: alpha(theme.palette.primary.main, selected ? 0.12 : 0.04),
-          },
-        }),
+        "&:hover": {
+          bgcolor: alpha(theme.palette.primary.main, checked ? 0.12 : 0.04),
+        },
         ...theme.applyStyles("dark", {
-          borderColor: selected
+          borderColor: checked
             ? theme.vars.palette.primary.light
             : theme.vars.palette.divider,
-          ...(!added && {
-            "&:hover": {
-              bgcolor: alpha(theme.palette.primary.main, selected ? 0.12 : 0.04),
-            },
-          }),
         }),
       })}
     >
+      <Checkbox
+        size="small"
+        checked={checked}
+        onClick={(e) => e.stopPropagation()}
+        onChange={onToggle}
+        sx={{ p: 0.5, "& .MuiSvgIcon-root": { fontSize: 20 } }}
+      />
       <Box
         sx={(theme) => ({
           width: 36,
@@ -100,44 +100,34 @@ function WidgetListItem({
       >
         <MaterialSymbol name={widget.icon} size={18} />
       </Box>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography
-          sx={{ fontWeight: 600, fontSize: 14, color: "text.primary" }}
-        >
-          {widget.name}
-        </Typography>
-      </Box>
-      {added && (
-        <Chip
-          size="small"
-          label="Added"
-          icon={<MaterialSymbol name="check" size={16} />}
-          sx={{ flexShrink: 0 }}
-        />
-      )}
+      <Typography sx={{ fontWeight: 600, fontSize: 14, color: "text.primary" }}>
+        {widget.name}
+      </Typography>
     </Box>
   );
 }
 
-export function AddPanel({
+export function ManagePanel({
   open,
   onClose,
+  dashboardTypes,
   onApply,
-  existingTypes = [],
 }: {
   open: boolean;
   onClose: () => void;
+  /** Widget types currently on the dashboard. */
+  dashboardTypes: string[];
+  /** Commit the desired set of widget types. */
   onApply: (types: string[]) => void;
-  /** Widget types already on the dashboard — shown as "Added" and disabled. */
-  existingTypes?: string[];
 }) {
   const [q, setQ] = useState("");
-  // Widgets staged to add; only committed (via onApply) when Apply is clicked.
-  const [pending, setPending] = useState<string[]>([]);
+  // The desired on-dashboard set, seeded from the current dashboard each open.
+  const [selected, setSelected] = useState<string[]>(dashboardTypes);
   // Currently hovered widget (drives the floating preview).
-  const [hovered, setHovered] = useState<{ type: string; anchorY: number } | null>(
-    null,
-  );
+  const [hovered, setHovered] = useState<{
+    type: string;
+    anchorY: number;
+  } | null>(null);
   const hoverTimer = useRef<number | null>(null);
 
   const clearHoverTimer = () => {
@@ -146,9 +136,6 @@ export function AddPanel({
       hoverTimer.current = null;
     }
   };
-
-  const matches = (w: { name: string; desc: string }) =>
-    (w.name + " " + w.desc).toLowerCase().includes(q.toLowerCase());
 
   const hoverProps = (type: string): HoverProps => ({
     onMouseEnter: (e) => {
@@ -165,22 +152,31 @@ export function AddPanel({
     },
   });
 
+  // Re-seed when the drawer transitions to open.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setSelected(dashboardTypes);
+      setQ("");
+    }
+  }
+
+  const matches = (w: { name: string; desc: string }) =>
+    (w.name + " " + w.desc).toLowerCase().includes(q.toLowerCase());
+
   const toggle = (type: string) =>
-    setPending((prev) =>
+    setSelected((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
     );
+  const selectAll = () => setSelected(ALL_TYPES);
+  const clearAll = () => setSelected([]);
 
   const handleClose = () => {
     clearHoverTimer();
-    setPending([]);
-    setQ("");
     setHovered(null);
+    setQ("");
     onClose();
-  };
-
-  const handleApply = () => {
-    onApply(pending);
-    handleClose();
   };
 
   return (
@@ -188,22 +184,73 @@ export function AddPanel({
       open={open}
       onClose={handleClose}
       width={380}
-      title="Add widget"
+      title="Manage widgets"
       subheader={
-        pending.length > 0
-          ? `${pending.length} widget${pending.length === 1 ? "" : "s"} selected`
-          : undefined
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 2,
+          }}
+        >
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            {selected.length} of {ALL_TYPES.length} selected
+          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Link
+              component="button"
+              type="button"
+              underline="hover"
+              onClick={selectAll}
+              sx={(theme) => ({
+                fontWeight: 600,
+                fontSize: 14,
+                color:
+                  selected.length === ALL_TYPES.length
+                    ? "text.disabled"
+                    : "primary.main",
+                ...(selected.length === ALL_TYPES.length
+                  ? {}
+                  : theme.applyStyles("dark", {
+                      color: theme.vars.palette.primary.light,
+                    })),
+                pointerEvents:
+                  selected.length === ALL_TYPES.length ? "none" : "auto",
+              })}
+            >
+              Select all
+            </Link>
+            <Link
+              component="button"
+              type="button"
+              underline="hover"
+              onClick={clearAll}
+              sx={(theme) => ({
+                fontWeight: 600,
+                fontSize: 14,
+                color: selected.length === 0 ? "text.disabled" : "primary.main",
+                ...(selected.length === 0
+                  ? {}
+                  : theme.applyStyles("dark", {
+                      color: theme.vars.palette.primary.light,
+                    })),
+                pointerEvents: selected.length === 0 ? "none" : "auto",
+              })}
+            >
+              Clear all
+            </Link>
+          </Box>
+        </Box>
       }
       secondaryAction={{ label: "Cancel", onClick: handleClose }}
       primaryAction={{
-        label:
-          pending.length === 0
-            ? "Add widget"
-            : `Add ${pending.length} widget${pending.length === 1 ? "" : "s"}`,
-        onClick: handleApply,
-        disabled: pending.length === 0,
-        tooltip:
-          pending.length === 0 ? "Select a widget to add first" : undefined,
+        label: "Save",
+        sx: { minWidth: 0 },
+        onClick: () => {
+          onApply(selected);
+          handleClose();
+        },
       }}
     >
       <TextField
@@ -239,11 +286,10 @@ export function AddPanel({
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                 {items.map((w) => (
-                  <WidgetListItem
+                  <WidgetRow
                     key={w.type}
                     widget={w}
-                    added={existingTypes.includes(w.type)}
-                    selected={pending.includes(w.type)}
+                    checked={selected.includes(w.type)}
                     onToggle={() => toggle(w.type)}
                     hoverProps={hoverProps(w.type)}
                   />

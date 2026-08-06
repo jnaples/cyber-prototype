@@ -12,8 +12,6 @@ import {
   ListSubheader,
   Menu,
   MenuItem,
-  Select,
-  TextField,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -26,7 +24,6 @@ import type {
   GridRowSelectionModel,
 } from "@mui/x-data-grid";
 import { getGridStringOperators, useGridApiRef } from "@mui/x-data-grid";
-import CancelIcon from "@mui/icons-material/Cancel";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import { endOfDay, startOfDay, subDays, subHours, subMinutes } from "date-fns";
@@ -44,6 +41,8 @@ import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+import { Select } from "@/components/select";
+import { TextField } from "@/components/text-field";
 import { AdvancedFilters } from "@/app/dashboards/advanced-filters";
 import type {
   AppliedAdvancedFilter,
@@ -396,10 +395,7 @@ const columns: GridColDef[] = [
           <Chip
             size="small"
             icon={
-              <MaterialSymbol
-                name={allowed ? "check" : "block"}
-                size={16}
-              />
+              <MaterialSymbol name={allowed ? "check" : "block"} size={16} />
             }
             label={params.value}
             sx={(theme) => ({
@@ -442,7 +438,12 @@ const columns: GridColDef[] = [
     flex: 1,
     minWidth: 150,
   },
-  { field: "deploymentOs", headerName: "Deployment OS", flex: 1, minWidth: 140 },
+  {
+    field: "deploymentOs",
+    headerName: "Deployment OS",
+    flex: 1,
+    minWidth: 140,
+  },
   { field: "agentName", headerName: "Agent Name", flex: 1, minWidth: 140 },
   { field: "resolver", headerName: "Resolver", flex: 1, minWidth: 120 },
   {
@@ -479,7 +480,12 @@ const columns: GridColDef[] = [
   { field: "resolvedIp", headerName: "Resolved IPs", flex: 1, minWidth: 140 },
   { field: "queryType", headerName: "Query Type", flex: 1, minWidth: 130 },
   { field: "protocol", headerName: "Protocol", flex: 1, minWidth: 110 },
-  { field: "responseTime", headerName: "Response Time", flex: 1, minWidth: 130 },
+  {
+    field: "responseTime",
+    headerName: "Response Time",
+    flex: 1,
+    minWidth: 130,
+  },
   {
     field: "actions",
     headerName: "Actions",
@@ -568,8 +574,7 @@ const TIME_RANGE_GROUPS = [
 const CUSTOM_TIME_RANGE = "Custom";
 
 type TimeRangeValue =
-  | (typeof TIME_RANGE_GROUPS)[number][number]
-  | typeof CUSTOM_TIME_RANGE;
+  (typeof TIME_RANGE_GROUPS)[number][number] | typeof CUSTOM_TIME_RANGE;
 
 function getRangeForPreset(
   preset: TimeRangeValue,
@@ -848,7 +853,10 @@ export default function QueryLogsPage() {
   const gridApiRef = useGridApiRef();
 
   // Filter the grid to a ±window range around the anchored query's timestamp.
-  const applyInvestigateFilter = (anchorMs: number, window: TimeWindowOption) => {
+  const applyInvestigateFilter = (
+    anchorMs: number,
+    window: TimeWindowOption,
+  ) => {
     const windowMs = TIME_WINDOW_SECONDS[window] * 1000;
     gridApiRef.current?.setFilterModel({
       items: [
@@ -1047,7 +1055,9 @@ export default function QueryLogsPage() {
                   gap: 2,
                 }}
               >
-                <ArrowTooltip title={investigating ? investigateLockTooltip : ""}>
+                <ArrowTooltip
+                  title={investigating ? investigateLockTooltip : ""}
+                >
                   <Box sx={{ display: "flex", "& > *": { width: "100%" } }}>
                     <Autocomplete
                       size="small"
@@ -1077,34 +1087,7 @@ export default function QueryLogsPage() {
                       size="small"
                       fullWidth
                       disabled={filtersDisabled}
-                      sx={{
-                        position: "relative",
-                        "&:hover .select-clear, &:focus-within .select-clear": {
-                          visibility: "visible",
-                        },
-                      }}
                     >
-                      {selectedSites.length > 0 && (
-                        <IconButton
-                          size="small"
-                          className="select-clear"
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedSites([]);
-                          }}
-                          sx={{
-                            position: "absolute",
-                            right: 32,
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            visibility: "hidden",
-                            zIndex: 1,
-                          }}
-                        >
-                          <CancelIcon fontSize="small" />
-                        </IconButton>
-                      )}
                       <Select
                         multiple
                         displayEmpty
@@ -1181,34 +1164,7 @@ export default function QueryLogsPage() {
                       size="small"
                       fullWidth
                       disabled={filtersDisabled}
-                      sx={{
-                        position: "relative",
-                        "&:hover .select-clear, &:focus-within .select-clear": {
-                          visibility: "visible",
-                        },
-                      }}
                     >
-                      {selectedClients.length > 0 && (
-                        <IconButton
-                          size="small"
-                          className="select-clear"
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedClients([]);
-                          }}
-                          sx={{
-                            position: "absolute",
-                            right: 32,
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            visibility: "hidden",
-                            zIndex: 1,
-                          }}
-                        >
-                          <CancelIcon fontSize="small" />
-                        </IconButton>
-                      )}
                       <Select
                         multiple
                         displayEmpty
@@ -1331,34 +1287,7 @@ export default function QueryLogsPage() {
                       size="small"
                       fullWidth
                       disabled={filtersDisabled}
-                      sx={{
-                        position: "relative",
-                        "&:hover .select-clear, &:focus-within .select-clear": {
-                          visibility: "visible",
-                        },
-                      }}
                     >
-                      {selectedUsers.length > 0 && (
-                        <IconButton
-                          size="small"
-                          className="select-clear"
-                          onMouseDown={(e) => e.stopPropagation()}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedUsers([]);
-                          }}
-                          sx={{
-                            position: "absolute",
-                            right: 32,
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            visibility: "hidden",
-                            zIndex: 1,
-                          }}
-                        >
-                          <CancelIcon fontSize="small" />
-                        </IconButton>
-                      )}
                       <Select
                         multiple
                         displayEmpty
@@ -1484,7 +1413,9 @@ export default function QueryLogsPage() {
                       color="secondary"
                       disabled={filtersDisabled}
                       onClick={() => setAdvancedOpen(true)}
-                      startIcon={<FilterAltOutlinedIcon sx={{ fontSize: 20 }} />}
+                      startIcon={
+                        <FilterAltOutlinedIcon sx={{ fontSize: 20 }} />
+                      }
                     >
                       {appliedAdvancedFilters.length > 0
                         ? `More Filters (${appliedAdvancedFilters.length})`
@@ -1528,7 +1459,9 @@ export default function QueryLogsPage() {
                 </ArrowTooltip>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   {appliedOrg && (
-                    <ArrowTooltip title={investigating ? investigateLockTooltip : ""}>
+                    <ArrowTooltip
+                      title={investigating ? investigateLockTooltip : ""}
+                    >
                       <span>
                         <Button
                           variant="text"
@@ -1543,7 +1476,9 @@ export default function QueryLogsPage() {
                       </span>
                     </ArrowTooltip>
                   )}
-                  <ArrowTooltip title={investigating ? investigateLockTooltip : ""}>
+                  <ArrowTooltip
+                    title={investigating ? investigateLockTooltip : ""}
+                  >
                     <span>
                       <Button
                         variant="outlined"
@@ -1582,14 +1517,14 @@ export default function QueryLogsPage() {
         >
           <DataTable
             apiRef={gridApiRef}
-            hiddenFilterIds={investigation ? [INVESTIGATE_FILTER_ID] : undefined}
+            hiddenFilterIds={
+              investigation ? [INVESTIGATE_FILTER_ID] : undefined
+            }
             rows={visibleRows}
             columns={columns}
             loading={isFetching}
             noRowsOverlay={
-              appliedOrg === null
-                ? QueryLogsEmptyOverlay
-                : NoResultsOverlay
+              appliedOrg === null ? QueryLogsEmptyOverlay : NoResultsOverlay
             }
             showSearch={false}
             showFilters={false}
@@ -1607,9 +1542,7 @@ export default function QueryLogsPage() {
             onFilterModelChange={(model) => {
               // Clearing the (time-window) filter removes the investigate
               // highlight too.
-              if (
-                !model.items.some((it) => it.id === INVESTIGATE_FILTER_ID)
-              ) {
+              if (!model.items.some((it) => it.id === INVESTIGATE_FILTER_ID)) {
                 setInvestigatedRowId(null);
               }
             }}
@@ -1624,9 +1557,7 @@ export default function QueryLogsPage() {
                     <Button
                       variant="text"
                       color="primary"
-                      startIcon={
-                        <MaterialSymbol name="edit" size={18} />
-                      }
+                      startIcon={<MaterialSymbol name="edit" size={18} />}
                     >
                       Edit
                     </Button>

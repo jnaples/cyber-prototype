@@ -1,18 +1,12 @@
 // Drawer for reporting a domain's miscategorization from the Unblock Requests
 // grid overflow menu. Lets the reviewer propose a new category and add notes.
 
-import {
-  Box,
-  Divider,
-  FormLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Divider, FormLabel, MenuItem, Typography } from "@mui/material";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
+import { Select } from "@/components/select";
+import { TextField } from "@/components/text-field";
 
 // Proposed categories the reviewer can suggest (DNSFilter content categories).
 const CATEGORIES = [
@@ -134,7 +128,14 @@ export function ReportMiscategorizationDrawer({
 
       {isThreat ? (
         <Box>
-          <FormLabel sx={{ display: "block", fontWeight: 700, mb: 0.5, color: "text.primary" }}>
+          <FormLabel
+            sx={{
+              display: "block",
+              fontWeight: 700,
+              mb: 0.5,
+              color: "text.primary",
+            }}
+          >
             Issue Type
             <Box component="span" sx={{ ml: 0.25 }}>
               *
@@ -166,7 +167,14 @@ export function ReportMiscategorizationDrawer({
         </Box>
       ) : (
         <Box>
-          <FormLabel sx={{ display: "block", fontWeight: 700, mb: 0.5, color: "text.primary" }}>
+          <FormLabel
+            sx={{
+              display: "block",
+              fontWeight: 700,
+              mb: 0.5,
+              color: "text.primary",
+            }}
+          >
             New Category
             <Box component="span" sx={{ ml: 0.25 }}>
               *

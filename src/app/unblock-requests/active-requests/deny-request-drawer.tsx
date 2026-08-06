@@ -3,10 +3,11 @@
 // what denying does, an editable message sent to the requester, and a
 // secondary "Deny & Ignore" action that also suppresses future requests.
 
-import { Box, Divider, TextField, Typography } from "@mui/material";
+import { Box, Divider, Typography } from "@mui/material";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
+import { TextField } from "@/components/text-field";
 
 export function DenyRequestDrawer({
   open,

@@ -11,7 +11,6 @@ import {
   MenuItem,
   OutlinedInput,
   Radio,
-  Select,
   Stack,
   Typography,
 } from "@mui/material";
@@ -23,6 +22,7 @@ import { useState } from "react";
 import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
+import { Select } from "@/components/select";
 import {
   CHART_META,
   DATA_SOURCES,

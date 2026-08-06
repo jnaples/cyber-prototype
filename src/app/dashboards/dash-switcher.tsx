@@ -12,7 +12,6 @@ import {
   InputAdornment,
   Paper,
   Popper,
-  TextField,
   Typography,
 } from "@mui/material";
 import { useState } from "react";
@@ -21,6 +20,7 @@ import SearchIcon from "@mui/icons-material/Search";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { MaterialSymbol } from "@/components/material-symbol";
+import { TextField } from "@/components/text-field";
 
 import { DASHBOARD_NAMES, SHARED_BY, SHARED_DASHBOARDS } from "./lib";
 
@@ -191,7 +191,9 @@ export function DashSwitcher({
             overflow: "hidden",
           }}
         >
-          <Box sx={{ p: 1.25, borderBottom: "1px solid", borderColor: "divider" }}>
+          <Box
+            sx={{ p: 1.25, borderBottom: "1px solid", borderColor: "divider" }}
+          >
             <TextField
               fullWidth
               autoFocus
@@ -248,8 +250,9 @@ export function DashSwitcher({
                 ))}
               </>
             )}
-            {favList.length + myList.length > 0 &&
-              publishedList.length > 0 && <Divider />}
+            {favList.length + myList.length > 0 && publishedList.length > 0 && (
+              <Divider />
+            )}
             {publishedList.length > 0 && (
               <>
                 <SectionLabel>Shared dashboards</SectionLabel>

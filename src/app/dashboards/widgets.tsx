@@ -10,11 +10,11 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  TextField,
   Typography,
 } from "@mui/material";
 
 import { MaterialSymbol } from "@/components/material-symbol";
+import { TextField } from "@/components/text-field";
 
 import {
   BarChart,
@@ -157,7 +157,9 @@ function DataTableWidget({
                       <MaterialSymbol
                         name={(r.icon as string) ?? "language"}
                         size={14}
-                        sx={{ color: (r.iconColor as string) ?? "currentColor" }}
+                        sx={{
+                          color: (r.iconColor as string) ?? "currentColor",
+                        }}
                       />
                       {r[c.key]}
                     </Box>
@@ -218,7 +220,7 @@ export function WidgetBody({ type }: { type: string }) {
         <StatCard
           icon="skull"
           color={PAL.magenta}
-          label="Threats"
+          label="Blocked Threats"
           value={fmt(scale(115056))}
         />
       );
@@ -250,7 +252,7 @@ export function WidgetBody({ type }: { type: string }) {
           color={PAL.purple}
           num={74}
           denom={75}
-          label="Users"
+          label="Users Protected"
         />
       );
     case "status-relays":
@@ -260,7 +262,7 @@ export function WidgetBody({ type }: { type: string }) {
           color={PAL.ink}
           num={2}
           denom={2}
-          label="Relays"
+          label="Relays Protected"
         />
       );
 
