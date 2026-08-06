@@ -792,13 +792,17 @@ export default function DashboardsPage() {
                   component="hr"
                   orientation="vertical"
                   flexItem
-                  sx={{
-                    borderColor: "divider",
+                  sx={(theme) => ({
+                    // Match the prod divider color for this scenario.
+                    borderColor: "rgba(3, 22, 37, 0.6)",
                     mx: 0.5,
                     // <hr> carries a default vertical UA margin that shrinks the
                     // flex-item; zero it so it stretches the parent's full height.
                     my: 0,
-                  }}
+                    ...theme.applyStyles("dark", {
+                      borderColor: "rgba(236, 241, 250, 0.7)",
+                    }),
+                  })}
                 />
                 <Typography variant="body2" sx={{ color: "text.secondary" }}>
                   Shared by {SHARED_BY[name] ?? "another user"}
