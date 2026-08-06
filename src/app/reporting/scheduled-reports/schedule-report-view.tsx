@@ -21,13 +21,6 @@ import {
   Typography,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import type { SvgIconComponent } from "@mui/icons-material";
-import StackedLineChartOutlinedIcon from "@mui/icons-material/StackedLineChartOutlined";
-import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
-import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
-import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
-import ShowChartOutlinedIcon from "@mui/icons-material/ShowChartOutlined";
-import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import { useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
@@ -37,70 +30,7 @@ import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
 
 import { SamplePreviewModal } from "./sample-preview-modal";
-
-type ReportDef = {
-  key: string;
-  title: string;
-  desc: string;
-  Icon: SvgIconComponent;
-  file: string;
-  size: string;
-  cybersight?: boolean;
-};
-
-const REPORTS: ReportDef[] = [
-  {
-    key: "activity",
-    title: "Customer Activity Overview",
-    desc: "Requests, blocked traffic, and top categories across the period.",
-    Icon: StackedLineChartOutlinedIcon,
-    file: "Activity-Overview-Jul-2026.pdf",
-    size: "1.2 MB",
-  },
-  {
-    key: "traffic",
-    title: "Endpoint Traffic Logs",
-    desc: "Full DNS request log for every endpoint, exported as tables.",
-    Icon: TableChartOutlinedIcon,
-    file: "Traffic-Logs-Jul-2026.pdf",
-    size: "840 KB",
-  },
-  {
-    key: "protection",
-    title: "Filter Protection Summary",
-    desc: "Threats blocked, categories filtered, and policy coverage.",
-    Icon: ShieldOutlinedIcon,
-    file: "Protection-Summary-Jul-2026.pdf",
-    size: "1.1 MB",
-  },
-  {
-    key: "timeline-logs",
-    title: "Timeline Activity Logs",
-    desc: "Detailed CyberSight timeline events for each device.",
-    Icon: ReceiptLongOutlinedIcon,
-    file: "Timeline-Logs-Jul-2026.pdf",
-    size: "1.4 MB",
-    cybersight: true,
-  },
-  {
-    key: "timeline-overview",
-    title: "Timeline Overview",
-    desc: "Summarized device timelines with notable activity called out.",
-    Icon: ShowChartOutlinedIcon,
-    file: "Timeline-Overview-Jul-2026.pdf",
-    size: "980 KB",
-    cybersight: true,
-  },
-  {
-    key: "ai-usage",
-    title: "CyberSight AI Usage",
-    desc: "AI queries, insights generated, and usage by device.",
-    Icon: AutoAwesomeOutlinedIcon,
-    file: "AI-Usage-Jul-2026.pdf",
-    size: "760 KB",
-    cybersight: true,
-  },
-];
+import { REPORTS, type ReportDef } from "./reports";
 
 const PORTAL_USERS = [
   {

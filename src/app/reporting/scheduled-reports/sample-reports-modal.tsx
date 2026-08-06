@@ -93,8 +93,8 @@ const PREVIEWS: Preview[] = [
   {
     key: "traffic",
     icon: "table_chart",
-    label: "Traffic Logs",
-    title: "Endpoint Traffic Logs",
+    label: "Query Logs",
+    title: "DNS Query Logs",
     desc: "Detailed DNS query activity sampled across endpoints.",
     range: "Jul 22, 2026 · last 24 hours",
     stats: [

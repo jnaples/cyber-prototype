@@ -24,7 +24,6 @@ import { useNavigate } from "react-router";
 
 import { DataTable } from "@/components/data-table";
 import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
-import { EmptyState } from "@/components/empty-state";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
@@ -33,6 +32,8 @@ import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
 
+import { ReportHistory } from "./report-history";
+import { ReportLibrary } from "./report-library";
 import { SampleReportsModal } from "./sample-reports-modal";
 
 // ---------------------------------------------------------------------------
@@ -497,19 +498,9 @@ export default function ScheduledReportsPage() {
         </PageHeader>
       }
     >
-      {pageTab === 0 && (
-        <EmptyState
-          title="Report Library"
-          description="Saved and prebuilt report templates will live here."
-        />
-      )}
+      {pageTab === 0 && <ReportLibrary />}
 
-      {pageTab === 2 && (
-        <EmptyState
-          title="Delivery History"
-          description="Past report runs and their delivery outcomes will live here."
-        />
-      )}
+      {pageTab === 2 && <ReportHistory />}
 
       {pageTab === 1 && (
         <>
