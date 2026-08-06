@@ -779,48 +779,30 @@ export default function DashboardsPage() {
 
           {/* Metadata — the active organization context, to the right of name */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: 1 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <MaterialSymbol
-                name="corporate_fare"
-                size={18}
-                sx={{ color: "text.secondary" }}
-              />
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                {filters.organizations.length === 0
-                  ? "All Organizations"
-                  : filters.organizations.length === 1
-                    ? filters.organizations[0]
-                    : `${filters.organizations.length} Organizations`}
-              </Typography>
-            </Box>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              {filters.organizations.length === 0
+                ? "All Organizations"
+                : filters.organizations.length === 1
+                  ? filters.organizations[0]
+                  : `${filters.organizations.length} Organizations`}
+            </Typography>
             {SHARED_DASHBOARDS.includes(name) && (
               <>
                 <Divider
                   component="hr"
                   orientation="vertical"
                   flexItem
-                  sx={(theme) => ({
-                    // Match the prod divider color for this scenario.
-                    borderColor: "rgba(3, 22, 37, 0.6)",
+                  sx={{
+                    borderColor: "divider",
                     mx: 0.5,
                     // <hr> carries a default vertical UA margin that shrinks the
                     // flex-item; zero it so it stretches the parent's full height.
                     my: 0,
-                    ...theme.applyStyles("dark", {
-                      borderColor: "rgba(236, 241, 250, 0.7)",
-                    }),
-                  })}
+                  }}
                 />
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                  <MaterialSymbol
-                    name="share"
-                    size={18}
-                    sx={{ color: "text.secondary" }}
-                  />
-                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                    Shared by {SHARED_BY[name] ?? "another user"}
-                  </Typography>
-                </Box>
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  Shared by {SHARED_BY[name] ?? "another user"}
+                </Typography>
               </>
             )}
           </Box>
