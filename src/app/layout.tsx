@@ -9,7 +9,7 @@ export default function RootLayout() {
   const [isExpanded, setIsExpanded] = useState(true);
   const { pathname } = useLocation();
 
-  // The design-system docs render their own shell (component sidebar + header),
+  // The design-system docs render their own shell (component sidebar +  header), 
   // so the app side nav is hidden there.
   const hideSidebar = pathname.startsWith("/design-system");
   // Secure Shield is a full-canvas page — the global footer would overlap it.
