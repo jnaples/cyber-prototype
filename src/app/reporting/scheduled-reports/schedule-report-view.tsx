@@ -1,4 +1,4 @@
-// "Schedule Report" builder — opened from the Scheduled Reports "Schedule
+// "Schedule Report" builder — opened from the Report Manager "Schedule
 // Report" action. Two-column layout: a stepped form on the left (name & reports,
 // organizations, recipients, schedule, branding) and a live Email / PDF-cover
 // preview on the right. Header carries the Cancel / Send test / Save actions.

@@ -1,4 +1,4 @@
-// Reporting → Scheduled Reports. A list of recurring report deliveries with a
+// Reporting → Report Manager. A list of recurring report deliveries with a
 // status summary strip (All / Active / Paused / Delivery issues) that filters
 // the grid, plus search + report-type filtering. The grid mirrors the app's
 // standard data grids (see Query Logs).
@@ -7,12 +7,13 @@ import {
   Box,
   Button,
   Chip,
-  Divider,
   IconButton,
   InputAdornment,
   MenuItem,
   Select,
   Switch,
+  Tab,
+  Tabs,
   TextField,
   Typography,
 } from "@mui/material";
@@ -25,6 +26,7 @@ import { useNavigate } from "react-router";
 
 import { DataTable } from "@/components/data-table";
 import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
+import { EmptyState } from "@/components/empty-state";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
@@ -106,7 +108,12 @@ const SCHEDULES: Schedule[] = [
   {
     id: 4,
     name: "Business Review Packet",
-    tags: ["Activity Overview", "Protection Summary", "Traffic Logs", "AI Usage"],
+    tags: [
+      "Activity Overview",
+      "Protection Summary",
+      "Traffic Logs",
+      "AI Usage",
+    ],
     organizations: "All organizations (6)",
     recipients: 6,
     freqPrimary: "Monthly",
@@ -151,7 +158,11 @@ function ScheduleCell({ name, tags }: { name: string; tags: string[] }) {
         py: 1,
       }}
     >
-      <Typography variant="body2" noWrap sx={{ fontWeight: 600, color: "text.primary" }}>
+      <Typography
+        variant="body2"
+        noWrap
+        sx={{ fontWeight: 600, color: "text.primary" }}
+      >
         {name}
       </Typography>
       <Box sx={{ display: "flex", gap: 0.5 }}>
@@ -216,7 +227,12 @@ const columns: GridColDef<Schedule>[] = [
       <ScheduleCell name={params.row.name} tags={params.row.tags} />
     ),
   },
-  { field: "organizations", headerName: "Organizations", flex: 1, minWidth: 160 },
+  {
+    field: "organizations",
+    headerName: "Organizations",
+    flex: 1,
+    minWidth: 160,
+  },
   {
     field: "recipients",
     headerName: "Recipients",
@@ -332,7 +348,31 @@ const STATUS_KEYS: SummaryKey[] = ["all", "active", "paused", "issue"];
 // Page
 // ---------------------------------------------------------------------------
 
+// Page-level tabs shown under the header (same treatment as Unblock Requests).
+const PAGE_TABS = [
+  { label: "Library", icon: "library_books" },
+  { label: "Scheduler", icon: "schedule" },
+  { label: "History", icon: "history" },
+] as const;
+
+// Selected page tab reads as a card lifted out of the neutral strip.
+const selectedTabSx = {
+  "&.Mui-selected": {
+    backgroundColor: (
+      theme: Theme & {
+        vars?: { palette?: { background?: { paper?: string } } };
+      },
+    ) =>
+      theme.vars?.palette?.background?.paper ?? theme.palette.background.paper,
+    borderTopLeftRadius: "6px",
+    borderTopRightRadius: "6px",
+    boxShadow: (theme: Theme) => theme.shadows[3],
+    zIndex: (theme: Theme) => theme.zIndex.appBar,
+  },
+};
+
 export default function ScheduledReportsPage() {
+  const [pageTab, setPageTab] = useState(0);
   const [statusFilter, setStatusFilter] = useState<SummaryKey>("all");
   const [search, setSearch] = useState("");
   const [reportType, setReportType] = useState("all");
@@ -416,160 +456,196 @@ export default function ScheduledReportsPage() {
   return (
     <PageShell
       header={
-        <PageHeader
-          title="Scheduled Reports"
-          leftSlot={
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <Typography variant="body2" color="text.secondary">
-                All Organizations
-              </Typography>
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{ borderColor: "divider", mx: "8px" }}
-              />
-              <Chip
-                label="Managing 8 Organizations"
-                onClick={() => {}}
-                sx={{ borderRadius: "8px", fontSize: "14px" }}
-                deleteIcon={
-                  <MaterialSymbol
-                    name="filter_list"
-                    size={20}
-                    sx={{ color: "text.primary" }}
-                  />
-                }
-                onDelete={() => {}}
-                size="small"
-              />
-            </div>
-          }
-        />
+        <PageHeader title="Report Manager">
+          <Box
+            sx={{
+              mb: -2,
+              display: "flex",
+              alignContent: "flex-end",
+              backgroundColor: (
+                theme: Theme & {
+                  vars?: { palette?: { background?: { neutral?: string } } };
+                },
+              ) =>
+                theme.vars?.palette?.background?.neutral ??
+                theme.palette.background.neutral,
+              color: (
+                theme: Theme & {
+                  vars?: { palette?: { text?: { primary?: string } } };
+                },
+              ) =>
+                theme.vars?.palette?.text?.primary ??
+                theme.palette.text.primary,
+            }}
+          >
+            <Tabs
+              value={pageTab}
+              onChange={(_e, next: number) => setPageTab(next)}
+              aria-label="report manager tabs"
+              sx={{ px: 3 }}
+            >
+              {PAGE_TABS.map((tab) => (
+                <Tab
+                  key={tab.label}
+                  label={tab.label}
+                  icon={<MaterialSymbol name={tab.icon} size={20} />}
+                  sx={selectedTabSx}
+                />
+              ))}
+            </Tabs>
+          </Box>
+        </PageHeader>
       }
     >
-      {/* Actions */}
-      <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          size="small"
-          startIcon={<MaterialSymbol name="add" size={18} />}
-          onClick={() => navigate("/reporting/report-scheduler")}
-        >
-          Schedule Report
-        </Button>
-        <Box sx={{ flex: 1 }} />
-        <Button
-          variant="outlined"
-          color="secondary"
-          size="small"
-          startIcon={<MaterialSymbol name="visibility" size={18} />}
-          onClick={() => setPreviewOpen(true)}
-        >
-          Preview Sample Reports
-        </Button>
-      </Box>
-
-      {/* Summary tabs + grid, connected as one card (like Query Logs) */}
-      <TabbedDataCard
-        tabs={tabsConfig}
-        activeTab={STATUS_KEYS.indexOf(statusFilter)}
-        onTabChange={(_e, newValue) => setStatusFilter(STATUS_KEYS[newValue])}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1.5,
-            p: 2,
-            borderBottom: "1px solid",
-            borderColor: "divider",
-          }}
-        >
-          <TextField
-            size="small"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            sx={{ width: 260 }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <MaterialSymbol name="search" size={20} sx={{ color: "inherit" }} />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-          <Select
-            size="small"
-            value={reportType}
-            onChange={(e) => setReportType(e.target.value)}
-            sx={{ minWidth: 200 }}
-          >
-            <MenuItem value="all">All report types</MenuItem>
-            {REPORT_TYPES.map((t) => (
-              <MenuItem key={t} value={t}>
-                {t}
-              </MenuItem>
-            ))}
-          </Select>
-        </Box>
-
-        <DataTable
-          rows={rows}
-          columns={columns}
-          density="comfortable"
-          initialPageSize={10}
-          showSearch={false}
-          showFilters
-          showDefaultView={false}
-          showPreferences={false}
-          showExport
-          showRefresh
-          rowSelectionModel={rowSelection}
-          onRowSelectionModelChange={setRowSelection}
-          bulkActions={
-            selectedCount > 0 && (
-              <DataTableBulkActions
-                count={selectedCount}
-                noun="schedule"
-                onClose={clearSelection}
-                actions={
-                  <>
-                    <Button
-                      variant="text"
-                      color="primary"
-                      startIcon={<MaterialSymbol name="pause" size={18} />}
-                    >
-                      Pause
-                    </Button>
-                    <Button
-                      variant="text"
-                      color="primary"
-                      startIcon={<MaterialSymbol name="play_arrow" size={18} />}
-                    >
-                      Resume
-                    </Button>
-                  </>
-                }
-              />
-            )
-          }
-          sx={(theme: Theme) => ({
-            "& .MuiDataGrid-cell, & .MuiDataGrid-columnHeaderTitle": {
-              fontSize: theme.typography.body2.fontSize,
-            },
-          })}
+      {pageTab === 0 && (
+        <EmptyState
+          title="Report Library"
+          description="Saved and prebuilt report templates will live here."
         />
-      </TabbedDataCard>
+      )}
 
-      {/* Preview sample reports */}
-      <SampleReportsModal
-        open={previewOpen}
-        onClose={() => setPreviewOpen(false)}
-      />
+      {pageTab === 2 && (
+        <EmptyState
+          title="Delivery History"
+          description="Past report runs and their delivery outcomes will live here."
+        />
+      )}
+
+      {pageTab === 1 && (
+        <>
+          {/* Actions */}
+          <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              startIcon={<MaterialSymbol name="add" size={18} />}
+              onClick={() => navigate("/reporting/report-scheduler")}
+            >
+              Schedule Report
+            </Button>
+            <Box sx={{ flex: 1 }} />
+            <Button
+              variant="outlined"
+              color="secondary"
+              size="small"
+              startIcon={<MaterialSymbol name="visibility" size={18} />}
+              onClick={() => setPreviewOpen(true)}
+            >
+              Preview Sample Reports
+            </Button>
+          </Box>
+
+          {/* Summary tabs + grid, connected as one card (like Query Logs) */}
+          <TabbedDataCard
+            tabs={tabsConfig}
+            activeTab={STATUS_KEYS.indexOf(statusFilter)}
+            onTabChange={(_e, newValue) =>
+              setStatusFilter(STATUS_KEYS[newValue])
+            }
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                p: 2,
+                borderBottom: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <TextField
+                size="small"
+                placeholder="Search..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                sx={{ width: 260 }}
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <MaterialSymbol
+                          name="search"
+                          size={20}
+                          sx={{ color: "inherit" }}
+                        />
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+              <Select
+                size="small"
+                value={reportType}
+                onChange={(e) => setReportType(e.target.value)}
+                sx={{ minWidth: 200 }}
+              >
+                <MenuItem value="all">All report types</MenuItem>
+                {REPORT_TYPES.map((t) => (
+                  <MenuItem key={t} value={t}>
+                    {t}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+
+            <DataTable
+              rows={rows}
+              columns={columns}
+              density="comfortable"
+              initialPageSize={10}
+              showSearch={false}
+              showFilters
+              showDefaultView={false}
+              showPreferences={false}
+              showExport
+              showRefresh
+              rowSelectionModel={rowSelection}
+              onRowSelectionModelChange={setRowSelection}
+              bulkActions={
+                selectedCount > 0 && (
+                  <DataTableBulkActions
+                    count={selectedCount}
+                    noun="schedule"
+                    onClose={clearSelection}
+                    actions={
+                      <>
+                        <Button
+                          variant="text"
+                          color="primary"
+                          startIcon={<MaterialSymbol name="pause" size={18} />}
+                        >
+                          Pause
+                        </Button>
+                        <Button
+                          variant="text"
+                          color="primary"
+                          startIcon={
+                            <MaterialSymbol name="play_arrow" size={18} />
+                          }
+                        >
+                          Resume
+                        </Button>
+                      </>
+                    }
+                  />
+                )
+              }
+              sx={(theme: Theme) => ({
+                "& .MuiDataGrid-cell, & .MuiDataGrid-columnHeaderTitle": {
+                  fontSize: theme.typography.body2.fontSize,
+                },
+              })}
+            />
+          </TabbedDataCard>
+
+          {/* Preview sample reports */}
+          <SampleReportsModal
+            open={previewOpen}
+            onClose={() => setPreviewOpen(false)}
+          />
+        </>
+      )}
     </PageShell>
   );
 }

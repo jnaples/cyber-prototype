@@ -887,7 +887,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                     navigate("/reporting/scheduled-reports");
                   }}
                 >
-                  <span style={{ margin: "4px 0" }}>Scheduled Reports</span>
+                  <span style={{ margin: "4px 0" }}>Report Manager</span>
                 </Box>
                 <Box
                   sx={getSubItemStyles("reporting-data-explorer")}

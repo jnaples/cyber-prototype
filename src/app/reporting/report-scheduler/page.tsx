@@ -1,5 +1,5 @@
 // Report scheduler — the "Schedule Report" builder on its own route so the URL
-// reflects the flow. Cancel/Save return to the Scheduled Reports list.
+// reflects the flow. Cancel/Save return to the Report Manager list.
 
 import { useNavigate } from "react-router";
 

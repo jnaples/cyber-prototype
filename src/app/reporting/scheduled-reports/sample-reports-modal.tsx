@@ -1,4 +1,4 @@
-// "Sample Reports" preview modal — extracted from the Scheduled Reports design.
+// "Sample Reports" preview modal — extracted from the Report Manager design.
 // A two-panel dialog: a left list of report types, and a right pane rendering a
 // fake sample report (header, KPI boxes, and a chart / list / table body) using
 // mock data. Shown from the "Preview Sample Reports" button.
