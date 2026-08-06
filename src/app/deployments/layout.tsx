@@ -78,13 +78,13 @@ export default function DeploymentsLayout() {
                 sx={{
                   borderRadius: "8px",
                   fontSize: "14px",
-                  "& .MuiChip-deleteIcon": { color: "primary.main" },
+                  "& .MuiChip-deleteIcon": { color: "secondary.main" },
                 }}
                 deleteIcon={
                   <MaterialSymbol
                     name="filter_list"
                     size={20}
-                    sx={{ color: "primary.main" }}
+                    sx={{ color: "secondary.main" }}
                   />
                 }
                 onDelete={() => {}}
