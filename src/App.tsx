@@ -64,6 +64,10 @@ function App() {
         <Route path="reporting">
           <Route path="custom-reports" element={<CustomReportsPage />} />
           <Route path="scheduled-reports" element={<ScheduledReportsPage />} />
+          <Route
+            path="scheduled-reports/:tab"
+            element={<ScheduledReportsPage />}
+          />
           <Route path="report-scheduler" element={<ReportSchedulerPage />} />
         </Route>
         <Route path="settings" element={<SettingsPage />} />
@@ -127,7 +131,10 @@ function App() {
           element={<TimelineActivityLogsReport />}
         />
         <Route path="timeline-overview" element={<TimelineOverviewReport />} />
-        <Route path="cybersight-ai-usage" element={<CyberSightAiUsageReport />} />
+        <Route
+          path="cybersight-ai-usage"
+          element={<CyberSightAiUsageReport />}
+        />
         <Route path="threat-trends" element={<ThreatTrendsReport />} />
       </Route>
 

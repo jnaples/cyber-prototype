@@ -3,82 +3,34 @@
 // sheet in the Preview card (2 cols). Customer Activity Overview is preselected.
 
 import {
+  Alert,
   Box,
   Button,
   Card,
   CardContent,
   Chip,
+  Link,
   Radio,
+  Snackbar,
   Typography,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import type { ComponentType } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import CustomerActivityOverviewReport from "@/app/reports/customer-activity-overview/page";
-import CyberSightAiUsageReport from "@/app/reports/cybersight-ai-usage/page";
-import FilterProtectionSummaryReport from "@/app/reports/filter-protection-summary/page";
-import TimelineActivityLogsReport from "@/app/reports/timeline-activity-logs/page";
-import TimelineOverviewReport from "@/app/reports/timeline-overview/page";
 import { MaterialSymbol } from "@/components/material-symbol";
 
-import { QueryLogsCsvSheet } from "./query-logs-csv-sheet";
-import { ReportCoverSheet } from "./report-cover-sheet";
+import { GenerateReportDrawer } from "./generate-report-drawer";
+import { ReportPreview } from "./report-preview";
+import { REPORT_MANAGER_BASE } from "./routes";
 import { REPORTS } from "./reports";
-
-// The real report documents under /reports, keyed by catalog entry. Anything
-// without a built page falls back to the sample cover sheet.
-const REPORT_PAGES: Record<string, ComponentType> = {
-  activity: CustomerActivityOverviewReport,
-  traffic: QueryLogsCsvSheet,
-  protection: FilterProtectionSummaryReport,
-  "timeline-logs": TimelineActivityLogsReport,
-  "timeline-overview": TimelineOverviewReport,
-  "ai-usage": CyberSightAiUsageReport,
-};
-
-// The report documents are laid out on a fixed 1400px canvas; scale them down
-// to whatever width the preview pane actually has.
-const DOC_WIDTH = 1400;
-
-// Measures the pane (for the scale factor) and the unscaled document (for the
-// height the scaled copy will actually occupy) — a transformed element keeps
-// its original layout box, so the wrapper has to be sized explicitly or the
-// scroll container clips the bottom of the report.
-function useFitScale(deps: unknown) {
-  const paneRef = useRef<HTMLDivElement>(null);
-  const docRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  const [docHeight, setDocHeight] = useState(0);
-
-  useEffect(() => {
-    const pane = paneRef.current;
-    const doc = docRef.current;
-    if (!pane) return;
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.target === pane) {
-          setScale(Math.min(1, entry.contentRect.width / DOC_WIDTH));
-        } else {
-          setDocHeight(entry.contentRect.height);
-        }
-      }
-    });
-    observer.observe(pane);
-    if (doc) observer.observe(doc);
-    return () => observer.disconnect();
-  }, [deps]);
-
-  return { paneRef, docRef, scale, docHeight };
-}
 
 export function ReportLibrary() {
   const [selectedKey, setSelectedKey] = useState(REPORTS[0].key);
   const selected = REPORTS.find((r) => r.key === selectedKey) ?? REPORTS[0];
-  const ReportPage = REPORT_PAGES[selected.key];
   const navigate = useNavigate();
-  const { paneRef, docRef, scale, docHeight } = useFitScale(selectedKey);
+  const [generateOpen, setGenerateOpen] = useState(false);
+  const [generateToast, setGenerateToast] = useState(false);
 
   return (
     <Box
@@ -158,7 +110,11 @@ export function ReportLibrary() {
                     <Box component={r.Icon} sx={{ fontSize: 20 }} />
                   </Box>
                   <Box
-                    sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 0.5,
+                    }}
                   >
                     <Typography sx={{ fontWeight: 700, fontSize: 15, pr: 3 }}>
                       {r.title}
@@ -202,14 +158,19 @@ export function ReportLibrary() {
               <Chip label="Sample data" size="small" />
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Button variant="outlined" color="secondary" size="small">
+              <Button
+                variant="outlined"
+                color="secondary"
+                size="small"
+                onClick={() => setGenerateOpen(true)}
+              >
                 Generate Report
               </Button>
               <Button
                 variant="contained"
                 color="primary"
                 size="small"
-                startIcon={<MaterialSymbol name="schedule" size={18} />}
+                startIcon={<MaterialSymbol name="add" size={18} />}
                 onClick={() =>
                   navigate("/reporting/report-scheduler", {
                     state: { reportKeys: [selected.key] },
@@ -220,50 +181,53 @@ export function ReportLibrary() {
               </Button>
             </Box>
           </Box>
-          <Box
-            ref={paneRef}
-            sx={{
-              mt: 2,
-              minWidth: 0,
-              overflowX: "hidden",
-              bgcolor: "background.neutral",
-              borderRadius: 1,
-              p: 2,
-              maxHeight: "calc(100vh - 300px)",
-              overflowY: "auto",
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            {ReportPage ? (
-              <Box
-                sx={{
-                  position: "relative",
-                  flexShrink: 0,
-                  width: DOC_WIDTH * scale,
-                  height: docHeight * scale,
-                }}
-              >
-                <Box
-                  ref={docRef}
-                  sx={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: DOC_WIDTH,
-                    transformOrigin: "top left",
-                    transform: `scale(${scale})`,
-                  }}
-                >
-                  <ReportPage />
-                </Box>
-              </Box>
-            ) : (
-              <ReportCoverSheet title={selected.title} Icon={selected.Icon} />
-            )}
-          </Box>
+          <ReportPreview
+            reportKey={selected.key}
+            title={selected.title}
+            Icon={selected.Icon}
+            fitViewport
+            sx={{ mt: 2 }}
+          />
         </CardContent>
       </Card>
+
+      <GenerateReportDrawer
+        open={generateOpen}
+        onClose={() => setGenerateOpen(false)}
+        onGenerate={() => setGenerateToast(true)}
+      />
+
+      <Snackbar
+        open={generateToast}
+        autoHideDuration={8000}
+        onClose={() => setGenerateToast(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          severity="success"
+          variant="standard"
+          elevation={8}
+          onClose={() => setGenerateToast(false)}
+        >
+          Report generation started. Large reports can take a few minutes.{" "}
+          <Link
+            component="button"
+            type="button"
+            underline="hover"
+            onClick={() => {
+              setGenerateToast(false);
+              navigate(`${REPORT_MANAGER_BASE}/history`);
+            }}
+            sx={{
+              fontWeight: 700,
+              color: "inherit",
+              verticalAlign: "baseline",
+            }}
+          >
+            View in History
+          </Link>
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

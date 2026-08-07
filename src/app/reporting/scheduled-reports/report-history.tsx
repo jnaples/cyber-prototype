@@ -2,11 +2,13 @@
 // its delivery status and per-row download / overflow actions.
 
 import { Box, Chip, IconButton, Typography } from "@mui/material";
-import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import type { GridColDef } from "@mui/x-data-grid";
+import { useState } from "react";
 
 import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
+import type { StatusTabConfig } from "@/components/tabbed-data-card";
+import { TabbedDataCard } from "@/components/tabbed-data-card";
 
 type RunStatus = "available" | "processing" | "failed";
 
@@ -224,16 +226,7 @@ function StatusCell({ status }: { status: RunStatus }) {
 
 function ActionsCell({ status }: { status: RunStatus }) {
   return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 0.5,
-        height: "100%",
-        width: "100%",
-      }}
-    >
+    <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
       <IconButton
         size="small"
         aria-label="Download"
@@ -242,7 +235,7 @@ function ActionsCell({ status }: { status: RunStatus }) {
         <MaterialSymbol name="download" size={20} />
       </IconButton>
       <IconButton size="small" aria-label="More options">
-        <MoreHorizOutlinedIcon sx={{ fontSize: 20 }} />
+        <MaterialSymbol name="more_horiz" size={20} />
       </IconButton>
     </Box>
   );
@@ -275,27 +268,83 @@ const columns: GridColDef<HistoryRow>[] = [
   },
   {
     field: "actions",
-    headerName: "",
-    width: 96,
+    headerName: "Actions",
+    width: 104,
     sortable: false,
     filterable: false,
-    align: "center",
+    resizable: false,
+    hideable: false,
     renderCell: (params) => <ActionsCell status={params.row.status} />,
   },
 ];
 
 export function ReportHistory() {
+  const [cardTab, setCardTab] = useState(0);
+
+  const total = HISTORY.length;
+  const counts = {
+    available: HISTORY.filter((r) => r.status === "available").length,
+    processing: HISTORY.filter((r) => r.status === "processing").length,
+    failed: HISTORY.filter((r) => r.status === "failed").length,
+  };
+
+  const tabsConfig: StatusTabConfig[] = [
+    {
+      icon: "format_list_bulleted",
+      count: total,
+      label: "All",
+      color: "primary.main",
+      iconColorVar: "var(--dnsf-palette-primary-main)",
+      progressValue: 100,
+    },
+    {
+      icon: "check_circle",
+      count: counts.available,
+      label: "Available",
+      color: "success.main",
+      iconColorVar: "var(--dnsf-palette-success-main)",
+      progressValue: total ? (counts.available / total) * 100 : 0,
+    },
+    {
+      icon: "hourglass_empty",
+      count: counts.processing,
+      label: "Processing",
+      color: "warning.main",
+      iconColorVar: "var(--dnsf-palette-warning-main)",
+      progressValue: total ? (counts.processing / total) * 100 : 0,
+    },
+    {
+      icon: "error",
+      count: counts.failed,
+      label: "Failed",
+      color: "error.main",
+      iconColorVar: "var(--dnsf-palette-error-main)",
+      progressValue: total ? (counts.failed / total) * 100 : 0,
+    },
+  ];
+
+  const statusForTab: (RunStatus | null)[] = [
+    null,
+    "available",
+    "processing",
+    "failed",
+  ];
+  const activeStatus = statusForTab[cardTab];
+  const visibleRows = activeStatus
+    ? HISTORY.filter((r) => r.status === activeStatus)
+    : HISTORY;
+
   return (
-    <DataTable
-      rows={HISTORY}
-      columns={columns}
-      density="comfortable"
-      initialPageSize={10}
-      showFilters
-      showDefaultView={false}
-      showPreferences={false}
-      showExport
-      showRefresh
-    />
+    <TabbedDataCard
+      tabs={tabsConfig}
+      activeTab={cardTab}
+      onTabChange={(_, newValue) => setCardTab(newValue)}
+    >
+      <DataTable
+        rows={visibleRows}
+        columns={columns}
+        pinnedShadowFields={{ left: "reportType", right: "actions" }}
+      />
+    </TabbedDataCard>
   );
 }

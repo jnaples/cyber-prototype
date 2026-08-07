@@ -20,7 +20,7 @@ import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import type { Theme } from "@mui/material/styles";
 import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 
 import { DataTable } from "@/components/data-table";
 import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
@@ -33,6 +33,7 @@ import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
 
 import { ReportHistory } from "./report-history";
+import { REPORT_MANAGER_BASE, REPORT_MANAGER_TABS } from "./routes";
 import { ReportLibrary } from "./report-library";
 import { SampleReportsModal } from "./sample-reports-modal";
 
@@ -350,11 +351,9 @@ const STATUS_KEYS: SummaryKey[] = ["all", "active", "paused", "issue"];
 // ---------------------------------------------------------------------------
 
 // Page-level tabs shown under the header (same treatment as Unblock Requests).
-const PAGE_TABS = [
-  { label: "Library", icon: "library_books" },
-  { label: "Scheduler", icon: "schedule" },
-  { label: "History", icon: "history" },
-] as const;
+// Each tab owns a URL so it can be linked to and survives a refresh. The bare
+// base path lands on Templates.
+const PAGE_TABS = REPORT_MANAGER_TABS;
 
 // Selected page tab reads as a card lifted out of the neutral strip.
 const selectedTabSx = {
@@ -373,7 +372,11 @@ const selectedTabSx = {
 };
 
 export default function ScheduledReportsPage() {
-  const [pageTab, setPageTab] = useState(0);
+  const { pathname } = useLocation();
+  const activeTab = PAGE_TABS.findIndex(
+    (t) => pathname === `${REPORT_MANAGER_BASE}/${t.path}`,
+  );
+  const pageTab = activeTab === -1 ? 0 : activeTab;
   const [statusFilter, setStatusFilter] = useState<SummaryKey>("all");
   const [search, setSearch] = useState("");
   const [reportType, setReportType] = useState("all");
@@ -481,7 +484,9 @@ export default function ScheduledReportsPage() {
           >
             <Tabs
               value={pageTab}
-              onChange={(_e, next: number) => setPageTab(next)}
+              onChange={(_e, next: number) =>
+                navigate(`${REPORT_MANAGER_BASE}/${PAGE_TABS[next].path}`)
+              }
               aria-label="report manager tabs"
               sx={{ px: 3 }}
             >

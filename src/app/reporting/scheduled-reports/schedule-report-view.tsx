@@ -1,14 +1,14 @@
 // "Schedule Report" builder — opened from the Report Manager "Schedule
 // Report" action. Two-column layout: a stepped form on the left (reports,
 // organizations, recipients, schedule, branding) and a live Email / PDF-cover
-// preview on the right. Header carries the Cancel / Send test / Save actions.
+// preview on the right. Header carries the Cancel / Create schedule actions.
 
 import {
+  Autocomplete,
   Box,
   Button,
   Card,
   Checkbox,
-  Chip,
   Divider,
   FormControlLabel,
   FormLabel,
@@ -26,6 +26,7 @@ import { useState } from "react";
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
+import { SearchableMultiSelect } from "@/components/searchable-multi-select";
 import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
 
@@ -61,6 +62,8 @@ const PORTAL_USERS = [
   },
 ];
 
+const PORTAL_USER_EMAILS = PORTAL_USERS.map((u) => u.email);
+
 const ORGS = [
   "Austin Office",
   "Berlin Hub",
@@ -76,8 +79,9 @@ const PERIODS = [
   "Previous quarter",
   "Previous 30 days",
 ];
-const DAYS = ["1st", "5th", "15th", "Last day"];
 const FREQUENCIES = ["Daily", "Weekly", "Monthly", "Quarterly"] as const;
+
+const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 // Section wrapper — overline "STEP n — TITLE" then content.
 function Step({
@@ -120,40 +124,32 @@ export function ScheduleReportView({
   const [portalUsers, setPortalUsers] = useState<string[]>([]);
   const [externalEmail, setExternalEmail] = useState("");
   const [externalEmails, setExternalEmails] = useState<string[]>([]);
+  const [emailError, setEmailError] = useState("");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailMessage, setEmailMessage] = useState("");
   const [frequency, setFrequency] =
     useState<(typeof FREQUENCIES)[number]>("Monthly");
-  const [day, setDay] = useState(DAYS[0]);
   const [whitelabel, setWhitelabel] = useState(false);
   const [companyName, setCompanyName] = useState("Brightwave IT");
   const [replyTo, setReplyTo] = useState("reports@brightwaveit.com");
-  const [previewTab, setPreviewTab] = useState<"email" | "pdf">("email");
   const [samplePreview, setSamplePreview] = useState<ReportDef | null>(null);
 
   const toggleReport = (key: string) =>
     setSelectedReports((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
     );
-  const togglePortalUser = (email: string) =>
-    setPortalUsers((prev) =>
-      prev.includes(email) ? prev.filter((e) => e !== email) : [...prev, email],
-    );
 
   const recipientCount = portalUsers.length + externalEmails.length;
-  const nextDeliveryDay = day === "Last day" ? "Jul 31" : "Aug 1";
   const selectedReportDefs = REPORTS.filter((r) =>
     selectedReports.includes(r.key),
   );
 
-  // Required to save: at least one report and at least one recipient.
-  const canSave = selectedReports.length > 0 && recipientCount > 0;
-
-  const addExternalEmail = () => {
-    const v = externalEmail.trim();
-    if (v && !externalEmails.includes(v)) {
-      setExternalEmails((prev) => [...prev, v]);
-      setExternalEmail("");
-    }
-  };
+  // Required to save: a report, an organization, a recipient, and a subject.
+  const canSave =
+    selectedReports.length > 0 &&
+    selectedOrg !== "" &&
+    recipientCount > 0 &&
+    emailSubject.trim() !== "";
 
   return (
     <Box
@@ -171,13 +167,6 @@ export function ScheduleReportView({
           <>
             <Button variant="outlined" color="secondary" onClick={onCancel}>
               Cancel
-            </Button>
-            <Button
-              variant="outlined"
-              color="secondary"
-              startIcon={<MaterialSymbol name="send" size={18} />}
-            >
-              Send test
             </Button>
             <ArrowTooltip
               title={
@@ -206,7 +195,7 @@ export function ScheduleReportView({
         }
       />
 
-      <Box sx={{ flex: 1, overflow: "auto", p: 3, pb: 8 }}>
+      <Box sx={{ flex: 1, overflow: "auto", px: 2, pt: 2, pb: 8 }}>
         <Box
           sx={{
             display: "grid",
@@ -225,7 +214,7 @@ export function ScheduleReportView({
             <Typography variant="cardTitle">Schedule Details</Typography>
 
             {/* STEP 1 — Reports */}
-            <Step n={1} title="Select Reports">
+            <Step n={1} title="Reports">
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 <Box>
                   <FormLabel sx={{ display: "block", mb: 1 }}>
@@ -350,6 +339,40 @@ export function ScheduleReportView({
 
                 <Box>
                   <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                    Select Organization
+                    <Box component="span" sx={{ ml: 0.25 }}>
+                      *
+                    </Box>
+                  </FormLabel>
+                  <Select
+                    displayEmpty
+                    fullWidth
+                    size="small"
+                    value={selectedOrg}
+                    onChange={(e) => setSelectedOrg(e.target.value)}
+                    renderValue={(v) =>
+                      v ? (
+                        v
+                      ) : (
+                        <Box component="span" sx={{ color: "text.secondary" }}>
+                          Select organization
+                        </Box>
+                      )
+                    }
+                  >
+                    <MenuItem value="All Organizations">
+                      All Organizations
+                    </MenuItem>
+                    {ORGS.map((org) => (
+                      <MenuItem key={org} value={org}>
+                        {org}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
+
+                <Box>
+                  <FormLabel sx={{ display: "block", mb: 0.5 }}>
                     Reporting period
                     <Box component="span" sx={{ ml: 0.25 }}>
                       *
@@ -373,159 +396,138 @@ export function ScheduleReportView({
 
             <Divider />
 
-            {/* STEP 2 — Organization */}
-            <Step n={2} title="Organization">
-              <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                Select Organization
-              </FormLabel>
-              <Select
-                displayEmpty
-                fullWidth
-                size="small"
-                value={selectedOrg}
-                onChange={(e) => setSelectedOrg(e.target.value)}
-                renderValue={(v) =>
-                  v ? (
-                    v
-                  ) : (
-                    <Box component="span" sx={{ color: "text.secondary" }}>
-                      Select organization
-                    </Box>
-                  )
-                }
-              >
-                <MenuItem value="All Organizations">All Organizations</MenuItem>
-                {ORGS.map((org) => (
-                  <MenuItem key={org} value={org}>
-                    {org}
-                  </MenuItem>
-                ))}
-              </Select>
-            </Step>
-
-            <Divider />
-
-            {/* STEP 3 — Recipients */}
-            <Step n={3} title="Recipients">
+            {/* STEP 2 — Delivery */}
+            <Step n={2} title="Delivery">
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <SearchableMultiSelect
+                  label="Internal Recipients"
+                  options={PORTAL_USER_EMAILS}
+                  selected={portalUsers}
+                  onChange={setPortalUsers}
+                  allLabel="Select internal recipients"
+                  chips
+                />
+
                 <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                    Portal users
-                  </FormLabel>
-                  <Box
+                  <FormLabel
                     sx={{
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 1,
-                      maxHeight: 200,
-                      overflow: "auto",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                      mb: 0.5,
                     }}
                   >
-                    {PORTAL_USERS.map((u, i) => (
+                    Other recipients
+                    <ArrowTooltip title="Send emails to recipients who don't have DNSFilter accounts. Their email addresses must be valid.">
                       <Box
-                        key={u.email}
-                        onClick={() => togglePortalUser(u.email)}
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                          px: 1.5,
-                          py: 1,
-                          cursor: "pointer",
-                          borderBottom:
-                            i < PORTAL_USERS.length - 1 ? "1px solid" : "none",
-                          borderColor: "divider",
-                        }}
+                        component="span"
+                        sx={(theme) => ({
+                          display: "inline-flex",
+                          color: "primary.main",
+                          ...theme.applyStyles("dark", {
+                            color: theme.vars.palette.primary.light,
+                          }),
+                        })}
                       >
-                        <Checkbox
-                          size="small"
-                          checked={portalUsers.includes(u.email)}
-                          sx={{ p: 0.5 }}
-                        />
-                        <Typography
-                          sx={{
-                            fontWeight: 600,
-                            flex: "0 0 auto",
-                            minWidth: 160,
-                          }}
-                        >
-                          {u.name}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "text.secondary", flex: 1, minWidth: 0 }}
-                          noWrap
-                        >
-                          {u.email}
-                        </Typography>
-                        <Chip
-                          label={u.org}
-                          size="small"
-                          sx={{
-                            bgcolor: "action.hover",
-                            color: "text.secondary",
-                          }}
-                        />
+                        <MaterialSymbol name="info" size={20} />
                       </Box>
-                    ))}
-                  </Box>
+                    </ArrowTooltip>
+                  </FormLabel>
+                  <Autocomplete<string, true, false, true>
+                    multiple
+                    freeSolo
+                    options={[] as string[]}
+                    value={externalEmails}
+                    inputValue={externalEmail}
+                    onInputChange={(_e, v) => {
+                      setExternalEmail(v);
+                      if (emailError) setEmailError("");
+                    }}
+                    onChange={(_e, values) => {
+                      const next = (values as string[])
+                        .map((v) => v.trim())
+                        .filter(Boolean);
+                      const invalid = next.find((v) => !isEmail(v));
+                      if (invalid) {
+                        setEmailError(
+                          `"${invalid}" is not a valid email address.`,
+                        );
+                        return;
+                      }
+                      setEmailError("");
+                      setExternalEmails([...new Set(next)]);
+                    }}
+                    // Let MUI render the chips so they keep their delete
+                    // button and tag sizing; just restyle them to match the
+                    // dashboard's active-filter chips.
+                    slotProps={{
+                      chip: {
+                        size: "small",
+                        sx: { borderRadius: (t) => t.spacing(1) },
+                      },
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        size="small"
+                        error={Boolean(emailError)}
+                        helperText={emailError}
+                      />
+                    )}
+                  />
                 </Box>
 
                 <Box>
                   <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                    External email addresses
+                    Email Subject
+                    <Box component="span" sx={{ ml: 0.25 }}>
+                      *
+                    </Box>
                   </FormLabel>
                   <TextField
                     fullWidth
                     size="small"
-                    placeholder="Add email and press Enter"
-                    value={externalEmail}
-                    onChange={(e) => setExternalEmail(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addExternalEmail();
-                      }
-                    }}
+                    placeholder={`e.g. ${frequency} Security Report`}
+                    value={emailSubject}
+                    onChange={(e) => setEmailSubject(e.target.value)}
                   />
-                  {externalEmails.length > 0 && (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 0.5,
-                        mt: 1,
-                      }}
-                    >
-                      {externalEmails.map((em) => (
-                        <Chip
-                          key={em}
-                          label={em}
-                          size="small"
-                          onDelete={() =>
-                            setExternalEmails((prev) =>
-                              prev.filter((x) => x !== em),
-                            )
-                          }
-                        />
-                      ))}
-                    </Box>
-                  )}
-                  <Typography
-                    variant="body2"
-                    sx={{ color: "text.secondary", mt: 0.5 }}
+                </Box>
+
+                <Box>
+                  <FormLabel
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                      mb: 0.5,
+                    }}
                   >
-                    Delivering to {recipientCount} recipient
-                    {recipientCount === 1 ? "" : "s"}.
-                  </Typography>
+                    Email message
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      sx={{ color: "text.secondary", fontWeight: 400 }}
+                    >
+                      Optional
+                    </Typography>
+                  </FormLabel>
+                  <TextField
+                    fullWidth
+                    multiline
+                    minRows={4}
+                    size="small"
+                    placeholder="Add a note that appears above the report links."
+                    value={emailMessage}
+                    onChange={(e) => setEmailMessage(e.target.value)}
+                  />
                 </Box>
               </Box>
             </Step>
 
             <Divider />
 
-            {/* STEP 4 — Schedule */}
-            <Step n={4} title="Schedule">
+            {/* STEP 3 — Schedule */}
+            <Step n={3} title="Schedule">
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 <ToggleButtonGroup
                   exclusive
@@ -549,53 +551,13 @@ export function ScheduleReportView({
                     </ToggleButton>
                   ))}
                 </ToggleButtonGroup>
-
-                <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                    Day of month
-                  </FormLabel>
-                  <Select
-                    fullWidth
-                    size="small"
-                    value={day}
-                    onChange={(e) => setDay(e.target.value)}
-                  >
-                    {DAYS.map((d) => (
-                      <MenuItem key={d} value={d}>
-                        {d}
-                      </MenuItem>
-                    ))}
-                  </Select>
-
-                  <Box
-                    sx={(theme) => ({
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 1,
-                      mt: 1,
-                      px: 1.5,
-                      py: 1,
-                      borderRadius: 1,
-                      bgcolor: theme.vars.palette.Alert.infoStandardBg,
-                      color: theme.vars.palette.Alert.infoColor,
-                    })}
-                  >
-                    <MaterialSymbol name="event_repeat" size={20} />
-                    <Typography variant="body2">
-                      <Box component="span" sx={{ fontWeight: 700 }}>
-                        Next delivery:
-                      </Box>{" "}
-                      {nextDeliveryDay}
-                    </Typography>
-                  </Box>
-                </Box>
               </Box>
             </Step>
 
             <Divider />
 
-            {/* STEP 5 — Branding */}
-            <Step n={5} title="Branding">
+            {/* STEP 4 — Branding */}
+            <Step n={4} title="Branding (Optional)">
               <FormControlLabel
                 control={
                   <Switch
@@ -707,413 +669,198 @@ export function ScheduleReportView({
               }}
             >
               <Typography variant="cardTitle">Preview</Typography>
-              <ToggleButtonGroup
-                exclusive
-                size="small"
-                value={previewTab}
-                onChange={(_, v) => v && setPreviewTab(v)}
-              >
-                <ToggleButton
-                  value="email"
-                  sx={{
-                    textTransform: "uppercase",
-                    fontSize: 13,
-                    height: 30,
-                    px: 2,
-                  }}
-                >
-                  Email
-                </ToggleButton>
-                <ToggleButton
-                  value="pdf"
-                  sx={{
-                    textTransform: "uppercase",
-                    fontSize: 13,
-                    height: 30,
-                    px: 2,
-                  }}
-                >
-                  PDF Cover
-                </ToggleButton>
-              </ToggleButtonGroup>
             </Box>
 
             <Box sx={{ bgcolor: "background.paper", p: 2 }}>
-              {previewTab === "email" && (
-                <>
-                  {/* Envelope */}
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: "auto 1fr",
-                      columnGap: 2,
-                      rowGap: 0.5,
-                      mb: 2,
-                    }}
+              <>
+                {/* Envelope */}
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "auto 1fr",
+                    columnGap: 2,
+                    rowGap: 0.5,
+                    mb: 2,
+                  }}
+                >
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "text.primary", fontWeight: 700 }}
                   >
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.primary", fontWeight: 700 }}
-                    >
-                      From:
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "text.primary" }}>
-                      {companyName} Reports &lt;{replyTo}&gt;
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.primary", fontWeight: 700 }}
-                    >
-                      To:
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "text.primary" }}>
-                      organization contacts ({recipientCount})
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.primary", fontWeight: 700 }}
-                    >
-                      Subject:
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "text.primary" }}>
-                      {frequency} Security Report — Acme Manufacturing
-                    </Typography>
-                  </Box>
+                    From:
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.primary" }}>
+                    {companyName} Reports &lt;{replyTo}&gt;
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "text.primary", fontWeight: 700 }}
+                  >
+                    To:
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.primary" }}>
+                    {recipientCount > 0 ? `Contacts (${recipientCount})` : ""}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: "text.primary", fontWeight: 700 }}
+                  >
+                    Subject:
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.primary" }}>
+                    {emailSubject.trim() || `${frequency} Security Report`}
+                  </Typography>
+                </Box>
 
-                  {/* Email body */}
-                  <Box
-                    sx={{
-                      p: 2,
-                      bgcolor: "background.neutral",
-                      borderRadius: 1,
-                    }}
-                  >
-                    {selectedReportDefs.length === 0 ? (
-                      <Typography
-                        variant="body2"
+                {/* Email body */}
+                <Box
+                  sx={{
+                    p: 2,
+                    bgcolor: "background.neutral",
+                    borderRadius: 1,
+                  }}
+                >
+                  {selectedReportDefs.length === 0 ? (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontStyle: "italic",
+                        color: "text.secondary",
+                        textAlign: "center",
+                        py: 6,
+                      }}
+                    >
+                      Select a report to preview
+                    </Typography>
+                  ) : (
+                    <Card elevation={0} sx={{ overflow: "hidden" }}>
+                      <Box
                         sx={{
-                          fontStyle: "italic",
-                          color: "text.secondary",
-                          textAlign: "center",
-                          py: 6,
+                          px: 3,
+                          py: 2.5,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1.5,
                         }}
                       >
-                        Select a report to preview
-                      </Typography>
-                    ) : (
-                      <Card elevation={0} sx={{ overflow: "hidden" }}>
                         <Box
                           sx={{
-                            px: 3,
-                            py: 2.5,
+                            width: 32,
+                            height: 32,
+                            borderRadius: 1,
+                            bgcolor: "primary.main",
+                            color: "#fff",
+                            fontWeight: 700,
+                            fontSize: 13,
                             display: "flex",
                             alignItems: "center",
-                            gap: 1.5,
+                            justifyContent: "center",
                           }}
                         >
-                          <Box
-                            sx={{
-                              width: 32,
-                              height: 32,
-                              borderRadius: 1,
-                              bgcolor: "primary.main",
-                              color: "#fff",
-                              fontWeight: 700,
-                              fontSize: 13,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            BI
-                          </Box>
-                          <Typography sx={{ fontWeight: 700 }}>
-                            {companyName}
-                          </Typography>
+                          BI
                         </Box>
-                        <Box sx={{ px: 3, py: 2.5, pt: 0 }}>
-                          <Typography
-                            variant="h6"
-                            sx={{ fontWeight: 700, mb: 0.5 }}
-                          >
-                            {frequency} Security Report
-                          </Typography>
+                        <Typography sx={{ fontWeight: 700 }}>
+                          {companyName}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ px: 3, py: 2.5, pt: 0 }}>
+                        {emailMessage.trim() && (
                           <Typography
                             variant="body2"
-                            sx={{ color: "text.secondary", mb: 2 }}
+                            sx={{
+                              color: "text.primary",
+                              whiteSpace: "pre-line",
+                              mb: 2,
+                            }}
                           >
-                            Jun 1 – 30, 2026 · Acme Manufacturing (example —
-                            each organization receives its own PDF)
+                            {emailMessage}
                           </Typography>
+                        )}
 
+                        <Typography
+                          variant="overline"
+                          sx={{
+                            color: "text.secondary",
+                            display: "block",
+                            mb: 1,
+                          }}
+                        >
+                          Attachments ({selectedReportDefs.length})
+                        </Typography>
+
+                        {selectedReportDefs.length === 0 ? (
                           <Box
                             sx={{
-                              display: "grid",
-                              gridTemplateColumns: "repeat(3, 1fr)",
-                              gap: 1.5,
+                              border: "1px dashed",
+                              borderColor: "divider",
+                              borderRadius: 1,
+                              p: 2,
+                              textAlign: "center",
+                              color: "text.secondary",
                               mb: 2.5,
                             }}
                           >
-                            {[
-                              {
-                                num: "306.2K",
-                                cap: "Requests",
-                                color: "text.primary",
-                              },
-                              {
-                                num: "12.4K",
-                                cap: "Blocked",
-                                color: "text.primary",
-                              },
-                              { num: "214", cap: "Threats", color: "#ce008e" },
-                            ].map((s) => (
+                            <Typography variant="body2">
+                              Select at least one report to preview attachments.
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 1,
+                              mb: 2.5,
+                            }}
+                          >
+                            {selectedReportDefs.map((r) => (
                               <Box
-                                key={s.cap}
+                                key={r.key}
                                 sx={{
-                                  bgcolor: "background.neutral",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                  border: "1px solid",
+                                  borderColor: "divider",
                                   borderRadius: 1,
-                                  p: 1.5,
+                                  px: 1.5,
+                                  py: 1,
                                 }}
                               >
+                                <MaterialSymbol
+                                  name="picture_as_pdf"
+                                  size={20}
+                                  sx={{ color: "#d93025" }}
+                                />
                                 <Typography
-                                  sx={{
-                                    fontWeight: 700,
-                                    fontSize: 22,
-                                    color: s.color,
-                                  }}
+                                  variant="body2"
+                                  sx={{ flex: 1, fontWeight: 600 }}
                                 >
-                                  {s.num}
+                                  {r.file}
                                 </Typography>
                                 <Typography
-                                  variant="caption"
-                                  sx={{
-                                    color: "text.secondary",
-                                    textTransform: "uppercase",
-                                    letterSpacing: "0.5px",
-                                    fontWeight: 600,
-                                  }}
+                                  variant="body2"
+                                  sx={{ color: "text.secondary" }}
                                 >
-                                  {s.cap}
+                                  {r.size}
                                 </Typography>
+                                <IconButton
+                                  size="small"
+                                  aria-label={`Preview ${r.title}`}
+                                  onClick={() => setSamplePreview(r)}
+                                  sx={{ color: "primary.main", p: 0.25 }}
+                                >
+                                  <MaterialSymbol name="visibility" size={20} />
+                                </IconButton>
                               </Box>
                             ))}
                           </Box>
-
-                          <Typography
-                            variant="overline"
-                            sx={{
-                              color: "text.secondary",
-                              display: "block",
-                              mb: 1,
-                            }}
-                          >
-                            Attachments ({selectedReportDefs.length})
-                          </Typography>
-
-                          {selectedReportDefs.length === 0 ? (
-                            <Box
-                              sx={{
-                                border: "1px dashed",
-                                borderColor: "divider",
-                                borderRadius: 1,
-                                p: 2,
-                                textAlign: "center",
-                                color: "text.secondary",
-                                mb: 2.5,
-                              }}
-                            >
-                              <Typography variant="body2">
-                                Select at least one report to preview
-                                attachments.
-                              </Typography>
-                            </Box>
-                          ) : (
-                            <Box
-                              sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: 1,
-                                mb: 2.5,
-                              }}
-                            >
-                              {selectedReportDefs.map((r) => (
-                                <Box
-                                  key={r.key}
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 1,
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                    borderRadius: 1,
-                                    px: 1.5,
-                                    py: 1,
-                                  }}
-                                >
-                                  <MaterialSymbol
-                                    name="picture_as_pdf"
-                                    size={20}
-                                    sx={{ color: "#d93025" }}
-                                  />
-                                  <Typography
-                                    variant="body2"
-                                    sx={{ flex: 1, fontWeight: 600 }}
-                                  >
-                                    {r.file}
-                                  </Typography>
-                                  <Typography
-                                    variant="body2"
-                                    sx={{ color: "text.secondary" }}
-                                  >
-                                    {r.size}
-                                  </Typography>
-                                  <IconButton
-                                    size="small"
-                                    aria-label={`Preview ${r.title}`}
-                                    onClick={() => setSamplePreview(r)}
-                                    sx={{ color: "primary.main", p: 0.25 }}
-                                  >
-                                    <MaterialSymbol
-                                      name="visibility"
-                                      size={20}
-                                    />
-                                  </IconButton>
-                                </Box>
-                              ))}
-                            </Box>
-                          )}
-                        </Box>
-                      </Card>
-                    )}
-                  </Box>
-                </>
-              )}
-
-              {previewTab === "pdf" && (
-                <Card
-                  variant="outlined"
-                  sx={{
-                    overflow: "hidden",
-                    minHeight: 560,
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <Box
-                    sx={{
-                      p: 3,
-                      display: "flex",
-                      flexDirection: "column",
-                      flex: 1,
-                    }}
-                  >
-                    {/* Brand */}
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1.5,
-                        mb: 4,
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: 1,
-                          bgcolor: "primary.main",
-                          color: "#fff",
-                          fontWeight: 700,
-                          fontSize: 13,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        BI
+                        )}
                       </Box>
-                      <Typography sx={{ fontWeight: 700 }}>
-                        {companyName}
-                      </Typography>
-                    </Box>
-
-                    {/* Title block */}
-                    <Typography
-                      variant="overline"
-                      sx={{ color: "primary.main", fontWeight: 700 }}
-                    >
-                      {frequency} report
-                    </Typography>
-                    <Typography sx={{ fontWeight: 700, fontSize: 28, mb: 1 }}>
-                      Security Report
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "text.primary" }}>
-                      Jun 1 – 30, 2026
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.primary", mb: 2.5 }}
-                    >
-                      Prepared for Acme Manufacturing
-                    </Typography>
-
-                    <Divider sx={{ mb: 2.5 }} />
-
-                    <Typography
-                      variant="overline"
-                      sx={{ color: "text.secondary", mb: 1 }}
-                    >
-                      Included reports
-                    </Typography>
-                    {selectedReportDefs.length === 0 ? (
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "text.secondary" }}
-                      >
-                        Select at least one report to include.
-                      </Typography>
-                    ) : (
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 1,
-                        }}
-                      >
-                        {selectedReportDefs.map((r) => (
-                          <Box
-                            key={r.key}
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Box
-                              component={r.Icon}
-                              sx={{ fontSize: 20, color: "primary.main" }}
-                            />
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600 }}
-                            >
-                              {r.title}
-                            </Typography>
-                          </Box>
-                        ))}
-                      </Box>
-                    )}
-
-                    <Box sx={{ flex: 1 }} />
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.secondary", mt: 3 }}
-                    >
-                      Generated Jul 21, 2026 · {companyName}
-                    </Typography>
-                  </Box>
-                </Card>
-              )}
+                    </Card>
+                  )}
+                </Box>
+              </>
             </Box>
           </Card>
         </Box>
@@ -1122,6 +869,7 @@ export function ScheduleReportView({
       <SamplePreviewModal
         open={Boolean(samplePreview)}
         onClose={() => setSamplePreview(null)}
+        reportKey={samplePreview?.key}
         title={samplePreview?.title}
         Icon={samplePreview?.Icon}
       />

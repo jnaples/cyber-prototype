@@ -1,34 +1,27 @@
 // Single-report sample preview — opened from a report card's "Preview sample"
 // link in the Schedule Report builder. Shows a PDF-style cover sheet for the
-// chosen report on a neutral backdrop, with a Download action and a "sample
+// chosen report on a neutral backdrop, with a "sample
 // data" badge. The sheet is forced to light mode like the real report pages.
 
-import {
-  Box,
-  Button,
-  Chip,
-  Dialog,
-  IconButton,
-  Typography,
-} from "@mui/material";
+import { Box, Chip, Dialog, IconButton, Typography } from "@mui/material";
 import type { SvgIconComponent } from "@mui/icons-material";
 
 import { MaterialSymbol } from "@/components/material-symbol";
 
-import {
-  ReportCoverSheet,
-  SAMPLE_ORG,
-  SAMPLE_RANGE,
-} from "./report-cover-sheet";
+import { SAMPLE_ORG, SAMPLE_RANGE } from "./report-cover-sheet";
+import { ReportPreview } from "./report-preview";
 
 export function SamplePreviewModal({
   open,
   onClose,
+  reportKey,
   title,
   Icon,
 }: {
   open: boolean;
   onClose: () => void;
+  /** Catalog key — picks the document rendered in the body. */
+  reportKey?: string;
   title?: string;
   Icon?: SvgIconComponent;
 }) {
@@ -93,33 +86,18 @@ export function SamplePreviewModal({
             textTransform: "uppercase",
           })}
         />
-        <Button
-          variant="outlined"
-          color="secondary"
-          size="small"
-          startIcon={<MaterialSymbol name="download" size={18} />}
-        >
-          Download
-        </Button>
         <IconButton size="small" aria-label="Close" onClick={onClose}>
           <MaterialSymbol name="close" size={20} />
         </IconButton>
       </Box>
 
-      {/* Body — neutral backdrop with a centered PDF sheet */}
-      <Box
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: "auto",
-          bgcolor: "background.neutral",
-          p: 4,
-          display: "flex",
-          justifyContent: "center",
-        }}
-      >
-        <ReportCoverSheet title={title} Icon={Icon} />
-      </Box>
+      {/* Body — the real report document, scaled to the dialog */}
+      <ReportPreview
+        reportKey={reportKey ?? ""}
+        title={title ?? ""}
+        Icon={Icon}
+        sx={{ flex: 1, minHeight: 0, borderRadius: 0, p: 3 }}
+      />
     </Dialog>
   );
 }

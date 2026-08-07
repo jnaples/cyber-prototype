@@ -5,18 +5,12 @@
 import {
   Box,
   Button,
-  Checkbox,
   Divider,
   FormControl,
   FormLabel,
-  InputAdornment,
-  ListItemText,
-  ListSubheader,
   MenuItem,
   Typography,
 } from "@mui/material";
-import type { SelectChangeEvent } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import { LocalizationProvider } from "@mui/x-date-pickers-pro";
 import { AdapterDateFns } from "@mui/x-date-pickers-pro/AdapterDateFns";
 import { DateRangePicker } from "@mui/x-date-pickers-pro/DateRangePicker";
@@ -27,8 +21,8 @@ import { endOfDay, startOfDay, subDays } from "date-fns";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
+import { SearchableMultiSelect } from "@/components/searchable-multi-select";
 import { Select } from "@/components/select";
-import { TextField } from "@/components/text-field";
 
 import {
   CONTENT_CATEGORY_OPTIONS,
@@ -132,122 +126,6 @@ type GroupKey =
   | "users"
   | "categories"
   | "threatCategories";
-
-// Sentinel row value for the "Select all" item (same trick as Query Logs).
-const SELECT_ALL_VALUE = "__select_all__";
-
-function MultiSelect({
-  label,
-  options,
-  selected,
-  onChange,
-  searchable = true,
-  allLabel,
-}: {
-  label: string;
-  options: string[];
-  selected: string[];
-  onChange: (values: string[]) => void;
-  /** The Query Logs treatment: search box + Select all + rule. On by default. */
-  searchable?: boolean;
-  /** Empty-state text; defaults to "All {label}". Set it where the label is
-   *  singular and wouldn't read right (e.g. Result -> "All Results"). */
-  allLabel?: string;
-}) {
-  const [search, setSearch] = useState("");
-  const allSelected = options.length > 0 && selected.length === options.length;
-  const someSelected = selected.length > 0 && !allSelected;
-  const visibleOptions = search
-    ? options.filter((o) => o.toLowerCase().includes(search.toLowerCase()))
-    : options;
-
-  const handleChange = (event: SelectChangeEvent<string[]>) => {
-    const value = event.target.value;
-    const next = typeof value === "string" ? value.split(",") : value;
-    if (next.includes(SELECT_ALL_VALUE)) {
-      onChange(allSelected ? [] : [...options]);
-      return;
-    }
-    onChange(next);
-  };
-
-  return (
-    <FormControl fullWidth size="small">
-      <FormLabel>{label}</FormLabel>
-      <Select
-        multiple
-        displayEmpty
-        value={selected}
-        onChange={handleChange}
-        onClose={() => setSearch("")}
-        MenuProps={{
-          autoFocus: !searchable,
-          slotProps: { paper: { sx: { maxHeight: 400 } } },
-        }}
-        renderValue={(sel) =>
-          sel.length === 0 || allSelected ? (
-            <Typography
-              component="span"
-              variant="body1"
-              sx={{ color: "text.secondary" }}
-            >
-              {allLabel ?? `All ${label}`}
-            </Typography>
-          ) : (
-            sel.join(", ")
-          )
-        }
-      >
-        {searchable && (
-          <ListSubheader sx={{ px: 2, py: 1 }}>
-            <TextField
-              size="small"
-              autoFocus
-              fullWidth
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key !== "Escape") e.stopPropagation();
-              }}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-          </ListSubheader>
-        )}
-        {searchable && (
-          <MenuItem value={SELECT_ALL_VALUE}>
-            <Checkbox
-              size="small"
-              checked={allSelected}
-              indeterminate={someSelected}
-              sx={{ p: 0.5, mr: 1 }}
-            />
-            <ListItemText primary="Select all" />
-          </MenuItem>
-        )}
-        {searchable && <Divider />}
-        {visibleOptions.map((option) => (
-          <MenuItem key={option} value={option}>
-            <Checkbox
-              size="small"
-              checked={selected.includes(option)}
-              sx={{ p: 0.5, mr: 1 }}
-            />
-            <ListItemText primary={option} />
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  );
-}
 
 export function QuickFilters({
   open,
@@ -370,25 +248,25 @@ export function QuickFilters({
       )}
 
       <FilterGroup title="Source">
-        <MultiSelect
+        <SearchableMultiSelect
           label="Organizations"
           options={ORGANIZATION_OPTIONS}
           selected={draft.organizations}
           onChange={(v) => setGroup("organizations", v)}
         />
-        <MultiSelect
+        <SearchableMultiSelect
           label="Sites"
           options={SITE_OPTIONS}
           selected={draft.sites}
           onChange={(v) => setGroup("sites", v)}
         />
-        <MultiSelect
+        <SearchableMultiSelect
           label="Roaming Clients / Relays"
           options={ROAMING_RELAY_OPTIONS}
           selected={draft.roamingRelays}
           onChange={(v) => setGroup("roamingRelays", v)}
         />
-        <MultiSelect
+        <SearchableMultiSelect
           label="Users"
           options={USER_OPTIONS}
           selected={draft.users}
@@ -399,7 +277,7 @@ export function QuickFilters({
       <Divider />
 
       <FilterGroup title="Traffic">
-        <MultiSelect
+        <SearchableMultiSelect
           label="Result"
           options={RESULT_OPTIONS}
           selected={draft.results}
@@ -408,20 +286,20 @@ export function QuickFilters({
           // Only ever three options — no need for search / Select all.
           searchable={false}
         />
-        <MultiSelect
+        <SearchableMultiSelect
           label="Policy"
           options={POLICY_OPTIONS}
           selected={draft.policies}
           onChange={(v) => setGroup("policies", v)}
           allLabel="All Policies"
         />
-        <MultiSelect
+        <SearchableMultiSelect
           label="Content Categories"
           options={CONTENT_CATEGORY_OPTIONS}
           selected={draft.categories}
           onChange={(v) => setGroup("categories", v)}
         />
-        <MultiSelect
+        <SearchableMultiSelect
           label="Threat Categories"
           options={THREAT_CATEGORY_OPTIONS}
           selected={draft.threatCategories}
