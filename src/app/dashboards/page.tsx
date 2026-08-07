@@ -65,6 +65,9 @@ import "react-grid-layout/css/styles.css";
 const COLS = 6;
 const LS_KEY = "dnsf_custom_dash";
 
+// green[800] — the "live" status dot on status-fraction cards.
+const LIVE_DOT_COLOR = "#05864A";
+
 const clampSpan = (s: number) => Math.min(COLS, Math.max(1, Number(s) || 1));
 
 // react-grid-layout tuning. Widget height = rows * ROW_HEIGHT + (rows - 1) * 16
@@ -169,6 +172,59 @@ function V2Card({
         "&:hover .v2-edit-affordance": { opacity: 1 },
       }}
     >
+      {/* Status fractions are a point-in-time count, so mark them "live" with a
+          dot instead of a time-range caption. Hidden while editing so it can't
+          collide with the card's edit affordances. */}
+      {widget.type.startsWith("status-") && !editing && (
+        <ArrowTooltip
+          title={
+            <>
+              Shows current deployment status.
+              <br />
+              Not affected by the time range.
+            </>
+          }
+        >
+          <Box
+            component="span"
+            aria-label="Live deployment status"
+            sx={{
+              position: "absolute",
+              top: 16,
+              right: 16,
+              zIndex: 1,
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              // green[800] in both themes, so the dot reads the same on the
+              // light and dark canvas.
+              bgcolor: LIVE_DOT_COLOR,
+              // A ring rides out from behind the dot and fades, so it reads as
+              // live without the center ever blinking off.
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                inset: -3,
+                borderRadius: "50%",
+                bgcolor: `color-mix(in srgb, ${LIVE_DOT_COLOR} 30%, transparent)`,
+                animation:
+                  "dnsfLivePing 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite",
+              },
+              // Both ends of the loop sit at 0 opacity, so the ring fades in
+              // and out rather than popping when the animation restarts.
+              "@keyframes dnsfLivePing": {
+                "0%": { transform: "scale(0.9)", opacity: 0 },
+                "25%": { opacity: 0.6 },
+                "100%": { transform: "scale(2)", opacity: 0 },
+              },
+              "@media (prefers-reduced-motion: reduce)": {
+                "&::after": { animation: "none", opacity: 0 },
+              },
+            }}
+          />
+        </ArrowTooltip>
+      )}
+
       {editing && (
         <>
           {/* Drag affordance in the top-left, revealed on hover — the whole

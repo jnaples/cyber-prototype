@@ -9,7 +9,6 @@ import { BarChart as MuiBarChart } from "@mui/x-charts/BarChart";
 import { LineChart as MuiLineChart } from "@mui/x-charts/LineChart";
 import { PieChart } from "@mui/x-charts/PieChart";
 
-import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { MaterialSymbol } from "@/components/material-symbol";
 
 import {
@@ -140,34 +139,6 @@ export function FractionCard({
       >
         {label}
       </Typography>
-      {/* Fractions are a point-in-time count, so flag that the time range
-          doesn't apply to them. */}
-      <Box
-        sx={{
-          mt: 0.25,
-          display: "flex",
-          alignItems: "center",
-          gap: 0.5,
-          color: "text.secondary",
-        }}
-      >
-        <Typography variant="body2" sx={{ color: "inherit" }}>
-          Current
-        </Typography>
-        <ArrowTooltip
-          title={
-            <>
-              Shows current deployment status.
-              <br />
-              Not affected by the time range.
-            </>
-          }
-        >
-          <Box component="span" sx={{ display: "inline-flex" }}>
-            <MaterialSymbol name="info" size={16} />
-          </Box>
-        </ArrowTooltip>
-      </Box>
     </Box>
   );
 }
@@ -197,7 +168,9 @@ export function LineChart({
           showMark: true,
         }))}
         xAxis={[{ scaleType: "point", data: labels }]}
-        yAxis={[{ valueFormatter: (v: number | null) => (v == null ? "" : fmt(v)) }]}
+        yAxis={[
+          { valueFormatter: (v: number | null) => (v == null ? "" : fmt(v)) },
+        ]}
         margin={{ top: 14, right: 14, bottom: 0, left: 0 }}
         grid={{ horizontal: true }}
       />
@@ -228,7 +201,9 @@ export function BarChart({
           stack: "total",
         }))}
         xAxis={[{ scaleType: "band", data: categories }]}
-        yAxis={[{ valueFormatter: (v: number | null) => (v == null ? "" : fmt(v)) }]}
+        yAxis={[
+          { valueFormatter: (v: number | null) => (v == null ? "" : fmt(v)) },
+        ]}
         margin={{ top: 16, right: 12, bottom: 0, left: 0 }}
         grid={{ horizontal: true }}
         borderRadius={3}
@@ -262,7 +237,9 @@ export function HBarChart({
           stack: "total",
         }))}
         yAxis={[{ scaleType: "band", data: rows.map((r) => r.label) }]}
-        xAxis={[{ valueFormatter: (v: number | null) => (v == null ? "" : fmt(v)) }]}
+        xAxis={[
+          { valueFormatter: (v: number | null) => (v == null ? "" : fmt(v)) },
+        ]}
         margin={{ top: 8, right: 32, bottom: 0, left: 0 }}
         grid={{ vertical: true }}
         borderRadius={3}
