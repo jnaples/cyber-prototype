@@ -352,8 +352,7 @@ const baseColumns: GridColDef<DohRow>[] = [
   {
     field: "name",
     headerName: "Clientless Device Name",
-    flex: 1,
-    minWidth: 180,
+    width: 240,
     type: "singleSelect",
     valueOptions: NAME_OPTIONS,
     filterOperators: INCLUDES_OP,
