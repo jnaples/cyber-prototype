@@ -1,5 +1,5 @@
 // "Schedule Report" builder — opened from the Report Manager "Schedule
-// Report" action. Two-column layout: a stepped form on the left (name & reports,
+// Report" action. Two-column layout: a stepped form on the left (reports,
 // organizations, recipients, schedule, branding) and a live Email / PDF-cover
 // preview on the right. Header carries the Cancel / Send test / Save actions.
 
@@ -77,7 +77,7 @@ const PERIODS = [
   "Previous 30 days",
 ];
 const DAYS = ["1st", "5th", "15th", "Last day"];
-const FREQUENCIES = ["Daily", "Weekly", "Monthly"] as const;
+const FREQUENCIES = ["Daily", "Weekly", "Monthly", "Quarterly"] as const;
 
 // Section wrapper — overline "STEP n — TITLE" then content.
 function Step({
@@ -105,12 +105,16 @@ function Step({
 export function ScheduleReportView({
   onCancel,
   onSave,
+  initialReports,
 }: {
   onCancel: () => void;
   onSave: () => void;
+  /** Report keys to preselect (e.g. when opened from a Library preview). */
+  initialReports?: string[];
 }) {
-  const [name, setName] = useState("");
-  const [selectedReports, setSelectedReports] = useState<string[]>([]);
+  const [selectedReports, setSelectedReports] = useState<string[]>(
+    initialReports ?? [],
+  );
   const [period, setPeriod] = useState(PERIODS[0]);
   const [selectedOrg, setSelectedOrg] = useState("");
   const [portalUsers, setPortalUsers] = useState<string[]>([]);
@@ -140,9 +144,8 @@ export function ScheduleReportView({
     selectedReports.includes(r.key),
   );
 
-  // Required to save: a name, at least one report, and at least one recipient.
-  const canSave =
-    name.trim() !== "" && selectedReports.length > 0 && recipientCount > 0;
+  // Required to save: at least one report and at least one recipient.
+  const canSave = selectedReports.length > 0 && recipientCount > 0;
 
   const addExternalEmail = () => {
     const v = externalEmail.trim();
@@ -221,25 +224,9 @@ export function ScheduleReportView({
           <Card sx={{ p: 2, display: "flex", flexDirection: "column", gap: 3 }}>
             <Typography variant="cardTitle">Schedule Details</Typography>
 
-            {/* STEP 1 — Name & reports */}
-            <Step n={1} title="Name & Reports">
+            {/* STEP 1 — Reports */}
+            <Step n={1} title="Select Reports">
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                    Schedule name
-                    <Box component="span" sx={{ ml: 0.25 }}>
-                      *
-                    </Box>
-                  </FormLabel>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    placeholder="e.g. Monthly Executive Summary"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </Box>
-
                 <Box>
                   <FormLabel sx={{ display: "block", mb: 1 }}>
                     Select reports
@@ -386,10 +373,10 @@ export function ScheduleReportView({
 
             <Divider />
 
-            {/* STEP 2 — Organizations */}
-            <Step n={2} title="Organizations">
+            {/* STEP 2 — Organization */}
+            <Step n={2} title="Organization">
               <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                Select Organizations
+                Select Organization
               </FormLabel>
               <Select
                 displayEmpty

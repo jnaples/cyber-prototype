@@ -42,21 +42,35 @@ const REPORT_PAGES: Record<string, ComponentType> = {
 // to whatever width the preview pane actually has.
 const DOC_WIDTH = 1400;
 
-function useFitScale() {
-  const ref = useRef<HTMLDivElement>(null);
+// Measures the pane (for the scale factor) and the unscaled document (for the
+// height the scaled copy will actually occupy) — a transformed element keeps
+// its original layout box, so the wrapper has to be sized explicitly or the
+// scroll container clips the bottom of the report.
+function useFitScale(deps: unknown) {
+  const paneRef = useRef<HTMLDivElement>(null);
+  const docRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [docHeight, setDocHeight] = useState(0);
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new ResizeObserver(([entry]) => {
-      setScale(Math.min(1, entry.contentRect.width / DOC_WIDTH));
+    const pane = paneRef.current;
+    const doc = docRef.current;
+    if (!pane) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === pane) {
+          setScale(Math.min(1, entry.contentRect.width / DOC_WIDTH));
+        } else {
+          setDocHeight(entry.contentRect.height);
+        }
+      }
     });
-    observer.observe(el);
+    observer.observe(pane);
+    if (doc) observer.observe(doc);
     return () => observer.disconnect();
-  }, []);
+  }, [deps]);
 
-  return { ref, scale };
+  return { paneRef, docRef, scale, docHeight };
 }
 
 export function ReportLibrary() {
@@ -64,7 +78,7 @@ export function ReportLibrary() {
   const selected = REPORTS.find((r) => r.key === selectedKey) ?? REPORTS[0];
   const ReportPage = REPORT_PAGES[selected.key];
   const navigate = useNavigate();
-  const { ref: previewRef, scale } = useFitScale();
+  const { paneRef, docRef, scale, docHeight } = useFitScale(selectedKey);
 
   return (
     <Box
@@ -76,7 +90,7 @@ export function ReportLibrary() {
       }}
     >
       {/* Reports — 1 column */}
-      <Card>
+      <Card sx={{ minWidth: 0 }}>
         <CardContent sx={{ p: 2 }}>
           <Typography variant="cardTitle">Reports</Typography>
           <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -167,6 +181,7 @@ export function ReportLibrary() {
       <Card
         sx={{
           gridColumn: { xs: "auto", md: "span 2" },
+          minWidth: 0,
           // Keep the preview in view while the reports list scrolls.
           position: { xs: "static", md: "sticky" },
           top: 0,
@@ -182,40 +197,35 @@ export function ReportLibrary() {
               flexWrap: "wrap",
             }}
           >
-            <Typography variant="cardTitle">Preview</Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Chip
-                label="Sample data"
-                size="small"
-                sx={(theme) => ({
-                  bgcolor: theme.vars.palette.Alert.warningStandardBg,
-                  color: theme.vars.palette.Alert.warningColor,
-                  fontWeight: 700,
-                })}
-              />
-              <Button
-                variant="outlined"
-                color="secondary"
-                size="small"
-                startIcon={<MaterialSymbol name="play_arrow" size={18} />}
-              >
-                Run Now
+              <Typography variant="cardTitle">Preview</Typography>
+              <Chip label="Sample data" size="small" />
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Button variant="outlined" color="secondary" size="small">
+                Generate Report
               </Button>
               <Button
                 variant="contained"
                 color="primary"
                 size="small"
                 startIcon={<MaterialSymbol name="schedule" size={18} />}
-                onClick={() => navigate("/reporting/report-scheduler")}
+                onClick={() =>
+                  navigate("/reporting/report-scheduler", {
+                    state: { reportKeys: [selected.key] },
+                  })
+                }
               >
-                Schedule
+                Schedule Report
               </Button>
             </Box>
           </Box>
           <Box
-            ref={previewRef}
+            ref={paneRef}
             sx={{
               mt: 2,
+              minWidth: 0,
+              overflowX: "hidden",
               bgcolor: "background.neutral",
               borderRadius: 1,
               p: 2,
@@ -226,10 +236,27 @@ export function ReportLibrary() {
             }}
           >
             {ReportPage ? (
-              // Zoom (rather than transform) so the scaled document still
-              // reports its real height to the scroll container.
-              <Box sx={{ width: DOC_WIDTH, zoom: scale }}>
-                <ReportPage />
+              <Box
+                sx={{
+                  position: "relative",
+                  flexShrink: 0,
+                  width: DOC_WIDTH * scale,
+                  height: docHeight * scale,
+                }}
+              >
+                <Box
+                  ref={docRef}
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: DOC_WIDTH,
+                    transformOrigin: "top left",
+                    transform: `scale(${scale})`,
+                  }}
+                >
+                  <ReportPage />
+                </Box>
               </Box>
             ) : (
               <ReportCoverSheet title={selected.title} Icon={selected.Icon} />

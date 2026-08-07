@@ -29,10 +29,14 @@ type DohStatus = "Active" | "Pending";
 type DohRow = {
   id: number;
   name: string;
+  organization: string;
   policy: string;
   endpointId: string;
   devices: number;
   status: DohStatus;
+  /** Local-time strings — pending devices have never synced, so they're blank. */
+  firstSync: string;
+  lastSync: string;
   lastQuery: string;
 };
 
@@ -40,91 +44,121 @@ const ROWS: DohRow[] = [
   {
     id: 1,
     name: "Test_Demo",
+    organization: "Acme Manufacturing",
     policy: "Lincoln Middle School — CIPA Policy",
     endpointId: "3a18ae",
     devices: 1,
     status: "Pending",
+    firstSync: "",
+    lastSync: "",
     lastQuery: "",
   },
   {
     id: 2,
     name: "HQ Guest Wi-Fi",
+    organization: "Acme Manufacturing",
     policy: "Default Policy",
     endpointId: "a2fca4",
     devices: 2,
     status: "Active",
-    lastQuery: "6/18/2026, 6:06:19 PM",
+    firstSync: "7/12/2026, 9:14:02 AM",
+    lastSync: "8/7/2026, 7:41:20 AM",
+    lastQuery: "8/7/2026, 7:39:55 AM",
   },
   {
     id: 3,
     name: "Remote Sales Team",
+    organization: "Globex Financial",
     policy: "Restricted Policy",
     endpointId: "7b91de",
     devices: 1,
     status: "Active",
-    lastQuery: "6/17/2026, 6:06:19 PM",
+    firstSync: "7/9/2026, 4:22:10 PM",
+    lastSync: "8/6/2026, 5:58:33 PM",
+    lastQuery: "8/6/2026, 5:57:12 PM",
   },
   {
     id: 4,
     name: "Lab Devices",
+    organization: "Initech Software",
     policy: "Default Policy",
     endpointId: "3c0f55",
     devices: 0,
     status: "Pending",
+    firstSync: "",
+    lastSync: "",
     lastQuery: "",
   },
   {
     id: 5,
     name: "Front Desk Kiosk",
+    organization: "Umbrella Health",
     policy: "Default Policy",
     endpointId: "5d24bc",
     devices: 1,
     status: "Active",
-    lastQuery: "6/16/2026, 2:14:02 PM",
+    firstSync: "7/15/2026, 11:03:41 AM",
+    lastSync: "8/7/2026, 6:12:08 AM",
+    lastQuery: "8/7/2026, 6:10:44 AM",
   },
   {
     id: 6,
     name: "Warehouse Scanners",
+    organization: "Acme Manufacturing",
     policy: "Restricted Policy",
     endpointId: "9ee71a",
     devices: 4,
     status: "Active",
-    lastQuery: "6/18/2026, 9:31:47 AM",
+    firstSync: "7/10/2026, 8:47:19 AM",
+    lastSync: "8/7/2026, 9:31:47 AM",
+    lastQuery: "8/7/2026, 9:30:02 AM",
   },
   {
     id: 7,
     name: "Conference Room AV",
+    organization: "Globex Financial",
     policy: "Default Policy",
     endpointId: "c14f80",
     devices: 2,
     status: "Pending",
+    firstSync: "",
+    lastSync: "",
     lastQuery: "",
   },
   {
     id: 8,
     name: "Marketing Laptops",
+    organization: "Initech Software",
     policy: "Standard Policy",
     endpointId: "61ab39",
     devices: 3,
     status: "Active",
-    lastQuery: "6/15/2026, 11:02:55 AM",
+    firstSync: "7/22/2026, 1:15:36 PM",
+    lastSync: "8/5/2026, 11:02:55 AM",
+    lastQuery: "8/5/2026, 10:58:21 AM",
   },
   {
     id: 9,
     name: "Executive Devices",
+    organization: "Umbrella Health",
     policy: "HIPAA Strict",
     endpointId: "8fd2e7",
     devices: 2,
     status: "Active",
-    lastQuery: "6/18/2026, 7:45:10 AM",
+    firstSync: "7/8/2026, 7:05:12 AM",
+    lastSync: "8/7/2026, 7:45:10 AM",
+    lastQuery: "8/7/2026, 7:44:03 AM",
   },
   {
     id: 10,
     name: "Reception iPad",
+    organization: "Globex Financial",
     policy: "Guest Wi-Fi Policy",
     endpointId: "24c9b1",
     devices: 0,
     status: "Pending",
+    firstSync: "",
+    lastSync: "",
     lastQuery: "",
   },
 ];
@@ -302,6 +336,7 @@ const BLOCK_PAGE_OPTIONS = [
   ...new Set(ROWS.map((r) => blockPageFor(r.policy))),
 ];
 const DOH_OPTIONS = ROWS.map((r) => r.endpointId);
+const ORG_OPTIONS = [...new Set(ROWS.map((r) => r.organization))];
 const STATUS_OPTIONS: DohStatus[] = ["Active", "Pending"];
 
 // Constrain each column to a single filter operator so the build only offers
@@ -318,7 +353,7 @@ const baseColumns: GridColDef<DohRow>[] = [
     field: "name",
     headerName: "Clientless Device Name",
     flex: 1,
-    minWidth: 160,
+    minWidth: 180,
     type: "singleSelect",
     valueOptions: NAME_OPTIONS,
     filterOperators: INCLUDES_OP,
@@ -327,6 +362,70 @@ const baseColumns: GridColDef<DohRow>[] = [
         {params.row.name}
       </Link>
     ),
+  },
+  {
+    field: "status",
+    headerName: "Status",
+    width: 120,
+    sortable: false,
+    headerAlign: "center",
+    type: "singleSelect",
+    valueOptions: STATUS_OPTIONS,
+    filterOperators: IS_OP,
+    renderCell: () => <StatusChip />,
+  },
+  {
+    field: "lastSync",
+    headerName: "Last Sync",
+    description: "Shown in your local time zone.",
+    flex: 1,
+    minWidth: 180,
+    renderCell: (params) => params.row.lastSync || "-",
+  },
+  {
+    field: "firstSync",
+    headerName: "First Sync",
+    description: "Shown in your local time zone.",
+    flex: 1,
+    minWidth: 180,
+    renderCell: (params) => params.row.firstSync || "-",
+  },
+  {
+    field: "lastQuery",
+    headerName: "Last Query Received",
+    description: "Shown in your local time zone.",
+    flex: 1,
+    minWidth: 190,
+    renderCell: (params) => params.row.lastQuery || "-",
+  },
+  {
+    field: "uniqueDoh",
+    headerName: "DoH ID",
+    width: 150,
+    sortable: false,
+    type: "singleSelect",
+    valueOptions: DOH_OPTIONS,
+    valueGetter: (_v, row) => row.endpointId,
+    filterOperators: IS_OP,
+    renderCell: (params) => (
+      <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+        <Chip
+          size="small"
+          variant="outlined"
+          label={params.row.endpointId}
+          sx={{ fontFamily: "monospace", fontSize: 13 }}
+        />
+      </Box>
+    ),
+  },
+  {
+    field: "organization",
+    headerName: "Organization",
+    flex: 1,
+    minWidth: 170,
+    type: "singleSelect",
+    valueOptions: ORG_OPTIONS,
+    filterOperators: INCLUDES_OP,
   },
   {
     field: "site",
@@ -352,7 +451,7 @@ const baseColumns: GridColDef<DohRow>[] = [
   },
   {
     field: "blockPage",
-    headerName: "Block page",
+    headerName: "Block Page",
     flex: 1,
     minWidth: 160,
     sortable: false,
@@ -362,38 +461,10 @@ const baseColumns: GridColDef<DohRow>[] = [
     filterOperators: INCLUDES_OP,
     renderCell: (params) => blockPageFor(params.row.policy),
   },
-  {
-    field: "uniqueDoh",
-    headerName: "DoH ID",
-    width: 150,
-    sortable: false,
-    type: "singleSelect",
-    valueOptions: DOH_OPTIONS,
-    valueGetter: (_v, row) => row.endpointId,
-    filterOperators: IS_OP,
-    renderCell: (params) => (
-      <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-        <Chip
-          size="small"
-          variant="outlined"
-          label={params.row.endpointId}
-          sx={{ fontFamily: "monospace", fontSize: 13 }}
-        />
-      </Box>
-    ),
-  },
-  {
-    field: "status",
-    headerName: "Status",
-    width: 140,
-    sortable: false,
-    headerAlign: "center",
-    type: "singleSelect",
-    valueOptions: STATUS_OPTIONS,
-    filterOperators: IS_OP,
-    renderCell: () => <StatusChip />,
-  },
 ];
+
+// First Sync and DoH ID ship hidden; users can turn them on in Preferences.
+const DEFAULT_COLUMN_VISIBILITY = { firstSync: false, uniqueDoh: false };
 
 export default function ClientlessPage() {
   const navigate = useNavigate();
@@ -404,6 +475,9 @@ export default function ClientlessPage() {
     (location.state as { toast?: string } | null)?.toast ?? null,
   );
   const [cardTab, setCardTab] = useState(0);
+  const [columnVisibility, setColumnVisibility] = useState<
+    Record<string, boolean>
+  >(DEFAULT_COLUMN_VISIBILITY);
 
   const total = rows.length;
   const activeCount = rows.filter((r) => r.status === "Active").length;
@@ -489,6 +563,8 @@ export default function ClientlessPage() {
           showDefaultView={false}
           deferFilterApply
           noRowsOverlay={NoResultsOverlay}
+          columnVisibilityModel={columnVisibility}
+          onColumnVisibilityModelChange={setColumnVisibility}
           pinnedShadowFields={{ left: "name", right: "actions" }}
         />
       </TabbedDataCard>

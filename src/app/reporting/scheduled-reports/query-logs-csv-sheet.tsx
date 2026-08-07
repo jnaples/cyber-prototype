@@ -11,7 +11,6 @@ const SHEET_TEXT2 = "rgba(3,22,37,.62)";
 const GRID_LINE = "rgba(3,22,37,.10)";
 const HEADER_BG = "#eef1f6";
 const ZEBRA_BG = "rgba(3,22,37,.025)";
-const PRIMARY = "#3527fd";
 
 const ROW_COUNT = 50;
 
@@ -55,18 +54,6 @@ export function QueryLogsCsvSheet() {
         }}
       >
         <Box>
-          <Typography
-            sx={{
-              color: PRIMARY,
-              fontWeight: 700,
-              fontSize: 13,
-              letterSpacing: "2px",
-              textTransform: "uppercase",
-              mb: 1,
-            }}
-          >
-            Sample export
-          </Typography>
           <Typography
             component="h2"
             sx={(theme) => ({
