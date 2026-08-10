@@ -72,16 +72,14 @@ const policyItemSx = { pl: 3.5 } as const;
 // How the generated endpoint is handed to the device. Windows needs the
 // resolver IP alongside the URL; the others take a single value.
 const DOH_TYPES = ["URL", "Stamp", "Windows", "macOS/iOS"] as const;
+type DohType = (typeof DOH_TYPES)[number];
 
 // DNSFilter anycast resolver, shown with the URL for the Windows flow.
 const RESOLVER_IP = "103.247.36.36";
 
 // The destination field is named differently per platform, so the label and
 // the instructions follow the selected type.
-const DOH_FIELD: Record<
-  (typeof DOH_TYPES)[number],
-  { label: string; helper: string }
-> = {
+const DOH_FIELD: Record<DohType, { label: string; helper: string }> = {
   URL: {
     label: "DoH Endpoint",
     helper:
@@ -158,8 +156,11 @@ export default function CreateClientlessPage() {
   const [token, setToken] = useState<string | null>(edit.editToken ?? null);
   // True while the 1.5s "creating" spinner runs.
   const [creating, setCreating] = useState(false);
-  // How the endpoint is delivered — picked after the endpoint is generated.
-  const [dohType, setDohType] = useState<(typeof DOH_TYPES)[number]>("URL");
+  // How the endpoint is delivered — chosen before it can be generated, so it
+  // starts unselected on the add page. A saved deployment already has one.
+  const [dohType, setDohType] = useState<DohType | "">(
+    edit.editToken ? "URL" : "",
+  );
   // True once the user copies the generated DoH endpoint (gates Done).
   const [hasCopied, setHasCopied] = useState(false);
   // The success banner is tied to the current value — switching DoH Type hides
@@ -347,29 +348,43 @@ export default function CreateClientlessPage() {
     </Box>
   );
 
-  const dohEndpointField = createdEndpoint && (
-    // Half-width so the field lines up with the Policy/Block Page pair above;
-    // the empty second cell holds the other half of the row.
-    <Box
-      sx={{
-        display: "flex",
-        gap: 2,
-        flexDirection: { xs: "column", sm: "row" },
-      }}
-    >
+  // Half-width so these line up with the Policy/Block Page pair above; the
+  // empty second cell holds the other half of the row.
+  const halfRowSx = {
+    display: "flex",
+    gap: 2,
+    flexDirection: { xs: "column", sm: "row" },
+  } as const;
+
+  const dohTypeField = (
+    <Box sx={halfRowSx}>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <FormLabel sx={{ display: "block", mb: 0.5 }}>DoH Type</FormLabel>
+        <FormLabel sx={{ display: "block", mb: 0.5 }}>
+          DoH Type
+          <Box component="span" sx={{ ml: 0.25 }}>
+            *
+          </Box>
+        </FormLabel>
         <Select
           fullWidth
-          // Clearing to an empty value isn't valid here — the endpoint always
-          // has a delivery type.
+          displayEmpty
+          // Clearing back to an empty value isn't valid here — the endpoint
+          // always has a delivery type.
           disableClear
           value={dohType}
           onChange={(e) => {
-            setDohType(e.target.value as (typeof DOH_TYPES)[number]);
+            setDohType(e.target.value as DohType);
             setShowCopied(false);
           }}
-          sx={{ mb: 2 }}
+          renderValue={(v) =>
+            v ? (
+              v
+            ) : (
+              <Box component="span" sx={{ color: "text.disabled" }}>
+                Select a type
+              </Box>
+            )
+          }
         >
           {DOH_TYPES.map((t) => (
             <MenuItem key={t} value={t}>
@@ -377,7 +392,17 @@ export default function CreateClientlessPage() {
             </MenuItem>
           ))}
         </Select>
+      </Box>
+      <Box sx={{ flex: 1, minWidth: 0 }} />
+    </Box>
+  );
 
+  // Only reachable once a type is picked, so the lookup is always populated.
+  const dohField = dohType ? DOH_FIELD[dohType] : null;
+
+  const dohEndpointField = createdEndpoint && dohField && (
+    <Box sx={halfRowSx}>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
         {dohType === "Windows" && (
           <Box sx={{ mb: 2 }}>
             <FormLabel sx={{ display: "block", mb: 0.5 }}>
@@ -410,7 +435,7 @@ export default function CreateClientlessPage() {
         )}
 
         <FormLabel sx={{ display: "block", mb: 0.5 }}>
-          {DOH_FIELD[dohType].label}
+          {dohField.label}
           <Box component="span" sx={{ ml: 0.25 }}>
             *
           </Box>
@@ -442,7 +467,7 @@ export default function CreateClientlessPage() {
           />
           <CopyButton
             value={createdEndpoint}
-            label={`Copy ${DOH_FIELD[dohType].label}`}
+            label={`Copy ${dohField.label}`}
             onCopy={() => {
               setHasCopied(true);
               setShowCopied(true);
@@ -450,7 +475,7 @@ export default function CreateClientlessPage() {
           />
         </Box>
         <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-          {DOH_FIELD[dohType].helper}
+          {dohField.helper}
         </Typography>
         {showCopied && (
           <Box
@@ -468,7 +493,7 @@ export default function CreateClientlessPage() {
           >
             <MaterialSymbol name="check_circle" size={20} />
             <Typography variant="body2">
-              {DOH_FIELD[dohType].label} has been copied.
+              {dohField.label} has been copied.
             </Typography>
           </Box>
         )}
@@ -625,6 +650,7 @@ export default function CreateClientlessPage() {
                       {site}
                     </Typography>
                   </Box>
+                  {dohTypeField}
                   {dohEndpointField}
                 </>
               )}
@@ -694,14 +720,23 @@ export default function CreateClientlessPage() {
                         gap: 2,
                       }}
                     >
-                      <ArrowTooltip title={!site ? "Select a Site first." : ""}>
+                      {dohTypeField}
+                      <ArrowTooltip
+                        title={
+                          !site
+                            ? "Select a Site first."
+                            : !dohType
+                              ? "Select a DoH Type first."
+                              : ""
+                        }
+                      >
                         <Box
                           component="span"
                           sx={{
                             alignSelf: "flex-start",
                             display: "inline-flex",
                             cursor:
-                              !site || creating || token
+                              !site || !dohType || creating || token
                                 ? "not-allowed"
                                 : undefined,
                           }}
@@ -709,7 +744,9 @@ export default function CreateClientlessPage() {
                           <Button
                             variant="contained"
                             color="secondary"
-                            disabled={!site || creating || Boolean(token)}
+                            disabled={
+                              !site || !dohType || creating || Boolean(token)
+                            }
                             onClick={handleCreateEndpoint}
                             startIcon={
                               creating ? (
@@ -719,7 +756,9 @@ export default function CreateClientlessPage() {
                             sx={{
                               whiteSpace: "nowrap",
                               pointerEvents:
-                                !site || creating || token ? "none" : undefined,
+                                !site || !dohType || creating || token
+                                  ? "none"
+                                  : undefined,
                             }}
                           >
                             {creating
