@@ -76,6 +76,12 @@ export function TextField(props: TextFieldProps) {
       sx={[
         {
           "&:hover .field-clear": { visibility: "visible" },
+          // App-standard placeholder tone — MUI's default is the input color at
+          // 42% opacity, which reads as secondary text rather than a hint.
+          "& .MuiInputBase-input::placeholder": {
+            color: "text.disabled",
+            opacity: 1,
+          },
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

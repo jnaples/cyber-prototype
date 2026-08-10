@@ -16,8 +16,6 @@ import {
   Link,
   MenuItem,
   Switch,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import { alpha } from "@mui/material/styles";
@@ -73,12 +71,6 @@ const ORGS = [
   "London Branch",
 ];
 
-const PERIODS = [
-  "Previous month",
-  "Previous week",
-  "Previous quarter",
-  "Previous 30 days",
-];
 const FREQUENCIES = ["Daily", "Weekly", "Monthly", "Quarterly"] as const;
 
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -97,11 +89,11 @@ function Step({
     <Box>
       <Typography
         variant="overline"
-        sx={{ display: "block", color: "text.secondary", lineHeight: 1.5 }}
+        sx={{ display: "block", color: "text.secondary" }}
       >
         Step {n} - {title}
       </Typography>
-      <Box sx={{ mt: 2 }}>{children}</Box>
+      <Box sx={{ mt: 0.5 }}>{children}</Box>
     </Box>
   );
 }
@@ -119,7 +111,6 @@ export function ScheduleReportView({
   const [selectedReports, setSelectedReports] = useState<string[]>(
     initialReports ?? [],
   );
-  const [period, setPeriod] = useState(PERIODS[0]);
   const [selectedOrg, setSelectedOrg] = useState("");
   const [portalUsers, setPortalUsers] = useState<string[]>([]);
   const [externalEmail, setExternalEmail] = useState("");
@@ -127,8 +118,9 @@ export function ScheduleReportView({
   const [emailError, setEmailError] = useState("");
   const [emailSubject, setEmailSubject] = useState("");
   const [emailMessage, setEmailMessage] = useState("");
-  const [frequency, setFrequency] =
-    useState<(typeof FREQUENCIES)[number]>("Monthly");
+  const [frequency, setFrequency] = useState<(typeof FREQUENCIES)[number]>(
+    FREQUENCIES[0],
+  );
   const [whitelabel, setWhitelabel] = useState(false);
   const [companyName, setCompanyName] = useState("Brightwave IT");
   const [replyTo, setReplyTo] = useState("reports@brightwaveit.com");
@@ -216,6 +208,40 @@ export function ScheduleReportView({
             {/* STEP 1 — Reports */}
             <Step n={1} title="Reports">
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <Box>
+                  <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                    Organization
+                    <Box component="span" sx={{ ml: 0.25 }}>
+                      *
+                    </Box>
+                  </FormLabel>
+                  <Select
+                    displayEmpty
+                    fullWidth
+                    size="small"
+                    value={selectedOrg}
+                    onChange={(e) => setSelectedOrg(e.target.value)}
+                    renderValue={(v) =>
+                      v ? (
+                        v
+                      ) : (
+                        <Box component="span" sx={{ color: "text.disabled" }}>
+                          Select organization
+                        </Box>
+                      )
+                    }
+                  >
+                    <MenuItem value="All Organizations">
+                      All Organizations
+                    </MenuItem>
+                    {ORGS.map((org) => (
+                      <MenuItem key={org} value={org}>
+                        {org}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
+
                 <Box>
                   <FormLabel sx={{ display: "block", mb: 1 }}>
                     Select reports
@@ -336,61 +362,6 @@ export function ScheduleReportView({
                     })}
                   </Box>
                 </Box>
-
-                <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                    Select Organization
-                    <Box component="span" sx={{ ml: 0.25 }}>
-                      *
-                    </Box>
-                  </FormLabel>
-                  <Select
-                    displayEmpty
-                    fullWidth
-                    size="small"
-                    value={selectedOrg}
-                    onChange={(e) => setSelectedOrg(e.target.value)}
-                    renderValue={(v) =>
-                      v ? (
-                        v
-                      ) : (
-                        <Box component="span" sx={{ color: "text.secondary" }}>
-                          Select organization
-                        </Box>
-                      )
-                    }
-                  >
-                    <MenuItem value="All Organizations">
-                      All Organizations
-                    </MenuItem>
-                    {ORGS.map((org) => (
-                      <MenuItem key={org} value={org}>
-                        {org}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </Box>
-
-                <Box>
-                  <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                    Reporting period
-                    <Box component="span" sx={{ ml: 0.25 }}>
-                      *
-                    </Box>
-                  </FormLabel>
-                  <Select
-                    fullWidth
-                    size="small"
-                    value={period}
-                    onChange={(e) => setPeriod(e.target.value)}
-                  >
-                    {PERIODS.map((p) => (
-                      <MenuItem key={p} value={p}>
-                        {p}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </Box>
               </Box>
             </Step>
 
@@ -463,7 +434,13 @@ export function ScheduleReportView({
                     slotProps={{
                       chip: {
                         size: "small",
-                        sx: { borderRadius: (t) => t.spacing(1) },
+                        sx: {
+                          borderRadius: (t) => t.spacing(1),
+                          "& .MuiChip-deleteIcon": {
+                            color: "text.disabled",
+                            "&:hover": { color: "text.secondary" },
+                          },
+                        },
                       },
                     }}
                     renderInput={(params) => (
@@ -498,6 +475,7 @@ export function ScheduleReportView({
                     sx={{
                       display: "flex",
                       alignItems: "center",
+                      justifyContent: "space-between",
                       gap: 0.5,
                       mb: 0.5,
                     }}
@@ -516,7 +494,7 @@ export function ScheduleReportView({
                     multiline
                     minRows={4}
                     size="small"
-                    placeholder="Add a note that appears above the report links."
+                    placeholder="e.g. Your monthly security report is attached. Reach out with any questions."
                     value={emailMessage}
                     onChange={(e) => setEmailMessage(e.target.value)}
                   />
@@ -529,28 +507,30 @@ export function ScheduleReportView({
             {/* STEP 3 — Schedule */}
             <Step n={3} title="Schedule">
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                <ToggleButtonGroup
-                  exclusive
-                  size="small"
-                  value={frequency}
-                  onChange={(_, v) => v && setFrequency(v)}
-                  sx={{ alignSelf: "flex-start" }}
-                >
-                  {FREQUENCIES.map((f) => (
-                    <ToggleButton
-                      key={f}
-                      value={f}
-                      sx={{
-                        textTransform: "uppercase",
-                        fontSize: 13,
-                        height: 30,
-                        px: 2,
-                      }}
-                    >
-                      {f}
-                    </ToggleButton>
-                  ))}
-                </ToggleButtonGroup>
+                <Box>
+                  <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                    Schedule
+                    <Box component="span" sx={{ ml: 0.25 }}>
+                      *
+                    </Box>
+                  </FormLabel>
+                  <Select
+                    fullWidth
+                    size="small"
+                    value={frequency}
+                    onChange={(e) =>
+                      setFrequency(
+                        e.target.value as (typeof FREQUENCIES)[number],
+                      )
+                    }
+                  >
+                    {FREQUENCIES.map((f) => (
+                      <MenuItem key={f} value={f}>
+                        {f}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
               </Box>
             </Step>
 

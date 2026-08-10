@@ -86,7 +86,7 @@ export function SearchableMultiSelect({
               <Typography
                 component="span"
                 variant="body1"
-                sx={{ color: "text.secondary" }}
+                sx={{ color: "text.disabled" }}
               >
                 {allLabel ?? `All ${label}`}
               </Typography>
@@ -100,7 +100,14 @@ export function SearchableMultiSelect({
                   key={value}
                   size="small"
                   label={value}
-                  sx={{ borderRadius: (t) => t.spacing(1) }}
+                  sx={{
+                    borderRadius: (t) => t.spacing(1),
+                    // Match the clear affordance on text fields / selects.
+                    "& .MuiChip-deleteIcon": {
+                      color: "text.disabled",
+                      "&:hover": { color: "text.secondary" },
+                    },
+                  }}
                   // The chip lives inside the select's value area, so stop the
                   // delete click from opening the menu.
                   onMouseDown={(e) => e.stopPropagation()}
