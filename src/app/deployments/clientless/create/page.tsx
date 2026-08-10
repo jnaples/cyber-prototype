@@ -519,7 +519,7 @@ export default function CreateClientlessPage() {
                   canDone
                     ? ""
                     : token && !hasCopied
-                      ? "Copy the DoH endpoint URL first."
+                      ? "Copy the DoH endpoint first."
                       : "Complete all required steps first."
                 }
               >
