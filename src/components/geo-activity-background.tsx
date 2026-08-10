@@ -584,7 +584,7 @@ const DEST_WEIGHT = DESTS.reduce((sum, d) => sum + d[2], 0);
 
 // Overall pace multiplier on top of each customer's baseline rate. Tuned so
 // only a couple of arcs are in the air at any moment.
-const RATE_SCALE = 0.09;
+const RATE_SCALE = 0.18;
 
 // A scripted burst: one customer's traffic spikes and turns mostly-blocked for
 // a 20s window, so the map has an event rather than a flat hum.
@@ -600,7 +600,7 @@ const INCIDENT_INDEX = CUSTOMERS.findIndex((c) => c.name === INCIDENT.customer);
 
 // Hard ceiling on simultaneous in-flight arcs — anything spawned past this is
 // dropped, so a busy stretch (or the incident burst) can't flood the map.
-const MAX_ARCS = 6;
+const MAX_ARCS = 8;
 
 // Customer markers are a uniform size — traffic volume reads through arc
 // frequency instead, so a busy site doesn't also grow a bigger dot.
@@ -648,8 +648,10 @@ export function GeoActivityBackground() {
     const arcs: Arc[] = [];
     const fx: Fx[] = [];
 
-    // Per-customer spawn accumulators and daylight factors.
-    const acc = CUSTOMERS.map(() => 0);
+    // When each customer next fires, in seconds since mount. Staggered across
+    // the first couple of seconds so the map has traffic right away — waiting
+    // on a from-zero accumulator left the slowest sites idle for ~30s.
+    const nextAt = CUSTOMERS.map(() => Math.random() * 2);
     const diurnal = CUSTOMERS.map(() => 0.6);
 
     const pickDest = (): [number, number] => {
@@ -765,12 +767,13 @@ export function GeoActivityBackground() {
         let rate = CUSTOMERS[i].rps * diurnal[i] * RATE_SCALE;
         if (incident) rate *= INCIDENT.rate;
 
-        acc[i] += rate * dt;
         let guard = 0;
-        while (acc[i] >= 1 && guard < 10) {
-          acc[i] -= 1;
+        while (elapsed >= nextAt[i] && guard < 4) {
           guard++;
           spawn(i, incident);
+          // Jittered around the mean interval so spawns don't fall into a
+          // visibly regular beat.
+          nextAt[i] += (1 / rate) * (0.6 + Math.random() * 0.8);
         }
       }
 
