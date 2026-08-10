@@ -6,23 +6,34 @@
 // Import this instead of `Select` from @mui/material.
 
 import CancelIcon from "@mui/icons-material/Cancel";
-import {
-  IconButton,
-  InputAdornment,
-  Select as MuiSelect,
-} from "@mui/material";
+import { IconButton, InputAdornment, Select as MuiSelect } from "@mui/material";
 import type { SelectChangeEvent, SelectProps } from "@mui/material";
 import type { MouseEvent } from "react";
 
 export type { SelectProps };
 
-export function Select<Value = string>(props: SelectProps<Value>) {
-  const { value, onChange, disabled, multiple, name, endAdornment, sx } = props;
+export function Select<Value = string>(
+  props: SelectProps<Value> & {
+    /** Suppress the clear affordance where an empty value isn't valid. */
+    disableClear?: boolean;
+  },
+) {
+  const {
+    value,
+    onChange,
+    disabled,
+    multiple,
+    name,
+    endAdornment,
+    sx,
+    disableClear,
+    ...selectProps
+  } = props;
 
   const hasValue = Array.isArray(value)
     ? value.length > 0
     : value != null && value !== "";
-  const showClear = Boolean(onChange) && hasValue && !disabled;
+  const showClear = Boolean(onChange) && hasValue && !disabled && !disableClear;
 
   const handleClear = (event: MouseEvent<HTMLButtonElement>) => {
     onChange?.(
@@ -36,7 +47,12 @@ export function Select<Value = string>(props: SelectProps<Value>) {
 
   return (
     <MuiSelect
-      {...props}
+      {...selectProps}
+      value={value}
+      onChange={onChange}
+      disabled={disabled}
+      multiple={multiple}
+      name={name}
       endAdornment={
         showClear ? (
           <>

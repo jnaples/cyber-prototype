@@ -8,7 +8,6 @@ import type { Theme } from "@mui/material/styles";
 
 const TEXT = "#031625";
 const TEXT2 = "rgba(3,22,37,.62)";
-const TEXT3 = "rgba(3,22,37,.45)";
 const PRIMARY = "#3527fd";
 const DIVIDER = "rgba(3,22,37,.12)";
 const TRACK = "#edf0f6";
@@ -17,11 +16,6 @@ const C_CONTENT = "#ef6c00"; // orange[800]
 const C_SITE = "#238cd2";
 
 const montserrat = (theme: Theme) => theme.typography.fontSecondaryFamily;
-
-// Category totals can exceed the blocked count — a request with several
-// categories is counted once per category.
-const MULTI_CATEGORY_NOTE =
-  "Category totals can exceed the blocked count — requests with multiple categories are counted once per category.";
 
 type BarRow = { nm: string; val: string; w: number };
 type DomainRow = { domain: string; cat: string; requests: string; pct: string };
@@ -34,19 +28,29 @@ type Site = {
 
 const SITES: Site[] = [
   {
-    name: "HQ — Fairfield",
+    name: "Acme HQ — Cleveland",
     requests: "182.4K",
     threats: "126",
     content: "7,088",
   },
   {
-    name: "Warehouse — Bridgeport",
+    name: "Acme Distribution — Toledo",
     requests: "64.1K",
     threats: "51",
     content: "2,782",
   },
-  { name: "Guest Wi-Fi", requests: "38.5K", threats: "9", content: "1,955" },
-  { name: "Roaming clients", requests: "21.2K", threats: "28", content: "361" },
+  {
+    name: "Acme Plant 2 — Akron",
+    requests: "38.5K",
+    threats: "9",
+    content: "1,955",
+  },
+  {
+    name: "Acme Guest Wi-Fi",
+    requests: "21.2K",
+    threats: "28",
+    content: "361",
+  },
 ];
 
 const THREAT_CATEGORIES: BarRow[] = [
@@ -437,14 +441,6 @@ function DomainTable({ rows }: { rows: DomainRow[] }) {
   );
 }
 
-function Footnote({ children }: { children: string }) {
-  return (
-    <Box sx={{ fontSize: 16, color: TEXT3, fontStyle: "italic", mt: "18px" }}>
-      {children}
-    </Box>
-  );
-}
-
 // ---------------------------------------------------------------------------
 
 export default function FilterProtectionSummaryReport() {
@@ -564,9 +560,15 @@ export default function FilterProtectionSummaryReport() {
               border: `1px solid ${DIVIDER}`,
               borderRadius: "6px",
               p: "28px 32px 24px",
+              // Cards stretch to the tallest in the row; keep the number and
+              // caption pinned to the bottom so they line up across the band.
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
             <k.Icon />
+            <Box sx={{ flex: 1 }} />
             <Box
               sx={{
                 fontFamily: montserrat,
@@ -616,7 +618,8 @@ export default function FilterProtectionSummaryReport() {
                   fontFamily: montserrat,
                   fontWeight: 600,
                   fontSize: 20,
-                  mb: "18px",
+                  mt: 0,
+                  mb: "16px",
                 }}
               >
                 {s.name}
@@ -667,7 +670,6 @@ export default function FilterProtectionSummaryReport() {
         <BarRows rows={THREAT_CATEGORIES} color={C_THREAT} />
         <ColHead>Top 10 blocked threat domains</ColHead>
         <DomainTable rows={THREAT_DOMAINS} />
-        <Footnote>{MULTI_CATEGORY_NOTE}</Footnote>
       </Box>
 
       {/* Content summary */}
@@ -680,7 +682,6 @@ export default function FilterProtectionSummaryReport() {
         <BarRows rows={CONTENT_CATEGORIES} color={C_CONTENT} />
         <ColHead>Top 10 blocked content domains</ColHead>
         <DomainTable rows={CONTENT_DOMAINS} />
-        <Footnote>{MULTI_CATEGORY_NOTE}</Footnote>
       </Box>
 
       {/* Footer */}
@@ -698,14 +699,9 @@ export default function FilterProtectionSummaryReport() {
           <Box sx={{ fontSize: 17, fontWeight: 600 }}>
             Prepared by Brightwave IT
           </Box>
-          <Box sx={{ fontSize: 15, color: TEXT3, mt: "6px" }}>
-            Powered by DNSFilter
-          </Box>
         </Box>
         <Box sx={{ fontSize: 16, color: TEXT2, textAlign: "right" }}>
-          Generated Jul 23, 2026 · Data period Jun 23 – Jul 22, 2026
-          <br />
-          Detailed query data is available from Brightwave IT
+          Data period Jun 23 – Jul 22, 2026
         </Box>
       </Box>
     </Box>

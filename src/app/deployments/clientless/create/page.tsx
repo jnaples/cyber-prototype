@@ -69,6 +69,40 @@ const subheaderSx = (theme: Theme) => ({
 
 // Items sit more indented than their section header.
 const policyItemSx = { pl: 3.5 } as const;
+// How the generated endpoint is handed to the device. Windows needs the
+// resolver IP alongside the URL; the others take a single value.
+const DOH_TYPES = ["URL", "Stamp", "Windows", "macOS/iOS"] as const;
+
+// DNSFilter anycast resolver, shown with the URL for the Windows flow.
+const RESOLVER_IP = "103.247.36.36";
+
+// The destination field is named differently per platform, so the label and
+// the instructions follow the selected type.
+const DOH_FIELD: Record<
+  (typeof DOH_TYPES)[number],
+  { label: string; helper: string }
+> = {
+  URL: {
+    label: "DoH Endpoint",
+    helper:
+      "Paste this URL into the device's custom DoH or secure DNS setting.",
+  },
+  Stamp: {
+    label: "DNS Stamp",
+    helper: "Paste this stamp into UniFi or dnscrypt-proxy.",
+  },
+  Windows: {
+    label: "DoH Endpoint",
+    helper:
+      "Enter the Resolver IP as Preferred DNS, then set DNS over HTTPS to On (manual template) with this URL.",
+  },
+  "macOS/iOS": {
+    label: "Configuration Profile",
+    helper:
+      "Download the profile, then install it on the device or upload it to MDM.",
+  },
+};
+
 const BLOCK_PAGE_OPTIONS = [
   "Corporate Block Page",
   "HIPAA Notice",
@@ -124,8 +158,13 @@ export default function CreateClientlessPage() {
   const [token, setToken] = useState<string | null>(edit.editToken ?? null);
   // True while the 1.5s "creating" spinner runs.
   const [creating, setCreating] = useState(false);
+  // How the endpoint is delivered — picked after the endpoint is generated.
+  const [dohType, setDohType] = useState<(typeof DOH_TYPES)[number]>("URL");
   // True once the user copies the generated DoH endpoint (gates Done).
   const [hasCopied, setHasCopied] = useState(false);
+  // The success banner is tied to the current value — switching DoH Type hides
+  // it again — but Done stays unlocked once anything has been copied.
+  const [showCopied, setShowCopied] = useState(false);
   // Collapsible card bodies (edit page).
   const [overviewOpen, setOverviewOpen] = useState(true);
   const [configOpen, setConfigOpen] = useState(true);
@@ -139,6 +178,7 @@ export default function CreateClientlessPage() {
     setToken(null);
     setCreating(false);
     setHasCopied(false);
+    setShowCopied(false);
   };
 
   const handleCreateEndpoint = () => {
@@ -172,7 +212,11 @@ export default function CreateClientlessPage() {
 
   const back = () => navigate("/deployments/clientless");
 
-  const createdEndpoint = token ? `https://doh.dnsfilter.com/${token}` : null;
+  const createdEndpoint = token
+    ? dohType === "Stamp"
+      ? `sdns://AgcAAAAAAAAAAAAOZG9oLmRuc2ZpbHRlci5jb20K${token}`
+      : `https://doh.dnsfilter.com/${token}`
+    : null;
 
   const handleSave = () => {
     // Only the edit-page Save surfaces a toast; the add-page Done does not.
@@ -314,8 +358,59 @@ export default function CreateClientlessPage() {
       }}
     >
       <Box sx={{ flex: 1, minWidth: 0 }}>
+        <FormLabel sx={{ display: "block", mb: 0.5 }}>DoH Type</FormLabel>
+        <Select
+          fullWidth
+          // Clearing to an empty value isn't valid here — the endpoint always
+          // has a delivery type.
+          disableClear
+          value={dohType}
+          onChange={(e) => {
+            setDohType(e.target.value as (typeof DOH_TYPES)[number]);
+            setShowCopied(false);
+          }}
+          sx={{ mb: 2 }}
+        >
+          {DOH_TYPES.map((t) => (
+            <MenuItem key={t} value={t}>
+              {t}
+            </MenuItem>
+          ))}
+        </Select>
+
+        {dohType === "Windows" && (
+          <Box sx={{ mb: 2 }}>
+            <FormLabel sx={{ display: "block", mb: 0.5 }}>
+              Resolver IP
+            </FormLabel>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <TextField
+                fullWidth
+                disabled
+                value=""
+                placeholder={RESOLVER_IP}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    bgcolor: "background.neutral",
+                  },
+                  "& .MuiOutlinedInput-input": {
+                    fontFamily: "monospace",
+                    userSelect: "none",
+                  },
+                  "& .MuiOutlinedInput-input::placeholder": {
+                    color: "var(--dnsf-palette-text-secondary)",
+                    WebkitTextFillColor: "var(--dnsf-palette-text-secondary)",
+                    opacity: 1,
+                  },
+                }}
+              />
+              <CopyButton value={RESOLVER_IP} label="Copy resolver IP" />
+            </Box>
+          </Box>
+        )}
+
         <FormLabel sx={{ display: "block", mb: 0.5 }}>
-          DoH Endpoint
+          {DOH_FIELD[dohType].label}
           <Box component="span" sx={{ ml: 0.25 }}>
             *
           </Box>
@@ -347,17 +442,17 @@ export default function CreateClientlessPage() {
           />
           <CopyButton
             value={createdEndpoint}
-            label="Copy DoH endpoint"
-            onCopy={() => setHasCopied(true)}
+            label={`Copy ${DOH_FIELD[dohType].label}`}
+            onCopy={() => {
+              setHasCopied(true);
+              setShowCopied(true);
+            }}
           />
         </Box>
         <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-          <Box component="span" sx={{ fontWeight: 600 }}>
-            Copy this DoH address
-          </Box>{" "}
-          to apply the assigned Filtering Policy.
+          {DOH_FIELD[dohType].helper}
         </Typography>
-        {hasCopied && (
+        {showCopied && (
           <Box
             sx={(theme) => ({
               mt: 1,
@@ -373,7 +468,7 @@ export default function CreateClientlessPage() {
           >
             <MaterialSymbol name="check_circle" size={20} />
             <Typography variant="body2">
-              DoH Endpoint has been copied.
+              {DOH_FIELD[dohType].label} has been copied.
             </Typography>
           </Box>
         )}
