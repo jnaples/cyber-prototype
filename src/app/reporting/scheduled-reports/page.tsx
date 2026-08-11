@@ -4,12 +4,14 @@
 // standard data grids (see Query Logs).
 
 import {
+  Alert,
   Box,
   Button,
   Chip,
   IconButton,
   InputAdornment,
   MenuItem,
+  Snackbar,
   Switch,
   Tab,
   Tabs,
@@ -34,9 +36,9 @@ import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
 
 import { ReportHistory } from "./report-history";
+import { scheduleEditState } from "./schedule-edit-state";
 import { REPORT_MANAGER_BASE, REPORT_MANAGER_TABS } from "./routes";
 import { ReportLibrary } from "./report-library";
-import { SampleReportsModal } from "./sample-reports-modal";
 
 // ---------------------------------------------------------------------------
 // Types + data
@@ -60,7 +62,7 @@ type Schedule = {
 
 // Report-type tags, offered in the filter select.
 const REPORT_TYPES = [
-  "Activity Overview",
+  "Customer Activity Overview",
   "Protection Summary",
   "Traffic Logs",
   "AI Usage",
@@ -72,7 +74,7 @@ const SCHEDULES: Schedule[] = [
   {
     id: 1,
     name: "Monthly Executive Summary",
-    tags: ["Activity Overview", "Protection Summary"],
+    tags: ["Customer Activity Overview", "Protection Summary"],
     organizations: "All organizations (6)",
     recipients: 7,
     freqPrimary: "Monthly",
@@ -112,7 +114,7 @@ const SCHEDULES: Schedule[] = [
     id: 4,
     name: "Business Review Packet",
     tags: [
-      "Activity Overview",
+      "Customer Activity Overview",
       "Protection Summary",
       "Traffic Logs",
       "AI Usage",
@@ -191,7 +193,8 @@ function StatusCell({ status }: { status: ScheduleStatus }) {
   );
 }
 
-function ActionsCell() {
+function ActionsCell({ row }: { row: Schedule }) {
+  const navigate = useNavigate();
   return (
     <Box
       sx={{
@@ -203,9 +206,20 @@ function ActionsCell() {
         width: "100%",
       }}
     >
-      <IconButton size="small" aria-label="Edit">
-        <EditOutlinedIcon sx={{ fontSize: 20 }} />
-      </IconButton>
+      <ArrowTooltip title="Edit">
+        <IconButton
+          size="small"
+          aria-label="Edit"
+          // Opens the scheduler seeded from this row.
+          onClick={() =>
+            navigate("/reporting/report-scheduler", {
+              state: { edit: scheduleEditState(row) },
+            })
+          }
+        >
+          <EditOutlinedIcon sx={{ fontSize: 20 }} />
+        </IconButton>
+      </ArrowTooltip>
       <IconButton size="small" aria-label="More options">
         <MoreHorizOutlinedIcon sx={{ fontSize: 20 }} />
       </IconButton>
@@ -331,7 +345,7 @@ const columns: GridColDef<Schedule>[] = [
     resizable: false,
     align: "center",
     headerAlign: "center",
-    renderCell: () => <ActionsCell />,
+    renderCell: (params) => <ActionsCell row={params.row} />,
   },
 ];
 
@@ -370,7 +384,11 @@ const selectedTabSx = {
 };
 
 export default function ScheduledReportsPage() {
-  const { pathname } = useLocation();
+  const { pathname, state } = useLocation();
+  // Saving an edited schedule returns here with a confirmation to show.
+  const [toast, setToast] = useState<string | null>(
+    (state as { toast?: string } | null)?.toast ?? null,
+  );
   const activeTab = PAGE_TABS.findIndex(
     (t) => pathname === `${REPORT_MANAGER_BASE}/${t.path}`,
   );
@@ -378,7 +396,6 @@ export default function ScheduledReportsPage() {
   const [statusFilter, setStatusFilter] = useState<SummaryKey>("all");
   const [search, setSearch] = useState("");
   const [reportType, setReportType] = useState("all");
-  const [previewOpen, setPreviewOpen] = useState(false);
   const navigate = useNavigate();
   const [rowSelection, setRowSelection] = useState<GridRowSelectionModel>({
     type: "include",
@@ -518,16 +535,6 @@ export default function ScheduledReportsPage() {
             >
               Schedule Report
             </Button>
-            <Box sx={{ flex: 1 }} />
-            <Button
-              variant="outlined"
-              color="secondary"
-              size="small"
-              startIcon={<MaterialSymbol name="visibility" size={18} />}
-              onClick={() => setPreviewOpen(true)}
-            >
-              Preview Sample Reports
-            </Button>
           </Box>
 
           {/* Summary tabs + grid, connected as one card (like Query Logs) */}
@@ -632,14 +639,23 @@ export default function ScheduledReportsPage() {
               })}
             />
           </TabbedDataCard>
-
-          {/* Preview sample reports */}
-          <SampleReportsModal
-            open={previewOpen}
-            onClose={() => setPreviewOpen(false)}
-          />
         </>
       )}
+
+      <Snackbar
+        open={Boolean(toast)}
+        autoHideDuration={4000}
+        onClose={() => setToast(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity="success"
+          variant="filled"
+          onClose={() => setToast(null)}
+        >
+          {toast}
+        </Alert>
+      </Snackbar>
     </PageShell>
   );
 }

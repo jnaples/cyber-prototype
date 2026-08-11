@@ -133,8 +133,6 @@ export default function CreateClientlessPage() {
   const [dohType, setDohType] = useState<DohType | "">(
     edit.editToken ? "URL" : "",
   );
-  // True once the user copies the generated DoH endpoint (gates Done).
-  const [hasCopied, setHasCopied] = useState(false);
   // The success banner is tied to the current value — switching DoH Type hides
   // it again — but Done stays unlocked once anything has been copied.
   const [showCopied, setShowCopied] = useState(false);
@@ -150,7 +148,6 @@ export default function CreateClientlessPage() {
     // Block page stays as-is (defaults to "Default Appearance") — not inherited.
     setToken(null);
     setCreating(false);
-    setHasCopied(false);
     setShowCopied(false);
   };
 
@@ -172,16 +169,6 @@ export default function CreateClientlessPage() {
     site !== (edit.editSite ?? "") ||
     policy !== (initialSite?.policy ?? "") ||
     blockPage !== (initialSite?.blockPage ?? "");
-
-  // Done (add mode) unlocks once every field is filled, the endpoint is
-  // created, and the user has copied it.
-  const canDone =
-    name.trim() !== "" &&
-    site !== "" &&
-    policy !== "" &&
-    blockPage !== "" &&
-    Boolean(token) &&
-    hasCopied;
 
   const back = () => navigate("/deployments/clientless");
 
@@ -402,9 +389,8 @@ export default function CreateClientlessPage() {
           disabled
           // The URL renders as the placeholder (styled to look like a real
           // value) so it can't be selected or copied with the cursor at all —
-          // the copy button is the only way to take it, which keeps
-          // `hasCopied` accurate. Before it exists the same slot carries the
-          // empty-state text, in a placeholder tone rather than a value one.
+          // the copy button is the only way to take it. Before it exists the
+          // same slot carries the empty-state text, in a placeholder tone.
           value=""
           placeholder={createdEndpoint ?? "Not yet generated"}
           sx={{
@@ -430,10 +416,7 @@ export default function CreateClientlessPage() {
           value={createdEndpoint ?? ""}
           disabled={!createdEndpoint}
           label={`Copy ${endpointLabel}`}
-          onCopy={() => {
-            setHasCopied(true);
-            setShowCopied(true);
-          }}
+          onCopy={() => setShowCopied(true)}
         />
       </Box>
       {dohField && createdEndpoint && (
@@ -521,36 +504,16 @@ export default function CreateClientlessPage() {
                 </ArrowTooltip>
               </>
             ) : (
-              <ArrowTooltip
-                title={
-                  canDone
-                    ? ""
-                    : token && !hasCopied
-                      ? "Copy the DoH endpoint first."
-                      : "Complete all required steps first."
-                }
+              // Always available — the steps give their own feedback, so Done
+              // just leaves the page rather than enforcing completion.
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleSave}
+                sx={{ minWidth: 0 }}
               >
-                <Box
-                  component="span"
-                  sx={{
-                    display: "inline-flex",
-                    cursor: canDone ? undefined : "not-allowed",
-                  }}
-                >
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    disabled={!canDone}
-                    onClick={handleSave}
-                    sx={{
-                      minWidth: 0,
-                      pointerEvents: canDone ? undefined : "none",
-                    }}
-                  >
-                    Done
-                  </Button>
-                </Box>
-              </ArrowTooltip>
+                Done
+              </Button>
             )
           }
         />

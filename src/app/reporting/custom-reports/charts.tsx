@@ -30,7 +30,11 @@ export function LineChart({
     PAD.l + (i / Math.max(labels.length - 1, 1)) * innerW;
   const y = (v: number) => PAD.t + innerH - (v / max) * innerH;
   return (
-    <Box component="svg" viewBox={`0 0 ${W} ${H}`} sx={{ width: "100%", height: "auto" }}>
+    <Box
+      component="svg"
+      viewBox={`0 0 ${W} ${H}`}
+      sx={{ width: "100%", height: "auto" }}
+    >
       {/* gridlines */}
       {[0, 0.25, 0.5, 0.75, 1].map((t) => (
         <line
@@ -108,7 +112,11 @@ export function BarChart({
   const barW = (groupW * 0.7) / series.length;
   const y = (v: number) => PAD.t + innerH - (v / max) * innerH;
   return (
-    <Box component="svg" viewBox={`0 0 ${W} ${H}`} sx={{ width: "100%", height: "auto" }}>
+    <Box
+      component="svg"
+      viewBox={`0 0 ${W} ${H}`}
+      sx={{ width: "100%", height: "auto" }}
+    >
       {[0, 0.25, 0.5, 0.75, 1].map((t) => (
         <line
           key={t}
@@ -182,7 +190,11 @@ export function PieChart({
     <Box
       sx={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}
     >
-      <Box component="svg" viewBox="0 0 280 280" sx={{ width: 280, height: 280, flexShrink: 0 }}>
+      <Box
+        component="svg"
+        viewBox="0 0 280 280"
+        sx={{ width: 280, height: 280, flexShrink: 0 }}
+      >
         {slices.map((s) => {
           const start = acc / total;
           acc += s.value;
@@ -205,9 +217,22 @@ export function PieChart({
           );
         })}
         {/* donut hole */}
-        <circle cx={cx} cy={cy} r={50} fill="var(--dnsf-palette-background-paper)" />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={50}
+          fill="var(--dnsf-palette-background-paper)"
+        />
       </Box>
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 1, flex: 1, minWidth: 0 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
         {slices.map((s) => (
           <Box
             key={s.name}
@@ -241,9 +266,21 @@ export function Legend({ series }: { series: Series[] }) {
       {series.map((s) => (
         <Box
           key={s.name}
-          sx={{ display: "flex", alignItems: "center", gap: 0.75, fontSize: 12.5 }}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 0.75,
+            fontSize: 12.5,
+          }}
         >
-          <Box sx={{ width: 10, height: 10, borderRadius: "999px", bgcolor: s.color }} />
+          <Box
+            sx={{
+              width: 10,
+              height: 10,
+              borderRadius: "999px",
+              bgcolor: s.color,
+            }}
+          />
           <Box sx={{ color: "text.secondary" }}>{s.name}</Box>
         </Box>
       ))}

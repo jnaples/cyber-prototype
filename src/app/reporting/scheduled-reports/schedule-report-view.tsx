@@ -13,7 +13,6 @@ import {
   Divider,
   FormControlLabel,
   FormLabel,
-  IconButton,
   Link,
   MenuItem,
   Switch,
@@ -30,6 +29,7 @@ import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
 
 import { SamplePreviewModal } from "./sample-preview-modal";
+import type { ScheduleEditState } from "./schedule-edit-state";
 import { REPORTS, type ReportDef } from "./reports";
 
 const PORTAL_USERS = [
@@ -102,21 +102,36 @@ function Step({
 export function ScheduleReportView({
   onCancel,
   onSave,
+  edit,
+  initialReports,
 }: {
   onCancel: () => void;
   onSave: () => void;
+  /** Seeds the form from an existing schedule and switches to edit mode. */
+  edit?: ScheduleEditState;
+  /** Report keys to preselect — set when opened from a Library preview. */
+  initialReports?: string[];
 }) {
-  // The builder always opens with nothing chosen, whichever page led here.
-  const [selectedReports, setSelectedReports] = useState<string[]>([]);
-  const [selectedOrg, setSelectedOrg] = useState("");
-  const [portalUsers, setPortalUsers] = useState<string[]>([]);
+  // Editing seeds every step the grid row can account for; otherwise nothing is
+  // chosen unless a Library preview sent a report along. Branding stays default.
+  const [selectedReports, setSelectedReports] = useState<string[]>(
+    edit?.reports ?? initialReports ?? [],
+  );
+  const [selectedOrg, setSelectedOrg] = useState(edit?.organization ?? "");
+  const [portalUsers, setPortalUsers] = useState<string[]>(
+    edit?.portalUsers ?? [],
+  );
   const [externalEmail, setExternalEmail] = useState("");
-  const [externalEmails, setExternalEmails] = useState<string[]>([]);
+  const [externalEmails, setExternalEmails] = useState<string[]>(
+    edit?.externalEmails ?? [],
+  );
   const [emailError, setEmailError] = useState("");
-  const [emailSubject, setEmailSubject] = useState("");
-  const [emailMessage, setEmailMessage] = useState("");
+  const [emailSubject, setEmailSubject] = useState(edit?.emailSubject ?? "");
+  const [emailMessage, setEmailMessage] = useState(edit?.emailMessage ?? "");
   const [frequency, setFrequency] = useState<(typeof FREQUENCIES)[number]>(
-    FREQUENCIES[0],
+    (FREQUENCIES as readonly string[]).includes(edit?.frequency ?? "")
+      ? (edit?.frequency as (typeof FREQUENCIES)[number])
+      : FREQUENCIES[0],
   );
   const [whitelabel, setWhitelabel] = useState(false);
   const [companyName, setCompanyName] = useState("Brightwave IT");
@@ -150,7 +165,7 @@ export function ScheduleReportView({
       }}
     >
       <PageHeader
-        title="Schedule Report"
+        title={edit ? "Edit Schedule" : "Schedule Report"}
         onBack={onCancel}
         actions={
           <>
@@ -161,7 +176,7 @@ export function ScheduleReportView({
               title={
                 canSave
                   ? ""
-                  : "Create Schedule will enable once all required fields are filled out."
+                  : `${edit ? "Save changes" : "Create Schedule"} will enable once all required fields are filled out.`
               }
             >
               <span
@@ -176,7 +191,7 @@ export function ScheduleReportView({
                   onClick={onSave}
                   disabled={!canSave}
                 >
-                  Create schedule
+                  {edit ? "Save changes" : "Create schedule"}
                 </Button>
               </span>
             </ArrowTooltip>
@@ -819,14 +834,6 @@ export function ScheduleReportView({
                                 >
                                   {r.size}
                                 </Typography>
-                                <IconButton
-                                  size="small"
-                                  aria-label={`Preview ${r.title}`}
-                                  onClick={() => setSamplePreview(r)}
-                                  sx={{ color: "primary.main", p: 0.25 }}
-                                >
-                                  <MaterialSymbol name="visibility" size={20} />
-                                </IconButton>
                               </Box>
                             ))}
                           </Box>

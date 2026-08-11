@@ -18,6 +18,7 @@ import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
 import { downloadQueryLogsCsv } from "./query-logs-csv";
+import { downloadTimelineLogsCsv } from "./timeline-logs-csv";
 import { ReportPrintDocument } from "./report-print";
 import { REPORTS } from "./reports";
 
@@ -295,9 +296,10 @@ const REPORT_KEY_BY_TYPE: Record<string, string> = Object.fromEntries(
 
 // Reports the catalog ships as a spreadsheet export rather than a document —
 // those download as a real CSV instead of going through the PDF capture.
-const CSV_REPORT_TYPES = new Set(
-  REPORTS.filter((r) => r.file.endsWith(".csv")).map((r) => r.title),
-);
+const CSV_DOWNLOADS: Record<string, (fileName: string) => void> = {
+  traffic: downloadQueryLogsCsv,
+  "timeline-logs": downloadTimelineLogsCsv,
+};
 
 function ActionsCell({ row }: { row: HistoryRow }) {
   const available = row.status === "available";
@@ -307,13 +309,14 @@ function ActionsCell({ row }: { row: HistoryRow }) {
   // file name.
   const runDate = row.runAt.replace(/ \d{1,2}:\d{2} [AP]M$/, "");
   const fileName = `${row.reportName} - ${runDate}`;
-  const isCsv = CSV_REPORT_TYPES.has(row.reportType);
+  const reportKey = REPORT_KEY_BY_TYPE[row.reportType] ?? "";
+  const downloadCsvFile = CSV_DOWNLOADS[reportKey];
 
   const download = () => {
     // A CSV is written straight out; only the document reports need the
     // offscreen render the spinner covers.
-    if (isCsv) {
-      downloadQueryLogsCsv(fileName);
+    if (downloadCsvFile) {
+      downloadCsvFile(fileName);
       return;
     }
     setPrinting(true);
@@ -335,7 +338,7 @@ function ActionsCell({ row }: { row: HistoryRow }) {
         title={
           !available || printing
             ? ""
-            : isCsv
+            : downloadCsvFile !== undefined
               ? "Download CSV"
               : "Download report"
         }
@@ -367,7 +370,7 @@ function ActionsCell({ row }: { row: HistoryRow }) {
       </ArrowTooltip>
       {printing && (
         <ReportPrintDocument
-          reportKey={REPORT_KEY_BY_TYPE[row.reportType] ?? ""}
+          reportKey={reportKey}
           fileName={fileName}
           onDone={stopPrinting}
         />

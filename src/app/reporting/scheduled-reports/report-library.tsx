@@ -25,9 +25,15 @@ import { ReportPreview } from "./report-preview";
 import { REPORT_MANAGER_BASE } from "./routes";
 import { REPORTS } from "./reports";
 
+// Custom Report is hidden pending feedback — drop this filter to bring it back;
+// its card, preview and "Create Custom Report" action are all still wired up.
+const LIBRARY_REPORTS = REPORTS.filter((r) => r.key !== "custom");
+
 export function ReportLibrary() {
-  const [selectedKey, setSelectedKey] = useState(REPORTS[0].key);
-  const selected = REPORTS.find((r) => r.key === selectedKey) ?? REPORTS[0];
+  const [selectedKey, setSelectedKey] = useState(LIBRARY_REPORTS[0].key);
+  const selected =
+    LIBRARY_REPORTS.find((r) => r.key === selectedKey) ?? LIBRARY_REPORTS[0];
+  const isCustom = selected.key === "custom";
   const navigate = useNavigate();
   const [generateOpen, setGenerateOpen] = useState(false);
   const [generateToast, setGenerateToast] = useState(false);
@@ -46,7 +52,7 @@ export function ReportLibrary() {
         <CardContent sx={{ p: 2 }}>
           <Typography variant="cardTitle">Reports</Typography>
           <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-            {REPORTS.map((r) => {
+            {LIBRARY_REPORTS.map((r) => {
               const isSelected = r.key === selectedKey;
               return (
                 <Box
@@ -84,13 +90,19 @@ export function ReportLibrary() {
                     onClick={(e) => e.stopPropagation()}
                     onChange={() => setSelectedKey(r.key)}
                     slotProps={{ input: { "aria-label": r.title } }}
-                    sx={{
+                    sx={(theme) => ({
                       position: "absolute",
                       top: 8,
                       right: 8,
                       p: 0.5,
                       "& .MuiSvgIcon-root": { fontSize: 20 },
-                    }}
+                      // Matches the card's own border, which lightens on dark.
+                      ...theme.applyStyles("dark", {
+                        "&.Mui-checked": {
+                          color: theme.vars.palette.primary.light,
+                        },
+                      }),
+                    })}
                   />
                   <Box
                     sx={(theme) => ({
@@ -155,26 +167,47 @@ export function ReportLibrary() {
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Typography variant="cardTitle">Preview</Typography>
-              <Chip label="Sample data" size="small" />
+              {/* A custom report has no sample to show — the pane pitches the
+                  builder instead. */}
+              {!isCustom && <Chip label="Sample data" size="small" />}
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Button
-                variant="outlined"
-                color="secondary"
-                size="small"
-                onClick={() => setGenerateOpen(true)}
-              >
-                Generate Report
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                startIcon={<MaterialSymbol name="add" size={18} />}
-                onClick={() => navigate("/reporting/report-scheduler")}
-              >
-                Schedule Report
-              </Button>
+              {isCustom ? (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  startIcon={<MaterialSymbol name="add" size={18} />}
+                  onClick={() => navigate("/reporting/custom-reports")}
+                >
+                  Create Custom Report
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    size="small"
+                    onClick={() => setGenerateOpen(true)}
+                  >
+                    Generate Report
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    startIcon={<MaterialSymbol name="add" size={18} />}
+                    // Carries the previewed report into the builder.
+                    onClick={() =>
+                      navigate("/reporting/report-scheduler", {
+                        state: { reportKeys: [selected.key] },
+                      })
+                    }
+                  >
+                    Schedule Report
+                  </Button>
+                </>
+              )}
             </Box>
           </Box>
           <ReportPreview

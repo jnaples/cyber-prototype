@@ -51,7 +51,7 @@ const PREVIEWS: Preview[] = [
   {
     key: "activity",
     icon: "monitoring",
-    label: "Activity Overview",
+    label: "Customer Activity Overview",
     title: "Customer Activity Overview",
     desc: "Total DNS activity, allows, and blocks across all sites for the reporting period.",
     range: "Jul 1 – Jul 31, 2026",

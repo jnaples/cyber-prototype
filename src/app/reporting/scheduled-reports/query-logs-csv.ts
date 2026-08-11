@@ -4,14 +4,13 @@
 
 import { queryLogRows } from "@/data/query-logs";
 
+import type { CsvColumn } from "./csv";
+import { downloadCsv, toCsv } from "./csv";
+
 const ROW_COUNT = 50;
 
 /** The Query Logs "Default" view, minus the row-actions column. */
-export const QUERY_LOG_COLUMNS: {
-  field: string;
-  label: string;
-  width: number;
-}[] = [
+export const QUERY_LOG_COLUMNS: CsvColumn[] = [
   { field: "time", label: "Time", width: 132 },
   { field: "fqdn", label: "FQDN", width: 210 },
   { field: "result", label: "Result", width: 84 },
@@ -25,31 +24,13 @@ export const QUERY_LOG_COLUMNS: {
 
 export const QUERY_LOG_ROWS = queryLogRows.slice(0, ROW_COUNT);
 
-/** RFC 4180: quote anything containing a comma, quote or newline. */
-function cell(value: unknown) {
-  const text = String(value ?? "");
-  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-}
-
 export function buildQueryLogsCsv() {
-  const header = QUERY_LOG_COLUMNS.map((c) => cell(c.label)).join(",");
-  const rows = QUERY_LOG_ROWS.map((row) =>
-    QUERY_LOG_COLUMNS.map((c) =>
-      cell((row as Record<string, unknown>)[c.field]),
-    ).join(","),
+  return toCsv(
+    QUERY_LOG_COLUMNS,
+    QUERY_LOG_ROWS as unknown as Record<string, unknown>[],
   );
-  return [header, ...rows].join("\r\n");
 }
 
 export function downloadQueryLogsCsv(fileName: string) {
-  // The BOM is what makes Excel read the file as UTF-8 rather than mojibake.
-  const blob = new Blob(["﻿" + buildQueryLogsCsv()], {
-    type: "text/csv;charset=utf-8",
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `${fileName}.csv`;
-  link.click();
-  URL.revokeObjectURL(url);
+  downloadCsv(fileName, buildQueryLogsCsv());
 }

@@ -48,9 +48,9 @@ export const REPORTS: ReportDef[] = [
   {
     key: "timeline-logs",
     title: "Timeline Activity Logs",
-    desc: "Detailed CyberSight timeline events for each device.",
+    desc: "Detailed CyberSight timeline events for each device, exported as a CSV.",
     Icon: ReceiptLongOutlinedIcon,
-    file: "Timeline-Logs-Jul-2026.pdf",
+    file: "Timeline-Logs-Jul-2026.csv",
     size: "1.4 MB",
     cybersight: true,
   },
