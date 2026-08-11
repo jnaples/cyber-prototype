@@ -25,6 +25,9 @@ import { PageShell } from "@/components/page-shell";
 import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
 
+import { DOH_FIELD, DOH_TYPES, RESOLVER_IP, endpointFor } from "../doh";
+import type { DohType } from "../doh";
+
 // Sites the deployment can inherit policy / schedule / block page from.
 const SITES = [
   {
@@ -69,37 +72,6 @@ const subheaderSx = (theme: Theme) => ({
 
 // Items sit more indented than their section header.
 const policyItemSx = { pl: 3.5 } as const;
-// How the generated endpoint is handed to the device. Windows needs the
-// resolver IP alongside the URL; the others take a single value.
-const DOH_TYPES = ["URL", "Stamp", "Windows", "macOS/iOS"] as const;
-type DohType = (typeof DOH_TYPES)[number];
-
-// DNSFilter anycast resolver, shown with the URL for the Windows flow.
-const RESOLVER_IP = "103.247.36.36";
-
-// The destination field is named differently per platform, so the label and
-// the instructions follow the selected type.
-const DOH_FIELD: Record<DohType, { label: string; helper: string }> = {
-  URL: {
-    label: "DoH Endpoint",
-    helper:
-      "Paste this URL into the device's custom DoH or secure DNS setting.",
-  },
-  Stamp: {
-    label: "DNS Stamp",
-    helper: "Paste this stamp into UniFi or dnscrypt-proxy.",
-  },
-  Windows: {
-    label: "DoH Endpoint",
-    helper:
-      "Enter the Resolver IP as Preferred DNS, then set DNS over HTTPS to On (manual template) with this URL.",
-  },
-  "macOS/iOS": {
-    label: "Configuration Profile",
-    helper:
-      "Download the profile, then install it on the device or upload it to MDM.",
-  },
-};
 
 const BLOCK_PAGE_OPTIONS = [
   "Corporate Block Page",
@@ -213,11 +185,7 @@ export default function CreateClientlessPage() {
 
   const back = () => navigate("/deployments/clientless");
 
-  const createdEndpoint = token
-    ? dohType === "Stamp"
-      ? `sdns://AgcAAAAAAAAAAAAOZG9oLmRuc2ZpbHRlci5jb20K${token}`
-      : `https://doh.dnsfilter.com/${token}`
-    : null;
+  const createdEndpoint = token && dohType ? endpointFor(token, dohType) : null;
 
   const handleSave = () => {
     // Only the edit-page Save surfaces a toast; the add-page Done does not.

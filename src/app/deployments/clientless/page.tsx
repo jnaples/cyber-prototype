@@ -12,6 +12,7 @@ import {
   Snackbar,
   Typography,
 } from "@mui/material";
+import IntegrationInstructionsOutlinedIcon from "@mui/icons-material/IntegrationInstructionsOutlined";
 import type { GridColDef } from "@mui/x-data-grid";
 import { getGridSingleSelectOperators } from "@mui/x-data-grid";
 import { useState } from "react";
@@ -24,6 +25,8 @@ import { Modal } from "@/components/modal";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+
+import { ConnectionDetailsDrawer } from "./connection-details-drawer";
 
 type DohStatus = "Active" | "Inactive" | "Pending";
 
@@ -213,16 +216,34 @@ function DohActionsCell({
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const closeMenu = () => setAnchorEl(null);
 
   const openEdit = () =>
     navigate("/deployments/clientless/create", { state: editStateFor(row) });
 
   return (
-    <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100%",
+      }}
+    >
       <ArrowTooltip title="Edit">
         <IconButton size="small" aria-label="Edit" onClick={openEdit}>
           <MaterialSymbol name="edit" size={20} />
+        </IconButton>
+      </ArrowTooltip>
+      <ArrowTooltip title="View connection details">
+        <IconButton
+          size="small"
+          aria-label="View connection details"
+          onClick={() => setDetailsOpen(true)}
+        >
+          <IntegrationInstructionsOutlinedIcon sx={{ fontSize: 20 }} />
         </IconButton>
       </ArrowTooltip>
       <IconButton
@@ -232,6 +253,13 @@ function DohActionsCell({
       >
         <MaterialSymbol name="more_horiz" size={20} />
       </IconButton>
+
+      <ConnectionDetailsDrawer
+        open={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        name={row.name}
+        token={row.endpointId}
+      />
 
       <Menu
         anchorEl={anchorEl}
@@ -573,7 +601,9 @@ export default function ClientlessPage() {
     {
       field: "actions",
       headerName: "Actions",
-      width: 104,
+      // Three buttons now, so the column needs the room.
+      width: 140,
+      headerAlign: "center",
       sortable: false,
       filterable: false,
       resizable: false,
