@@ -1,3 +1,4 @@
+import MiscellaneousServicesOutlinedIcon from "@mui/icons-material/MiscellaneousServicesOutlined";
 import { Badge, Box, Collapse } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
@@ -1130,9 +1131,11 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
               sx={getItemStyles("integrations")}
               onClick={() => handleItemClick("integrations")}
             >
-              <Icon
-                name="miscellaneous_services"
-                size={isExpanded ? 20 : 24}
+              {/* An SVG rather than an Icon ligature: the installed Material
+                  Symbols font has no miscellaneous_services glyph, so the font
+                  route renders the name as text. */}
+              <MiscellaneousServicesOutlinedIcon
+                sx={{ fontSize: isExpanded ? 20 : 24 }}
               />
               {isExpanded && (
                 <span style={{ margin: "4px 0" }}>Integrations</span>

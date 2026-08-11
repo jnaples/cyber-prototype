@@ -19,6 +19,7 @@ import { switchComponent } from "./switch";
 import { tab } from "./tab";
 import { textField } from "./text-field";
 import { tooltip } from "./tooltip";
+import { typography } from "./typography";
 
 // Barrel file
 export const components = {
@@ -43,4 +44,5 @@ export const components = {
   ...listSubheader,
   ...link,
   ...circularProgress,
+  ...typography,
 };

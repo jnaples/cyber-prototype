@@ -90,28 +90,41 @@ export function ConnectionDetailsDrawer({
         and the same policy.
       </Typography>
 
-      {/* Flat children, so the rules and the fields are all siblings spaced by
-          the drawer's own 16px content gap rather than nested wrappers. */}
+      {/* One div per format holding its overline, fields and helper text; the
+          rules stay outside so they span the drawer rather than a section. */}
       {DOH_TYPES.map((type, index) => {
         const field = DOH_FIELD[type];
         const endpoint = endpointFor(token, type);
         return (
           <Fragment key={type}>
             {index > 0 && <Divider />}
-            {/* Windows is configured with the resolver IP as well as the URL. */}
-            {type === "Windows" && (
-              <ReadOnlyField
-                label="Resolver IP"
-                value={RESOLVER_IP}
-                copyLabel="Copy resolver IP"
-              />
-            )}
-            <ReadOnlyField
-              label={field.label}
-              value={endpoint}
-              copyLabel={`Copy ${field.label}`}
-              helper={field.helper}
-            />
+            <Box>
+              <Typography variant="overline">{type}</Typography>
+              {/* The gap only shows on Windows, the one format configured with
+                  two values. */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  mt: "4px",
+                }}
+              >
+                {type === "Windows" && (
+                  <ReadOnlyField
+                    label="Resolver IP"
+                    value={RESOLVER_IP}
+                    copyLabel="Copy resolver IP"
+                  />
+                )}
+                <ReadOnlyField
+                  label={field.label}
+                  value={endpoint}
+                  copyLabel={`Copy ${field.label}`}
+                  helper={field.helper}
+                />
+              </Box>
+            </Box>
           </Fragment>
         );
       })}
