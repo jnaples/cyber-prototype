@@ -3,6 +3,7 @@
 // this is where an existing deployment's other formats are read off.
 
 import { Box, Button, Divider, FormLabel, Typography } from "@mui/material";
+import { Fragment } from "react";
 
 import { CopyButton } from "@/components/copy-button";
 import { Drawer } from "@/components/drawer";
@@ -85,33 +86,33 @@ export function ConnectionDetailsDrawer({
       }
     >
       <Typography variant="body2" sx={{ color: "text.primary" }}>
-        Use whichever format the device supports. All four point at the same
-        endpoint and the same policy.
+        Use the format the device supports. All four point at the same endpoint
+        and the same policy.
       </Typography>
 
+      {/* Flat children, so the rules and the fields are all siblings spaced by
+          the drawer's own 16px content gap rather than nested wrappers. */}
       {DOH_TYPES.map((type, index) => {
         const field = DOH_FIELD[type];
         const endpoint = endpointFor(token, type);
         return (
-          <Box key={type}>
-            {index > 0 && <Divider sx={{ mb: 2 }} />}
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {/* Windows is configured with the resolver IP as well as the URL. */}
-              {type === "Windows" && (
-                <ReadOnlyField
-                  label="Resolver IP"
-                  value={RESOLVER_IP}
-                  copyLabel="Copy resolver IP"
-                />
-              )}
+          <Fragment key={type}>
+            {index > 0 && <Divider />}
+            {/* Windows is configured with the resolver IP as well as the URL. */}
+            {type === "Windows" && (
               <ReadOnlyField
-                label={field.label}
-                value={endpoint}
-                copyLabel={`Copy ${field.label}`}
-                helper={field.helper}
+                label="Resolver IP"
+                value={RESOLVER_IP}
+                copyLabel="Copy resolver IP"
               />
-            </Box>
-          </Box>
+            )}
+            <ReadOnlyField
+              label={field.label}
+              value={endpoint}
+              copyLabel={`Copy ${field.label}`}
+              helper={field.helper}
+            />
+          </Fragment>
         );
       })}
     </Drawer>

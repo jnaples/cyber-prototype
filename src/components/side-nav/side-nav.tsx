@@ -1131,7 +1131,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
               onClick={() => handleItemClick("integrations")}
             >
               <Icon
-                name="integration_instructions"
+                name="miscellaneous_services"
                 size={isExpanded ? 20 : 24}
               />
               {isExpanded && (

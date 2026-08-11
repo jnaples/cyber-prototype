@@ -12,7 +12,7 @@ import {
   Snackbar,
   Typography,
 } from "@mui/material";
-import IntegrationInstructionsOutlinedIcon from "@mui/icons-material/IntegrationInstructionsOutlined";
+import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import type { GridColDef } from "@mui/x-data-grid";
 import { getGridSingleSelectOperators } from "@mui/x-data-grid";
 import { useState } from "react";
@@ -237,13 +237,13 @@ function DohActionsCell({
           <MaterialSymbol name="edit" size={20} />
         </IconButton>
       </ArrowTooltip>
-      <ArrowTooltip title="View connection details">
+      <ArrowTooltip title="View DoH endpoint">
         <IconButton
           size="small"
-          aria-label="View connection details"
+          aria-label="View DoH endpoint"
           onClick={() => setDetailsOpen(true)}
         >
-          <IntegrationInstructionsOutlinedIcon sx={{ fontSize: 20 }} />
+          <RemoveRedEyeOutlinedIcon sx={{ fontSize: 20 }} />
         </IconButton>
       </ArrowTooltip>
       <IconButton
