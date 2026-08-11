@@ -3,6 +3,7 @@
 
 import type { SvgIconComponent } from "@mui/icons-material";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
+import DashboardCustomizeOutlinedIcon from "@mui/icons-material/DashboardCustomizeOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import ShowChartOutlinedIcon from "@mui/icons-material/ShowChartOutlined";
@@ -79,5 +80,13 @@ export const REPORTS: ReportDef[] = [
     file: "AI-Usage-Jul-2026.pdf",
     size: "760 KB",
     cybersight: true,
+  },
+  {
+    key: "custom",
+    title: "Custom Report",
+    desc: "Your own selection of metrics, dimensions, and filters.",
+    Icon: DashboardCustomizeOutlinedIcon,
+    file: "Custom-Report-Jul-2026.pdf",
+    size: "890 KB",
   },
 ];

@@ -571,7 +571,7 @@ export default function ClientlessPage() {
       progressValue: total ? (pendingCount / total) * 100 : 0,
       showInfoIcon: true,
       infoTooltip:
-        "These endpoints have been created but haven't received any DNS traffic yet.",
+        "These endpoints have been created but have not received any DNS traffic yet.",
     },
     {
       icon: "portable_wifi_off",

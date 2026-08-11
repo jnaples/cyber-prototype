@@ -4,7 +4,7 @@
 export const REPORT_MANAGER_BASE = "/reporting/scheduled-reports";
 
 export const REPORT_MANAGER_TABS = [
-  { label: "Templates", icon: "library_books", path: "templates" },
+  { label: "Report Library", icon: "library_books", path: "templates" },
   { label: "Schedules", icon: "schedule", path: "schedules" },
   { label: "History", icon: "history", path: "history" },
 ] as const;
