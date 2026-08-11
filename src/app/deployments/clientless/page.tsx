@@ -25,7 +25,7 @@ import { NoResultsOverlay } from "@/components/no-results-overlay";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
-type DohStatus = "Active" | "Pending";
+type DohStatus = "Active" | "Inactive" | "Pending";
 type DohRow = {
   id: number;
   name: string;
@@ -35,8 +35,7 @@ type DohRow = {
   devices: number;
   status: DohStatus;
   /** Local-time strings — pending devices have never synced, so they're blank. */
-  firstSync: string;
-  lastSync: string;
+  created: string;
   lastQuery: string;
 };
 
@@ -49,8 +48,7 @@ const ROWS: DohRow[] = [
     endpointId: "3a18ae",
     devices: 1,
     status: "Pending",
-    firstSync: "",
-    lastSync: "",
+    created: "",
     lastQuery: "",
   },
   {
@@ -61,8 +59,7 @@ const ROWS: DohRow[] = [
     endpointId: "a2fca4",
     devices: 2,
     status: "Active",
-    firstSync: "7/12/2026, 9:14:02 AM",
-    lastSync: "8/7/2026, 7:41:20 AM",
+    created: "7/12/2026, 9:14:02 AM",
     lastQuery: "8/7/2026, 7:39:55 AM",
   },
   {
@@ -72,9 +69,8 @@ const ROWS: DohRow[] = [
     policy: "Restricted Policy",
     endpointId: "7b91de",
     devices: 1,
-    status: "Active",
-    firstSync: "7/9/2026, 4:22:10 PM",
-    lastSync: "8/6/2026, 5:58:33 PM",
+    status: "Inactive",
+    created: "7/9/2026, 4:22:10 PM",
     lastQuery: "8/6/2026, 5:57:12 PM",
   },
   {
@@ -85,8 +81,7 @@ const ROWS: DohRow[] = [
     endpointId: "3c0f55",
     devices: 0,
     status: "Pending",
-    firstSync: "",
-    lastSync: "",
+    created: "",
     lastQuery: "",
   },
   {
@@ -97,8 +92,7 @@ const ROWS: DohRow[] = [
     endpointId: "5d24bc",
     devices: 1,
     status: "Active",
-    firstSync: "7/15/2026, 11:03:41 AM",
-    lastSync: "8/7/2026, 6:12:08 AM",
+    created: "7/15/2026, 11:03:41 AM",
     lastQuery: "8/7/2026, 6:10:44 AM",
   },
   {
@@ -109,8 +103,7 @@ const ROWS: DohRow[] = [
     endpointId: "9ee71a",
     devices: 4,
     status: "Active",
-    firstSync: "7/10/2026, 8:47:19 AM",
-    lastSync: "8/7/2026, 9:31:47 AM",
+    created: "7/10/2026, 8:47:19 AM",
     lastQuery: "8/7/2026, 9:30:02 AM",
   },
   {
@@ -121,8 +114,7 @@ const ROWS: DohRow[] = [
     endpointId: "c14f80",
     devices: 2,
     status: "Pending",
-    firstSync: "",
-    lastSync: "",
+    created: "",
     lastQuery: "",
   },
   {
@@ -132,9 +124,8 @@ const ROWS: DohRow[] = [
     policy: "Standard Policy",
     endpointId: "61ab39",
     devices: 3,
-    status: "Active",
-    firstSync: "7/22/2026, 1:15:36 PM",
-    lastSync: "8/5/2026, 11:02:55 AM",
+    status: "Inactive",
+    created: "7/22/2026, 1:15:36 PM",
     lastQuery: "8/5/2026, 10:58:21 AM",
   },
   {
@@ -145,8 +136,7 @@ const ROWS: DohRow[] = [
     endpointId: "8fd2e7",
     devices: 2,
     status: "Active",
-    firstSync: "7/8/2026, 7:05:12 AM",
-    lastSync: "8/7/2026, 7:45:10 AM",
+    created: "7/8/2026, 7:05:12 AM",
     lastQuery: "8/7/2026, 7:44:03 AM",
   },
   {
@@ -157,8 +147,7 @@ const ROWS: DohRow[] = [
     endpointId: "24c9b1",
     devices: 0,
     status: "Pending",
-    firstSync: "",
-    lastSync: "",
+    created: "",
     lastQuery: "",
   },
 ];
@@ -337,7 +326,7 @@ const BLOCK_PAGE_OPTIONS = [
 ];
 const DOH_OPTIONS = ROWS.map((r) => r.endpointId);
 const ORG_OPTIONS = [...new Set(ROWS.map((r) => r.organization))];
-const STATUS_OPTIONS: DohStatus[] = ["Active", "Pending"];
+const STATUS_OPTIONS: DohStatus[] = ["Active", "Inactive", "Pending"];
 
 // Constrain each column to a single filter operator so the build only offers
 // the operators we intend to ship. "INCLUDES" = singleSelect "is any of"
@@ -374,20 +363,12 @@ const baseColumns: GridColDef<DohRow>[] = [
     renderCell: () => <StatusChip />,
   },
   {
-    field: "lastSync",
-    headerName: "Last Sync",
+    field: "created",
+    headerName: "Created",
     description: "Shown in your local time zone.",
     flex: 1,
     minWidth: 180,
-    renderCell: (params) => params.row.lastSync || "-",
-  },
-  {
-    field: "firstSync",
-    headerName: "First Sync",
-    description: "Shown in your local time zone.",
-    flex: 1,
-    minWidth: 180,
-    renderCell: (params) => params.row.firstSync || "-",
+    renderCell: (params) => params.row.created || "-",
   },
   {
     field: "lastQuery",
@@ -462,8 +443,8 @@ const baseColumns: GridColDef<DohRow>[] = [
   },
 ];
 
-// First Sync and DoH ID ship hidden; users can turn them on in Preferences.
-const DEFAULT_COLUMN_VISIBILITY = { firstSync: false, uniqueDoh: false };
+// DoH ID ships hidden; users can turn it on in Preferences.
+const DEFAULT_COLUMN_VISIBILITY = { uniqueDoh: false };
 
 export default function ClientlessPage() {
   const navigate = useNavigate();
@@ -480,6 +461,7 @@ export default function ClientlessPage() {
 
   const total = rows.length;
   const activeCount = rows.filter((r) => r.status === "Active").length;
+  const inactiveCount = rows.filter((r) => r.status === "Inactive").length;
   const pendingCount = rows.filter((r) => r.status === "Pending").length;
 
   const tabsConfig: StatusTabConfig[] = [
@@ -500,6 +482,14 @@ export default function ClientlessPage() {
       progressValue: total ? (activeCount / total) * 100 : 0,
     },
     {
+      icon: "do_not_disturb_on",
+      count: inactiveCount,
+      label: "Inactive",
+      color: "text.secondary",
+      iconColorVar: "var(--dnsf-palette-text-secondary)",
+      progressValue: total ? (inactiveCount / total) * 100 : 0,
+    },
+    {
       icon: "hourglass_empty",
       count: pendingCount,
       label: "Pending",
@@ -509,12 +499,17 @@ export default function ClientlessPage() {
     },
   ];
 
-  const visibleRows =
-    cardTab === 1
-      ? rows.filter((r) => r.status === "Active")
-      : cardTab === 2
-        ? rows.filter((r) => r.status === "Pending")
-        : rows;
+  // Tab order is All / Active / Inactive / Pending.
+  const TAB_STATUS: (DohStatus | null)[] = [
+    null,
+    "Active",
+    "Inactive",
+    "Pending",
+  ];
+  const tabStatus = TAB_STATUS[cardTab];
+  const visibleRows = tabStatus
+    ? rows.filter((r) => r.status === tabStatus)
+    : rows;
 
   const columns: GridColDef<DohRow>[] = [
     ...baseColumns,

@@ -348,157 +348,171 @@ export default function CreateClientlessPage() {
     </Box>
   );
 
-  // Half-width so these line up with the Policy/Block Page pair above; the
-  // empty second cell holds the other half of the row.
-  const halfRowSx = {
-    display: "flex",
-    gap: 2,
-    flexDirection: { xs: "column", sm: "row" },
-  } as const;
-
-  const dohTypeField = (
-    <Box sx={halfRowSx}>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <FormLabel sx={{ display: "block", mb: 0.5 }}>
-          DoH Type
-          <Box component="span" sx={{ ml: 0.25 }}>
-            *
-          </Box>
-        </FormLabel>
-        <Select
-          fullWidth
-          displayEmpty
-          // Clearing back to an empty value isn't valid here — the endpoint
-          // always has a delivery type.
-          disableClear
-          value={dohType}
-          onChange={(e) => {
-            setDohType(e.target.value as DohType);
-            setShowCopied(false);
-          }}
-          renderValue={(v) =>
-            v ? (
-              v
-            ) : (
-              <Box component="span" sx={{ color: "text.disabled" }}>
-                Select a type
-              </Box>
-            )
-          }
-        >
-          {DOH_TYPES.map((t) => (
-            <MenuItem key={t} value={t}>
-              {t}
-            </MenuItem>
-          ))}
-        </Select>
-      </Box>
-      <Box sx={{ flex: 1, minWidth: 0 }} />
-    </Box>
+  const dohTypeSelect = (
+    <>
+      <FormLabel sx={{ display: "block", mb: 0.5 }}>
+        DoH Type
+        <Box component="span" sx={{ ml: 0.25 }}>
+          *
+        </Box>
+      </FormLabel>
+      <Select
+        fullWidth
+        displayEmpty
+        // Clearing back to an empty value isn't valid here — the endpoint
+        // always has a delivery type.
+        disableClear
+        value={dohType}
+        onChange={(e) => {
+          setDohType(e.target.value as DohType);
+          setShowCopied(false);
+        }}
+        renderValue={(v) =>
+          v ? (
+            v
+          ) : (
+            <Box component="span" sx={{ color: "text.disabled" }}>
+              Select a type
+            </Box>
+          )
+        }
+      >
+        {DOH_TYPES.map((t) => (
+          <MenuItem key={t} value={t}>
+            {t}
+          </MenuItem>
+        ))}
+      </Select>
+    </>
   );
 
-  // Only reachable once a type is picked, so the lookup is always populated.
   const dohField = dohType ? DOH_FIELD[dohType] : null;
+  // The field is on screen before a type is chosen, so it needs a name to wear
+  // until the type supplies one.
+  const endpointLabel = dohField?.label ?? "DoH Endpoint";
 
-  const dohEndpointField = createdEndpoint && dohField && (
-    <Box sx={halfRowSx}>
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        {dohType === "Windows" && (
-          <Box sx={{ mb: 2 }}>
-            <FormLabel sx={{ display: "block", mb: 0.5 }}>
-              Resolver IP
-            </FormLabel>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <TextField
-                fullWidth
-                disabled
-                value=""
-                placeholder={RESOLVER_IP}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    bgcolor: "background.neutral",
-                  },
-                  "& .MuiOutlinedInput-input": {
-                    fontFamily: "monospace",
-                    userSelect: "none",
-                  },
-                  "& .MuiOutlinedInput-input::placeholder": {
-                    color: "var(--dnsf-palette-text-secondary)",
-                    WebkitTextFillColor: "var(--dnsf-palette-text-secondary)",
-                    opacity: 1,
-                  },
-                }}
-              />
-              <CopyButton value={RESOLVER_IP} label="Copy resolver IP" />
-            </Box>
+  const dohEndpointContent = (
+    <>
+      {dohType === "Windows" && createdEndpoint && (
+        <Box sx={{ mb: 2 }}>
+          <FormLabel sx={{ display: "block", mb: 0.5 }}>Resolver IP</FormLabel>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <TextField
+              fullWidth
+              disabled
+              value=""
+              placeholder={RESOLVER_IP}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  bgcolor: "background.neutral",
+                },
+                "& .MuiOutlinedInput-input": {
+                  fontFamily: "monospace",
+                  userSelect: "none",
+                },
+                "& .MuiOutlinedInput-input::placeholder": {
+                  color: "var(--dnsf-palette-text-secondary)",
+                  WebkitTextFillColor: "var(--dnsf-palette-text-secondary)",
+                  opacity: 1,
+                },
+              }}
+            />
+            <CopyButton value={RESOLVER_IP} label="Copy resolver IP" />
           </Box>
-        )}
-
-        <FormLabel sx={{ display: "block", mb: 0.5 }}>
-          {dohField.label}
-          <Box component="span" sx={{ ml: 0.25 }}>
-            *
-          </Box>
-        </FormLabel>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <TextField
-            fullWidth
-            disabled
-            // The URL renders as the placeholder (styled to look like a real
-            // value) so it can't be selected or copied with the cursor at all —
-            // the copy button is the only way to take it, which keeps
-            // `hasCopied` accurate.
-            value=""
-            placeholder={createdEndpoint}
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                bgcolor: "background.neutral",
-              },
-              "& .MuiOutlinedInput-input": {
-                fontFamily: "monospace",
-                userSelect: "none",
-              },
-              "& .MuiOutlinedInput-input::placeholder": {
-                color: "var(--dnsf-palette-text-secondary)",
-                WebkitTextFillColor: "var(--dnsf-palette-text-secondary)",
-                opacity: 1,
-              },
-            }}
-          />
-          <CopyButton
-            value={createdEndpoint}
-            label={`Copy ${dohField.label}`}
-            onCopy={() => {
-              setHasCopied(true);
-              setShowCopied(true);
-            }}
-          />
         </Box>
+      )}
+
+      <FormLabel sx={{ display: "block", mb: 0.5 }}>
+        {endpointLabel}
+        <Box component="span" sx={{ ml: 0.25 }}>
+          *
+        </Box>
+      </FormLabel>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <TextField
+          fullWidth
+          disabled
+          // The URL renders as the placeholder (styled to look like a real
+          // value) so it can't be selected or copied with the cursor at all —
+          // the copy button is the only way to take it, which keeps
+          // `hasCopied` accurate. Before it exists the same slot carries the
+          // empty-state text, in a placeholder tone rather than a value one.
+          value=""
+          placeholder={createdEndpoint ?? "Not yet generated"}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              bgcolor: "background.neutral",
+            },
+            "& .MuiOutlinedInput-input": {
+              fontFamily: createdEndpoint ? "monospace" : undefined,
+              userSelect: "none",
+            },
+            "& .MuiOutlinedInput-input::placeholder": {
+              color: createdEndpoint
+                ? "var(--dnsf-palette-text-secondary)"
+                : "var(--dnsf-palette-text-disabled)",
+              WebkitTextFillColor: createdEndpoint
+                ? "var(--dnsf-palette-text-secondary)"
+                : "var(--dnsf-palette-text-disabled)",
+              opacity: 1,
+            },
+          }}
+        />
+        <CopyButton
+          value={createdEndpoint ?? ""}
+          disabled={!createdEndpoint}
+          label={`Copy ${endpointLabel}`}
+          onCopy={() => {
+            setHasCopied(true);
+            setShowCopied(true);
+          }}
+        />
+      </Box>
+      {dohField && createdEndpoint && (
         <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
           {dohField.helper}
         </Typography>
-        {showCopied && (
-          <Box
-            sx={(theme) => ({
-              mt: 1,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 1,
-              px: 1.5,
-              py: 1,
-              borderRadius: 1,
-              bgcolor: theme.vars.palette.Alert.successStandardBg,
-              color: theme.vars.palette.Alert.successColor,
-            })}
-          >
-            <MaterialSymbol name="check_circle" size={20} />
-            <Typography variant="body2">
-              {dohField.label} has been copied.
-            </Typography>
-          </Box>
-        )}
+      )}
+      {showCopied && (
+        <Box
+          sx={(theme) => ({
+            mt: 1,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 1,
+            px: 1.5,
+            py: 1,
+            borderRadius: 1,
+            bgcolor: theme.vars.palette.Alert.successStandardBg,
+            color: theme.vars.palette.Alert.successColor,
+          })}
+        >
+          <MaterialSymbol name="check_circle" size={20} />
+          <Typography variant="body2">
+            {endpointLabel} has been copied.
+          </Typography>
+        </Box>
+      )}
+    </>
+  );
+
+  // Two columns that line up with the Policy/Block Page pair above: the type
+  // (plus, on the add page, the Generate action) on the left, and the endpoint
+  // it produces on the right. `action` is omitted on the edit page, where the
+  // endpoint already exists.
+  const dohRow = (action?: React.ReactNode) => (
+    <Box
+      sx={{
+        display: "flex",
+        gap: 2,
+        flexDirection: { xs: "column", sm: "row" },
+      }}
+    >
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        {dohTypeSelect}
+        {action}
       </Box>
-      <Box sx={{ flex: 1, minWidth: 0 }} />
+      <Box sx={{ flex: 1, minWidth: 0 }}>{dohEndpointContent}</Box>
     </Box>
   );
 
@@ -650,8 +664,7 @@ export default function CreateClientlessPage() {
                       {site}
                     </Typography>
                   </Box>
-                  {dohTypeField}
-                  {dohEndpointField}
+                  {dohRow()}
                 </>
               )}
 
@@ -720,54 +733,54 @@ export default function CreateClientlessPage() {
                         gap: 2,
                       }}
                     >
-                      {dohTypeField}
-                      <ArrowTooltip
-                        title={
-                          !site
-                            ? "Select a Site first."
-                            : !dohType
-                              ? "Select a DoH Type first."
-                              : ""
-                        }
-                      >
-                        <Box
-                          component="span"
-                          sx={{
-                            alignSelf: "flex-start",
-                            display: "inline-flex",
-                            cursor:
-                              !site || !dohType || creating || token
-                                ? "not-allowed"
-                                : undefined,
-                          }}
+                      {dohRow(
+                        <ArrowTooltip
+                          title={
+                            !site
+                              ? "Select a Site first."
+                              : !dohType
+                                ? "Select a DoH Type first."
+                                : ""
+                          }
                         >
-                          <Button
-                            variant="contained"
-                            color="secondary"
-                            disabled={
-                              !site || !dohType || creating || Boolean(token)
-                            }
-                            onClick={handleCreateEndpoint}
-                            startIcon={
-                              creating ? (
-                                <CircularProgress size={16} color="inherit" />
-                              ) : undefined
-                            }
+                          <Box
+                            component="span"
                             sx={{
-                              whiteSpace: "nowrap",
-                              pointerEvents:
+                              mt: 2,
+                              display: "inline-flex",
+                              cursor:
                                 !site || !dohType || creating || token
-                                  ? "none"
+                                  ? "not-allowed"
                                   : undefined,
                             }}
                           >
-                            {creating
-                              ? "Generating DoH Endpoint"
-                              : "Generate DoH Endpoint"}
-                          </Button>
-                        </Box>
-                      </ArrowTooltip>
-                      {dohEndpointField}
+                            <Button
+                              variant="contained"
+                              color="secondary"
+                              disabled={
+                                !site || !dohType || creating || Boolean(token)
+                              }
+                              onClick={handleCreateEndpoint}
+                              startIcon={
+                                creating ? (
+                                  <CircularProgress size={16} color="inherit" />
+                                ) : undefined
+                              }
+                              sx={{
+                                whiteSpace: "nowrap",
+                                pointerEvents:
+                                  !site || !dohType || creating || token
+                                    ? "none"
+                                    : undefined,
+                              }}
+                            >
+                              {creating
+                                ? "Generating DoH Endpoint"
+                                : "Generate DoH Endpoint"}
+                            </Button>
+                          </Box>
+                        </ArrowTooltip>,
+                      )}
                     </Box>
                   </Box>
                 </>

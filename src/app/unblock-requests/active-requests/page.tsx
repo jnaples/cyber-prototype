@@ -324,7 +324,7 @@ const columns: GridColDef[] = [
   },
   {
     field: "loggedInUser",
-    headerName: "Logged In User",
+    headerName: "Logged On User",
     flex: 1,
     minWidth: 150,
   },

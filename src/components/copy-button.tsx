@@ -12,12 +12,15 @@ export function CopyButton({
   size = 20,
   label = "Copy",
   onCopy,
+  disabled = false,
 }: {
   value: string;
   size?: number;
   label?: string;
   /** Called after a successful copy. */
   onCopy?: () => void;
+  /** Greys the button out when there's nothing to copy yet. */
+  disabled?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
   const timer = useRef<number | null>(null);
@@ -31,9 +34,10 @@ export function CopyButton({
   };
 
   return (
-    <ArrowTooltip title={copied ? "Copied" : label}>
+    <ArrowTooltip title={disabled ? "" : copied ? "Copied" : label}>
       <IconButton
         aria-label={label}
+        disabled={disabled}
         onClick={copy}
         sx={(theme) => ({
           color: "primary.main",
