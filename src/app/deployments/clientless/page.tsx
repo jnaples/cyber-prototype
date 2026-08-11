@@ -237,10 +237,10 @@ function DohActionsCell({
           <MaterialSymbol name="edit" size={20} />
         </IconButton>
       </ArrowTooltip>
-      <ArrowTooltip title="View DoH endpoint">
+      <ArrowTooltip title="View DoH Endpoint">
         <IconButton
           size="small"
-          aria-label="View DoH endpoint"
+          aria-label="View DoH Endpoint"
           onClick={() => setDetailsOpen(true)}
         >
           <RemoveRedEyeOutlinedIcon sx={{ fontSize: 20 }} />
