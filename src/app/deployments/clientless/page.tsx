@@ -26,6 +26,23 @@ import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 
 type DohStatus = "Active" | "Inactive" | "Pending";
+
+// Last Query Received reports an age bucket rather than a timestamp, ordered
+// newest to oldest.
+type LastQuery =
+  | "< 15 Minutes"
+  | "< 30 Minutes"
+  | "< 60 Minutes"
+  | "< 4 Hours"
+  | "< 8 Hours"
+  | "< 12 Hours"
+  | "< 24 Hours"
+  | "< 7 Days"
+  | "< 14 Days"
+  | "< 30 Days"
+  | "< 90 Days"
+  | "> 90 Days";
+
 type DohRow = {
   id: number;
   name: string;
@@ -36,7 +53,7 @@ type DohRow = {
   status: DohStatus;
   /** Local-time strings — pending devices have never synced, so they're blank. */
   created: string;
-  lastQuery: string;
+  lastQuery: LastQuery | "";
 };
 
 const ROWS: DohRow[] = [
@@ -59,8 +76,8 @@ const ROWS: DohRow[] = [
     endpointId: "a2fca4",
     devices: 2,
     status: "Active",
-    created: "7/12/2026, 9:14:02 AM",
-    lastQuery: "8/7/2026, 7:39:55 AM",
+    created: "Jul 12, 2026 9:14 AM",
+    lastQuery: "< 15 Minutes",
   },
   {
     id: 3,
@@ -70,8 +87,8 @@ const ROWS: DohRow[] = [
     endpointId: "7b91de",
     devices: 1,
     status: "Inactive",
-    created: "7/9/2026, 4:22:10 PM",
-    lastQuery: "8/6/2026, 5:57:12 PM",
+    created: "Jul 9, 2026 4:22 PM",
+    lastQuery: "> 90 Days",
   },
   {
     id: 4,
@@ -92,8 +109,8 @@ const ROWS: DohRow[] = [
     endpointId: "5d24bc",
     devices: 1,
     status: "Active",
-    created: "7/15/2026, 11:03:41 AM",
-    lastQuery: "8/7/2026, 6:10:44 AM",
+    created: "Jul 15, 2026 11:03 AM",
+    lastQuery: "< 4 Hours",
   },
   {
     id: 6,
@@ -103,8 +120,8 @@ const ROWS: DohRow[] = [
     endpointId: "9ee71a",
     devices: 4,
     status: "Active",
-    created: "7/10/2026, 8:47:19 AM",
-    lastQuery: "8/7/2026, 9:30:02 AM",
+    created: "Jul 10, 2026 8:47 AM",
+    lastQuery: "< 60 Minutes",
   },
   {
     id: 7,
@@ -125,8 +142,8 @@ const ROWS: DohRow[] = [
     endpointId: "61ab39",
     devices: 3,
     status: "Inactive",
-    created: "7/22/2026, 1:15:36 PM",
-    lastQuery: "8/5/2026, 10:58:21 AM",
+    created: "Jul 22, 2026 1:15 PM",
+    lastQuery: "> 90 Days",
   },
   {
     id: 9,
@@ -136,8 +153,8 @@ const ROWS: DohRow[] = [
     endpointId: "8fd2e7",
     devices: 2,
     status: "Active",
-    created: "7/8/2026, 7:05:12 AM",
-    lastQuery: "8/7/2026, 7:44:03 AM",
+    created: "Jul 8, 2026 7:05 AM",
+    lastQuery: "< 24 Hours",
   },
   {
     id: 10,
@@ -160,6 +177,32 @@ const EDIT_SITES = [
   "Lincoln Middle School",
 ];
 
+// Router state the create page reads to open in edit mode instead of add mode.
+const editStateFor = (row: DohRow) => ({
+  editName: row.name,
+  editToken: row.endpointId,
+  editSite: EDIT_SITES[(row.id - 1) % EDIT_SITES.length],
+});
+
+// The device name opens the same edit view as the row's Edit action.
+function NameCell({ row }: { row: DohRow }) {
+  const navigate = useNavigate();
+  return (
+    <Link
+      href="#"
+      underline="hover"
+      onClick={(e) => {
+        e.preventDefault();
+        navigate("/deployments/clientless/create", {
+          state: editStateFor(row),
+        });
+      }}
+    >
+      {row.name}
+    </Link>
+  );
+}
+
 function DohActionsCell({
   row,
   onDelete,
@@ -173,13 +216,7 @@ function DohActionsCell({
   const closeMenu = () => setAnchorEl(null);
 
   const openEdit = () =>
-    navigate("/deployments/clientless/create", {
-      state: {
-        editName: row.name,
-        editToken: row.endpointId,
-        editSite: EDIT_SITES[(row.id - 1) % EDIT_SITES.length],
-      },
-    });
+    navigate("/deployments/clientless/create", { state: editStateFor(row) });
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
@@ -286,7 +323,31 @@ function DohActionsCell({
   );
 }
 
-function StatusChip() {
+// Only an Active deployment is actually protecting anything — Inactive reads as
+// offline, Pending as waiting. Icons and colors match the status tabs above.
+const STATUS_ICON: Record<
+  DohStatus,
+  { name: string; colorVar: string; tooltip: string }
+> = {
+  Active: {
+    name: "verified_user",
+    colorVar: "var(--dnsf-palette-success-main)",
+    tooltip: "Protected",
+  },
+  Inactive: {
+    name: "portable_wifi_off",
+    colorVar: "var(--dnsf-palette-text-disabled)",
+    tooltip: "Inactive",
+  },
+  Pending: {
+    name: "hourglass_empty",
+    colorVar: "var(--dnsf-palette-warning-main)",
+    tooltip: "Pending",
+  },
+};
+
+function StatusChip({ status }: { status: DohStatus }) {
+  const { name, colorVar, tooltip } = STATUS_ICON[status];
   return (
     <Box
       sx={{
@@ -297,12 +358,8 @@ function StatusChip() {
         height: "100%",
       }}
     >
-      <ArrowTooltip title="Protected" direction="top">
-        <MaterialSymbol
-          name="verified_user"
-          size={22}
-          sx={{ color: "var(--dnsf-palette-success-main)" }}
-        />
+      <ArrowTooltip title={tooltip} direction="top">
+        <MaterialSymbol name={name} size={22} sx={{ color: colorVar }} />
       </ArrowTooltip>
     </Box>
   );
@@ -345,11 +402,7 @@ const baseColumns: GridColDef<DohRow>[] = [
     type: "singleSelect",
     valueOptions: NAME_OPTIONS,
     filterOperators: INCLUDES_OP,
-    renderCell: (params) => (
-      <Link href="#" underline="hover">
-        {params.row.name}
-      </Link>
-    ),
+    renderCell: (params) => <NameCell row={params.row} />,
   },
   {
     field: "status",
@@ -360,7 +413,7 @@ const baseColumns: GridColDef<DohRow>[] = [
     type: "singleSelect",
     valueOptions: STATUS_OPTIONS,
     filterOperators: IS_OP,
-    renderCell: () => <StatusChip />,
+    renderCell: (params) => <StatusChip status={params.row.status} />,
   },
   {
     field: "created",
@@ -373,7 +426,7 @@ const baseColumns: GridColDef<DohRow>[] = [
   {
     field: "lastQuery",
     headerName: "Last Query Received",
-    description: "Shown in your local time zone.",
+    description: "How long ago this endpoint last resolved a query.",
     flex: 1,
     minWidth: 190,
     renderCell: (params) => params.row.lastQuery || "-",
@@ -482,29 +535,33 @@ export default function ClientlessPage() {
       progressValue: total ? (activeCount / total) * 100 : 0,
     },
     {
-      icon: "do_not_disturb_on",
-      count: inactiveCount,
-      label: "Inactive",
-      color: "text.secondary",
-      iconColorVar: "var(--dnsf-palette-text-secondary)",
-      progressValue: total ? (inactiveCount / total) * 100 : 0,
-    },
-    {
       icon: "hourglass_empty",
       count: pendingCount,
       label: "Pending",
       color: "warning.main",
       iconColorVar: "var(--dnsf-palette-warning-main)",
       progressValue: total ? (pendingCount / total) * 100 : 0,
+      showInfoIcon: true,
+      infoTooltip:
+        "These endpoints have been created but haven't received any DNS traffic yet.",
+    },
+    {
+      icon: "portable_wifi_off",
+      count: inactiveCount,
+      label: "Inactive",
+      color: "text.secondary",
+      // Matches the progress ring above, which uses `color`.
+      iconColorVar: "var(--dnsf-palette-text-secondary)",
+      progressValue: total ? (inactiveCount / total) * 100 : 0,
     },
   ];
 
-  // Tab order is All / Active / Inactive / Pending.
+  // Tab order is All / Active / Pending / Inactive.
   const TAB_STATUS: (DohStatus | null)[] = [
     null,
     "Active",
-    "Inactive",
     "Pending",
+    "Inactive",
   ];
   const tabStatus = TAB_STATUS[cardTab];
   const visibleRows = tabStatus

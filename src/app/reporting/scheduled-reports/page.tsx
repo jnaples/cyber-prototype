@@ -22,6 +22,7 @@ import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
 import { MaterialSymbol } from "@/components/material-symbol";
@@ -75,9 +76,9 @@ const SCHEDULES: Schedule[] = [
     organizations: "All organizations (6)",
     recipients: 7,
     freqPrimary: "Monthly",
-    freqSecondary: "1st · 8:00 AM ET",
-    nextDelivery: "Aug 1 · 8:00 AM ET",
-    lastDate: "Jul 1 · 8:00 AM",
+    freqSecondary: "1st",
+    nextDelivery: "Aug 1",
+    lastDate: "Jul 1",
     lastStatus: "sent",
     status: "active",
   },
@@ -88,9 +89,9 @@ const SCHEDULES: Schedule[] = [
     organizations: "Acme Manufacturing",
     recipients: 3,
     freqPrimary: "Weekly",
-    freqSecondary: "Mon · 7:00 AM ET",
-    nextDelivery: "Mon, Jul 27 · 7:00 AM ET",
-    lastDate: "Jul 20 · 7:00 AM",
+    freqSecondary: "Mon",
+    nextDelivery: "Mon, Jul 27",
+    lastDate: "Jul 20",
     lastStatus: "sent",
     status: "active",
   },
@@ -101,9 +102,9 @@ const SCHEDULES: Schedule[] = [
     organizations: "Globex +1",
     recipients: 2,
     freqPrimary: "Monthly",
-    freqSecondary: "15th · 9:00 AM CT",
-    nextDelivery: "Aug 15 · 9:00 AM CT",
-    lastDate: "Jul 15 · 9:00 AM",
+    freqSecondary: "15th",
+    nextDelivery: "Aug 15",
+    lastDate: "Jul 15",
     lastStatus: "failed",
     status: "issue",
   },
@@ -119,9 +120,9 @@ const SCHEDULES: Schedule[] = [
     organizations: "All organizations (6)",
     recipients: 6,
     freqPrimary: "Monthly",
-    freqSecondary: "1st · 9:00 AM ET",
+    freqSecondary: "1st",
     nextDelivery: "Paused",
-    lastDate: "Apr 1 · 9:00 AM",
+    lastDate: "Apr 1",
     lastStatus: "sent",
     status: "paused",
   },
@@ -132,9 +133,9 @@ const SCHEDULES: Schedule[] = [
     organizations: "Umbrella Health",
     recipients: 1,
     freqPrimary: "Daily",
-    freqSecondary: "6:00 AM ET",
-    nextDelivery: "Wed, Jul 22 · 6:00 AM ET",
-    lastDate: "Jul 21 · 6:00 AM",
+    freqSecondary: "Every day",
+    nextDelivery: "Wed, Jul 22",
+    lastDate: "Jul 21",
     lastStatus: "sent",
     status: "active",
   },
@@ -145,45 +146,37 @@ const SCHEDULES: Schedule[] = [
 // ---------------------------------------------------------------------------
 
 // Schedule name + report-type tag chips (first two, then a +N overflow chip).
-function ScheduleCell({ name, tags }: { name: string; tags: string[] }) {
-  const shown = tags.slice(0, 2);
-  const extra = tags.length - shown.length;
+function ScheduleCell({ name }: { name: string }) {
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        gap: 0.5,
-        height: "100%",
-        minWidth: 0,
-        py: 1,
-      }}
-    >
-      <Typography
-        variant="body2"
-        noWrap
-        sx={{ fontWeight: 600, color: "text.primary" }}
-      >
+    <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+      <Typography variant="body2" noWrap sx={{ color: "text.primary" }}>
         {name}
       </Typography>
-      <Box sx={{ display: "flex", gap: 0.5 }}>
-        {shown.map((t) => (
-          <Chip
-            key={t}
-            size="small"
-            label={t}
-            sx={{ bgcolor: "action.hover", color: "text.secondary" }}
-          />
-        ))}
-        {extra > 0 && (
-          <Chip
-            size="small"
-            label={`+${extra}`}
-            sx={{ bgcolor: "action.hover", color: "text.secondary" }}
-          />
-        )}
-      </Box>
+    </Box>
+  );
+}
+
+// The reports a schedule sends. Only the first two fit the column, so the rest
+// collapse into a count.
+function ReportTypeCell({ tags }: { tags: string[] }) {
+  const shown = tags.slice(0, 2);
+  const extra = tags.length - shown.length;
+  const chipSx = {
+    bgcolor: "action.hover",
+    color: "text.secondary",
+  } as const;
+  return (
+    <Box
+      sx={{ display: "flex", alignItems: "center", gap: 0.5, height: "100%" }}
+    >
+      {shown.map((t) => (
+        <Chip key={t} size="small" label={t} sx={chipSx} />
+      ))}
+      {extra > 0 && (
+        <ArrowTooltip title={tags.slice(2).join(", ")}>
+          <Chip size="small" label={`+${extra}`} sx={chipSx} />
+        </ArrowTooltip>
+      )}
     </Box>
   );
 }
@@ -224,10 +217,15 @@ const columns: GridColDef<Schedule>[] = [
   {
     field: "name",
     headerName: "Schedule",
-    width: 320,
-    renderCell: (params) => (
-      <ScheduleCell name={params.row.name} tags={params.row.tags} />
-    ),
+    width: 260,
+    renderCell: (params) => <ScheduleCell name={params.row.name} />,
+  },
+  {
+    field: "tags",
+    headerName: "Report Type",
+    width: 280,
+    sortable: false,
+    renderCell: (params) => <ReportTypeCell tags={params.row.tags} />,
   },
   {
     field: "organizations",

@@ -1,14 +1,25 @@
 // Report Manager → History. Every report run that has been generated, with
-// its delivery status and per-row download / overflow actions.
+// its delivery status and a per-row download action.
 
-import { Box, Chip, IconButton, Typography } from "@mui/material";
+import {
+  Box,
+  Chip,
+  CircularProgress,
+  IconButton,
+  Typography,
+} from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+
+import { downloadQueryLogsCsv } from "./query-logs-csv";
+import { ReportPrintDocument } from "./report-print";
+import { REPORTS } from "./reports";
 
 type RunStatus = "available" | "processing" | "failed";
 
@@ -17,183 +28,236 @@ type HistoryRow = {
   reportType: string;
   reportName: string;
   customer: string;
-  user: string;
+  /** Date range the report covers, e.g. "Jul 1–31". */
+  period: string;
+  /** Whether a schedule produced this run or someone exported it by hand. */
+  source: "Manual" | "Scheduled";
   runAt: string;
   status: RunStatus;
+  /** Email outcome — em dash for manual exports, which aren't delivered. */
+  delivery: string;
 };
 
 const STATUS_LABEL: Record<RunStatus, string> = {
-  available: "Download Available",
+  available: "Available",
   processing: "Processing",
   failed: "Failed",
 };
 
-// Runs from the last two weeks — the recurring Timeline / Traffic pairs plus a
+// Runs from the last two weeks — the recurring daily query-log export plus a
 // few one-off runs from other users.
 const HISTORY: HistoryRow[] = [
   {
     id: 1,
-    reportType: "Timeline Activity Logs",
-    reportName: "Daily Timeline Digest",
-    customer: "Hamel Services LLC",
-    user: "Peter Linden",
-    runAt: "8/6/2026, 4:00:57 PM",
-    status: "processing",
-  },
-  {
-    id: 2,
     reportType: "DNS Query Logs",
     reportName: "DNS Query Logs",
     customer: "Hamel Services LLC",
-    user: "Peter Linden",
-    runAt: "8/6/2026, 11:00:59 AM",
+    period: "Aug 5",
+    source: "Scheduled",
+    runAt: "Aug 6, 2026 11:00 AM",
     status: "available",
+    delivery: "Sent to 3",
   },
   {
-    id: 3,
+    id: 2,
     reportType: "Customer Activity Overview",
     reportName: "Monthly Executive Summary",
     customer: "Acme Manufacturing",
-    user: "Dana Mori",
-    runAt: "8/5/2026, 8:00:12 AM",
+    period: "Jul 1–31",
+    source: "Scheduled",
+    runAt: "Aug 5, 2026 8:00 AM",
     status: "available",
+    delivery: "Sent to 6",
+  },
+  {
+    id: 3,
+    reportType: "DNS Query Logs",
+    reportName: "DNS Query Logs",
+    customer: "Hamel Services LLC",
+    period: "Aug 4",
+    source: "Scheduled",
+    runAt: "Aug 5, 2026 11:01 AM",
+    status: "available",
+    delivery: "Sent to 3",
   },
   {
     id: 4,
-    reportType: "Timeline Activity Logs",
-    reportName: "Daily Timeline Digest",
-    customer: "Hamel Services LLC",
-    user: "Peter Linden",
-    runAt: "8/5/2026, 4:00:57 PM",
-    status: "available",
+    reportType: "CyberSight AI Usage",
+    reportName: "CyberSight AI Monthly Review",
+    customer: "Globex Financial",
+    period: "Jul 1–31",
+    source: "Scheduled",
+    runAt: "Aug 4, 2026 9:00 AM",
+    status: "failed",
+    delivery: "Not sent",
   },
   {
     id: 5,
     reportType: "DNS Query Logs",
     reportName: "DNS Query Logs",
     customer: "Hamel Services LLC",
-    user: "Peter Linden",
-    runAt: "8/5/2026, 11:01:00 AM",
+    period: "Aug 3",
+    source: "Scheduled",
+    runAt: "Aug 4, 2026 11:01 AM",
     status: "available",
+    delivery: "Sent to 3",
   },
   {
     id: 6,
-    reportType: "CyberSight AI Usage",
-    reportName: "CyberSight AI Monthly Review",
-    customer: "Globex Financial",
-    user: "Tom Villanueva",
-    runAt: "8/4/2026, 9:00:03 AM",
-    status: "failed",
+    reportType: "Filter Protection Summary",
+    reportName: "Weekly Protection Recap",
+    customer: "Umbrella Health",
+    period: "Jul 27–Aug 2",
+    source: "Scheduled",
+    runAt: "Aug 3, 2026 7:30 AM",
+    status: "available",
+    delivery: "Sent to 1",
   },
   {
     id: 7,
-    reportType: "Timeline Activity Logs",
-    reportName: "Daily Timeline Digest",
+    reportType: "DNS Query Logs",
+    reportName: "DNS Query Logs",
     customer: "Hamel Services LLC",
-    user: "Peter Linden",
-    runAt: "8/4/2026, 4:00:57 PM",
+    period: "Aug 2",
+    source: "Scheduled",
+    runAt: "Aug 3, 2026 11:01 AM",
     status: "available",
+    delivery: "Bounced (2)",
   },
   {
     id: 8,
-    reportType: "DNS Query Logs",
-    reportName: "DNS Query Logs",
-    customer: "Hamel Services LLC",
-    user: "Peter Linden",
-    runAt: "8/4/2026, 11:01:02 AM",
-    status: "available",
-  },
-  {
-    id: 9,
-    reportType: "Filter Protection Summary",
-    reportName: "Weekly Protection Recap",
-    customer: "Umbrella Health",
-    user: "Priya Natarajan",
-    runAt: "8/3/2026, 7:30:44 AM",
-    status: "available",
-  },
-  {
-    id: 10,
-    reportType: "Timeline Activity Logs",
-    reportName: "Daily Timeline Digest",
-    customer: "Hamel Services LLC",
-    user: "Peter Linden",
-    runAt: "8/3/2026, 4:00:56 PM",
-    status: "available",
-  },
-  {
-    id: 11,
-    reportType: "DNS Query Logs",
-    reportName: "DNS Query Logs",
-    customer: "Hamel Services LLC",
-    user: "Peter Linden",
-    runAt: "8/3/2026, 11:01:07 AM",
-    status: "available",
-  },
-  {
-    id: 12,
     reportType: "Timeline Overview",
     reportName: "Business Review Packet",
     customer: "Acme Manufacturing",
-    user: "Dana Mori",
-    runAt: "8/2/2026, 6:15:21 AM",
+    period: "Jul 1–31",
+    source: "Manual",
+    runAt: "Aug 2, 2026 6:15 AM",
     status: "available",
+    delivery: "—",
   },
   {
-    id: 13,
-    reportType: "Timeline Activity Logs",
-    reportName: "Daily Timeline Digest",
-    customer: "Hamel Services LLC",
-    user: "Peter Linden",
-    runAt: "8/2/2026, 4:00:54 PM",
-    status: "available",
-  },
-  {
-    id: 14,
+    id: 9,
     reportType: "DNS Query Logs",
     reportName: "DNS Query Logs",
     customer: "Hamel Services LLC",
-    user: "Peter Linden",
-    runAt: "8/2/2026, 11:00:59 AM",
+    period: "Aug 1",
+    source: "Scheduled",
+    runAt: "Aug 2, 2026 11:00 AM",
     status: "available",
+    delivery: "Sent to 3",
   },
   {
-    id: 15,
-    reportType: "Timeline Activity Logs",
-    reportName: "Daily Timeline Digest",
-    customer: "Hamel Services LLC",
-    user: "Peter Linden",
-    runAt: "8/1/2026, 4:00:58 PM",
-    status: "available",
-  },
-  {
-    id: 16,
+    id: 10,
     reportType: "DNS Query Logs",
     reportName: "DNS Query Logs",
     customer: "Hamel Services LLC",
-    user: "Peter Linden",
-    runAt: "8/1/2026, 11:01:01 AM",
+    period: "Jul 31",
+    source: "Scheduled",
+    runAt: "Aug 1, 2026 11:01 AM",
     status: "available",
+    delivery: "Sent to 3",
   },
   {
-    id: 17,
+    id: 11,
     reportType: "Customer Activity Overview",
     reportName: "Acme Weekly Traffic Digest",
     customer: "Acme Manufacturing",
-    user: "Dana Mori",
-    runAt: "7/31/2026, 7:00:18 AM",
+    period: "Jul 24–30",
+    source: "Scheduled",
+    runAt: "Jul 31, 2026 7:00 AM",
     status: "available",
+    delivery: "Sent to 3",
   },
   {
-    id: 18,
+    id: 12,
     reportType: "Filter Protection Summary",
     reportName: "Weekly Protection Recap",
     customer: "Umbrella Health",
-    user: "Priya Natarajan",
-    runAt: "7/27/2026, 7:30:52 AM",
+    period: "Jul 20–26",
+    source: "Scheduled",
+    runAt: "Jul 27, 2026 7:30 AM",
     status: "available",
+    delivery: "Sent to 1",
+  },
+  {
+    id: 13,
+    reportType: "CyberSight AI Usage",
+    reportName: "AI Adoption Snapshot",
+    customer: "Acme Manufacturing",
+    period: "Jul 1–31",
+    source: "Manual",
+    runAt: "Aug 6, 2026 6:45 AM",
+    status: "available",
+    delivery: "—",
+  },
+  {
+    id: 14,
+    reportType: "CyberSight AI Usage",
+    reportName: "CyberSight AI Monthly Review",
+    customer: "Umbrella Health",
+    period: "Jul 1–31",
+    source: "Scheduled",
+    runAt: "Aug 3, 2026 9:12 AM",
+    status: "processing",
+    delivery: "Not sent",
+  },
+  {
+    id: 15,
+    reportType: "CyberSight AI Usage",
+    reportName: "AI Query Volume by Device",
+    customer: "Hamel Services LLC",
+    period: "Jul 1–29",
+    source: "Manual",
+    runAt: "Jul 30, 2026 2:20 PM",
+    status: "available",
+    delivery: "—",
+  },
+  {
+    id: 16,
+    reportType: "Threat Trends",
+    reportName: "Monthly Threat Briefing",
+    customer: "Globex Financial",
+    period: "Jul 1–31",
+    source: "Scheduled",
+    runAt: "Aug 5, 2026 5:05 AM",
+    status: "available",
+    delivery: "Sent to 4",
+  },
+  {
+    id: 17,
+    reportType: "Threat Trends",
+    reportName: "Quarterly Threat Review",
+    customer: "Acme Manufacturing",
+    period: "Apr 1–Jun 30",
+    source: "Manual",
+    runAt: "Jul 29, 2026 8:40 AM",
+    status: "available",
+    delivery: "—",
   },
 ];
+
+// The run's own name leads; the report type it was built from sits under it,
+// which keeps the type visible without spending a column on it.
+function NameCell({ name, type }: { name: string; type: string }) {
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        height: "100%",
+        minWidth: 0,
+      }}
+    >
+      <Typography variant="body2" noWrap>
+        {name}
+      </Typography>
+      <Typography variant="caption" noWrap sx={{ color: "text.secondary" }}>
+        {type}
+      </Typography>
+    </Box>
+  );
+}
 
 function StatusCell({ status }: { status: RunStatus }) {
   return (
@@ -224,57 +288,146 @@ function StatusCell({ status }: { status: RunStatus }) {
   );
 }
 
-function ActionsCell({ status }: { status: RunStatus }) {
+// Report Type matches a catalog title, which is how a row finds its document.
+const REPORT_KEY_BY_TYPE: Record<string, string> = Object.fromEntries(
+  REPORTS.map((r) => [r.title, r.key]),
+);
+
+// Reports the catalog ships as a spreadsheet export rather than a document —
+// those download as a real CSV instead of going through the PDF capture.
+const CSV_REPORT_TYPES = new Set(
+  REPORTS.filter((r) => r.file.endsWith(".csv")).map((r) => r.title),
+);
+
+function ActionsCell({ row }: { row: HistoryRow }) {
+  const available = row.status === "available";
+  const [printing, setPrinting] = useState(false);
+  const stopPrinting = useCallback(() => setPrinting(false), []);
+  // "Aug 6, 2026 4:00 PM" -> "Aug 6, 2026"; the time would put a colon in the
+  // file name.
+  const runDate = row.runAt.replace(/ \d{1,2}:\d{2} [AP]M$/, "");
+  const fileName = `${row.reportName} - ${runDate}`;
+  const isCsv = CSV_REPORT_TYPES.has(row.reportType);
+
+  const download = () => {
+    // A CSV is written straight out; only the document reports need the
+    // offscreen render the spinner covers.
+    if (isCsv) {
+      downloadQueryLogsCsv(fileName);
+      return;
+    }
+    setPrinting(true);
+  };
+
   return (
-    <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-      <IconButton
-        size="small"
-        aria-label="Download"
-        disabled={status !== "available"}
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "100%",
+      }}
+    >
+      {/* Nothing to download until the run finishes, so the tip is dropped
+          rather than promising an action the button won't take. */}
+      <ArrowTooltip
+        title={
+          !available || printing
+            ? ""
+            : isCsv
+              ? "Download CSV"
+              : "Download report"
+        }
       >
-        <MaterialSymbol name="download" size={20} />
-      </IconButton>
-      <IconButton size="small" aria-label="More options">
-        <MaterialSymbol name="more_horiz" size={20} />
-      </IconButton>
+        <IconButton
+          size="small"
+          aria-label="Download"
+          // Building the PDF takes a beat; the spinner stands in for the icon
+          // so the row shows the click landed.
+          disabled={!available || printing}
+          onClick={download}
+          sx={{ "&.Mui-disabled": { color: "text.disabled" } }}
+        >
+          {printing ? (
+            <CircularProgress
+              size={20}
+              // Primary blue is too dark to read against the dark grid.
+              sx={(theme) => ({
+                color: "primary.main",
+                ...theme.applyStyles("dark", {
+                  color: theme.vars.palette.primary.light,
+                }),
+              })}
+            />
+          ) : (
+            <MaterialSymbol name="download" size={20} />
+          )}
+        </IconButton>
+      </ArrowTooltip>
+      {printing && (
+        <ReportPrintDocument
+          reportKey={REPORT_KEY_BY_TYPE[row.reportType] ?? ""}
+          fileName={fileName}
+          onDone={stopPrinting}
+        />
+      )}
     </Box>
   );
 }
 
 const columns: GridColDef<HistoryRow>[] = [
-  { field: "reportType", headerName: "Report Type", flex: 1, minWidth: 190 },
   {
     field: "reportName",
     headerName: "Report Name",
-    flex: 1,
-    minWidth: 200,
+    flex: 1.4,
+    minWidth: 220,
     renderCell: (params) => (
-      <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-        <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
-          {params.row.reportName}
-        </Typography>
-      </Box>
+      <NameCell name={params.row.reportName} type={params.row.reportType} />
     ),
   },
-  { field: "customer", headerName: "Customer", flex: 1, minWidth: 180 },
-  { field: "user", headerName: "Originating User", flex: 1, minWidth: 160 },
-  { field: "runAt", headerName: "Date/Time", flex: 1, minWidth: 180 },
+  { field: "customer", headerName: "Organization", flex: 1, minWidth: 170 },
+  { field: "period", headerName: "Period", flex: 0.8, minWidth: 130 },
+  { field: "source", headerName: "Source", flex: 0.7, minWidth: 110 },
+  { field: "runAt", headerName: "Generated", flex: 1, minWidth: 170 },
   {
     field: "status",
     headerName: "Status",
-    flex: 1,
-    minWidth: 180,
+    flex: 0.9,
+    minWidth: 140,
     renderCell: (params) => <StatusCell status={params.row.status} />,
+  },
+  {
+    field: "delivery",
+    headerName: "Delivery",
+    flex: 0.9,
+    minWidth: 140,
+    renderCell: (params) => (
+      <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+        <Typography
+          variant="body2"
+          sx={{
+            // A bounce is the one delivery state worth catching the eye.
+            color: params.row.delivery.startsWith("Bounced")
+              ? "error.main"
+              : "text.primary",
+          }}
+        >
+          {params.row.delivery}
+        </Typography>
+      </Box>
+    ),
   },
   {
     field: "actions",
     headerName: "Actions",
     width: 104,
+    headerAlign: "center",
     sortable: false,
     filterable: false,
     resizable: false,
     hideable: false,
-    renderCell: (params) => <ActionsCell status={params.row.status} />,
+    renderCell: (params) => <ActionsCell row={params.row} />,
   },
 ];
 

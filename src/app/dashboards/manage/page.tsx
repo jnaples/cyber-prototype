@@ -36,6 +36,15 @@ const INITIAL_ROWS: DashboardRow[] = DASHBOARD_NAMES.map((name) => ({
 
 const INITIAL_FAVORITES = ["FilterDNS Overview", "Security Summary"];
 
+type Visibility = "Shared" | "Private";
+
+// Anything not listed is shared, which is the default for a new dashboard.
+const INITIAL_VISIBILITY: Record<string, Visibility> = {
+  "Security Summary": "Private",
+  "Events – 2025": "Private",
+  "Weekly Executive Summary": "Private",
+};
+
 // The dashboard currently set as the default landing dashboard.
 const DEFAULT_DASHBOARD = "FilterDNS Overview";
 
@@ -48,9 +57,27 @@ export default function ManageDashboardsPage() {
   const [defaultDashboard, setDefaultDashboard] = useState(DEFAULT_DASHBOARD);
   const [toast, setToast] = useState<string | null>(null);
 
+  // Only the dashboards that differ from the shared default are tracked here.
+  const [visibility, setVisibility] =
+    useState<Record<string, Visibility>>(INITIAL_VISIBILITY);
+
   const setAsDefault = (name: string) => {
     setDefaultDashboard(name);
     setToast(`${name} set as default`);
+  };
+
+  // Sharing exposes the dashboard to everyone in the org, so it's confirmed
+  // first. Going back to private isn't.
+  const [pendingShare, setPendingShare] = useState<DashboardRow | null>(null);
+
+  const shareWithOrganizations = (name: string) => {
+    setVisibility((prev) => ({ ...prev, [name]: "Shared" }));
+    setToast(`${name} shared with Organizations`);
+  };
+
+  const makePrivate = (name: string) => {
+    setVisibility((prev) => ({ ...prev, [name]: "Private" }));
+    setToast(`${name} is now private`);
   };
 
   const favoriteRows = rows.filter((row) => favorites.includes(row.name));
@@ -127,6 +154,15 @@ export default function ManageDashboardsPage() {
       ),
     },
     {
+      field: "visibility",
+      headerName: "Visibility",
+      width: 140,
+      sortable: false,
+      // Derived from the private list rather than stored on the row, so the
+      // column and the menu's toggle can't disagree.
+      valueGetter: (_v, row) => visibility[row.name] ?? "Shared",
+    },
+    {
       field: "actions",
       headerName: "Actions",
       width: 104,
@@ -140,8 +176,11 @@ export default function ManageDashboardsPage() {
           name={params.row.name}
           isFavorite={favorites.includes(params.row.name)}
           isDefault={params.row.name === defaultDashboard}
+          isPrivate={visibility[params.row.name] === "Private"}
           onToggleFavorite={() => toggleFavorite(params.row.name)}
           onSetDefault={() => setAsDefault(params.row.name)}
+          onShare={() => setPendingShare(params.row)}
+          onMakePrivate={() => makePrivate(params.row.name)}
           onDelete={() => setPendingDelete(params.row)}
         />
       ),
@@ -181,6 +220,33 @@ export default function ManageDashboardsPage() {
           noRowsOverlay={ManageDashboardsEmptyOverlay}
         />
       </TabbedDataCard>
+
+      <Modal
+        open={Boolean(pendingShare)}
+        onClose={() => setPendingShare(null)}
+        title="Share dashboard?"
+        width={480}
+        secondaryAction={{
+          label: "Cancel",
+          onClick: () => setPendingShare(null),
+        }}
+        primaryAction={{
+          label: "Share Dashboard",
+          onClick: () => {
+            if (pendingShare) shareWithOrganizations(pendingShare.name);
+            setPendingShare(null);
+          },
+        }}
+      >
+        <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
+          <Box component="span" sx={{ fontWeight: 700, color: "text.primary" }}>
+            {pendingShare?.name}
+          </Box>{" "}
+          will be visible to all users in the organizations you belong to. They
+          can add it to their dashboards, but only you can edit or delete it.
+          You can change it back to private at any time.
+        </Typography>
+      </Modal>
 
       <Modal
         open={Boolean(pendingDelete)}
@@ -262,15 +328,21 @@ function ManageDashboardsEmptyOverlay() {
 function ActionsCell({
   isFavorite,
   isDefault,
+  isPrivate,
   onToggleFavorite,
   onSetDefault,
+  onShare,
+  onMakePrivate,
   onDelete,
 }: {
   name: string;
   isFavorite: boolean;
   isDefault: boolean;
+  isPrivate: boolean;
   onToggleFavorite: () => void;
   onSetDefault: () => void;
+  onShare: () => void;
+  onMakePrivate: () => void;
   onDelete: () => void;
 }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -283,9 +355,7 @@ function ActionsCell({
       >
         <IconButton
           size="small"
-          aria-label={
-            isFavorite ? "Remove from favorites" : "Add to favorites"
-          }
+          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           aria-pressed={isFavorite}
           onClick={onToggleFavorite}
         >
@@ -329,10 +399,42 @@ function ActionsCell({
           }}
         >
           <ListItemIcon>
-            <MaterialSymbol name="check_circle" size={20} sx={{ opacity: 0.7 }} />
+            <MaterialSymbol
+              name="check_circle"
+              size={20}
+              sx={{ opacity: 0.7 }}
+            />
           </ListItemIcon>
           Set as default
         </MenuItem>
+        {/* Sharing is all-organizations or nothing, so the two directions are
+            one menu item each rather than a picker. Only the one that would
+            change something is offered. */}
+        {isPrivate ? (
+          <MenuItem
+            onClick={() => {
+              onShare();
+              close();
+            }}
+          >
+            <ListItemIcon>
+              <MaterialSymbol name="share" size={20} sx={{ opacity: 0.7 }} />
+            </ListItemIcon>
+            Share with Organizations
+          </MenuItem>
+        ) : (
+          <MenuItem
+            onClick={() => {
+              onMakePrivate();
+              close();
+            }}
+          >
+            <ListItemIcon>
+              <MaterialSymbol name="lock" size={20} sx={{ opacity: 0.7 }} />
+            </ListItemIcon>
+            Change to private
+          </MenuItem>
+        )}
         <Divider />
         <MenuItem
           onClick={() => {

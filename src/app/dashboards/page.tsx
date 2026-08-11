@@ -46,7 +46,6 @@ import {
 import { QuickFilters } from "./quick-filters";
 import { TimeRangeSelect } from "./time-range-select";
 import { DashSwitcher } from "./dash-switcher";
-import { ShareWithOrganizationsDrawer } from "./share-with-organizations-drawer";
 import { WidgetBody } from "./widgets";
 import {
   CATALOG_BY_TYPE,
@@ -565,8 +564,9 @@ export default function DashboardsPage() {
   );
   const [actionsAnchor, setActionsAnchor] = useState<HTMLElement | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
-  // Organizations this dashboard is currently shared with (in-memory only).
-  const [sharedOrgs, setSharedOrgs] = useState<string[]>([]);
+  // Sharing is all-or-nothing across the organizations you belong to, so this
+  // is a flag rather than a list (in-memory only).
+  const [shared, setShared] = useState(false);
   const [dashDeleteOpen, setDashDeleteOpen] = useState(false);
   const [switcherAnchor, setSwitcherAnchor] = useState<HTMLElement | null>(
     null,
@@ -971,26 +971,13 @@ export default function DashboardsPage() {
             </span>
           </ArrowTooltip>
 
-          {/* Share band — grouped with the defaults cluster */}
-          <MenuItem
-            onClick={() => {
-              setActionsAnchor(null);
-              setShareOpen(true);
-            }}
-          >
-            <MaterialSymbol
-              name="share"
-              size={16}
-              sx={{ mr: "8px", opacity: 0.7 }}
-            />
-            Share with Organizations
-          </MenuItem>
-
-          {sharedOrgs.length > 0 && (
+          {/* Share band — grouped with the defaults cluster. Only the
+              direction that would change something is offered. */}
+          {shared ? (
             <MenuItem
               onClick={() => {
                 setActionsAnchor(null);
-                setSharedOrgs([]);
+                setShared(false);
                 setToast(`${name} changed to private.`);
               }}
             >
@@ -1000,6 +987,20 @@ export default function DashboardsPage() {
                 sx={{ mr: "8px", opacity: 0.7 }}
               />
               Change to private
+            </MenuItem>
+          ) : (
+            <MenuItem
+              onClick={() => {
+                setActionsAnchor(null);
+                setShareOpen(true);
+              }}
+            >
+              <MaterialSymbol
+                name="share"
+                size={16}
+                sx={{ mr: "8px", opacity: 0.7 }}
+              />
+              Share with Organizations
             </MenuItem>
           )}
 
@@ -1346,19 +1347,35 @@ export default function DashboardsPage() {
         }}
       />
 
-      <ShareWithOrganizationsDrawer
+      {/* Sharing is all-organizations or nothing, so it's a confirmation
+          rather than a picker. Going back to private isn't confirmed. */}
+      <Modal
         open={shareOpen}
         onClose={() => setShareOpen(false)}
-        initial={sharedOrgs}
-        onSave={(orgs) => {
-          setSharedOrgs(orgs);
-          setToast(
-            orgs.length === 1
-              ? `${name} shared with 1 Organization.`
-              : `${name} shared with ${orgs.length} Organizations.`,
-          );
+        title="Share dashboard?"
+        width={480}
+        secondaryAction={{
+          label: "Cancel",
+          onClick: () => setShareOpen(false),
         }}
-      />
+        primaryAction={{
+          label: "Share Dashboard",
+          onClick: () => {
+            setShared(true);
+            setShareOpen(false);
+            setToast(`${name} shared with Organizations.`);
+          },
+        }}
+      >
+        <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
+          <Box component="span" sx={{ fontWeight: 700, color: "text.primary" }}>
+            {name}
+          </Box>{" "}
+          will be visible to all users in the organizations you belong to. They
+          can add it to their dashboards, but only you can edit or delete it.
+          You can change it back to private at any time.
+        </Typography>
+      </Modal>
 
       {/* Widget delete confirmation */}
       <Modal

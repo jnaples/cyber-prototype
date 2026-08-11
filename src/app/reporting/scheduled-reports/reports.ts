@@ -63,6 +63,15 @@ export const REPORTS: ReportDef[] = [
     cybersight: true,
   },
   {
+    key: "threat-trends",
+    title: "Threat Trends",
+    desc: "Threat events over time, with the domains and devices behind them.",
+    Icon: ShieldOutlinedIcon,
+    file: "Threat-Trends-Jul-2026.pdf",
+    size: "1.0 MB",
+    cybersight: true,
+  },
+  {
     key: "ai-usage",
     title: "CyberSight AI Usage",
     desc: "AI queries, insights generated, and usage by device.",

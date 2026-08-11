@@ -4,30 +4,16 @@
 
 import { Box, Typography } from "@mui/material";
 
-import { queryLogRows } from "@/data/query-logs";
+import {
+  QUERY_LOG_COLUMNS as COLUMNS,
+  QUERY_LOG_ROWS as ROWS,
+} from "./query-logs-csv";
 
 const SHEET_TEXT = "#031625";
 const SHEET_TEXT2 = "rgba(3,22,37,.62)";
 const GRID_LINE = "rgba(3,22,37,.10)";
 const HEADER_BG = "#eef1f6";
 const ZEBRA_BG = "rgba(3,22,37,.025)";
-
-const ROW_COUNT = 50;
-
-// The Query Logs "Default" view, minus the row-actions column.
-const COLUMNS: { field: string; label: string; width: number }[] = [
-  { field: "time", label: "Time", width: 132 },
-  { field: "fqdn", label: "FQDN", width: 210 },
-  { field: "result", label: "Result", width: 84 },
-  { field: "method", label: "Method", width: 88 },
-  { field: "categories", label: "Categories", width: 168 },
-  { field: "site", label: "Site", width: 120 },
-  { field: "policy", label: "Policy", width: 140 },
-  { field: "deployment", label: "Deployment", width: 150 },
-  { field: "localUserName", label: "Local User Name", width: 150 },
-];
-
-const ROWS = queryLogRows.slice(0, ROW_COUNT);
 
 export function QueryLogsCsvSheet() {
   return (

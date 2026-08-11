@@ -4,30 +4,12 @@
 
 import { Box } from "@mui/material";
 import type { SxProps, Theme } from "@mui/material/styles";
-import type { ComponentType } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import type { SvgIconComponent } from "@mui/icons-material";
 
-import CustomerActivityOverviewReport from "@/app/reports/customer-activity-overview/page";
-import CyberSightAiUsageReport from "@/app/reports/cybersight-ai-usage/page";
-import FilterProtectionSummaryReport from "@/app/reports/filter-protection-summary/page";
-import TimelineActivityLogsReport from "@/app/reports/timeline-activity-logs/page";
-import TimelineOverviewReport from "@/app/reports/timeline-overview/page";
-
-import { QueryLogsCsvSheet } from "./query-logs-csv-sheet";
 import { ReportCoverSheet } from "./report-cover-sheet";
-
-// The real report documents under /reports, keyed by catalog entry. Anything
-// without a built page falls back to the sample cover sheet.
-const REPORT_PAGES: Record<string, ComponentType> = {
-  activity: CustomerActivityOverviewReport,
-  traffic: QueryLogsCsvSheet,
-  protection: FilterProtectionSummaryReport,
-  "timeline-logs": TimelineActivityLogsReport,
-  "timeline-overview": TimelineOverviewReport,
-  "ai-usage": CyberSightAiUsageReport,
-};
+import { REPORT_PAGES } from "./report-pages";
 
 // The report documents are laid out on a fixed 1400px canvas; scale them down
 // to whatever width the preview pane actually has.

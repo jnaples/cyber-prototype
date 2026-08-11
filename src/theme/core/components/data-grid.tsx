@@ -14,10 +14,13 @@ const MuiDataGrid: Components<Theme>["MuiDataGrid"] = {
           backgroundColor: theme.vars.palette.background.gridHeader,
         },
       // Action-column buttons (e.g. the row ellipsis) always use the secondary
-      // text button color, wherever an "actions" column appears.
-      "& .MuiDataGrid-cell[data-field='actions'] .MuiIconButton-root": {
-        color: theme.vars.palette.secondary.main,
-      },
+      // text button color, wherever an "actions" column appears. Disabled ones
+      // are excluded — this selector outranks a button's own `sx`, so without
+      // the exclusion an unavailable action still paints as if it were live.
+      "& .MuiDataGrid-cell[data-field='actions'] .MuiIconButton-root:not(.Mui-disabled)":
+        {
+          color: theme.vars.palette.secondary.main,
+        },
       // Selected row uses the same primary tint as a selected menu item, so
       // "selected" reads consistently between grids and dropdowns.
       "& .MuiDataGrid-row.Mui-selected": {

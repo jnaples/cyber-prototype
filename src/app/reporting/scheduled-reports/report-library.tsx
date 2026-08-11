@@ -171,11 +171,7 @@ export function ReportLibrary() {
                 color="primary"
                 size="small"
                 startIcon={<MaterialSymbol name="add" size={18} />}
-                onClick={() =>
-                  navigate("/reporting/report-scheduler", {
-                    state: { reportKeys: [selected.key] },
-                  })
-                }
+                onClick={() => navigate("/reporting/report-scheduler")}
               >
                 Schedule Report
               </Button>

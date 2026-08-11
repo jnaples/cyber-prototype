@@ -3,6 +3,7 @@
 // organizations, recipients, schedule, branding) and a live Email / PDF-cover
 // preview on the right. Header carries the Cancel / Create schedule actions.
 
+import AttachmentOutlinedIcon from "@mui/icons-material/AttachmentOutlined";
 import {
   Autocomplete,
   Box,
@@ -101,16 +102,12 @@ function Step({
 export function ScheduleReportView({
   onCancel,
   onSave,
-  initialReports,
 }: {
   onCancel: () => void;
   onSave: () => void;
-  /** Report keys to preselect (e.g. when opened from a Library preview). */
-  initialReports?: string[];
 }) {
-  const [selectedReports, setSelectedReports] = useState<string[]>(
-    initialReports ?? [],
-  );
+  // The builder always opens with nothing chosen, whichever page led here.
+  const [selectedReports, setSelectedReports] = useState<string[]>([]);
   const [selectedOrg, setSelectedOrg] = useState("");
   const [portalUsers, setPortalUsers] = useState<string[]>([]);
   const [externalEmail, setExternalEmail] = useState("");
@@ -807,10 +804,8 @@ export function ScheduleReportView({
                                   py: 1,
                                 }}
                               >
-                                <MaterialSymbol
-                                  name="picture_as_pdf"
-                                  size={20}
-                                  sx={{ color: "#d93025" }}
+                                <AttachmentOutlinedIcon
+                                  sx={{ fontSize: 20, color: "text.disabled" }}
                                 />
                                 <Typography
                                   variant="body2"
