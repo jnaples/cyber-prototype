@@ -76,7 +76,7 @@ export function ConnectionDetailsDrawer({
     <Drawer
       open={open}
       onClose={onClose}
-      title="Connection Details"
+      title="DoH Endpoint"
       subheader={name}
       actions={
         <Button variant="outlined" color="secondary" onClick={onClose}>
