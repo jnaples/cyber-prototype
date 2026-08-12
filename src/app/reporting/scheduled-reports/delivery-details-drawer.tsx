@@ -85,7 +85,7 @@ export function DeliveryDetailsDrawer({
         rejected the message.
       </Alert>
 
-      <Divider />
+      <Divider sx={{ mt: 1 }} />
 
       <Box>
         <SectionLabel>Recipients</SectionLabel>
@@ -129,7 +129,7 @@ export function DeliveryDetailsDrawer({
         </Box>
       </Box>
 
-      <Divider />
+      <Divider sx={{ mt: 1 }} />
 
       <Box>
         <SectionLabel>Attachments ({attachments.length})</SectionLabel>
