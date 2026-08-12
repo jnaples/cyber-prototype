@@ -15,6 +15,7 @@ import { link } from "./link";
 import { listSubheader } from "./list-subheader";
 import { menu } from "./menu";
 import { outlinedInput } from "./outlined-input";
+import { primaryOnDark } from "./primary-on-dark";
 import { switchComponent } from "./switch";
 import { tab } from "./tab";
 import { textField } from "./text-field";
@@ -45,4 +46,5 @@ export const components = {
   ...link,
   ...circularProgress,
   ...typography,
+  ...primaryOnDark,
 };

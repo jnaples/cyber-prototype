@@ -48,12 +48,18 @@ const MuiButton: Components<Theme>["MuiButton"] = {
 
 const MuiIconButton: Components<Theme>["MuiIconButton"] = {
   styleOverrides: {
-    root: {
+    root: ({ theme }) => ({
       "&.Mui-disabled": {
         pointerEvents: "auto",
         cursor: "not-allowed",
       },
-    },
+      // See primary-on-dark: non-button primary accents lighten on dark.
+      ...theme.applyStyles("dark", {
+        "&.MuiIconButton-colorPrimary": {
+          color: theme.vars.palette.primary.light,
+        },
+      }),
+    }),
   },
 };
 

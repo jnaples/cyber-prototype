@@ -905,6 +905,15 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   <span style={{ margin: "4px 0" }}>Old Billing</span>
                 </Box>
                 <Box
+                  sx={getSubItemStyles("organization-branding")}
+                  onClick={() => {
+                    handleItemClick("organization-branding");
+                    navigate("/msp/branding");
+                  }}
+                >
+                  <span style={{ margin: "4px 0" }}>Branding</span>
+                </Box>
+                <Box
                   sx={getSubItemStyles("organization-settings")}
                   onClick={() => {
                     handleItemClick("organization-settings");

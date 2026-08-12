@@ -20,6 +20,7 @@ import PageHeaderDocsPage from "@/app/design-system/page-header/page";
 import TypographyDocsPage from "@/app/design-system/typography/page";
 import OverviewPage from "@/app/overview/page";
 import DashboardsPage from "@/app/dashboards/page";
+import BrandingPage from "@/app/msp/branding/page";
 import OrganizationSettingsPage from "@/app/msp/settings/page";
 import ManageDashboardsPage from "@/app/dashboards/manage/page";
 import HomePage from "@/app/page";
@@ -71,6 +72,7 @@ function App() {
           <Route path="report-scheduler" element={<ReportSchedulerPage />} />
         </Route>
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="msp/branding" element={<BrandingPage />} />
         <Route path="msp/settings" element={<OrganizationSettingsPage />} />
 
         <Route path="subscriptions" element={<SubscriptionsLayout />}>
