@@ -16,6 +16,8 @@ export interface StatusTabProps {
   isSelected: boolean;
   showInfoIcon?: boolean;
   infoTooltip?: React.ReactNode;
+  /** Hide the count above the label, leaving just the ring and the label. */
+  hideCount?: boolean;
 }
 
 export function StatusTab({
@@ -28,6 +30,7 @@ export function StatusTab({
   isSelected,
   showInfoIcon,
   infoTooltip,
+  hideCount,
 }: StatusTabProps) {
   return (
     <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -71,16 +74,18 @@ export function StatusTab({
           alignItems: "flex-start",
         }}
       >
-        <Typography
-          sx={{
-            fontFamily: "var(--mui-fontFamily)",
-            fontWeight: 500,
-            fontSize: "18px",
-            lineHeight: 1.75,
-          }}
-        >
-          {count}
-        </Typography>
+        {!hideCount && (
+          <Typography
+            sx={{
+              fontFamily: "var(--mui-fontFamily)",
+              fontWeight: 500,
+              fontSize: "18px",
+              lineHeight: 1.75,
+            }}
+          >
+            {count}
+          </Typography>
+        )}
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Typography
             variant="body1"
@@ -93,12 +98,7 @@ export function StatusTab({
             {label}
           </Typography>
           {showInfoIcon && (
-            <ArrowTooltip
-              title={
-                infoTooltip ?? ""
-              }
-              direction="bottom"
-            >
+            <ArrowTooltip title={infoTooltip ?? ""} direction="bottom">
               <InfoOutlinedIcon
                 sx={{
                   fontSize: 16,

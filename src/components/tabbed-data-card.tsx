@@ -15,6 +15,8 @@ export interface StatusTabConfig {
   progressValue: number;
   showInfoIcon?: boolean;
   infoTooltip?: React.ReactNode;
+  /** Hide the count above the label. */
+  hideCount?: boolean;
 }
 
 export interface TabbedDataCardProps {
@@ -86,6 +88,7 @@ export function TabbedDataCard({
                       isSelected={activeTab === index}
                       showInfoIcon={tab.showInfoIcon}
                       infoTooltip={tab.infoTooltip}
+                      hideCount={tab.hideCount}
                     />
                   }
                 />

@@ -444,14 +444,6 @@ const baseColumns: GridColDef<DohRow>[] = [
     renderCell: (params) => <StatusChip status={params.row.status} />,
   },
   {
-    field: "created",
-    headerName: "Created",
-    description: "Shown in your local time zone.",
-    flex: 1,
-    minWidth: 180,
-    renderCell: (params) => params.row.created || "-",
-  },
-  {
     field: "lastQuery",
     headerName: "Last Query Received",
     description: "How long ago this endpoint last resolved a query.",
@@ -478,6 +470,14 @@ const baseColumns: GridColDef<DohRow>[] = [
         />
       </Box>
     ),
+  },
+  {
+    field: "created",
+    headerName: "Created",
+    description: "Shown in your local time zone.",
+    flex: 1,
+    minWidth: 180,
+    renderCell: (params) => params.row.created || "-",
   },
   {
     field: "organization",
@@ -524,8 +524,8 @@ const baseColumns: GridColDef<DohRow>[] = [
   },
 ];
 
-// DoH ID ships hidden; users can turn it on in Preferences.
-const DEFAULT_COLUMN_VISIBILITY = { uniqueDoh: false };
+// DoH ID and Created ship hidden; users can turn them on in Preferences.
+const DEFAULT_COLUMN_VISIBILITY = { uniqueDoh: false, created: false };
 
 export default function ClientlessPage() {
   const navigate = useNavigate();
@@ -553,6 +553,8 @@ export default function ClientlessPage() {
       color: "primary.main",
       iconColorVar: "var(--dnsf-palette-primary-main)",
       progressValue: total ? 100 : 0,
+      // Counts are in the grid below; the tabs just filter.
+      hideCount: true,
     },
     {
       icon: "check_circle",
@@ -561,6 +563,10 @@ export default function ClientlessPage() {
       color: "success.main",
       iconColorVar: "var(--dnsf-palette-success-main)",
       progressValue: total ? (activeCount / total) * 100 : 0,
+      hideCount: true,
+      showInfoIcon: true,
+      infoTooltip:
+        "Clientless Devices that have reported DNS traffic within the last 15 minutes.",
     },
     {
       icon: "hourglass_empty",
@@ -569,9 +575,10 @@ export default function ClientlessPage() {
       color: "warning.main",
       iconColorVar: "var(--dnsf-palette-warning-main)",
       progressValue: total ? (pendingCount / total) * 100 : 0,
+      hideCount: true,
       showInfoIcon: true,
       infoTooltip:
-        "These endpoints have been created but have not received any DNS traffic yet.",
+        "Clientless Devices that were created but have not reported DNS traffic yet.",
     },
     {
       icon: "portable_wifi_off",
@@ -581,6 +588,10 @@ export default function ClientlessPage() {
       // Matches the progress ring above, which uses `color`.
       iconColorVar: "var(--dnsf-palette-text-secondary)",
       progressValue: total ? (inactiveCount / total) * 100 : 0,
+      hideCount: true,
+      showInfoIcon: true,
+      infoTooltip:
+        "Clientless Devices that have reported DNS traffic before, but not within the last 15 minutes.",
     },
   ];
 

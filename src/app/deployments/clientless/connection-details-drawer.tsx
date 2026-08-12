@@ -2,9 +2,11 @@
 // one place — the create page only ever shows the one type being generated, so
 // this is where an existing deployment's other formats are read off.
 
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { Box, Button, Divider, FormLabel, Typography } from "@mui/material";
 import { Fragment } from "react";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { CopyButton } from "@/components/copy-button";
 import { Drawer } from "@/components/drawer";
 import { TextField } from "@/components/text-field";
@@ -35,12 +37,31 @@ function ReadOnlyField({
   label: string;
   value: string;
   copyLabel: string;
-  /** Install instructions, sat with the field they describe. */
+  /** Install instructions — shown on the label's info icon. */
   helper?: string;
 }) {
   return (
     <Box>
-      <FormLabel sx={{ display: "block", mb: 0.5 }}>{label}</FormLabel>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
+        {/* The row below the label owns the spacing; the theme's own label
+            margin would stack on top of it. */}
+        <FormLabel sx={{ display: "block", mb: 0 }}>{label}</FormLabel>
+        {helper && (
+          <ArrowTooltip title={helper}>
+            <InfoOutlinedIcon
+              // Primary blue, lightened on dark the way CopyButton is.
+              sx={(theme) => ({
+                fontSize: 16,
+                cursor: "help",
+                color: "primary.main",
+                ...theme.applyStyles("dark", {
+                  color: theme.vars.palette.primary.light,
+                }),
+              })}
+            />
+          </ArrowTooltip>
+        )}
+      </Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <TextField
           fullWidth
@@ -51,11 +72,6 @@ function ReadOnlyField({
         />
         <CopyButton value={value} label={copyLabel} />
       </Box>
-      {helper && (
-        <Typography variant="body2" sx={{ color: "text.secondary", mt: "4px" }}>
-          {helper}
-        </Typography>
-      )}
     </Box>
   );
 }
@@ -85,11 +101,6 @@ export function ConnectionDetailsDrawer({
         </Button>
       }
     >
-      <Typography variant="body2" sx={{ color: "text.primary" }}>
-        Use the format the device supports. All four point at the same endpoint
-        and the same policy.
-      </Typography>
-
       {/* One div per format holding its overline, fields and helper text; the
           rules stay outside so they span the drawer rather than a section. */}
       {DOH_TYPES.map((type, index) => {
