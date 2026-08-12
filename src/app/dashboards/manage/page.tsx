@@ -200,7 +200,9 @@ export default function ManageDashboardsPage() {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => navigate("/dashboards")}
+          // Opens the dashboard page on a blank dashboard rather than the
+          // last one that was saved.
+          onClick={() => navigate("/dashboards", { state: { create: true } })}
           startIcon={<MaterialSymbol name="add" size={20} />}
         >
           Create Dashboard

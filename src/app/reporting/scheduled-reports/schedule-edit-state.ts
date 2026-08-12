@@ -20,7 +20,7 @@ export type ScheduleEditState = {
 };
 
 // Grid tags are short labels; the catalog keys them differently.
-const TAG_TO_REPORT_KEY: Record<string, string> = {
+export const TAG_TO_REPORT_KEY: Record<string, string> = {
   "Customer Activity Overview": "activity",
   "Protection Summary": "protection",
   "Traffic Logs": "traffic",
@@ -49,17 +49,6 @@ const EXTERNAL_EMAILS = [
 ];
 
 const REPORT_KEYS = new Set(REPORTS.map((r) => r.key));
-
-/**
- * The row's organizations column is a summary — "All organizations (6)" or
- * "Globex +1" — so it resolves to the all-orgs option or to the named org,
- * dropping the "+n" the single-select picker can't hold.
- */
-function organizationFor(organizations: string) {
-  if (organizations.startsWith("All organizations")) return "All Organizations";
-  const named = organizations.replace(/\s*\+\d+$/, "").trim();
-  return named === "Globex" ? "Globex Financial" : named;
-}
 
 export function scheduleEditState(row: {
   id: number;
@@ -92,7 +81,7 @@ export function scheduleEditState(row: {
     scheduleId: row.id,
     scheduleName: row.name,
     reports,
-    organization: organizationFor(row.organizations),
+    organization: row.organizations,
     frequency: row.freqPrimary,
     portalUsers,
     externalEmails,

@@ -36,6 +36,7 @@ import { CustomDateTimeRangePicker } from "@/components/custom-date-time-range-p
 import type { CustomDateTimeRangePickerValue } from "@/components/custom-date-time-range-picker";
 import { EmptyState } from "@/components/empty-state";
 import { MaterialSymbol } from "@/components/material-symbol";
+import { ReportMiscategorizationDrawer } from "@/app/unblock-requests/report-miscategorization-drawer";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
@@ -217,6 +218,7 @@ function FqdnCell({ row }: { row: QueryLogRow }) {
 function RowActionsCell({ row }: { row: QueryLogRow }) {
   const investigateCtx = useContext(InvestigateContext);
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
   // Only one investigation at a time — lock the icon on every row while active.
   const investigating = investigateCtx?.investigatedRowId != null;
 
@@ -284,7 +286,26 @@ function RowActionsCell({ row }: { row: QueryLogRow }) {
             {label}
           </MenuItem>
         ))}
+        {/* Reporting a bad verdict is a different kind of action from editing
+            the allow / block lists, so it sits below a rule. */}
+        <Divider />
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
+            setReportOpen(true);
+          }}
+        >
+          Report Miscategorization
+        </MenuItem>
       </Menu>
+
+      <ReportMiscategorizationDrawer
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        domain={row.fqdn}
+        currentCategory={row.categories}
+        isThreat={row.result === "Blocked"}
+      />
     </Box>
   );
 }

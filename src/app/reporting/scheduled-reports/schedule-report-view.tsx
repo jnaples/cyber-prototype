@@ -72,6 +72,10 @@ const ORGS = [
   "London Branch",
 ];
 
+// A custom report is built to order in the Custom Report builder, so there's
+// nothing here to put on a schedule.
+const SCHEDULABLE_REPORTS = REPORTS.filter((r) => r.key !== "custom");
+
 const FREQUENCIES = ["Daily", "Weekly", "Monthly", "Quarterly"] as const;
 
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -117,6 +121,7 @@ export function ScheduleReportView({
   const [selectedReports, setSelectedReports] = useState<string[]>(
     edit?.reports ?? initialReports ?? [],
   );
+  const [scheduleName, setScheduleName] = useState(edit?.scheduleName ?? "");
   const [selectedOrg, setSelectedOrg] = useState(edit?.organization ?? "");
   const [portalUsers, setPortalUsers] = useState<string[]>(
     edit?.portalUsers ?? [],
@@ -144,12 +149,14 @@ export function ScheduleReportView({
     );
 
   const recipientCount = portalUsers.length + externalEmails.length;
-  const selectedReportDefs = REPORTS.filter((r) =>
+  const selectedReportDefs = SCHEDULABLE_REPORTS.filter((r) =>
     selectedReports.includes(r.key),
   );
 
-  // Required to save: a report, an organization, a recipient, and a subject.
+  // Required to save: a name, a report, an organization, a recipient, and a
+  // subject.
   const canSave =
+    scheduleName.trim() !== "" &&
     selectedReports.length > 0 &&
     selectedOrg !== "" &&
     recipientCount > 0 &&
@@ -207,19 +214,40 @@ export function ScheduleReportView({
               xs: "1fr",
               md: "minmax(0, 1.15fr) minmax(0, 1fr)",
             },
-            gap: 3,
+            gap: 2,
             alignItems: "start",
           }}
         >
           {/* ---------------------------------------------------------------- */}
           {/* LEFT — stepped form                                              */}
           {/* ---------------------------------------------------------------- */}
-          <Card sx={{ p: 2, display: "flex", flexDirection: "column", gap: 3 }}>
+          <Card sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography variant="cardTitle">Schedule Details</Typography>
 
             {/* STEP 1 — Reports */}
             <Step n={1} title="Reports">
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Box>
+                  <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                    Schedule Name
+                    <Box component="span" sx={{ ml: 0.25 }}>
+                      *
+                    </Box>
+                  </FormLabel>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="e.g. Monthly Executive Summary"
+                    value={scheduleName}
+                    onChange={(e) => setScheduleName(e.target.value)}
+                    // Same hint tone as the Organization select below it — the
+                    // theme otherwise paints input placeholders a step darker.
+                    sx={{
+                      "& .MuiOutlinedInput-root:not(.Mui-disabled) input::placeholder":
+                        { color: "text.disabled", opacity: 1 },
+                    }}
+                  />
+                </Box>
                 <Box>
                   <FormLabel sx={{ display: "block", mb: 0.5 }}>
                     Organization
@@ -268,7 +296,7 @@ export function ScheduleReportView({
                       gap: 2,
                     }}
                   >
-                    {REPORTS.map((r) => {
+                    {SCHEDULABLE_REPORTS.map((r) => {
                       const selected = selectedReports.includes(r.key);
                       return (
                         <Box
@@ -377,11 +405,11 @@ export function ScheduleReportView({
               </Box>
             </Step>
 
-            <Divider />
+            <Divider sx={{ mt: 1 }} />
 
             {/* STEP 2 — Delivery */}
             <Step n={2} title="Delivery">
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <SearchableMultiSelect
                   label="Internal Recipients"
                   options={PORTAL_USER_EMAILS}
@@ -514,11 +542,11 @@ export function ScheduleReportView({
               </Box>
             </Step>
 
-            <Divider />
+            <Divider sx={{ mt: 1 }} />
 
             {/* STEP 3 — Schedule */}
             <Step n={3} title="Schedule">
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <Box>
                   <FormLabel sx={{ display: "block", mb: 0.5 }}>
                     Schedule
@@ -546,7 +574,7 @@ export function ScheduleReportView({
               </Box>
             </Step>
 
-            <Divider />
+            <Divider sx={{ mt: 1 }} />
 
             {/* STEP 4 — Branding */}
             <Step n={4} title="Branding (Optional)">
@@ -663,7 +691,15 @@ export function ScheduleReportView({
               <Typography variant="cardTitle">Preview</Typography>
             </Box>
 
-            <Box sx={{ bgcolor: "background.paper", p: 2 }}>
+            <Box
+              sx={{
+                bgcolor: "background.neutral",
+                borderRadius: 1,
+                mx: 2,
+                mb: 2,
+                p: 2,
+              }}
+            >
               <>
                 {/* Envelope */}
                 <Box
@@ -705,13 +741,7 @@ export function ScheduleReportView({
                 </Box>
 
                 {/* Email body */}
-                <Box
-                  sx={{
-                    p: 2,
-                    bgcolor: "background.neutral",
-                    borderRadius: 1,
-                  }}
-                >
+                <Box sx={{ borderRadius: 1 }}>
                   {selectedReportDefs.length === 0 ? (
                     <Typography
                       variant="body2"

@@ -560,14 +560,20 @@ export default function DashboardsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const persisted = readPersisted();
-  // A dashboard picked from the Manage Dashboards page arrives via router state.
-  const pickedDashboard = (location.state as { dashboard?: string } | null)
-    ?.dashboard;
+  // A dashboard picked from the Manage Dashboards page arrives via router
+  // state, as does its "Create Dashboard" — which starts blank rather than
+  // reopening whatever was last saved.
+  const { dashboard: pickedDashboard, create } = (location.state ?? {}) as {
+    dashboard?: string;
+    create?: boolean;
+  };
   const [name, setName] = useState(
-    pickedDashboard ?? persisted.name ?? "FilterDNS Overview",
+    create
+      ? "New Dashboard"
+      : (pickedDashboard ?? persisted.name ?? "FilterDNS Overview"),
   );
-  const [widgets, setWidgets] = useState<WidgetInstance[]>(
-    () => persisted.widgets ?? DEFAULT_LAYOUT(),
+  const [widgets, setWidgets] = useState<WidgetInstance[]>(() =>
+    create ? [] : (persisted.widgets ?? DEFAULT_LAYOUT()),
   );
 
   // react-grid-layout state — positions/sizes managed by the grid. Reconciled
@@ -1094,10 +1100,11 @@ export default function DashboardsPage() {
         )}
       </Box>
 
-      {/* Filter strip */}
+      {/* Filter strip — hidden on a brand-new dashboard, which has no widgets
+          for a filter or time range to act on. */}
       <Box
         sx={{
-          display: "flex",
+          display: widgets.length === 0 ? "none" : "flex",
           alignItems: "center",
           gap: 1,
           px: 2,

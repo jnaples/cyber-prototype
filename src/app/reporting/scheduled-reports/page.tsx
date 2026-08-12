@@ -8,8 +8,11 @@ import {
   Box,
   Button,
   Chip,
+  Divider,
   IconButton,
   InputAdornment,
+  ListItemIcon,
+  Menu,
   MenuItem,
   Snackbar,
   Switch,
@@ -28,6 +31,7 @@ import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
 import { MaterialSymbol } from "@/components/material-symbol";
+import { Modal } from "@/components/modal";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
@@ -35,10 +39,12 @@ import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
 
+import { DeliveryDetailsDrawer } from "./delivery-details-drawer";
 import { ReportHistory } from "./report-history";
-import { scheduleEditState } from "./schedule-edit-state";
+import { scheduleEditState, TAG_TO_REPORT_KEY } from "./schedule-edit-state";
 import { REPORT_MANAGER_BASE, REPORT_MANAGER_TABS } from "./routes";
 import { ReportLibrary } from "./report-library";
+import { REPORTS } from "./reports";
 
 // ---------------------------------------------------------------------------
 // Types + data
@@ -50,6 +56,7 @@ type Schedule = {
   id: number;
   name: string;
   tags: string[];
+  /** A schedule targets exactly one organization. */
   organizations: string;
   recipients: number;
   freqPrimary: string;
@@ -75,7 +82,7 @@ const SCHEDULES: Schedule[] = [
     id: 1,
     name: "Monthly Executive Summary",
     tags: ["Customer Activity Overview", "Protection Summary"],
-    organizations: "All organizations (6)",
+    organizations: "Acme Manufacturing",
     recipients: 7,
     freqPrimary: "Monthly",
     freqSecondary: "1st",
@@ -101,7 +108,7 @@ const SCHEDULES: Schedule[] = [
     id: 3,
     name: "CyberSight AI Monthly Review",
     tags: ["AI Usage", "Timeline Overview"],
-    organizations: "Globex +1",
+    organizations: "Globex Financial",
     recipients: 2,
     freqPrimary: "Monthly",
     freqSecondary: "15th",
@@ -119,7 +126,7 @@ const SCHEDULES: Schedule[] = [
       "Traffic Logs",
       "AI Usage",
     ],
-    organizations: "All organizations (6)",
+    organizations: "Umbrella Health",
     recipients: 6,
     freqPrimary: "Monthly",
     freqSecondary: "1st",
@@ -166,17 +173,33 @@ function ReportTypeCell({ tags }: { tags: string[] }) {
   const chipSx = {
     bgcolor: "action.hover",
     color: "text.secondary",
+    // Long titles ellipsize rather than pushing the "+N" out of the cell.
+    minWidth: 0,
+    "& .MuiChip-label": {
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+    },
   } as const;
   return (
     <Box
-      sx={{ display: "flex", alignItems: "center", gap: 0.5, height: "100%" }}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 0.5,
+        height: "100%",
+        minWidth: 0,
+      }}
     >
       {shown.map((t) => (
         <Chip key={t} size="small" label={t} sx={chipSx} />
       ))}
       {extra > 0 && (
         <ArrowTooltip title={tags.slice(2).join(", ")}>
-          <Chip size="small" label={`+${extra}`} sx={chipSx} />
+          <Chip
+            size="small"
+            label={`+${extra}`}
+            sx={{ ...chipSx, flexShrink: 0 }}
+          />
         </ArrowTooltip>
       )}
     </Box>
@@ -193,8 +216,51 @@ function StatusCell({ status }: { status: ScheduleStatus }) {
   );
 }
 
-function ActionsCell({ row }: { row: Schedule }) {
+function deliveryFor(row: Schedule) {
+  const { portalUsers, externalEmails } = scheduleEditState(row);
+  const emails = [...portalUsers, ...externalEmails];
+  return emails.map((email, i) => ({
+    email,
+    // The last address is the one that bounced.
+    status: (i === emails.length - 1 ? "bounced" : "delivered") as
+      "bounced" | "delivered",
+    detail:
+      i === emails.length - 1
+        ? "Bounced — mailbox full"
+        : `Delivered ${row.lastDate}`,
+  }));
+}
+
+function attachmentsFor(row: Schedule) {
+  return row.tags.map((tag) => {
+    // Grid tags are short labels ("AI Usage"), so they resolve through the same
+    // map the edit prefill uses rather than matching catalog titles directly.
+    const def = REPORTS.find((r) => r.key === TAG_TO_REPORT_KEY[tag]);
+    return {
+      file: def?.file ?? `${tag.replace(/\s+/g, "-")}.pdf`,
+      size: def?.size ?? "—",
+    };
+  });
+}
+
+function ActionsCell({
+  row,
+  onSendTest,
+  onDelete,
+  onResend,
+}: {
+  row: Schedule;
+  onSendTest: () => void;
+  onDelete: () => void;
+  onResend: (count: number) => void;
+}) {
   const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deliveryOpen, setDeliveryOpen] = useState(false);
+  const closeMenu = () => setAnchorEl(null);
+  const failedDelivery = row.lastStatus === "failed";
+
   return (
     <Box
       sx={{
@@ -220,17 +286,118 @@ function ActionsCell({ row }: { row: Schedule }) {
           <EditOutlinedIcon sx={{ fontSize: 20 }} />
         </IconButton>
       </ArrowTooltip>
-      <IconButton size="small" aria-label="More options">
+      <IconButton
+        size="small"
+        aria-label="More options"
+        onClick={(e) => setAnchorEl(e.currentTarget)}
+      >
         <MoreHorizOutlinedIcon sx={{ fontSize: 20 }} />
       </IconButton>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={closeMenu}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <MenuItem
+          onClick={() => {
+            closeMenu();
+            onSendTest();
+          }}
+        >
+          <ListItemIcon>
+            <MaterialSymbol name="send" size={20} />
+          </ListItemIcon>
+          Send test
+        </MenuItem>
+        {/* Only meaningful when the last run didn't reach everyone. */}
+        {failedDelivery && (
+          <MenuItem
+            onClick={() => {
+              closeMenu();
+              setDeliveryOpen(true);
+            }}
+          >
+            <ListItemIcon>
+              <MaterialSymbol name="mark_email_unread" size={20} />
+            </ListItemIcon>
+            View delivery details
+          </MenuItem>
+        )}
+        <Divider />
+        <MenuItem
+          onClick={() => {
+            closeMenu();
+            setConfirmOpen(true);
+          }}
+          sx={{ color: "error.main" }}
+        >
+          <ListItemIcon sx={{ color: "inherit" }}>
+            <MaterialSymbol name="delete" size={20} sx={{ color: "inherit" }} />
+          </ListItemIcon>
+          Delete
+        </MenuItem>
+      </Menu>
+
+      <Modal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Delete Schedule"
+        width={420}
+        secondaryAction={{
+          label: "Cancel",
+          onClick: () => setConfirmOpen(false),
+        }}
+        primaryAction={{
+          label: (
+            <Box
+              component="span"
+              sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}
+            >
+              <MaterialSymbol name="delete_forever" size={18} />
+              Delete
+            </Box>
+          ),
+          color: "error",
+          sx: { color: "common.white" },
+          onClick: () => {
+            onDelete();
+            setConfirmOpen(false);
+          },
+        }}
+      >
+        <Typography variant="body1" sx={{ color: "text.primary" }}>
+          This action cannot be undone.
+        </Typography>
+      </Modal>
+
+      {failedDelivery && (
+        <DeliveryDetailsDrawer
+          open={deliveryOpen}
+          onClose={() => setDeliveryOpen(false)}
+          scheduleName={row.name}
+          organization={row.organizations}
+          period=""
+          generatedAt={row.lastDate}
+          recipients={deliveryFor(row)}
+          attachments={attachmentsFor(row)}
+          onResend={onResend}
+        />
+      )}
     </Box>
   );
 }
 
-const columns: GridColDef<Schedule>[] = [
+const buildColumns = (
+  onSendTest: (row: Schedule) => void,
+  onDelete: (row: Schedule) => void,
+  onResend: (row: Schedule, count: number) => void,
+): GridColDef<Schedule>[] => [
   {
     field: "name",
-    headerName: "Schedule",
+    headerName: "Schedule Name",
     width: 260,
     renderCell: (params) => <ScheduleCell name={params.row.name} />,
   },
@@ -243,7 +410,7 @@ const columns: GridColDef<Schedule>[] = [
   },
   {
     field: "organizations",
-    headerName: "Organizations",
+    headerName: "Organization",
     flex: 1,
     minWidth: 160,
   },
@@ -345,7 +512,14 @@ const columns: GridColDef<Schedule>[] = [
     resizable: false,
     align: "center",
     headerAlign: "center",
-    renderCell: (params) => <ActionsCell row={params.row} />,
+    renderCell: (params) => (
+      <ActionsCell
+        row={params.row}
+        onSendTest={() => onSendTest(params.row)}
+        onDelete={() => onDelete(params.row)}
+        onResend={(count) => onResend(params.row, count)}
+      />
+    ),
   },
 ];
 
@@ -389,6 +563,23 @@ export default function ScheduledReportsPage() {
   const [toast, setToast] = useState<string | null>(
     (state as { toast?: string } | null)?.toast ?? null,
   );
+  const [schedules, setSchedules] = useState<Schedule[]>(SCHEDULES);
+
+  const columns = useMemo(
+    () =>
+      buildColumns(
+        (row) => setToast(`Test report sent for "${row.name}".`),
+        (row) => {
+          setSchedules((rows) => rows.filter((r) => r.id !== row.id));
+          setToast(`"${row.name}" deleted.`);
+        },
+        (row, count) =>
+          setToast(
+            `Resent "${row.name}" to ${count} recipient${count === 1 ? "" : "s"}.`,
+          ),
+      ),
+    [],
+  );
   const activeTab = PAGE_TABS.findIndex(
     (t) => pathname === `${REPORT_MANAGER_BASE}/${t.path}`,
   );
@@ -406,17 +597,17 @@ export default function ScheduledReportsPage() {
 
   const counts = useMemo(
     () => ({
-      all: SCHEDULES.length,
-      active: SCHEDULES.filter((s) => s.status !== "paused").length,
-      paused: SCHEDULES.filter((s) => s.status === "paused").length,
-      issue: SCHEDULES.filter((s) => s.status === "issue").length,
+      all: schedules.length,
+      active: schedules.filter((s) => s.status !== "paused").length,
+      paused: schedules.filter((s) => s.status === "paused").length,
+      issue: schedules.filter((s) => s.status === "issue").length,
     }),
-    [],
+    [schedules],
   );
 
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return SCHEDULES.filter((s) => {
+    return schedules.filter((s) => {
       if (statusFilter === "active" && s.status === "paused") return false;
       if (statusFilter === "paused" && s.status !== "paused") return false;
       if (statusFilter === "issue" && s.status !== "issue") return false;
@@ -430,7 +621,7 @@ export default function ScheduledReportsPage() {
         return false;
       return true;
     });
-  }, [statusFilter, search, reportType]);
+  }, [schedules, statusFilter, search, reportType]);
 
   const selectedCount =
     rowSelection.type === "exclude"
