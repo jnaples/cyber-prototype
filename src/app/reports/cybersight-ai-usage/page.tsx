@@ -206,24 +206,12 @@ function BarRow({
           fontWeight: 400,
           whiteSpace: "nowrap",
           fontVariantNumeric: "tabular-nums",
+          color: TEXT2,
           my: "4px",
         }}
       >
         {row.val}
-        {share && (
-          <Box
-            component="em"
-            sx={{
-              fontStyle: "normal",
-              fontWeight: 400,
-              color: TEXT2,
-              fontSize: 16,
-              ml: "6px",
-            }}
-          >
-            {share}
-          </Box>
-        )}
+        {share && ` ${share}`}
       </Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
         <Box

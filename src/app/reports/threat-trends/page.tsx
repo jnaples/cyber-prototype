@@ -100,38 +100,33 @@ function BarRow({ row, color }: { row: Row; color: string }) {
   return (
     <Box sx={{ mb: "20px" }}>
       <Box
+        component="span"
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          gap: "12px",
-          mb: "7px",
+          display: "block",
+          fontSize: 20,
+          fontWeight: 500,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          minWidth: 0,
         }}
       >
-        <Box
-          component="span"
-          sx={{
-            fontSize: 20,
-            fontWeight: 500,
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            minWidth: 0,
-          }}
-        >
-          {row.nm}
-        </Box>
-        <Box
-          component="span"
-          sx={{
-            fontSize: 19,
-            fontWeight: 600,
-            whiteSpace: "nowrap",
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          {row.val}
-        </Box>
+        {row.nm}
+      </Box>
+      {/* Count sits on its own line, directly above the bar. */}
+      <Box
+        component="span"
+        sx={{
+          display: "block",
+          fontSize: 16,
+          fontWeight: 400,
+          whiteSpace: "nowrap",
+          fontVariantNumeric: "tabular-nums",
+          color: TEXT2,
+          my: "4px",
+        }}
+      >
+        {row.val}
       </Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
         <Box
