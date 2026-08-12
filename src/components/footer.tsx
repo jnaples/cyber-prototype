@@ -127,8 +127,15 @@ export default function Footer({ sidebarWidth = 0 }: FooterProps) {
                 </Box>
                 <IconButton
                   size="small"
-                  color="primary"
                   onClick={() => handleCopy(r.address, r.label)}
+                  // Matches CopyButton: full-strength primary is too dark on
+                  // the panel's dark surface.
+                  sx={(theme) => ({
+                    color: "primary.main",
+                    ...theme.applyStyles("dark", {
+                      color: theme.vars.palette.primary.light,
+                    }),
+                  })}
                 >
                   <MaterialSymbol
                     name={copiedLabel === r.label ? "check" : "content_copy"}

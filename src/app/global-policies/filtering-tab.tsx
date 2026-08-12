@@ -12,6 +12,7 @@ import { MaterialSymbol } from "@/components/material-symbol";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 import { PolicyDrawer } from "./policy-drawer";
 import type { PolicySection } from "./policy-drawer";
@@ -84,9 +85,7 @@ const POLICIES: PolicyRow[] = [
     id: 2,
     name: "Guest Wi-Fi Restricted",
     assigned: true,
-    chips: [
-      { label: "2 Sites", tone: "success", sectionKeys: ["Sites"] },
-    ],
+    chips: [{ label: "2 Sites", tone: "success", sectionKeys: ["Sites"] }],
     dnsIp: "103.247.36.36",
     sections: [
       {
@@ -100,9 +99,7 @@ const POLICIES: PolicyRow[] = [
     id: 3,
     name: "Remote Employees",
     assigned: true,
-    chips: [
-      { label: "8 Clients", tone: "neutral", sectionKeys: ["Clients"] },
-    ],
+    chips: [{ label: "8 Clients", tone: "neutral", sectionKeys: ["Clients"] }],
     dnsIp: "209.177.156.21",
     sections: [
       {
@@ -218,6 +215,9 @@ function PolicyActionsCell() {
 
 function buildColumns(
   onChipClick: (row: PolicyRow, chip: StatusChip) => void,
+  // The globe marks a policy as MSP-wide, which only means something while the
+  // whole MSP is in view; inside one organization every policy is its own.
+  showGlobalMarker: boolean,
 ): GridColDef<PolicyRow>[] {
   return [
     {
@@ -230,11 +230,13 @@ function buildColumns(
           <Link href="#" underline="hover" sx={{ fontWeight: 400 }}>
             {params.row.name}
           </Link>
-          <MaterialSymbol
-            name="public"
-            size={16}
-            sx={{ color: "var(--dnsf-palette-text-secondary)" }}
-          />
+          {showGlobalMarker && (
+            <MaterialSymbol
+              name="public"
+              size={16}
+              sx={{ color: "var(--dnsf-palette-text-secondary)" }}
+            />
+          )}
         </Box>
       ),
     },
@@ -297,6 +299,8 @@ export function FilteringTab() {
   const [activePolicy, setActivePolicy] = useState<PolicyRow | null>(null);
   const [activeSections, setActiveSections] = useState<PolicySection[]>([]);
 
+  const { isOrganization } = useWorkspace();
+
   const columns = useMemo(
     () =>
       buildColumns((row, chip) => {
@@ -305,8 +309,8 @@ export function FilteringTab() {
           row.sections.filter((s) => chip.sectionKeys.includes(s.label)),
         );
         setDrawerOpen(true);
-      }),
-    [],
+      }, !isOrganization),
+    [isOrganization],
   );
 
   const assignedRows = POLICIES.filter((p) => p.assigned);
@@ -348,9 +352,7 @@ export function FilteringTab() {
         <Button
           variant="contained"
           color="primary"
-          startIcon={
-            <MaterialSymbol name="add" size={20} />
-          }
+          startIcon={<MaterialSymbol name="add" size={20} />}
         >
           Add Policy
         </Button>

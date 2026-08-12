@@ -44,7 +44,12 @@ export function PolicyDrawer({
       size="large"
       title={policyName}
       actions={
-        <Button variant="outlined" color="secondary" size="small" onClick={onClose}>
+        <Button
+          variant="outlined"
+          color="secondary"
+          size="small"
+          onClick={onClose}
+        >
           Back
         </Button>
       }

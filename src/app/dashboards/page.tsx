@@ -108,6 +108,28 @@ function buildLayout(widgets: WidgetInstance[]): Layout {
   return out;
 }
 
+// Persisted layouts are untrusted input — keep only well-formed items.
+function sanitizeLayout(value: unknown): Layout | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const items = value.filter(
+    (it): it is LayoutItem =>
+      Boolean(it) &&
+      typeof (it as LayoutItem).i === "string" &&
+      ["x", "y", "w", "h"].every(
+        (k) =>
+          typeof (it as unknown as Record<string, unknown>)[k] === "number",
+      ),
+  );
+  return items.length > 0 ? items : undefined;
+}
+
+// A saved layout only applies if it still positions exactly these widgets;
+// anything else (widgets added or removed elsewhere) falls back to a repack.
+function coversWidgets(layout: Layout, widgets: WidgetInstance[]) {
+  const ids = new Set(layout.map((it) => it.i));
+  return widgets.length === ids.size && widgets.every((w) => ids.has(w.id));
+}
+
 // Keep existing item positions, append new widgets at the bottom, drop removed.
 function reconcileLayout(prev: Layout, widgets: WidgetInstance[]): Layout {
   const byId = new Map(prev.map((it) => [it.i, it]));
@@ -503,6 +525,7 @@ function readPersisted(): {
   name?: string;
   widgets?: WidgetInstance[];
   filters?: DashboardFilters;
+  layout?: Layout;
 } {
   try {
     const raw = localStorage.getItem(LS_KEY);
@@ -511,6 +534,7 @@ function readPersisted(): {
       name?: unknown;
       widgets?: unknown;
       filters?: unknown;
+      layout?: unknown;
     };
     const widgets = sanitize(parsed.widgets) ?? undefined;
     if (widgets) bumpUid(widgets);
@@ -524,6 +548,8 @@ function readPersisted(): {
               ...(parsed.filters as Partial<DashboardFilters>),
             } as DashboardFilters)
           : undefined,
+      // Where each widget sits, as the user last dragged/resized it.
+      layout: sanitizeLayout(parsed.layout),
     };
   } catch {
     return {};
@@ -546,8 +572,12 @@ export default function DashboardsPage() {
 
   // react-grid-layout state — positions/sizes managed by the grid. Reconciled
   // when widgets are added/removed.
+  // Seeded from the persisted positions when they still describe these widgets,
+  // so a refresh keeps the arrangement instead of repacking from defaults.
   const [rglLayout, setRglLayout] = useState<Layout>(() =>
-    buildLayout(widgets),
+    persisted.layout && coversWidgets(persisted.layout, widgets)
+      ? persisted.layout
+      : buildLayout(widgets),
   );
   const { width, containerRef, mounted } = useContainerWidth();
 
@@ -681,11 +711,14 @@ export default function DashboardsPage() {
   // Persist name + widgets + filters to the browser.
   useEffect(() => {
     try {
-      localStorage.setItem(LS_KEY, JSON.stringify({ name, widgets, filters }));
+      localStorage.setItem(
+        LS_KEY,
+        JSON.stringify({ name, widgets, filters, layout: rglLayout }),
+      );
     } catch {
       /* noop */
     }
-  }, [name, widgets, filters]);
+  }, [name, widgets, filters, rglLayout]);
 
   const removeWidget = (id: string) =>
     setWidgets((ws) => ws.filter((w) => w.id !== id));

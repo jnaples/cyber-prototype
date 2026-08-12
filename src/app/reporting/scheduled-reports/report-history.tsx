@@ -35,7 +35,7 @@ type HistoryRow = {
   source: "Manual" | "Scheduled";
   runAt: string;
   status: RunStatus;
-  /** Email outcome — em dash for manual exports, which aren't delivered. */
+  /** Email outcome — a dash for manual exports, which aren't delivered. */
   delivery: string;
 };
 
@@ -134,7 +134,7 @@ const HISTORY: HistoryRow[] = [
     source: "Manual",
     runAt: "Aug 2, 2026 6:15 AM",
     status: "available",
-    delivery: "—",
+    delivery: "-",
   },
   {
     id: 9,
@@ -189,7 +189,7 @@ const HISTORY: HistoryRow[] = [
     source: "Manual",
     runAt: "Aug 6, 2026 6:45 AM",
     status: "available",
-    delivery: "—",
+    delivery: "-",
   },
   {
     id: 14,
@@ -211,7 +211,7 @@ const HISTORY: HistoryRow[] = [
     source: "Manual",
     runAt: "Jul 30, 2026 2:20 PM",
     status: "available",
-    delivery: "—",
+    delivery: "-",
   },
   {
     id: 16,
@@ -233,32 +233,9 @@ const HISTORY: HistoryRow[] = [
     source: "Manual",
     runAt: "Jul 29, 2026 8:40 AM",
     status: "available",
-    delivery: "—",
+    delivery: "-",
   },
 ];
-
-// The run's own name leads; the report type it was built from sits under it,
-// which keeps the type visible without spending a column on it.
-function NameCell({ name, type }: { name: string; type: string }) {
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        height: "100%",
-        minWidth: 0,
-      }}
-    >
-      <Typography variant="body2" noWrap>
-        {name}
-      </Typography>
-      <Typography variant="caption" noWrap sx={{ color: "text.secondary" }}>
-        {type}
-      </Typography>
-    </Box>
-  );
-}
 
 function StatusCell({ status }: { status: RunStatus }) {
   return (
@@ -383,11 +360,14 @@ const columns: GridColDef<HistoryRow>[] = [
   {
     field: "reportName",
     headerName: "Report Name",
-    flex: 1.4,
-    minWidth: 220,
-    renderCell: (params) => (
-      <NameCell name={params.row.reportName} type={params.row.reportType} />
-    ),
+    flex: 1.2,
+    minWidth: 200,
+  },
+  {
+    field: "reportType",
+    headerName: "Report Type",
+    flex: 1.1,
+    minWidth: 190,
   },
   { field: "customer", headerName: "Organization", flex: 1, minWidth: 170 },
   { field: "period", headerName: "Period", flex: 0.8, minWidth: 130 },

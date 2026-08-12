@@ -16,18 +16,17 @@ import {
 } from "@mui/material";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
-import type { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 
-import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
+import { REPORT_MANAGER_BASE } from "@/app/reporting/scheduled-reports/routes";
 import { Select } from "@/components/select";
 import {
   CHART_META,
   DATA_SOURCES,
   DATE_RANGES,
-  SAMPLE_REPORTS,
   type ChartType,
   type DataSource,
   type SavedReport,
@@ -40,206 +39,9 @@ function Icon({ name, size = 20 }: { name: string; size?: number }) {
   return <MaterialSymbol name={name} size={size} />;
 }
 
-const OWNER_COLORS: Record<string, string> = {
-  DJ: "var(--dnsf-palette-primary-main)",
-  AC: "var(--dnsf-palette-pairingTeal-main)",
-  RP: "var(--dnsf-palette-pairingPurple-main)",
-};
-
 // ---------------------------------------------------------------------------
 // Reports list view
 // ---------------------------------------------------------------------------
-
-function ReportsList({
-  reports,
-  onOpen,
-}: {
-  reports: SavedReport[];
-  onCreate: () => void;
-  onOpen: (r: SavedReport) => void;
-}) {
-  const scheduled = reports.filter((r) => r.schedule).length;
-
-  const columns: GridColDef<SavedReport>[] = [
-    {
-      field: "name",
-      headerName: "Report name",
-      flex: 1,
-      minWidth: 240,
-      renderCell: (params) => (
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            height: "100%",
-          }}
-        >
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-            {params.row.name}
-          </Typography>
-          <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            {params.row.desc}
-          </Typography>
-        </Box>
-      ),
-    },
-    { field: "source", headerName: "Data source", flex: 1, minWidth: 200 },
-    {
-      field: "schedule",
-      headerName: "Schedule",
-      width: 200,
-      renderCell: (params) => (
-        <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-          {params.row.schedule ? (
-            <Stack
-              direction="row"
-              spacing={0.75}
-              sx={{ alignItems: "center", color: "success.main" }}
-            >
-              <Icon name="schedule" size={14} />
-              <Typography variant="body2" sx={{ color: "inherit" }}>
-                {params.row.schedule}
-              </Typography>
-            </Stack>
-          ) : (
-            <Typography variant="body2" sx={{ color: "text.disabled" }}>
-              Not scheduled
-            </Typography>
-          )}
-        </Box>
-      ),
-    },
-    { field: "lastRun", headerName: "Last run", width: 140 },
-    {
-      field: "owner",
-      headerName: "Owner",
-      width: 90,
-      sortable: false,
-      renderCell: (params) => (
-        <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-          <Avatar
-            title={params.row.ownerName}
-            sx={{
-              width: 28,
-              height: 28,
-              bgcolor: OWNER_COLORS[params.row.owner] || "text.secondary",
-              fontSize: 11.5,
-              fontWeight: 600,
-            }}
-          >
-            {params.row.owner}
-          </Avatar>
-        </Box>
-      ),
-    },
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 110,
-      sortable: false,
-      filterable: false,
-      resizable: false,
-      renderCell: (params) => (
-        <Box
-          sx={{ display: "flex", gap: 1, alignItems: "center", height: "100%" }}
-        >
-          <IconButton
-            size="small"
-            aria-label="edit"
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpen(params.row);
-            }}
-          >
-            <Icon name="edit" />
-          </IconButton>
-          <IconButton size="small" aria-label="more options">
-            <Icon name="more_horiz" />
-          </IconButton>
-        </Box>
-      ),
-    },
-  ];
-  const summary = [
-    {
-      label: "Saved Reports",
-      value: reports.length,
-      icon: "assessment",
-      color: "primary.main",
-    },
-    {
-      label: "Scheduled",
-      value: scheduled,
-      icon: "schedule",
-      color: "success.main",
-    },
-    {
-      label: "Shared With Org",
-      value: 3,
-      icon: "groups",
-      color: "pairingPurple.main",
-    },
-  ];
-
-  return (
-    <Box sx={{ p: 3, overflow: "auto", flex: 1 }}>
-      {/* Summary strip */}
-      <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-        {summary.map((s) => (
-          <Card
-            key={s.label}
-            sx={{
-              flex: 1,
-              p: 2,
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <Box
-              sx={{
-                width: 40,
-                height: 40,
-                borderRadius: 1,
-                bgcolor: "background.default",
-                color: s.color,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Icon name={s.icon} />
-            </Box>
-            <Box>
-              <Typography variant="h5">{s.value}</Typography>
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                {s.label}
-              </Typography>
-            </Box>
-          </Card>
-        ))}
-      </Stack>
-
-      {/* Table card */}
-      <Card sx={{ overflow: "hidden" }}>
-        <DataTable
-          rows={reports}
-          columns={columns}
-          density="comfortable"
-          showDefaultView={false}
-          showPreferences={false}
-          showExport={false}
-          sx={(theme) => ({
-            "& .MuiDataGrid-cell, & .MuiDataGrid-columnHeaderTitle": {
-              fontSize: theme.typography.body2.fontSize,
-            },
-          })}
-        />
-      </Card>
-    </Box>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Builder view (split-pane)
@@ -389,20 +191,27 @@ function ReportBuilder({
   );
 
   return (
-    <Box sx={{ flex: 1, display: "flex", minHeight: 0 }}>
+    // Two floating cards with the page's 16px gutters, mirroring the Report
+    // Library's "pick on the left, preview on the right" layout.
+    <Box
+      sx={{
+        flex: 1,
+        display: "flex",
+        gap: 2,
+        p: 2,
+        minHeight: 0,
+        overflow: "auto",
+      }}
+    >
       {/* Config panel */}
-      <Box
+      <Card
         sx={{
           width: 420,
           flexShrink: 0,
-          bgcolor: "background.paper",
-          borderRight: 1,
-          borderColor: "divider",
           display: "flex",
           flexDirection: "column",
           minHeight: 0,
-          position: "relative",
-          zIndex: 12001,
+          alignSelf: "stretch",
         }}
       >
         <Box sx={{ flex: 1, overflow: "auto" }}>
@@ -713,7 +522,7 @@ function ReportBuilder({
             Save report
           </Button>
         </Box>
-      </Box>
+      </Card>
 
       {/* Preview */}
       <PreviewPane
@@ -760,13 +569,16 @@ function PreviewPane({
   }
 
   return (
-    <Box
+    // Height hugs the report rather than filling the row, so a short chart
+    // doesn't sit in a tall empty card.
+    <Card
       sx={{
         flex: 1,
         minWidth: 0,
         display: "flex",
         flexDirection: "column",
-        bgcolor: "background.default",
+        alignSelf: "flex-start",
+        height: "auto",
       }}
     >
       {/* toolbar */}
@@ -927,7 +739,7 @@ function PreviewPane({
           </Stack>
         )}
       </Box>
-    </Box>
+    </Card>
   );
 }
 
@@ -936,42 +748,19 @@ function PreviewPane({
 // ---------------------------------------------------------------------------
 
 export default function CustomReportsPage() {
-  const [view, setView] = useState<"list" | "builder">("list");
-  const [editing, setEditing] = useState<SavedReport | null>(null);
-  const [reports, setReports] = useState<SavedReport[]>(SAMPLE_REPORTS);
+  const navigate = useNavigate();
   const [toast, setToast] = useState<string | null>(null);
 
-  const openBuilder = (r: SavedReport | null) => {
-    setEditing(r);
-    setView("builder");
-  };
+  // There's no saved-reports list any more, so leaving the builder — by Back,
+  // Cancel or Save — returns to the Report Library that sent the user here.
+  const backToLibrary = (savedName?: string) =>
+    navigate(`${REPORT_MANAGER_BASE}/templates`, {
+      state: savedName ? { toast: `"${savedName}" saved` } : undefined,
+    });
 
-  const handleSave = (cfg: {
-    name: string;
-    desc: string;
-    sourceId: string | null;
-    chart: ChartType;
-  }) => {
-    const src = DATA_SOURCES.find((s) => s.id === cfg.sourceId);
-    const entry: SavedReport = {
-      id: editing?.id || Date.now(),
-      name: cfg.name,
-      desc: cfg.desc || src?.desc || "",
-      source: src?.name || "—",
-      chart: cfg.chart,
-      schedule: editing?.schedule || null,
-      lastRun: "Just now",
-      owner: "DJ",
-      ownerName: "Dana James",
-    };
-    setReports((rs) =>
-      editing
-        ? rs.map((r) => (r.id === editing.id ? entry : r))
-        : [entry, ...rs],
-    );
-    setView("list");
+  const handleSave = (cfg: { name: string }) => {
     setToast(`"${cfg.name}" saved`);
-    window.setTimeout(() => setToast(null), 3200);
+    backToLibrary(cfg.name);
   };
 
   return (
@@ -983,40 +772,13 @@ export default function CustomReportsPage() {
         minHeight: 0,
       }}
     >
-      {view === "list" ? (
-        <PageHeader
-          title="Custom Reports"
-          actions={
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<Icon name="add" size={18} />}
-              onClick={() => openBuilder(null)}
-            >
-              Create report
-            </Button>
-          }
-        />
-      ) : (
-        <PageHeader
-          title={editing ? "Edit custom report" : "Create custom report"}
-          onBack={() => setView("list")}
-        />
-      )}
+      <PageHeader title="Create custom report" onBack={() => backToLibrary()} />
 
-      {view === "list" ? (
-        <ReportsList
-          reports={reports}
-          onCreate={() => openBuilder(null)}
-          onOpen={openBuilder}
-        />
-      ) : (
-        <ReportBuilder
-          initial={editing}
-          onCancel={() => setView("list")}
-          onSave={handleSave}
-        />
-      )}
+      <ReportBuilder
+        initial={null}
+        onCancel={() => backToLibrary()}
+        onSave={handleSave}
+      />
 
       {/* Toast */}
       {toast && (

@@ -16,11 +16,14 @@ import {
 import { useState } from "react";
 
 import { MaterialSymbol } from "@/components/material-symbol";
-import { MSP_ORGANIZATIONS } from "@/data/organizations";
+import {
+  MSP_DASHBOARDS as MSP_DASHBOARD_NAMES,
+  MSP_ORGANIZATIONS,
+} from "@/data/organizations";
 
 const byName = (a: string, b: string) => a.localeCompare(b);
 
-const MSP_DASHBOARDS = ["TechsRUs", "MSPDash"].sort(byName);
+const MSP_DASHBOARDS = [...MSP_DASHBOARD_NAMES].sort(byName);
 const ORGANIZATIONS = MSP_ORGANIZATIONS;
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -40,10 +43,16 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function OrgSwitcher() {
+export function OrgSwitcher({
+  selected,
+  onSelect,
+}: {
+  selected: string;
+  onSelect: (name: string) => void;
+}) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [q, setQ] = useState("");
-  const [selected, setSelected] = useState(MSP_DASHBOARDS[0]);
+  const setSelected = onSelect;
   const open = Boolean(anchorEl);
 
   const openPanel = (e: React.MouseEvent<HTMLElement>) => {
@@ -97,7 +106,9 @@ export function OrgSwitcher() {
         }}
       >
         <MaterialSymbol
-          name={MSP_DASHBOARDS.includes(selected) ? "language" : "corporate_fare"}
+          name={
+            MSP_DASHBOARDS.includes(selected) ? "language" : "corporate_fare"
+          }
           size={20}
         />
         <Box

@@ -168,7 +168,8 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/overview");
+    // Dashboards is the landing page while Overview is hidden from the nav.
+    navigate("/dashboards");
   };
   return (
     <Box

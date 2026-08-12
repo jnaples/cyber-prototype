@@ -1,5 +1,7 @@
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
 import MiscellaneousServicesOutlinedIcon from "@mui/icons-material/MiscellaneousServicesOutlined";
-import { Badge, Box, Collapse } from "@mui/material";
+import { Badge, Box, Collapse, Typography } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
 import React, { useState } from "react";
@@ -8,6 +10,7 @@ import { useNavigate } from "react-router";
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { Logo, LogoCollapsed } from "@/components/logo";
 import { MspBadge } from "@/components/msp-badge";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { lightPalette } from "@/theme/core/palette";
 
@@ -79,6 +82,10 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
   const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState<string>("dashboard-overview");
   const [expandedDropdown, setExpandedDropdown] = useState<string | null>(null);
+  // A client organization is scoped to one company, so the labels drop the
+  // MSP-wide framing: "Global Policies" is just "Policies", "MSP" is the
+  // organization itself.
+  const { name: workspace, isOrganization, select } = useWorkspace();
   const handleItemClick = (itemId: string) => {
     setActiveItem(itemId);
   };
@@ -138,6 +145,27 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             : "rgba(255, 255, 255, 0.1)",
     },
   });
+
+  // Group heading, so the rail can be scanned rather than read top to bottom.
+  // Collapsed it renders nothing at all, so the icons sit evenly spaced with no
+  // gap where a heading used to be.
+  const sectionLabel = (text: string) =>
+    isExpanded ? (
+      <Typography
+        component="div"
+        variant="overline"
+        sx={{
+          px: 1,
+          mt: 2,
+          mb: 0,
+          lineHeight: 1.4,
+          // The rail is always dark, whatever the app theme.
+          color: "rgba(255, 255, 255, 0.5)",
+        }}
+      >
+        {text}
+      </Typography>
+    ) : null;
 
   const getDropdownWrapperStyles = (dropdownId: string) => ({
     backgroundColor:
@@ -214,7 +242,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
         </button>
 
         {/* Logo Section - pinned top */}
-        <Box sx={{ py: 1, px: 2 }}>
+        <Box sx={{ py: 1, px: isExpanded ? 2 : 1 }}>
           {isExpanded ? (
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <MspBadge>
@@ -236,8 +264,17 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
               </Box>
             </Box>
           ) : (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <MspBadge>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              {/* Nudged in from the rail edge so the MSP badge isn't clipped
+                  and the collapse chevron doesn't sit on the mark. */}
+              <MspBadge sx={{ mt: 1, mr: 1.5 }}>
                 <LogoCollapsed />
               </MspBadge>
               <Box
@@ -264,10 +301,16 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
         </Box>
 
         {/* Workspace / organization switcher */}
-        {isExpanded && <OrgSwitcher />}
+        {isExpanded && <OrgSwitcher selected={workspace} onSelect={select} />}
 
-        {/* Navigation Links - scrollable middle */}
+        {/* Navigation Links - scrollable middle.
+            Toggling the rail changes what's in the list (the group headings come
+            and go), so the items would visibly jump to new positions mid-slide.
+            Keying on the state remounts the list, replaying the animation below:
+            the items hold at zero opacity while the rail resizes, then fade in
+            already in place. */}
         <Box
+          key={isExpanded ? "expanded" : "collapsed"}
           sx={{
             flex: 1,
             display: "flex",
@@ -277,21 +320,15 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             px: 1,
             overflowY: "auto",
             minHeight: 0,
+            animation: "navSettle 320ms ease both",
+            "@keyframes navSettle": {
+              "0%, 45%": { opacity: 0 },
+              "100%": { opacity: 1 },
+            },
           }}
         >
-          {withCollapsedTooltip(
-            "Overview",
-            <Box
-              sx={getItemStyles("overview")}
-              onClick={() => {
-                handleItemClick("overview");
-                navigate("/overview");
-              }}
-            >
-              <Icon name="language" size={isExpanded ? 20 : 24} />
-              {isExpanded && <span style={{ margin: "4px 0" }}>Overview</span>}
-            </Box>,
-          )}
+          {/* Overview is hidden from the nav for now — /overview still routes,
+              so this block can come back as-is when it's wanted again. */}
 
           {/* Dashboards Link */}
           {withCollapsedTooltip(
@@ -310,115 +347,44 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Box>,
           )}
 
-          {/* Policies Links */}
-          <Box sx={getDropdownWrapperStyles("policies")}>
-            {withCollapsedTooltip(
-              "Global Policies",
-              <Box
-                sx={getItemStyles("policies", expandedDropdown === "policies")}
-                onClick={() => {
-                  handleDropdownToggle("policies");
-                  navigate("/global-policies");
-                }}
-              >
+          {sectionLabel("Protect")}
+
+          {/* Global Policies — a single destination; the page's own tabs cover
+              Filtering / Filtering Schedules / Block Pages. */}
+          {withCollapsedTooltip(
+            isOrganization ? "Policies" : "Global Policies",
+            <Box
+              sx={getItemStyles("policies")}
+              onClick={() => {
+                handleItemClick("policies");
+                navigate("/global-policies");
+              }}
+            >
+              <Icon name="menu_book" size={isExpanded ? 20 : 24} />
+              {isExpanded && (
+                <span style={{ margin: "4px 0" }}>
+                  {isOrganization ? "Policies" : "Global Policies"}
+                </span>
+              )}
+            </Box>,
+          )}
+
+          {/* Unblock Requests — its own destination rather than a policy child. */}
+          {withCollapsedTooltip(
+            "Unblock Requests",
+            <Box
+              sx={{ ...getItemStyles("unblock-requests"), gap: 0 }}
+              onClick={() => {
+                handleItemClick("unblock-requests");
+                navigate("/unblock-requests");
+              }}
+            >
+              <FactCheckOutlinedIcon sx={{ fontSize: isExpanded ? 20 : 24 }} />
               {isExpanded && (
                 <>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      width: "100%",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    {/* Container for the LibraryBooksOutlined icon and Policies span */}
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <Icon name="menu_book" />
-                      <Box sx={{ my: 0.5, ml: 1 }}>
-                        {" "}
-                        {/* Added ml for some spacing */}
-                        <span>Global Policies</span>
-                      </Box>
-                      {/* Pink dot signifying a nested badge (Unblock Requests). */}
-                      <Box
-                        sx={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: "999px",
-                          bgcolor: "tertiary.main",
-                          mx: 1,
-                          flexShrink: 0,
-                        }}
-                      />
-                    </div>
-
-                    {/* Expand/Collapse Icon */}
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        transform:
-                          expandedDropdown === "policies"
-                            ? "rotate(0deg)"
-                            : "rotate(0deg)",
-                        transition: "transform 0.2s",
-                      }}
-                    >
-                      {expandedDropdown === "policies" ? (
-                        <Icon name="expand_less" />
-                      ) : (
-                        <Icon name="expand_more" />
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-                {!isExpanded && <Icon name="menu_book" size={24} />}
-              </Box>,
-            )}
-            {/* Policies Dropdown Items */}
-            <Collapse in={expandedDropdown === "policies" && isExpanded}>
-              <Box
-                sx={{
-                  p: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "2px",
-                  borderRadius: "0 0 6px 6px",
-                }}
-              >
-                <Box
-                  sx={getSubItemStyles("policies-filtering")}
-                  onClick={() => handleItemClick("policies-filtering")}
-                >
-                  <span style={{ margin: "4px 0" }}>Filtering</span>
-                </Box>
-                <Box
-                  sx={getSubItemStyles("policies-filtering-schedules")}
-                  onClick={() =>
-                    handleItemClick("policies-filtering-schedules")
-                  }
-                >
-                  <span style={{ margin: "4px 0" }}>Filtering Schedules</span>
-                </Box>
-                <Box
-                  sx={getSubItemStyles("policies-block-pages")}
-                  onClick={() => handleItemClick("policies-block-pages")}
-                >
-                  <span style={{ margin: "4px 0" }}>Block Pages</span>
-                </Box>
-                <Box
-                  sx={{
-                    ...getSubItemStyles("policies-unblock-requests"),
-                    gap: 0,
-                  }}
-                  onClick={() => {
-                    handleItemClick("policies-unblock-requests");
-                    navigate("/unblock-requests");
-                  }}
-                >
-                  <span style={{ margin: "4px 0" }}>Unblock Requests</span>
+                  <span style={{ margin: "4px 0 4px 8px" }}>
+                    Unblock Requests
+                  </span>
                   <Badge
                     badgeContent={10}
                     sx={{
@@ -431,10 +397,10 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                       },
                     }}
                   />
-                </Box>
-              </Box>
-            </Collapse>
-          </Box>
+                </>
+              )}
+            </Box>,
+          )}
 
           {/* Deployments Link with Dropdown */}
           <Box sx={getDropdownWrapperStyles("deployments")}>
@@ -447,47 +413,47 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                 )}
                 onClick={() => handleDropdownToggle("deployments")}
               >
-              {isExpanded && (
-                <>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      width: "100%",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    {/* Container for the DeviceHubOutlinedIcon and Deployments span */}
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <Icon name="device_hub" />
-                      <span style={{ margin: "4px 0 4px 8px" }}>
-                        Deployments
-                      </span>{" "}
-                      {/* Added left margin */}
-                    </div>
-
-                    {/* Expand/Collapse Icon */}
-                    <Box
-                      sx={{
+                {isExpanded && (
+                  <>
+                    <div
+                      style={{
                         display: "flex",
-                        justifyContent: "center",
                         alignItems: "center",
-                        transform:
-                          expandedDropdown === "deployments"
-                            ? "rotate(0deg)"
-                            : "rotate(0deg)",
-                        transition: "transform 0.2s",
+                        width: "100%",
+                        justifyContent: "space-between",
                       }}
                     >
-                      {expandedDropdown === "deployments" ? (
-                        <Icon name="expand_less" />
-                      ) : (
-                        <Icon name="expand_more" />
-                      )}
-                    </Box>
-                  </div>
-                </>
-              )}
+                      {/* Container for the DeviceHubOutlinedIcon and Deployments span */}
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <Icon name="device_hub" />
+                        <span style={{ margin: "4px 0 4px 8px" }}>
+                          Deployments
+                        </span>{" "}
+                        {/* Added left margin */}
+                      </div>
+
+                      {/* Expand/Collapse Icon */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          transform:
+                            expandedDropdown === "deployments"
+                              ? "rotate(0deg)"
+                              : "rotate(0deg)",
+                          transition: "transform 0.2s",
+                        }}
+                      >
+                        {expandedDropdown === "deployments" ? (
+                          <Icon name="expand_less" />
+                        ) : (
+                          <Icon name="expand_more" />
+                        )}
+                      </Box>
+                    </div>
+                  </>
+                )}
                 {!isExpanded && <Icon name="device_hub" size={24} />}
               </Box>,
             )}
@@ -564,23 +530,6 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Collapse>
           </Box>
 
-          {/* DNS Query Log Link */}
-          {withCollapsedTooltip(
-            "DNS Query Log",
-            <Box
-              sx={getItemStyles("dns-query-log")}
-              onClick={() => {
-                handleItemClick("dns-query-log");
-                navigate("/query-logs");
-              }}
-            >
-              <Icon name="format_list_bulleted" size={isExpanded ? 20 : 24} />
-              {isExpanded && (
-                <span style={{ margin: "4px 0" }}>DNS Query Log</span>
-              )}
-            </Box>,
-          )}
-
           {/* Identities Link with Dropdown */}
           <Box sx={getDropdownWrapperStyles("identities")}>
             {withCollapsedTooltip(
@@ -603,7 +552,9 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   >
                     <div style={{ display: "flex", alignItems: "center" }}>
                       <Icon name="person_check" />
-                      <span style={{ margin: "4px 0 4px 8px" }}>Identities</span>
+                      <span style={{ margin: "4px 0 4px 8px" }}>
+                        Identities
+                      </span>
                     </div>
                     <Box
                       sx={{
@@ -664,88 +615,6 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Collapse>
           </Box>
 
-          {/* CyberSight Link with Dropdown */}
-          <Box sx={getDropdownWrapperStyles("cybersight")}>
-            {withCollapsedTooltip(
-              "CyberSight",
-              <Box
-                sx={getItemStyles(
-                  "cybersight",
-                  expandedDropdown === "cybersight",
-                )}
-                onClick={() => handleDropdownToggle("cybersight")}
-              >
-              {isExpanded && (
-                <>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      width: "100%",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <Icon name="insights" />
-                      <span style={{ margin: "4px 0 4px 8px" }}>
-                        CyberSight
-                      </span>
-                    </div>
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        transform:
-                          expandedDropdown === "cybersight"
-                            ? "rotate(0deg)"
-                            : "rotate(0deg)",
-                        transition: "transform 0.2s",
-                      }}
-                    >
-                      {expandedDropdown === "cybersight" ? (
-                        <Icon name="expand_less" />
-                      ) : (
-                        <Icon name="expand_more" />
-                      )}
-                    </Box>
-                  </div>
-                </>
-              )}
-                {!isExpanded && <Icon name="insights" size={24} />}
-              </Box>,
-            )}
-
-            <Collapse in={expandedDropdown === "cybersight" && isExpanded}>
-              <Box
-                sx={{
-                  p: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "2px",
-                  borderRadius: "0 0 6px 6px",
-                }}
-              >
-                <Box
-                  sx={getSubItemStyles("cybersight-activity-overview")}
-                  onClick={() => {
-                    handleItemClick("cybersight-activity-overview");
-                    navigate("/cybersight");
-                  }}
-                >
-                  <span style={{ margin: "4px 0" }}>Activity Overview</span>
-                </Box>
-                <Box
-                  sx={getSubItemStyles("cybersight-activity-logs")}
-                  onClick={() => handleItemClick("cybersight-activity-logs")}
-                >
-                  <span style={{ margin: "4px 0" }}>Activity Logs</span>
-                </Box>
-              </Box>
-            </Collapse>
-          </Box>
-
           {/* SecureShield Link */}
           {withCollapsedTooltip(
             "SecureShield",
@@ -777,19 +646,55 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Box>,
           )}
 
-          {/* Reporting Link with Dropdown */}
-          <Box sx={getDropdownWrapperStyles("reporting")}>
+          {sectionLabel("Monitor")}
+
+          {/* DNS Query Log Link */}
+          {withCollapsedTooltip(
+            "DNS Query Log",
+            <Box
+              sx={getItemStyles("dns-query-log")}
+              onClick={() => {
+                handleItemClick("dns-query-log");
+                navigate("/query-logs");
+              }}
+            >
+              <Icon name="format_list_bulleted" size={isExpanded ? 20 : 24} />
+              {isExpanded && (
+                <span style={{ margin: "4px 0" }}>DNS Query Log</span>
+              )}
+            </Box>,
+          )}
+
+          {/* CyberSight Link — a single destination; the page's own tabs cover
+              Activity Overview / Timeline / Threat Trends / Activity Logs. */}
+          {withCollapsedTooltip(
+            "CyberSight",
+            <Box
+              sx={getItemStyles("cybersight")}
+              onClick={() => {
+                handleItemClick("cybersight");
+                navigate("/cybersight");
+              }}
+            >
+              <Icon name="insights" size={isExpanded ? 20 : 24} />
+              {isExpanded && (
+                <span style={{ margin: "4px 0" }}>CyberSight</span>
+              )}
+            </Box>,
+          )}
+
+          {/* Analytics Link with Dropdown */}
+          <Box sx={getDropdownWrapperStyles("analytics")}>
             {withCollapsedTooltip(
-              "Reporting",
+              "Analytics",
               <Box
                 sx={getItemStyles(
-                  "reporting",
-                  expandedDropdown === "reporting",
+                  "analytics",
+                  expandedDropdown === "analytics",
                 )}
-                onClick={() => handleDropdownToggle("reporting")}
+                onClick={() => handleDropdownToggle("analytics")}
               >
-              {isExpanded && (
-                <>
+                {isExpanded && (
                   <div
                     style={{
                       display: "flex",
@@ -798,42 +703,29 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                       justifyContent: "space-between",
                     }}
                   >
-                    {/* Container for the BarChartOutlined icon and Reporting span */}
                     <div style={{ display: "flex", alignItems: "center" }}>
                       <Icon name="bar_chart" />
-                      <span style={{ margin: "4px 0 4px 8px" }}>
-                        Reporting
-                      </span>{" "}
-                      {/* Added left margin */}
+                      <span style={{ margin: "4px 0 4px 8px" }}>Analytics</span>
                     </div>
-
-                    {/* Expand/Collapse Icon */}
                     <Box
                       sx={{
                         display: "flex",
                         justifyContent: "center",
                         alignItems: "center",
-                        transform:
-                          expandedDropdown === "reporting"
-                            ? "rotate(0deg)"
-                            : "rotate(0deg)",
-                        transition: "transform 0.2s",
                       }}
                     >
-                      {expandedDropdown === "reporting" ? (
+                      {expandedDropdown === "analytics" ? (
                         <Icon name="expand_less" />
                       ) : (
                         <Icon name="expand_more" />
                       )}
                     </Box>
                   </div>
-                </>
-              )}
+                )}
                 {!isExpanded && <Icon name="bar_chart" size={24} />}
               </Box>,
             )}
-            {/* Analytics Dropdown Items */}
-            <Collapse in={expandedDropdown === "reporting" && isExpanded}>
+            <Collapse in={expandedDropdown === "analytics" && isExpanded}>
               <Box
                 sx={{
                   p: 1,
@@ -844,87 +736,83 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                 }}
               >
                 <Box
-                  sx={getSubItemStyles("reporting-custom-reports")}
-                  onClick={() => {
-                    handleItemClick("reporting-custom-reports");
-                    navigate("/reporting/custom-reports");
-                  }}
-                >
-                  <span style={{ margin: "4px 0" }}>Custom Reports</span>
-                </Box>
-                <Box
-                  sx={getSubItemStyles("reporting-insights")}
-                  onClick={() => handleItemClick("reporting-insights")}
+                  sx={getSubItemStyles("analytics-insights")}
+                  onClick={() => handleItemClick("analytics-insights")}
                 >
                   <span style={{ margin: "4px 0" }}>Insights</span>
                 </Box>
                 <Box
-                  sx={getSubItemStyles("reporting-appaware")}
-                  onClick={() => handleItemClick("reporting-appaware")}
+                  sx={getSubItemStyles("analytics-appaware")}
+                  onClick={() => handleItemClick("analytics-appaware")}
                 >
-                  <span style={{ margin: "4px 0" }}>Appaware</span>
+                  <span style={{ margin: "4px 0" }}>AppAware</span>
                 </Box>
                 <Box
-                  sx={getSubItemStyles("reporting-scheduled-reports")}
-                  onClick={() => {
-                    handleItemClick("reporting-scheduled-reports");
-                    navigate("/reporting/scheduled-reports");
-                  }}
-                >
-                  <span style={{ margin: "4px 0" }}>Report Manager</span>
-                </Box>
-                <Box
-                  sx={getSubItemStyles("reporting-data-explorer")}
-                  onClick={() => handleItemClick("reporting-data-explorer")}
+                  sx={getSubItemStyles("analytics-data-explorer")}
+                  onClick={() => handleItemClick("analytics-data-explorer")}
                 >
                   <span style={{ margin: "4px 0" }}>Data Explorer</span>
                 </Box>
                 <Box
-                  sx={getSubItemStyles("reporting-total-requests")}
-                  onClick={() => handleItemClick("reporting-total-requests")}
+                  sx={getSubItemStyles("analytics-total-requests")}
+                  onClick={() => handleItemClick("analytics-total-requests")}
                 >
                   <span style={{ margin: "4px 0" }}>Total Requests</span>
                 </Box>
                 <Box
-                  sx={getSubItemStyles("reporting-queries-per-second")}
+                  sx={getSubItemStyles("analytics-queries-per-second")}
                   onClick={() =>
-                    handleItemClick("reporting-queries-per-second")
+                    handleItemClick("analytics-queries-per-second")
                   }
                 >
                   <span style={{ margin: "4px 0" }}>Queries Per Second</span>
                 </Box>
                 <Box
-                  sx={getSubItemStyles("reporting-most-active-sites")}
-                  onClick={() => handleItemClick("reporting-most-active-sites")}
+                  sx={getSubItemStyles("analytics-most-active-sites")}
+                  onClick={() => handleItemClick("analytics-most-active-sites")}
                 >
                   <span style={{ margin: "4px 0" }}>Most Active Sites</span>
                 </Box>
                 <Box
-                  sx={getSubItemStyles("reporting-top-requests")}
-                  onClick={() => handleItemClick("reporting-top-requests")}
+                  sx={getSubItemStyles("analytics-top-requests")}
+                  onClick={() => handleItemClick("analytics-top-requests")}
                 >
                   <span style={{ margin: "4px 0" }}>Top Requests</span>
                 </Box>
                 <Box
-                  sx={getSubItemStyles("reporting-threats")}
-                  onClick={() => handleItemClick("reporting-threats")}
+                  sx={getSubItemStyles("analytics-threats")}
+                  onClick={() => handleItemClick("analytics-threats")}
                 >
                   <span style={{ margin: "4px 0" }}>Threats</span>
-                </Box>
-                <Box
-                  sx={getSubItemStyles("reporting-alerts")}
-                  onClick={() => handleItemClick("reporting-alerts")}
-                >
-                  <span style={{ margin: "4px 0" }}>Alerts</span>
                 </Box>
               </Box>
             </Collapse>
           </Box>
 
+          {/* Reports Link — a single destination; the page's own tabs cover
+              Report Library / Schedules / History. */}
+          {withCollapsedTooltip(
+            "Reports",
+            <Box
+              sx={getItemStyles("reporting")}
+              onClick={() => {
+                handleItemClick("reporting");
+                navigate("/reporting/scheduled-reports");
+              }}
+            >
+              <DescriptionOutlinedIcon
+                sx={{ fontSize: isExpanded ? 20 : 24 }}
+              />
+              {isExpanded && <span style={{ margin: "4px 0" }}>Reports</span>}
+            </Box>,
+          )}
+
+          {sectionLabel("Admin")}
+
           {/* Organization Link */}
           <Box sx={getDropdownWrapperStyles("organization")}>
             {withCollapsedTooltip(
-              "MSP",
+              isOrganization ? "Organization" : "MSP",
               <Box
                 sx={getItemStyles(
                   "organization",
@@ -932,44 +820,46 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                 )}
                 onClick={() => handleDropdownToggle("organization")}
               >
-              {isExpanded && (
-                <>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      width: "100%",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    {/* Container for the BusinessOutlined icon and Organization span */}
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <Icon name="business" />
-                      <span style={{ margin: "4px 0 4px 8px" }}>MSP</span>
-                    </div>
-
-                    {/* Expand/Collapse Icon */}
-                    <Box
-                      sx={{
+                {isExpanded && (
+                  <>
+                    <div
+                      style={{
                         display: "flex",
-                        justifyContent: "center",
                         alignItems: "center",
-                        transform:
-                          expandedDropdown === "organization"
-                            ? "rotate(0deg)"
-                            : "rotate(0deg)",
-                        transition: "transform 0.2s",
+                        width: "100%",
+                        justifyContent: "space-between",
                       }}
                     >
-                      {expandedDropdown === "organization" ? (
-                        <Icon name="expand_less" />
-                      ) : (
-                        <Icon name="expand_more" />
-                      )}
-                    </Box>
-                  </div>
-                </>
-              )}
+                      {/* Container for the BusinessOutlined icon and Organization span */}
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <Icon name="business" />
+                        <span style={{ margin: "4px 0 4px 8px" }}>
+                          {isOrganization ? "Organization" : "MSP"}
+                        </span>
+                      </div>
+
+                      {/* Expand/Collapse Icon */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          transform:
+                            expandedDropdown === "organization"
+                              ? "rotate(0deg)"
+                              : "rotate(0deg)",
+                          transition: "transform 0.2s",
+                        }}
+                      >
+                        {expandedDropdown === "organization" ? (
+                          <Icon name="expand_less" />
+                        ) : (
+                          <Icon name="expand_more" />
+                        )}
+                      </Box>
+                    </div>
+                  </>
+                )}
                 {!isExpanded && <Icon name="business" size={24} />}
               </Box>,
             )}
@@ -1035,44 +925,44 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                 sx={getItemStyles("tools", expandedDropdown === "tools")}
                 onClick={() => handleDropdownToggle("tools")}
               >
-              {isExpanded && (
-                <>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      width: "100%",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    {/* Container for the BuildOutlined icon and Tools span */}
-                    <div style={{ display: "flex", alignItems: "center" }}>
-                      <Icon name="build" />
-                      <span style={{ margin: "4px 0 4px 8px" }}>Tools</span>
-                    </div>
-
-                    {/* Expand/Collapse Icon */}
-                    <Box
-                      sx={{
+                {isExpanded && (
+                  <>
+                    <div
+                      style={{
                         display: "flex",
-                        justifyContent: "center",
                         alignItems: "center",
-                        transform:
-                          expandedDropdown === "tools"
-                            ? "rotate(0deg)"
-                            : "rotate(0deg)",
-                        transition: "transform 0.2s",
+                        width: "100%",
+                        justifyContent: "space-between",
                       }}
                     >
-                      {expandedDropdown === "tools" ? (
-                        <Icon name="expand_less" />
-                      ) : (
-                        <Icon name="expand_more" />
-                      )}
-                    </Box>
-                  </div>
-                </>
-              )}
+                      {/* Container for the BuildOutlined icon and Tools span */}
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <Icon name="build" />
+                        <span style={{ margin: "4px 0 4px 8px" }}>Tools</span>
+                      </div>
+
+                      {/* Expand/Collapse Icon */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          transform:
+                            expandedDropdown === "tools"
+                              ? "rotate(0deg)"
+                              : "rotate(0deg)",
+                          transition: "transform 0.2s",
+                        }}
+                      >
+                        {expandedDropdown === "tools" ? (
+                          <Icon name="expand_less" />
+                        ) : (
+                          <Icon name="expand_more" />
+                        )}
+                      </Box>
+                    </div>
+                  </>
+                )}
                 {!isExpanded && <Icon name="build" size={24} />}
               </Box>,
             )}
@@ -1165,76 +1055,78 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   sx={getItemStyles("account", expandedDropdown === "account")}
                   onClick={() => handleDropdownToggle("account")}
                 >
-                {isExpanded && (
-                  <>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        width: "100%",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      {/* Container for the JN Box and Account span */}
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <Box
-                          sx={{
-                            backgroundColor: (theme: Theme) =>
-                              theme.palette.primary.main,
-                            borderRadius: "4px",
-                            width: "24px",
-                            height: "24px",
-                            fontSize: "12px",
-                            textAlign: "center",
-                            lineHeight: "24px", // Vertically center "JN"
-                            color: "white", // Make "JN" text visible
-                          }}
-                        >
-                          DJ
-                        </Box>
-                        <span style={{ margin: "4px 0 4px 8px" }}>Account</span>
-                      </div>
-
-                      {/* Expand/Collapse Icon */}
-                      <Box
-                        sx={{
+                  {isExpanded && (
+                    <>
+                      <div
+                        style={{
                           display: "flex",
-                          justifyContent: "center",
                           alignItems: "center",
-                          transform:
-                            expandedDropdown === "account" // Changed from "tools" to "account"
-                              ? "rotate(0deg)"
-                              : "rotate(0deg)",
-                          transition: "transform 0.2s",
+                          width: "100%",
+                          justifyContent: "space-between",
                         }}
                       >
-                        {expandedDropdown === "account" ? ( // Changed from "tools" to "account"
-                          <Icon name="expand_less" />
-                        ) : (
-                          <Icon name="expand_more" />
-                        )}
-                      </Box>
-                    </div>
-                  </>
-                )}
-                {/* Display "JN" box when not expanded (optional, depending on desired behavior) */}
-                {!isExpanded && (
-                  <Box
-                    sx={{
-                      backgroundColor: (theme: Theme) =>
-                        theme.palette.primary.main,
-                      borderRadius: "4px",
-                      width: "24px",
-                      height: "24px",
-                      fontSize: "12px",
-                      textAlign: "center",
-                      lineHeight: "24px",
-                      color: "white",
-                    }}
-                  >
-                    DJ
-                  </Box>
-                )}
+                        {/* Container for the JN Box and Account span */}
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                          <Box
+                            sx={{
+                              backgroundColor: (theme: Theme) =>
+                                theme.palette.primary.main,
+                              borderRadius: "4px",
+                              width: "24px",
+                              height: "24px",
+                              fontSize: "12px",
+                              textAlign: "center",
+                              lineHeight: "24px", // Vertically center "JN"
+                              color: "white", // Make "JN" text visible
+                            }}
+                          >
+                            DJ
+                          </Box>
+                          <span style={{ margin: "4px 0 4px 8px" }}>
+                            Account
+                          </span>
+                        </div>
+
+                        {/* Expand/Collapse Icon */}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            transform:
+                              expandedDropdown === "account" // Changed from "tools" to "account"
+                                ? "rotate(0deg)"
+                                : "rotate(0deg)",
+                            transition: "transform 0.2s",
+                          }}
+                        >
+                          {expandedDropdown === "account" ? ( // Changed from "tools" to "account"
+                            <Icon name="expand_less" />
+                          ) : (
+                            <Icon name="expand_more" />
+                          )}
+                        </Box>
+                      </div>
+                    </>
+                  )}
+                  {/* Display "JN" box when not expanded (optional, depending on desired behavior) */}
+                  {!isExpanded && (
+                    <Box
+                      sx={{
+                        backgroundColor: (theme: Theme) =>
+                          theme.palette.primary.main,
+                        borderRadius: "4px",
+                        width: "24px",
+                        height: "24px",
+                        fontSize: "12px",
+                        textAlign: "center",
+                        lineHeight: "24px",
+                        color: "white",
+                      }}
+                    >
+                      DJ
+                    </Box>
+                  )}
                 </Box>,
               )}
               {/* Account Dropdown Items */}

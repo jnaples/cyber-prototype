@@ -7,6 +7,7 @@ import React, { useState } from "react";
 
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 import { FilteringTab } from "./filtering-tab";
 
@@ -37,6 +38,8 @@ function PlaceholderCard({ title }: { title: string }) {
 
 export default function GlobalPoliciesPage() {
   const [tab, setTab] = useState(0);
+  // Scoped to one organization, these are simply its policies.
+  const { isOrganization } = useWorkspace();
 
   const selectedTabSx = {
     "&.Mui-selected": {
@@ -57,7 +60,7 @@ export default function GlobalPoliciesPage() {
   return (
     <PageShell
       header={
-        <PageHeader title="Global Policies">
+        <PageHeader title={isOrganization ? "Policies" : "Global Policies"}>
           <Box
             sx={{
               mb: -2,

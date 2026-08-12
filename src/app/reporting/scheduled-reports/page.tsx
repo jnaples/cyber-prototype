@@ -475,7 +475,7 @@ export default function ScheduledReportsPage() {
   return (
     <PageShell
       header={
-        <PageHeader title="Report Manager">
+        <PageHeader title="Reports">
           <Box
             sx={{
               mb: -2,

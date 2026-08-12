@@ -125,7 +125,11 @@ export function ReportPreview({
             <Button
               variant="contained"
               color="primary"
-              onClick={() => navigate("/reporting/custom-reports")}
+              onClick={() =>
+                navigate("/reporting/custom-reports", {
+                  state: { builder: true },
+                })
+              }
             >
               Create Custom Report
             </Button>

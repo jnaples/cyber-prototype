@@ -25,14 +25,9 @@ import { ReportPreview } from "./report-preview";
 import { REPORT_MANAGER_BASE } from "./routes";
 import { REPORTS } from "./reports";
 
-// Custom Report is hidden pending feedback — drop this filter to bring it back;
-// its card, preview and "Create Custom Report" action are all still wired up.
-const LIBRARY_REPORTS = REPORTS.filter((r) => r.key !== "custom");
-
 export function ReportLibrary() {
-  const [selectedKey, setSelectedKey] = useState(LIBRARY_REPORTS[0].key);
-  const selected =
-    LIBRARY_REPORTS.find((r) => r.key === selectedKey) ?? LIBRARY_REPORTS[0];
+  const [selectedKey, setSelectedKey] = useState(REPORTS[0].key);
+  const selected = REPORTS.find((r) => r.key === selectedKey) ?? REPORTS[0];
   const isCustom = selected.key === "custom";
   const navigate = useNavigate();
   const [generateOpen, setGenerateOpen] = useState(false);
@@ -52,7 +47,7 @@ export function ReportLibrary() {
         <CardContent sx={{ p: 2 }}>
           <Typography variant="cardTitle">Reports</Typography>
           <Box sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-            {LIBRARY_REPORTS.map((r) => {
+            {REPORTS.map((r) => {
               const isSelected = r.key === selectedKey;
               return (
                 <Box
@@ -178,7 +173,11 @@ export function ReportLibrary() {
                   color="primary"
                   size="small"
                   startIcon={<MaterialSymbol name="add" size={18} />}
-                  onClick={() => navigate("/reporting/custom-reports")}
+                  onClick={() =>
+                    navigate("/reporting/custom-reports", {
+                      state: { builder: true },
+                    })
+                  }
                 >
                   Create Custom Report
                 </Button>
