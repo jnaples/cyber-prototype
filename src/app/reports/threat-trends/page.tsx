@@ -10,6 +10,7 @@ const TEXT = "#031625";
 const TEXT2 = "rgba(3,22,37,.62)";
 const TEXT3 = "rgba(3,22,37,.45)";
 const DIVIDER = "rgba(3,22,37,.12)";
+const PRIMARY = "#3527fd";
 const TRACK = "#edf0f6";
 const C = { threat: "#ce008e", cat: "#ef6c00", user: "#d32f2f" };
 
@@ -19,7 +20,12 @@ type Row = { nm: string; val: string; pct: number; users?: string };
 
 const TOP_THREATS: Row[] = [
   { nm: "Botnet", val: "90 events", pct: 100, users: "3 users" },
-  { nm: "Malicious Domain Protection", val: "85 events", pct: 94.4, users: "3 users" },
+  {
+    nm: "Malicious Domain Protection",
+    val: "85 events",
+    pct: 94.4,
+    users: "3 users",
+  },
   { nm: "Cryptomining", val: "80 events", pct: 88.9, users: "2 users" },
   { nm: "New Domains", val: "70 events", pct: 77.8, users: "2 users" },
   { nm: "Malware", val: "30 events", pct: 33.3, users: "2 users" },
@@ -51,18 +57,35 @@ const TOP_USERS: Row[] = [
 
 function UserIcon() {
   return (
-    <Box component="svg" viewBox="0 0 16 16" sx={{ width: 15, height: 15, fill: TEXT3, flexShrink: 0 }}>
+    <Box
+      component="svg"
+      viewBox="0 0 16 16"
+      sx={{ width: 15, height: 15, fill: TEXT3, flexShrink: 0 }}
+    >
       <path d="M8 7.4a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 1.5c-3 0-5.5 1.8-5.5 4 0 .6.5 1.1 1.1 1.1h8.8c.6 0 1.1-.5 1.1-1.1 0-2.2-2.5-4-5.5-4Z" />
     </Box>
   );
 }
 
-function SecHead({ title, sub }: { color?: string; title: string; sub: string }) {
+function SecHead({
+  title,
+  sub,
+}: {
+  color?: string;
+  title: string;
+  sub: string;
+}) {
   return (
     <Box sx={{ mb: "24px" }}>
       <Box
         component="h2"
-        sx={{ m: 0, fontFamily: montserrat, fontSize: 24, fontWeight: 600, textTransform: "capitalize" }}
+        sx={{
+          m: 0,
+          fontFamily: montserrat,
+          fontSize: 24,
+          fontWeight: 600,
+          textTransform: "capitalize",
+        }}
       >
         {title}
       </Box>
@@ -76,20 +99,60 @@ function SecHead({ title, sub }: { color?: string; title: string; sub: string })
 function BarRow({ row, color }: { row: Row; color: string }) {
   return (
     <Box sx={{ mb: "20px" }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "12px", mb: "7px" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "baseline",
+          gap: "12px",
+          mb: "7px",
+        }}
+      >
         <Box
           component="span"
-          sx={{ fontSize: 20, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}
+          sx={{
+            fontSize: 20,
+            fontWeight: 500,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            minWidth: 0,
+          }}
         >
           {row.nm}
         </Box>
-        <Box component="span" sx={{ fontSize: 19, fontWeight: 600, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
+        <Box
+          component="span"
+          sx={{
+            fontSize: 19,
+            fontWeight: 600,
+            whiteSpace: "nowrap",
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
           {row.val}
         </Box>
       </Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
-        <Box sx={{ flex: 1, height: 12, borderRadius: "6px", bgcolor: TRACK, overflow: "hidden" }}>
-          <Box sx={{ display: "block", height: "100%", borderRadius: "6px", minWidth: 4, width: `${row.pct}%`, bgcolor: color }} />
+        <Box
+          sx={{
+            flex: 1,
+            height: 12,
+            borderRadius: "6px",
+            bgcolor: TRACK,
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            sx={{
+              display: "block",
+              height: "100%",
+              borderRadius: "6px",
+              minWidth: 4,
+              width: `${row.pct}%`,
+              bgcolor: color,
+            }}
+          />
         </Box>
         {row.users && (
           <Box
@@ -114,7 +177,17 @@ function BarRow({ row, color }: { row: Row; color: string }) {
   );
 }
 
-function TopNColumn({ color, title, sub, rows }: { color: string; title: string; sub: string; rows: Row[] }) {
+function TopNColumn({
+  color,
+  title,
+  sub,
+  rows,
+}: {
+  color: string;
+  title: string;
+  sub: string;
+  rows: Row[];
+}) {
   return (
     <Box>
       <SecHead color={color} title={title} sub={sub} />
@@ -142,7 +215,14 @@ export default function ThreatTrendsReport() {
       }}
     >
       {/* Masthead */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", pb: "24px" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          pb: "24px",
+        }}
+      >
         <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <Box
             sx={{
@@ -163,41 +243,106 @@ export default function ThreatTrendsReport() {
             LOGO
           </Box>
           <Box>
-            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>Brightwave IT</Box>
+            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>
+              Brightwave IT
+            </Box>
           </Box>
         </Box>
         <Box sx={{ textAlign: "right" }}>
-          <Box sx={{ fontSize: 16, letterSpacing: "1.5px", textTransform: "uppercase", color: TEXT2, fontWeight: 600 }}>
+          <Box
+            sx={{
+              fontSize: 16,
+              letterSpacing: "1.5px",
+              textTransform: "uppercase",
+              color: TEXT2,
+              fontWeight: 600,
+            }}
+          >
             Reporting period
           </Box>
-          <Box sx={{ fontSize: 20, fontWeight: 600, mt: "4px" }}>Jun 23 – Jul 22, 2026</Box>
+          <Box sx={{ fontSize: 20, fontWeight: 600, mt: "4px" }}>
+            Jun 23 – Jul 22, 2026
+          </Box>
         </Box>
       </Box>
       <Box sx={{ height: "3px", bgcolor: TEXT, mb: "40px" }} />
 
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
-        <Box component="h1" sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 44, lineHeight: 1.2, m: "10px 0 12px" }}>
+        <Box
+          sx={{
+            fontSize: 17,
+            fontWeight: 700,
+            letterSpacing: "2.5px",
+            textTransform: "uppercase",
+            color: PRIMARY,
+          }}
+        >
+          Monthly report
+        </Box>
+        <Box
+          component="h1"
+          sx={{
+            fontFamily: montserrat,
+            fontWeight: 600,
+            fontSize: 44,
+            lineHeight: 1.2,
+            m: "8px 0",
+          }}
+        >
           Threat Overview
         </Box>
-        <Box sx={{ fontSize: 21, color: TEXT2 }}>
-          Prepared for Acme Manufacturing
-        </Box>
+        <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>
 
       {/* KPI band */}
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "24px", mb: "64px" }}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: "24px",
+          mb: "64px",
+        }}
+      >
         {[
           { num: "390", cap: "Threat events" },
           { num: "360", cap: "Content blocks" },
           { num: "10", cap: "Users with threat events" },
           { num: "13", cap: "Avg threat events / day" },
         ].map((k) => (
-          <Box key={k.cap} sx={{ border: `1px solid ${DIVIDER}`, borderRadius: "6px", p: "28px 32px 24px", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 40, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+          <Box
+            key={k.cap}
+            sx={{
+              border: `1px solid ${DIVIDER}`,
+              borderRadius: "6px",
+              p: "28px 32px 24px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Box
+              sx={{
+                fontFamily: montserrat,
+                fontWeight: 600,
+                fontSize: 40,
+                lineHeight: 1,
+                fontVariantNumeric: "tabular-nums",
+                whiteSpace: "nowrap",
+              }}
+            >
               {k.num}
             </Box>
-            <Box sx={{ fontSize: 16, fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: TEXT2, mt: "12px" }}>
+            <Box
+              sx={{
+                fontSize: 16,
+                fontWeight: 600,
+                letterSpacing: "1.5px",
+                textTransform: "uppercase",
+                color: TEXT2,
+                mt: "12px",
+              }}
+            >
               {k.cap}
             </Box>
           </Box>
@@ -213,12 +358,16 @@ export default function ThreatTrendsReport() {
         />
         <Box
           component="svg"
-          viewBox="0 0 1272 372"
+          viewBox="-34 0 1306 402"
           sx={{
             width: "100%",
             height: "auto",
             display: "block",
-            "& text": { fontFamily: "'Inter Variable', sans-serif", fill: TEXT2, fontSize: "16px" },
+            "& text": {
+              fontFamily: "'Inter Variable', sans-serif",
+              fill: TEXT2,
+              fontSize: "16px",
+            },
             "& .peak": { fill: TEXT, fontWeight: 600 },
           }}
         >
@@ -236,20 +385,54 @@ export default function ThreatTrendsReport() {
             <line x1="56" y1="328" x2="1245" y2="328" />
           </g>
           <g textAnchor="end">
-            <text x="42" y="333">0</text>
-            <text x="42" y="258">6</text>
-            <text x="42" y="183">12</text>
-            <text x="42" y="108">18</text>
-            <text x="42" y="33">24</text>
+            <text x="42" y="333">
+              0
+            </text>
+            <text x="42" y="258">
+              6
+            </text>
+            <text x="42" y="183">
+              12
+            </text>
+            <text x="42" y="108">
+              18
+            </text>
+            <text x="42" y="33">
+              24
+            </text>
           </g>
-          <text x="56" y="12" style={{ fontSize: "14px", letterSpacing: "1.5px" }} textAnchor="start">
+          {/* Axis titles: the unit reads up the left edge, the dimension
+              sits under the tick labels. */}
+          <text
+            transform="rotate(-90 -12 178)"
+            x="-12"
+            y="178"
+            style={{ fontSize: "14px", letterSpacing: "1.5px" }}
+            textAnchor="middle"
+          >
             EVENTS
+          </text>
+          <text
+            x="650"
+            y="394"
+            style={{ fontSize: "14px", letterSpacing: "1.5px" }}
+            textAnchor="middle"
+          >
+            DATE
           </text>
           <path
             fill="url(#threatfill)"
             d="M56,190.5 L97,165.5 L138,115.5 L179,178 L220,253 L261,290.5 L302,153 L343,115.5 L384,78 L425,53 L466,40.5 L507,240.5 L548,278 L589,103 L630,128 L671,140.5 L712,153 L753,140.5 L794,253 L835,290.5 L876,115.5 L917,103 L958,140.5 L999,140.5 L1040,153 L1081,265.5 L1122,290.5 L1163,128 L1204,103 L1245,165.5 L1245,328 L56,328 Z"
           />
-          <line x1="56" y1="197" x2="1245" y2="140" stroke={C.user} strokeWidth="3" strokeDasharray="8 7" />
+          <line
+            x1="56"
+            y1="197"
+            x2="1245"
+            y2="140"
+            stroke={C.user}
+            strokeWidth="3"
+            strokeDasharray="8 7"
+          />
           <polyline
             fill="none"
             stroke={C.threat}
@@ -259,30 +442,80 @@ export default function ThreatTrendsReport() {
             points="56,190.5 97,165.5 138,115.5 179,178 220,253 261,290.5 302,153 343,115.5 384,78 425,53 466,40.5 507,240.5 548,278 589,103 630,128 671,140.5 712,153 753,140.5 794,253 835,290.5 876,115.5 917,103 958,140.5 999,140.5 1040,153 1081,265.5 1122,290.5 1163,128 1204,103 1245,165.5"
           />
           <g textAnchor="middle">
-            <text x="56" y="356">Jun 23</text>
-            <text x="302" y="356">Jun 29</text>
-            <text x="589" y="356">Jul 6</text>
-            <text x="876" y="356">Jul 13</text>
-            <text x="1163" y="356">Jul 20</text>
+            <text x="56" y="356">
+              Jun 23
+            </text>
+            <text x="302" y="356">
+              Jun 29
+            </text>
+            <text x="589" y="356">
+              Jul 6
+            </text>
+            <text x="876" y="356">
+              Jul 13
+            </text>
+            <text x="1163" y="356">
+              Jul 20
+            </text>
           </g>
         </Box>
-        <Box sx={{ display: "flex", justifyContent: "center", gap: "32px", mt: "16px", fontSize: 16, color: TEXT2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "32px",
+            mt: "16px",
+            fontSize: 16,
+            color: TEXT2,
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Box sx={{ width: 28, height: 4, borderRadius: "2px", bgcolor: C.threat }} />
+            <Box
+              sx={{
+                width: 28,
+                height: 4,
+                borderRadius: "2px",
+                bgcolor: C.threat,
+              }}
+            />
             Threat events
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Box sx={{ width: 28, height: 0, borderTop: `3px dashed ${C.user}` }} />
+            <Box
+              sx={{ width: 28, height: 0, borderTop: `3px dashed ${C.user}` }}
+            />
             30-day trend
           </Box>
         </Box>
       </Box>
 
       {/* Top-N grid */}
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "48px", mb: "72px" }}>
-        <TopNColumn color={C.threat} title="Top observed threats" sub="7 threat types detected" rows={TOP_THREATS} />
-        <TopNColumn color={C.cat} title="Top blocked categories" sub="6 content categories triggered" rows={TOP_CATEGORIES} />
-        <TopNColumn color={C.user} title="Top users with threat events" sub="10 users · 390 events total" rows={TOP_USERS} />
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "48px",
+          mb: "72px",
+        }}
+      >
+        <TopNColumn
+          color={C.threat}
+          title="Top observed threats"
+          sub="7 threat types detected"
+          rows={TOP_THREATS}
+        />
+        <TopNColumn
+          color={C.cat}
+          title="Top blocked categories"
+          sub="6 content categories triggered"
+          rows={TOP_CATEGORIES}
+        />
+        <TopNColumn
+          color={C.user}
+          title="Top users with threat events"
+          sub="10 users · 390 events total"
+          rows={TOP_USERS}
+        />
       </Box>
 
       {/* Footer */}
@@ -297,10 +530,7 @@ export default function ThreatTrendsReport() {
         }}
       >
         <Box>
-          <Box sx={{ fontSize: 17, fontWeight: 600 }}>Prepared by Brightwave IT</Box>
-        </Box>
-        <Box sx={{ fontSize: 16, color: TEXT2, textAlign: "right" }}>
-          Data period Jun 23 – Jul 22, 2026
+          <Box sx={{ fontSize: 17, fontWeight: 600 }}>Brightwave IT</Box>
         </Box>
       </Box>
     </Box>

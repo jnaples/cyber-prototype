@@ -51,8 +51,8 @@ const PREVIEWS: Preview[] = [
   {
     key: "activity",
     icon: "monitoring",
-    label: "Customer Activity Overview",
-    title: "Customer Activity Overview",
+    label: "Activity Summary",
+    title: "Activity Summary",
     desc: "Total DNS activity, allows, and blocks across all sites for the reporting period.",
     range: "Jul 1 – Jul 31, 2026",
     stats: [
@@ -140,8 +140,8 @@ const PREVIEWS: Preview[] = [
   {
     key: "ai",
     icon: "auto_awesome",
-    label: "AI Usage",
-    title: "CyberSight AI Usage",
+    label: "AI Tool Usage",
+    title: "AI Tool Usage",
     desc: "AI-driven detections and the categories CyberSight flagged this period.",
     range: "Jul 1 – Jul 31, 2026",
     stats: [
@@ -164,8 +164,8 @@ const PREVIEWS: Preview[] = [
   {
     key: "timeline",
     icon: "show_chart",
-    label: "Timeline Overview",
-    title: "Timeline Overview",
+    label: "Executive Summary",
+    title: "Executive Summary",
     desc: "Usage trends and the most-requested domains at a glance.",
     range: "Jul 1 – Jul 31, 2026",
     stats: [

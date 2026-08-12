@@ -69,11 +69,11 @@ type Schedule = {
 
 // Report-type tags, offered in the filter select.
 const REPORT_TYPES = [
-  "Customer Activity Overview",
+  "Activity Summary",
   "Protection Summary",
   "Traffic Logs",
-  "AI Usage",
-  "Timeline Overview",
+  "AI Tool Usage",
+  "Executive Summary",
   "Timeline Logs",
 ];
 
@@ -81,7 +81,7 @@ const SCHEDULES: Schedule[] = [
   {
     id: 1,
     name: "Monthly Executive Summary",
-    tags: ["Customer Activity Overview", "Protection Summary"],
+    tags: ["Activity Summary", "Protection Summary"],
     organizations: "Acme Manufacturing",
     recipients: 7,
     freqPrimary: "Monthly",
@@ -107,7 +107,7 @@ const SCHEDULES: Schedule[] = [
   {
     id: 3,
     name: "CyberSight AI Monthly Review",
-    tags: ["AI Usage", "Timeline Overview"],
+    tags: ["AI Tool Usage", "Executive Summary"],
     organizations: "Globex Financial",
     recipients: 2,
     freqPrimary: "Monthly",
@@ -121,10 +121,10 @@ const SCHEDULES: Schedule[] = [
     id: 4,
     name: "Business Review Packet",
     tags: [
-      "Customer Activity Overview",
+      "Activity Summary",
       "Protection Summary",
       "Traffic Logs",
-      "AI Usage",
+      "AI Tool Usage",
     ],
     organizations: "Umbrella Health",
     recipients: 6,
@@ -233,7 +233,7 @@ function deliveryFor(row: Schedule) {
 
 function attachmentsFor(row: Schedule) {
   return row.tags.map((tag) => {
-    // Grid tags are short labels ("AI Usage"), so they resolve through the same
+    // Grid tags are short labels ("AI Tool Usage"), so they resolve through the same
     // map the edit prefill uses rather than matching catalog titles directly.
     const def = REPORTS.find((r) => r.key === TAG_TO_REPORT_KEY[tag]);
     return {

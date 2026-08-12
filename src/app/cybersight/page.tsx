@@ -343,7 +343,7 @@ export default function CyberSightPage() {
       }}
     >
       {/* Page header with the filter bar living inside it (like Query Logs) */}
-      <PageHeader title="CyberSight">
+      <PageHeader title="CyberSight" sx={{ pb: 0 }}>
         <Box
           sx={{
             px: 3,
@@ -455,55 +455,56 @@ export default function CyberSightPage() {
             </Box>
           </Box>
         </Box>
-      </PageHeader>
-
-      {/* Tab nav */}
-      <Box
-        sx={{
-          px: 3,
-          pt: 1,
-          bgcolor: "background.neutral",
-        }}
-      >
-        <Tabs
-          value={activeTab}
-          onChange={(_, v) => setActiveTab(v)}
-          aria-label="cybersight tabs"
-          sx={{ minHeight: 0 }}
+        {/* Tab nav */}
+        <Box
+          sx={{
+            // Clears the Apply row above it.
+            mt: 2,
+            px: 3,
+            pt: 1,
+            bgcolor: "background.neutral",
+          }}
         >
-          {CYBERSIGHT_TABS.map((tab) => (
-            <Tab
-              key={tab.label}
-              label={tab.label}
-              icon={<MaterialIcon name={tab.icon} size={20} />}
-              iconPosition="start"
-              sx={{
-                minHeight: 0,
-                textTransform: "none",
-                fontSize: 13,
-                py: 0.5,
-                px: 1,
-                mr: 2,
-                gap: 0.75,
-                "&.Mui-selected": {
-                  backgroundColor: (
-                    theme: Theme & {
-                      vars?: {
-                        palette?: { background?: { paper?: string } };
-                      };
-                    },
-                  ) =>
-                    theme.vars?.palette?.background?.paper ??
-                    theme.palette.background.paper,
-                  borderTopLeftRadius: 6,
-                  borderTopRightRadius: 6,
-                  boxShadow: (theme: Theme) => theme.shadows[3],
-                },
-              }}
-            />
-          ))}
-        </Tabs>
-      </Box>
+          <Tabs
+            value={activeTab}
+            onChange={(_, v) => setActiveTab(v)}
+            aria-label="cybersight tabs"
+            sx={{ minHeight: 0 }}
+          >
+            {CYBERSIGHT_TABS.map((tab) => (
+              <Tab
+                key={tab.label}
+                label={tab.label}
+                icon={<MaterialIcon name={tab.icon} size={20} />}
+                iconPosition="start"
+                sx={{
+                  minHeight: 0,
+                  textTransform: "none",
+                  fontSize: 13,
+                  py: 0.5,
+                  px: 1,
+                  mr: 2,
+                  gap: 0.75,
+                  "&.Mui-selected": {
+                    backgroundColor: (
+                      theme: Theme & {
+                        vars?: {
+                          palette?: { background?: { paper?: string } };
+                        };
+                      },
+                    ) =>
+                      theme.vars?.palette?.background?.paper ??
+                      theme.palette.background.paper,
+                    borderTopLeftRadius: 6,
+                    borderTopRightRadius: 6,
+                    boxShadow: (theme: Theme) => theme.shadows[3],
+                  },
+                }}
+              />
+            ))}
+          </Tabs>
+        </Box>
+      </PageHeader>
 
       {/* Tab content */}
       {activeTab === 2 ? (

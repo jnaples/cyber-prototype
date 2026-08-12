@@ -42,32 +42,204 @@ const DEVICES: Device[] = [
     name: "z-ktrojanowski",
     meta: "4,812 events · 130h 30m tracked · top 25 by duration",
     rows: [
-      { type: "Website", dot: C.web, activity: "portal.zorustech.com/dashboards/noc-live", user: "k.trojanowski", cat: "Computing & Internet", dur: "2h 41m", started: "Jul 8 · 9:12 AM" },
-      { type: "Application", dot: C.app, activity: "Slack", user: "k.trojanowski", cat: "—", catDim: true, dur: "2h 5m", started: "Jul 2 · 1:30 PM" },
-      { type: "Website", dot: C.web, activity: "meet.google.com/wkq-standup-video", user: "k.trojanowski", cat: "Web Conferencing", dur: "1h 58m", started: "Jul 15 · 10:00 AM" },
-      { type: "Website", dot: C.web, activity: "docs.google.com/presentation/d/q3-board-deck", user: "b.smith", cat: "Computing & Internet", dur: "1h 44m", started: "Jul 20 · 2:15 PM" },
-      { type: "Machine Lock", dot: C.lock, activity: "—", activityDim: true, user: "k.trojanowski", cat: "—", catDim: true, dur: "1h 37m", started: "Jul 9 · 12:02 PM" },
-      { type: "Website", dot: C.web, activity: "claude.ai/chat", user: "k.trojanowski", cat: "Artificial Intelligence", dur: "1h 29m", started: "Jul 16 · 3:40 PM" },
-      { type: "Application", dot: C.app, activity: "Microsoft Excel", user: "k.trojanowski", cat: "—", catDim: true, dur: "1h 12m", started: "Jun 30 · 9:45 AM" },
-      { type: "Website", dot: C.web, activity: "dnsfilter.atlassian.net/jira/browse/OPS-231", user: "k.trojanowski", cat: "Computing & Internet", dur: "1h 8m", started: "Jul 13 · 11:20 AM" },
-      { type: "Idle", dot: C.idle, activity: "—", activityDim: true, user: "k.trojanowski", cat: "—", catDim: true, dur: "58m", started: "Jul 6 · 12:31 PM" },
-      { type: "Website", dot: C.web, activity: "portal-staging.zorustech.com/qa", user: "k.trojanowski", cat: "Computing & Internet", dur: "52m", started: "Jun 26 · 4:05 PM" },
+      {
+        type: "Website",
+        dot: C.web,
+        activity: "portal.zorustech.com/dashboards/noc-live",
+        user: "k.trojanowski",
+        cat: "Computing & Internet",
+        dur: "2h 41m",
+        started: "Jul 8 · 9:12 AM",
+      },
+      {
+        type: "Application",
+        dot: C.app,
+        activity: "Slack",
+        user: "k.trojanowski",
+        cat: "—",
+        catDim: true,
+        dur: "2h 5m",
+        started: "Jul 2 · 1:30 PM",
+      },
+      {
+        type: "Website",
+        dot: C.web,
+        activity: "meet.google.com/wkq-standup-video",
+        user: "k.trojanowski",
+        cat: "Web Conferencing",
+        dur: "1h 58m",
+        started: "Jul 15 · 10:00 AM",
+      },
+      {
+        type: "Website",
+        dot: C.web,
+        activity: "docs.google.com/presentation/d/q3-board-deck",
+        user: "b.smith",
+        cat: "Computing & Internet",
+        dur: "1h 44m",
+        started: "Jul 20 · 2:15 PM",
+      },
+      {
+        type: "Machine Lock",
+        dot: C.lock,
+        activity: "—",
+        activityDim: true,
+        user: "k.trojanowski",
+        cat: "—",
+        catDim: true,
+        dur: "1h 37m",
+        started: "Jul 9 · 12:02 PM",
+      },
+      {
+        type: "Website",
+        dot: C.web,
+        activity: "claude.ai/chat",
+        user: "k.trojanowski",
+        cat: "Artificial Intelligence",
+        dur: "1h 29m",
+        started: "Jul 16 · 3:40 PM",
+      },
+      {
+        type: "Application",
+        dot: C.app,
+        activity: "Microsoft Excel",
+        user: "k.trojanowski",
+        cat: "—",
+        catDim: true,
+        dur: "1h 12m",
+        started: "Jun 30 · 9:45 AM",
+      },
+      {
+        type: "Website",
+        dot: C.web,
+        activity: "dnsfilter.atlassian.net/jira/browse/OPS-231",
+        user: "k.trojanowski",
+        cat: "Computing & Internet",
+        dur: "1h 8m",
+        started: "Jul 13 · 11:20 AM",
+      },
+      {
+        type: "Idle",
+        dot: C.idle,
+        activity: "—",
+        activityDim: true,
+        user: "k.trojanowski",
+        cat: "—",
+        catDim: true,
+        dur: "58m",
+        started: "Jul 6 · 12:31 PM",
+      },
+      {
+        type: "Website",
+        dot: C.web,
+        activity: "portal-staging.zorustech.com/qa",
+        user: "k.trojanowski",
+        cat: "Computing & Internet",
+        dur: "52m",
+        started: "Jun 26 · 4:05 PM",
+      },
     ],
   },
   {
     name: "YOGA-BSMITH",
     meta: "3,304 events · 96h 0m tracked · top 25 by duration",
     rows: [
-      { type: "Website", dot: C.web, activity: "portal.zorustech.com/reports", user: "b.smith", cat: "Computing & Internet", dur: "2h 12m", started: "Jul 7 · 10:05 AM" },
-      { type: "Application", dot: C.app, activity: "Slack", user: "b.smith", cat: "—", catDim: true, dur: "1h 48m", started: "Jul 14 · 9:02 AM" },
-      { type: "Application", dot: C.app, activity: "Zoom", user: "b.smith", cat: "Web Conferencing", dur: "1h 33m", started: "Jul 21 · 1:00 PM" },
-      { type: "Website", dot: C.web, activity: "docs.google.com/document/d/roadmap-h2", user: "b.smith", cat: "Computing & Internet", dur: "1h 21m", started: "Jun 29 · 2:30 PM" },
-      { type: "Machine Lock", dot: C.lock, activity: "—", activityDim: true, user: "b.smith", cat: "—", catDim: true, dur: "1h 15m", started: "Jul 10 · 12:00 PM" },
-      { type: "Website", dot: C.web, activity: "gemini.google.com/app", user: "b.smith", cat: "Artificial Intelligence", dur: "1h 2m", started: "Jul 17 · 4:12 PM" },
-      { type: "Website", dot: C.web, activity: "calendar.google.com", user: "b.smith", cat: "Computing & Internet", dur: "47m", started: "Jul 1 · 8:55 AM" },
-      { type: "Idle", dot: C.idle, activity: "—", activityDim: true, user: "b.smith", cat: "—", catDim: true, dur: "41m", started: "Jul 22 · 12:18 PM" },
-      { type: "Website", dot: C.web, activity: "www.lowes.com/order-tracking", user: "b.smith", cat: "Shopping/Retail", dur: "38m", started: "Jul 3 · 5:10 PM" },
-      { type: "Application", dot: C.app, activity: "Snipping Tool", user: "b.smith", cat: "—", catDim: true, dur: "22m", started: "Jun 25 · 3:33 PM" },
+      {
+        type: "Website",
+        dot: C.web,
+        activity: "portal.zorustech.com/reports",
+        user: "b.smith",
+        cat: "Computing & Internet",
+        dur: "2h 12m",
+        started: "Jul 7 · 10:05 AM",
+      },
+      {
+        type: "Application",
+        dot: C.app,
+        activity: "Slack",
+        user: "b.smith",
+        cat: "—",
+        catDim: true,
+        dur: "1h 48m",
+        started: "Jul 14 · 9:02 AM",
+      },
+      {
+        type: "Application",
+        dot: C.app,
+        activity: "Zoom",
+        user: "b.smith",
+        cat: "Web Conferencing",
+        dur: "1h 33m",
+        started: "Jul 21 · 1:00 PM",
+      },
+      {
+        type: "Website",
+        dot: C.web,
+        activity: "docs.google.com/document/d/roadmap-h2",
+        user: "b.smith",
+        cat: "Computing & Internet",
+        dur: "1h 21m",
+        started: "Jun 29 · 2:30 PM",
+      },
+      {
+        type: "Machine Lock",
+        dot: C.lock,
+        activity: "—",
+        activityDim: true,
+        user: "b.smith",
+        cat: "—",
+        catDim: true,
+        dur: "1h 15m",
+        started: "Jul 10 · 12:00 PM",
+      },
+      {
+        type: "Website",
+        dot: C.web,
+        activity: "gemini.google.com/app",
+        user: "b.smith",
+        cat: "Artificial Intelligence",
+        dur: "1h 2m",
+        started: "Jul 17 · 4:12 PM",
+      },
+      {
+        type: "Website",
+        dot: C.web,
+        activity: "calendar.google.com",
+        user: "b.smith",
+        cat: "Computing & Internet",
+        dur: "47m",
+        started: "Jul 1 · 8:55 AM",
+      },
+      {
+        type: "Idle",
+        dot: C.idle,
+        activity: "—",
+        activityDim: true,
+        user: "b.smith",
+        cat: "—",
+        catDim: true,
+        dur: "41m",
+        started: "Jul 22 · 12:18 PM",
+      },
+      {
+        type: "Website",
+        dot: C.web,
+        activity: "www.lowes.com/order-tracking",
+        user: "b.smith",
+        cat: "Shopping/Retail",
+        dur: "38m",
+        started: "Jul 3 · 5:10 PM",
+      },
+      {
+        type: "Application",
+        dot: C.app,
+        activity: "Snipping Tool",
+        user: "b.smith",
+        cat: "—",
+        catDim: true,
+        dur: "22m",
+        started: "Jun 25 · 3:33 PM",
+      },
     ],
   },
 ];
@@ -109,7 +281,13 @@ function DeviceTable({ device }: { device: Device }) {
         <Box sx={{ fontFamily: montserrat, fontSize: 21, fontWeight: 600 }}>
           {device.name}
         </Box>
-        <Box sx={{ fontSize: 16, color: TEXT2, fontVariantNumeric: "tabular-nums" }}>
+        <Box
+          sx={{
+            fontSize: 16,
+            color: TEXT2,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
           {device.meta}
         </Box>
       </Box>
@@ -144,7 +322,10 @@ function DeviceTable({ device }: { device: Device }) {
         <Box component="tbody">
           {device.rows.map((r, i) => (
             <Box component="tr" key={i}>
-              <Box component="td" sx={{ ...cellSx, whiteSpace: "nowrap", fontWeight: 500 }}>
+              <Box
+                component="td"
+                sx={{ ...cellSx, whiteSpace: "nowrap", fontWeight: 500 }}
+              >
                 <Box
                   component="i"
                   sx={{
@@ -176,18 +357,30 @@ function DeviceTable({ device }: { device: Device }) {
               <Box component="td" sx={cellSx}>
                 {r.user}
               </Box>
-              <Box component="td" sx={{ ...cellSx, color: r.catDim ? TEXT3 : TEXT2 }}>
+              <Box
+                component="td"
+                sx={{ ...cellSx, color: r.catDim ? TEXT3 : TEXT2 }}
+              >
                 {r.cat}
               </Box>
               <Box
                 component="td"
-                sx={{ ...cellSx, whiteSpace: "nowrap", fontWeight: 600, fontVariantNumeric: "tabular-nums" }}
+                sx={{
+                  ...cellSx,
+                  whiteSpace: "nowrap",
+                  fontWeight: 600,
+                  fontVariantNumeric: "tabular-nums",
+                }}
               >
                 {r.dur}
               </Box>
               <Box
                 component="td"
-                sx={{ ...cellSx, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}
+                sx={{
+                  ...cellSx,
+                  whiteSpace: "nowrap",
+                  fontVariantNumeric: "tabular-nums",
+                }}
               >
                 {r.started}
               </Box>
@@ -275,14 +468,12 @@ export default function TimelineActivityLogsReport() {
             fontWeight: 600,
             fontSize: 44,
             lineHeight: 1.2,
-            m: "10px 0 12px",
+            m: "8px 0",
           }}
         >
           Timeline Activity Logs
         </Box>
-        <Box sx={{ fontSize: 21, color: TEXT2 }}>
-          Prepared for Acme Manufacturing
-        </Box>
+        <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>
 
       {/* KPI band */}
@@ -313,6 +504,7 @@ export default function TimelineActivityLogsReport() {
                 fontSize: 40,
                 lineHeight: 1,
                 fontVariantNumeric: "tabular-nums",
+                whiteSpace: "nowrap",
               }}
             >
               {k.num}

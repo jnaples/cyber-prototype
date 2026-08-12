@@ -1,6 +1,6 @@
 // Report Manager → Library. A 3-column grid: the Reports card (1 col) lists
 // every report as a single-select card; picking one renders its sample cover
-// sheet in the Preview card (2 cols). Customer Activity Overview is preselected.
+// sheet in the Preview card (2 cols). Activity Summary is preselected.
 
 import {
   Alert,

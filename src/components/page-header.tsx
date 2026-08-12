@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
+import type { SxProps, Theme } from "@mui/material/styles";
 import type { ReactNode } from "react";
 
 type PageHeaderProps = {
@@ -13,6 +14,8 @@ type PageHeaderProps = {
   // Optional content rendered below the title row, inside the same shadowed
   // surface — e.g. a filter bar that should visually belong to the header.
   children?: ReactNode;
+  /** Overrides on the header surface — e.g. dropping its bottom padding. */
+  sx?: SxProps<Theme>;
 };
 
 export function PageHeader({
@@ -21,17 +24,21 @@ export function PageHeader({
   leftSlot,
   actions,
   children,
+  sx,
 }: PageHeaderProps) {
   return (
     <Box
-      sx={{
-        bgcolor: "background.paper",
-        boxShadow: 1,
-        py: 2,
-        width: "100%",
-        position: "relative",
-        zIndex: 1,
-      }}
+      sx={[
+        {
+          bgcolor: "background.paper",
+          boxShadow: 1,
+          py: 2,
+          width: "100%",
+          position: "relative",
+          zIndex: 1,
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
       <Stack
         sx={{

@@ -61,7 +61,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 2,
-    reportType: "Customer Activity Overview",
+    reportType: "Activity Summary",
     reportName: "Monthly Executive Summary",
     customer: "Acme Manufacturing",
     period: "Jul 1–31",
@@ -83,7 +83,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 4,
-    reportType: "CyberSight AI Usage",
+    reportType: "AI Tool Usage",
     reportName: "CyberSight AI Monthly Review",
     customer: "Globex Financial",
     period: "Jul 1–31",
@@ -127,7 +127,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 8,
-    reportType: "Timeline Overview",
+    reportType: "Executive Summary",
     reportName: "Business Review Packet",
     customer: "Acme Manufacturing",
     period: "Jul 1–31",
@@ -160,7 +160,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 11,
-    reportType: "Customer Activity Overview",
+    reportType: "Activity Summary",
     reportName: "Acme Weekly Traffic Digest",
     customer: "Acme Manufacturing",
     period: "Jul 24–30",
@@ -182,7 +182,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 13,
-    reportType: "CyberSight AI Usage",
+    reportType: "AI Tool Usage",
     reportName: "AI Adoption Snapshot",
     customer: "Acme Manufacturing",
     period: "Jul 1–31",
@@ -193,7 +193,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 14,
-    reportType: "CyberSight AI Usage",
+    reportType: "AI Tool Usage",
     reportName: "CyberSight AI Monthly Review",
     customer: "Umbrella Health",
     period: "Jul 1–31",
@@ -204,7 +204,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 15,
-    reportType: "CyberSight AI Usage",
+    reportType: "AI Tool Usage",
     reportName: "AI Query Volume by Device",
     customer: "Hamel Services LLC",
     period: "Jul 1–29",

@@ -8,6 +8,7 @@ import type { Theme } from "@mui/material/styles";
 
 const TEXT = "#031625";
 const TEXT2 = "rgba(3,22,37,.62)";
+const TEXT3 = "rgba(3,22,37,.45)";
 const PRIMARY = "#3527fd";
 const DIVIDER = "rgba(3,22,37,.12)";
 const TRACK = "#edf0f6";
@@ -221,7 +222,8 @@ function SkullIcon() {
 
 function BlockIcon() {
   return (
-    <Box component="svg" viewBox="0 0 24 24" sx={iconSx(TEXT)}>
+    // Same orange as the blocked-content bars further down.
+    <Box component="svg" viewBox="0 0 24 24" sx={iconSx(C_CONTENT)}>
       <circle
         cx="12"
         cy="12"
@@ -265,18 +267,33 @@ const iconSx = (color: string) => ({
 const KPIS = [
   { num: "306.2K", cap: "Total requests", color: PRIMARY, Icon: RadarIcon },
   { num: "214", cap: "Blocked threats", color: C_THREAT, Icon: SkullIcon },
-  { num: "12.2K", cap: "Blocked content", color: TEXT, Icon: BlockIcon },
+  { num: "12.2K", cap: "Blocked content", color: C_CONTENT, Icon: BlockIcon },
   { num: "4", cap: "Total sites", color: C_SITE, Icon: PinIcon },
 ];
 
 // ---- Shared blocks --------------------------------------------------------
 
-function SectionHead({ title, sub }: { title: string; sub?: string }) {
+function SectionHead({
+  title,
+  sub,
+  mb = "24px",
+}: {
+  title: string;
+  sub?: string;
+  /** Gap to the section's content. */
+  mb?: string;
+}) {
   return (
-    <Box sx={{ mb: "24px" }}>
+    <Box sx={{ mb }}>
       <Box
         component="h2"
-        sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 23 }}
+        sx={{
+          // An h2's UA margin is 0.83em — an odd 19px at this size.
+          my: "16px",
+          fontFamily: montserrat,
+          fontWeight: 600,
+          fontSize: 23,
+        }}
       >
         {title}
       </Box>
@@ -289,7 +306,7 @@ function ColHead({ children, first }: { children: string; first?: boolean }) {
   return (
     <Box
       sx={{
-        fontSize: 19,
+        fontSize: 20,
         fontWeight: 600,
         color: TEXT,
         mt: first ? 0 : "36px",
@@ -301,44 +318,52 @@ function ColHead({ children, first }: { children: string; first?: boolean }) {
   );
 }
 
+// Values are display strings ("182.4K", "7,088", "89"), so shares are derived
+// from the parsed number rather than carried alongside each row.
+function numOf(value: string) {
+  const n = parseFloat(value.replace(/,/g, ""));
+  if (Number.isNaN(n)) return 0;
+  return /k$/i.test(value.trim()) ? n * 1000 : n;
+}
+
+function pctOf(value: string, values: string[]) {
+  const total = values.reduce((sum, v) => sum + numOf(v), 0);
+  if (!total) return undefined;
+  return `(${((numOf(value) / total) * 100).toFixed(1)}%)`;
+}
+
 function BarRows({ rows, color }: { rows: BarRow[]; color: string }) {
   return (
     <>
       {rows.map((r) => (
         <Box key={r.nm} sx={{ mb: "18px" }}>
           <Box
+            component="span"
             sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "baseline",
-              gap: "12px",
-              mb: "7px",
+              display: "block",
+              fontSize: 20,
+              fontWeight: 500,
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              minWidth: 0,
             }}
           >
-            <Box
-              component="span"
-              sx={{
-                fontSize: 19,
-                fontWeight: 500,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                minWidth: 0,
-              }}
-            >
-              {r.nm}
-            </Box>
-            <Box
-              component="span"
-              sx={{
-                fontSize: 18,
-                fontWeight: 600,
-                whiteSpace: "nowrap",
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              {r.val}
-            </Box>
+            {r.nm}
+          </Box>
+          <Box
+            component="span"
+            sx={{
+              display: "block",
+              fontSize: 16,
+              fontWeight: 400,
+              whiteSpace: "nowrap",
+              fontVariantNumeric: "tabular-nums",
+              color: TEXT2,
+              my: "4px",
+            }}
+          >
+            {r.val}
           </Box>
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <Box
@@ -474,24 +499,22 @@ export default function FilterProtectionSummaryReport() {
               width: 56,
               height: 56,
               borderRadius: "6px",
-              bgcolor: PRIMARY,
-              color: "#fff",
+              border: `2px dashed ${TEXT3}`,
+              color: TEXT3,
               fontFamily: montserrat,
               fontWeight: 700,
-              fontSize: 24,
+              fontSize: 12,
+              letterSpacing: "1px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            BI
+            LOGO
           </Box>
           <Box>
             <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>
               Brightwave IT
-            </Box>
-            <Box sx={{ fontSize: 16, color: TEXT2, mt: "2px" }}>
-              Managed security reporting
             </Box>
           </Box>
         </Box>
@@ -525,7 +548,7 @@ export default function FilterProtectionSummaryReport() {
             color: PRIMARY,
           }}
         >
-          Network protection · Monthly report
+          Monthly report
         </Box>
         <Box
           component="h1"
@@ -534,14 +557,12 @@ export default function FilterProtectionSummaryReport() {
             fontWeight: 600,
             fontSize: 44,
             lineHeight: 1.2,
-            m: "10px 0 12px",
+            m: "8px 0",
           }}
         >
           Filter Protection Summary
         </Box>
-        <Box sx={{ fontSize: 21, color: TEXT2 }}>
-          Prepared for Acme Manufacturing · 30-day filtering summary
-        </Box>
+        <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>
 
       {/* KPI band */}
@@ -576,6 +597,7 @@ export default function FilterProtectionSummaryReport() {
                 fontSize: 40,
                 lineHeight: 1,
                 fontVariantNumeric: "tabular-nums",
+                whiteSpace: "nowrap",
                 color: k.color,
               }}
             >
@@ -599,7 +621,7 @@ export default function FilterProtectionSummaryReport() {
 
       {/* Top active sites */}
       <Box sx={{ mb: "72px" }}>
-        <SectionHead title="Top active sites" />
+        <SectionHead title="Top active sites" mb="16px" />
         <Box
           sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}
         >
@@ -610,6 +632,8 @@ export default function FilterProtectionSummaryReport() {
                 border: `1px solid ${DIVIDER}`,
                 borderRadius: "6px",
                 p: "24px 28px",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
               <Box
@@ -626,15 +650,32 @@ export default function FilterProtectionSummaryReport() {
               </Box>
               <Box
                 sx={{
+                  mt: "auto",
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr 1fr",
                   gap: "16px",
+                  alignItems: "end",
                 }}
               >
                 {[
-                  { num: s.requests, cap: "Total requests", color: PRIMARY },
-                  { num: s.threats, cap: "Blocked threats", color: C_THREAT },
-                  { num: s.content, cap: "Blocked content", color: TEXT },
+                  {
+                    num: s.requests,
+                    cap: "Total requests",
+                    color: PRIMARY,
+                    all: SITES.map((x) => x.requests),
+                  },
+                  {
+                    num: s.threats,
+                    cap: "Blocked threats",
+                    color: C_THREAT,
+                    all: SITES.map((x) => x.threats),
+                  },
+                  {
+                    num: s.content,
+                    cap: "Blocked content",
+                    color: C_CONTENT,
+                    all: SITES.map((x) => x.content),
+                  },
                 ].map((t) => (
                   <Box key={t.cap}>
                     <Box
@@ -649,8 +690,41 @@ export default function FilterProtectionSummaryReport() {
                     >
                       {t.num}
                     </Box>
-                    <Box sx={{ fontSize: 16, color: TEXT2, mt: "6px" }}>
-                      {t.cap}
+                    <Box
+                      component="span"
+                      sx={{
+                        display: "block",
+                        fontSize: 16,
+                        color: TEXT2,
+                        fontVariantNumeric: "tabular-nums",
+                        mt: "4px",
+                      }}
+                    >
+                      {pctOf(t.num, t.all)}
+                    </Box>
+                    <Box
+                      sx={{
+                        // Same treatment as the KPI band captions above.
+                        fontSize: 16,
+                        fontWeight: 600,
+                        letterSpacing: "1.5px",
+                        textTransform: "uppercase",
+                        color: TEXT2,
+                        mt: "6px",
+                      }}
+                    >
+                      {/* Each caption is two words; breaking every one onto two
+                          lines keeps the three columns the same height, so the
+                          cards read flush. */}
+                      {t.cap.split(" ").map((word) => (
+                        <Box
+                          key={word}
+                          component="span"
+                          sx={{ display: "block" }}
+                        >
+                          {word}
+                        </Box>
+                      ))}
                     </Box>
                   </Box>
                 ))}
@@ -665,6 +739,7 @@ export default function FilterProtectionSummaryReport() {
         <SectionHead
           title="Threat summary"
           sub="All sites · 214 blocked threat requests"
+          mb="4px"
         />
         <ColHead first>Blocked requests by threat category</ColHead>
         <BarRows rows={THREAT_CATEGORIES} color={C_THREAT} />
@@ -696,12 +771,7 @@ export default function FilterProtectionSummaryReport() {
         }}
       >
         <Box>
-          <Box sx={{ fontSize: 17, fontWeight: 600 }}>
-            Prepared by Brightwave IT
-          </Box>
-        </Box>
-        <Box sx={{ fontSize: 16, color: TEXT2, textAlign: "right" }}>
-          Data period Jun 23 – Jul 22, 2026
+          <Box sx={{ fontSize: 17, fontWeight: 600 }}>Brightwave IT</Box>
         </Box>
       </Box>
     </Box>

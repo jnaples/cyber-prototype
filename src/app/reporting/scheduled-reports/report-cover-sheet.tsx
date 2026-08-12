@@ -86,7 +86,7 @@ export function ReportCoverSheet({
         {SAMPLE_RANGE}
       </Typography>
       <Typography sx={{ fontSize: 18, color: SHEET_TEXT }}>
-        Prepared for {SAMPLE_ORG}
+        {SAMPLE_ORG}
       </Typography>
 
       <Box sx={{ height: "1px", bgcolor: SHEET_DIVIDER, my: 4 }} />

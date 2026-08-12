@@ -1,4 +1,4 @@
-// CyberSight AI Usage report — converted from the "CyberSight AI Usage" PDF
+// AI Tool Usage report — converted from the "AI Tool Usage" PDF
 // template (1400px canvas). Same chrome/components as the other CyberSight
 // reports; AI-specific series, a rescaled 0–6h trend chart, and AI accent
 // colors. Screen-only design annex omitted. Rendered light mode (PDF-style).
@@ -10,23 +10,83 @@ const TEXT = "#031625";
 const TEXT2 = "rgba(3,22,37,.62)";
 const TEXT3 = "rgba(3,22,37,.45)";
 const DIVIDER = "rgba(3,22,37,.12)";
+const PRIMARY = "#3527fd";
 const TRACK = "#edf0f6";
-const C = { site: "#238cd2", app: "#7b3ff2", client: "#1e7d4f", trend: "#0f8a80" };
+const C = {
+  site: "#238cd2",
+  app: "#7b3ff2",
+  client: "#1e7d4f",
+  trend: "#0f8a80",
+};
 
 const montserrat = (theme: Theme) => theme.typography.fontSecondaryFamily;
 
-type Row = { nm: string; val: string; sub?: string; pct: number; users?: string };
+type Row = {
+  nm: string;
+  val: string;
+  sub?: string;
+  pct: number;
+  users?: string;
+};
 
 const TOP_AI_WEBSITES: Row[] = [
-  { nm: "claude.ai", val: "20h 33m", sub: "(26.0%)", pct: 100, users: "3 users" },
-  { nm: "chatgpt.com", val: "18h 25m", sub: "(23.3%)", pct: 89.6, users: "3 users" },
-  { nm: "perplexity.ai", val: "3h 55m", sub: "(5.0%)", pct: 19.1, users: "1 user" },
-  { nm: "gemini.google.com", val: "3h 12m", sub: "(4.1%)", pct: 15.6, users: "2 users" },
-  { nm: "copilot.microsoft.com", val: "1h 41m", sub: "(2.1%)", pct: 8.2, users: "2 users" },
-  { nm: "midjourney.com", val: "1h 24m", sub: "(1.8%)", pct: 6.8, users: "1 user" },
-  { nm: "huggingface.co", val: "1h 9m", sub: "(1.5%)", pct: 5.6, users: "1 user" },
+  {
+    nm: "claude.ai",
+    val: "20h 33m",
+    sub: "(26.0%)",
+    pct: 100,
+    users: "3 users",
+  },
+  {
+    nm: "chatgpt.com",
+    val: "18h 25m",
+    sub: "(23.3%)",
+    pct: 89.6,
+    users: "3 users",
+  },
+  {
+    nm: "perplexity.ai",
+    val: "3h 55m",
+    sub: "(5.0%)",
+    pct: 19.1,
+    users: "1 user",
+  },
+  {
+    nm: "gemini.google.com",
+    val: "3h 12m",
+    sub: "(4.1%)",
+    pct: 15.6,
+    users: "2 users",
+  },
+  {
+    nm: "copilot.microsoft.com",
+    val: "1h 41m",
+    sub: "(2.1%)",
+    pct: 8.2,
+    users: "2 users",
+  },
+  {
+    nm: "midjourney.com",
+    val: "1h 24m",
+    sub: "(1.8%)",
+    pct: 6.8,
+    users: "1 user",
+  },
+  {
+    nm: "huggingface.co",
+    val: "1h 9m",
+    sub: "(1.5%)",
+    pct: 5.6,
+    users: "1 user",
+  },
   { nm: "copy.ai", val: "46m", sub: "(1.0%)", pct: 3.7, users: "3 users" },
-  { nm: "higgsfield.ai", val: "13m", sub: "(0.3%)", pct: 1.1, users: "3 users" },
+  {
+    nm: "higgsfield.ai",
+    val: "13m",
+    sub: "(0.3%)",
+    pct: 1.1,
+    users: "3 users",
+  },
   { nm: "grok.x.ai", val: "8m", sub: "(0.2%)", pct: 0.6, users: "1 user" },
 ];
 
@@ -58,18 +118,35 @@ const TOP_AI_CLIENTS: Row[] = [
 
 function UserIcon() {
   return (
-    <Box component="svg" viewBox="0 0 16 16" sx={{ width: 15, height: 15, fill: TEXT3, flexShrink: 0 }}>
+    <Box
+      component="svg"
+      viewBox="0 0 16 16"
+      sx={{ width: 15, height: 15, fill: TEXT3, flexShrink: 0 }}
+    >
       <path d="M8 7.4a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 1.5c-3 0-5.5 1.8-5.5 4 0 .6.5 1.1 1.1 1.1h8.8c.6 0 1.1-.5 1.1-1.1 0-2.2-2.5-4-5.5-4Z" />
     </Box>
   );
 }
 
-function SecHead({ title, sub }: { color?: string; title: string; sub: string }) {
+function SecHead({
+  title,
+  sub,
+}: {
+  color?: string;
+  title: string;
+  sub: string;
+}) {
   return (
     <Box sx={{ mb: "24px" }}>
       <Box
         component="h2"
-        sx={{ m: 0, fontFamily: montserrat, fontSize: 24, fontWeight: 600, textTransform: "capitalize" }}
+        sx={{
+          m: 0,
+          fontFamily: montserrat,
+          fontSize: 24,
+          fontWeight: 600,
+          textTransform: "capitalize",
+        }}
       >
         {title}
       </Box>
@@ -80,28 +157,94 @@ function SecHead({ title, sub }: { color?: string; title: string; sub: string })
   );
 }
 
-function BarRow({ row, color }: { row: Row; color: string }) {
+// Rows carry a duration string, not a number, so a row's share of its list is
+// derived from the parsed minutes. Lists that already ship a `sub` keep it.
+function minutesOf(value: string) {
+  const h = /(\d+)\s*h/.exec(value);
+  const m = /(\d+)\s*m/.exec(value);
+  return (h ? Number(h[1]) * 60 : 0) + (m ? Number(m[1]) : 0);
+}
+
+function shareOf(row: Row, rows: Row[]) {
+  const total = rows.reduce((sum, r) => sum + minutesOf(r.val), 0);
+  if (!total) return undefined;
+  return `(${((minutesOf(row.val) / total) * 100).toFixed(1)}%)`;
+}
+
+function BarRow({
+  row,
+  color,
+  share,
+}: {
+  row: Row;
+  color: string;
+  /** e.g. "(26.0%)" — the row's share of its list. */
+  share?: string;
+}) {
   return (
     <Box sx={{ mb: "20px" }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "12px", mb: "7px" }}>
-        <Box
-          component="span"
-          sx={{ fontSize: 20, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }}
-        >
-          {row.nm}
-        </Box>
-        <Box component="span" sx={{ fontSize: 19, fontWeight: 600, whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
-          {row.val}
-          {row.sub && (
-            <Box component="em" sx={{ fontStyle: "normal", fontWeight: 400, color: TEXT2, fontSize: 17, ml: "6px" }}>
-              {row.sub}
-            </Box>
-          )}
-        </Box>
+      <Box
+        component="span"
+        sx={{
+          display: "block",
+          fontSize: 20,
+          fontWeight: 500,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          minWidth: 0,
+        }}
+      >
+        {row.nm}
+      </Box>
+      {/* Value and share sit on their own line, directly above the bar. */}
+      <Box
+        component="span"
+        sx={{
+          display: "block",
+          fontSize: 16,
+          fontWeight: 400,
+          whiteSpace: "nowrap",
+          fontVariantNumeric: "tabular-nums",
+          my: "4px",
+        }}
+      >
+        {row.val}
+        {share && (
+          <Box
+            component="em"
+            sx={{
+              fontStyle: "normal",
+              fontWeight: 400,
+              color: TEXT2,
+              fontSize: 16,
+              ml: "6px",
+            }}
+          >
+            {share}
+          </Box>
+        )}
       </Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
-        <Box sx={{ flex: 1, height: 12, borderRadius: "6px", bgcolor: TRACK, overflow: "hidden" }}>
-          <Box sx={{ display: "block", height: "100%", borderRadius: "6px", minWidth: 4, width: `${row.pct}%`, bgcolor: color }} />
+        <Box
+          sx={{
+            flex: 1,
+            height: 12,
+            borderRadius: "6px",
+            bgcolor: TRACK,
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            sx={{
+              display: "block",
+              height: "100%",
+              borderRadius: "6px",
+              minWidth: 4,
+              width: `${row.pct}%`,
+              bgcolor: color,
+            }}
+          />
         </Box>
         {row.users && (
           <Box
@@ -126,12 +269,27 @@ function BarRow({ row, color }: { row: Row; color: string }) {
   );
 }
 
-function TopNColumn({ color, title, sub, rows }: { color: string; title: string; sub: string; rows: Row[] }) {
+function TopNColumn({
+  color,
+  title,
+  sub,
+  rows,
+}: {
+  color: string;
+  title: string;
+  sub: string;
+  rows: Row[];
+}) {
   return (
     <Box>
       <SecHead color={color} title={title} sub={sub} />
       {rows.map((r) => (
-        <BarRow key={r.nm} row={r} color={color} />
+        <BarRow
+          key={r.nm}
+          row={r}
+          color={color}
+          share={r.sub ?? shareOf(r, rows)}
+        />
       ))}
     </Box>
   );
@@ -154,7 +312,14 @@ export default function CyberSightAiUsageReport() {
       }}
     >
       {/* Masthead */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", pb: "24px" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-end",
+          pb: "24px",
+        }}
+      >
         <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <Box
             sx={{
@@ -175,41 +340,106 @@ export default function CyberSightAiUsageReport() {
             LOGO
           </Box>
           <Box>
-            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>Brightwave IT</Box>
+            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>
+              Brightwave IT
+            </Box>
           </Box>
         </Box>
         <Box sx={{ textAlign: "right" }}>
-          <Box sx={{ fontSize: 16, letterSpacing: "1.5px", textTransform: "uppercase", color: TEXT2, fontWeight: 600 }}>
+          <Box
+            sx={{
+              fontSize: 16,
+              letterSpacing: "1.5px",
+              textTransform: "uppercase",
+              color: TEXT2,
+              fontWeight: 600,
+            }}
+          >
             Reporting period
           </Box>
-          <Box sx={{ fontSize: 20, fontWeight: 600, mt: "4px" }}>Jun 23 – Jul 22, 2026</Box>
+          <Box sx={{ fontSize: 20, fontWeight: 600, mt: "4px" }}>
+            Jun 23 – Jul 22, 2026
+          </Box>
         </Box>
       </Box>
       <Box sx={{ height: "3px", bgcolor: TEXT, mb: "40px" }} />
 
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
-        <Box component="h1" sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 44, lineHeight: 1.2, m: "10px 0 12px" }}>
-          AI Usage
+        <Box
+          sx={{
+            fontSize: 17,
+            fontWeight: 700,
+            letterSpacing: "2.5px",
+            textTransform: "uppercase",
+            color: PRIMARY,
+          }}
+        >
+          Monthly report
         </Box>
-        <Box sx={{ fontSize: 21, color: TEXT2 }}>
-          Prepared for Acme Manufacturing
+        <Box
+          component="h1"
+          sx={{
+            fontFamily: montserrat,
+            fontWeight: 600,
+            fontSize: 44,
+            lineHeight: 1.2,
+            m: "8px 0",
+          }}
+        >
+          AI Tool Usage
         </Box>
+        <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>
 
       {/* KPI band */}
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "24px", mb: "64px" }}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: "24px",
+          mb: "64px",
+        }}
+      >
         {[
           { num: "79h 0m", cap: "Total AI tool time" },
           { num: "31%", cap: "Of all active time" },
           { num: "23", cap: "AI tools detected" },
           { num: "10", cap: "Devices using AI" },
         ].map((k) => (
-          <Box key={k.cap} sx={{ border: `1px solid ${DIVIDER}`, borderRadius: "6px", p: "28px 32px 24px", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 40, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+          <Box
+            key={k.cap}
+            sx={{
+              border: `1px solid ${DIVIDER}`,
+              borderRadius: "6px",
+              p: "28px 32px 24px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Box
+              sx={{
+                fontFamily: montserrat,
+                fontWeight: 600,
+                fontSize: 40,
+                lineHeight: 1,
+                fontVariantNumeric: "tabular-nums",
+                whiteSpace: "nowrap",
+              }}
+            >
               {k.num}
             </Box>
-            <Box sx={{ fontSize: 16, fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: TEXT2, mt: "12px" }}>
+            <Box
+              sx={{
+                fontSize: 16,
+                fontWeight: 600,
+                letterSpacing: "1.5px",
+                textTransform: "uppercase",
+                color: TEXT2,
+                mt: "12px",
+              }}
+            >
               {k.cap}
             </Box>
           </Box>
@@ -225,12 +455,16 @@ export default function CyberSightAiUsageReport() {
         />
         <Box
           component="svg"
-          viewBox="0 0 1272 372"
+          viewBox="-34 0 1306 402"
           sx={{
             width: "100%",
             height: "auto",
             display: "block",
-            "& text": { fontFamily: "'Inter Variable', sans-serif", fill: TEXT2, fontSize: "16px" },
+            "& text": {
+              fontFamily: "'Inter Variable', sans-serif",
+              fill: TEXT2,
+              fontSize: "16px",
+            },
             "& .peak": { fill: TEXT, fontWeight: 600 },
           }}
         >
@@ -247,19 +481,51 @@ export default function CyberSightAiUsageReport() {
             <line x1="56" y1="328" x2="1245" y2="328" />
           </g>
           <g textAnchor="end">
-            <text x="42" y="333">0</text>
-            <text x="42" y="233">2</text>
-            <text x="42" y="133">4</text>
-            <text x="42" y="33">6</text>
+            <text x="42" y="333">
+              0
+            </text>
+            <text x="42" y="233">
+              2
+            </text>
+            <text x="42" y="133">
+              4
+            </text>
+            <text x="42" y="33">
+              6
+            </text>
           </g>
-          <text x="56" y="12" style={{ fontSize: "14px", letterSpacing: "1.5px" }} textAnchor="start">
+          {/* Axis titles: the unit reads up the left edge, the dimension
+              sits under the tick labels. */}
+          <text
+            transform="rotate(-90 -12 178)"
+            x="-12"
+            y="178"
+            style={{ fontSize: "14px", letterSpacing: "1.5px" }}
+            textAnchor="middle"
+          >
             HOURS
+          </text>
+          <text
+            x="650"
+            y="394"
+            style={{ fontSize: "14px", letterSpacing: "1.5px" }}
+            textAnchor="middle"
+          >
+            DATE
           </text>
           <path
             fill="url(#aifill)"
             d="M56,268 L97,253 L138,238 L179,248 L220,308 L261,318 L302,228 L343,213 L384,198 L425,178 L466,158 L507,283 L548,303 L589,188 L630,153 L671,178 L712,168 L753,133 L794,273 L835,293 L876,138 L917,118 L958,103 L999,113 L1040,88 L1081,263 L1122,293 L1163,78 L1204,68 L1245,48 L1245,328 L56,328 Z"
           />
-          <line x1="56" y1="278" x2="1245" y2="98" stroke={C.trend} strokeWidth="3" strokeDasharray="8 7" />
+          <line
+            x1="56"
+            y1="278"
+            x2="1245"
+            y2="98"
+            stroke={C.trend}
+            strokeWidth="3"
+            strokeDasharray="8 7"
+          />
           <polyline
             fill="none"
             stroke={C.app}
@@ -269,30 +535,75 @@ export default function CyberSightAiUsageReport() {
             points="56,268 97,253 138,238 179,248 220,308 261,318 302,228 343,213 384,198 425,178 466,158 507,283 548,303 589,188 630,153 671,178 712,168 753,133 794,273 835,293 876,138 917,118 958,103 999,113 1040,88 1081,263 1122,293 1163,78 1204,68 1245,48"
           />
           <g textAnchor="middle">
-            <text x="56" y="356">Jun 23</text>
-            <text x="302" y="356">Jun 29</text>
-            <text x="589" y="356">Jul 6</text>
-            <text x="876" y="356">Jul 13</text>
-            <text x="1163" y="356">Jul 20</text>
+            <text x="56" y="356">
+              Jun 23
+            </text>
+            <text x="302" y="356">
+              Jun 29
+            </text>
+            <text x="589" y="356">
+              Jul 6
+            </text>
+            <text x="876" y="356">
+              Jul 13
+            </text>
+            <text x="1163" y="356">
+              Jul 20
+            </text>
           </g>
         </Box>
-        <Box sx={{ display: "flex", justifyContent: "center", gap: "32px", mt: "16px", fontSize: 16, color: TEXT2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "32px",
+            mt: "16px",
+            fontSize: 16,
+            color: TEXT2,
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Box sx={{ width: 28, height: 4, borderRadius: "2px", bgcolor: C.app }} />
+            <Box
+              sx={{ width: 28, height: 4, borderRadius: "2px", bgcolor: C.app }}
+            />
             AI tool time
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <Box sx={{ width: 28, height: 0, borderTop: `3px dashed ${C.trend}` }} />
+            <Box
+              sx={{ width: 28, height: 0, borderTop: `3px dashed ${C.trend}` }}
+            />
             30-day trend
           </Box>
         </Box>
       </Box>
 
       {/* Top-N grid */}
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "48px", mb: "72px" }}>
-        <TopNColumn color={C.site} title="Top AI websites" sub="Top 10 of 12 AI sites accessed" rows={TOP_AI_WEBSITES} />
-        <TopNColumn color={C.app} title="Top AI applications" sub="Top 10 of 11 AI applications detected" rows={TOP_AI_APPS} />
-        <TopNColumn color={C.client} title="Top AI clients" sub="All 10 devices using AI tools" rows={TOP_AI_CLIENTS} />
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "48px",
+          mb: "72px",
+        }}
+      >
+        <TopNColumn
+          color={C.site}
+          title="Top AI websites"
+          sub="Top 10 of 12 AI sites accessed"
+          rows={TOP_AI_WEBSITES}
+        />
+        <TopNColumn
+          color={C.app}
+          title="Top AI applications"
+          sub="Top 10 of 11 AI applications detected"
+          rows={TOP_AI_APPS}
+        />
+        <TopNColumn
+          color={C.client}
+          title="Top AI clients"
+          sub="All 10 devices using AI tools"
+          rows={TOP_AI_CLIENTS}
+        />
       </Box>
 
       {/* Footer */}
@@ -307,10 +618,7 @@ export default function CyberSightAiUsageReport() {
         }}
       >
         <Box>
-          <Box sx={{ fontSize: 17, fontWeight: 600 }}>Prepared by Brightwave IT</Box>
-        </Box>
-        <Box sx={{ fontSize: 16, color: TEXT2, textAlign: "right" }}>
-          Data period Jun 23 – Jul 22, 2026
+          <Box sx={{ fontSize: 17, fontWeight: 600 }}>Brightwave IT</Box>
         </Box>
       </Box>
     </Box>

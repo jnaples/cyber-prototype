@@ -1,4 +1,4 @@
-// Customer Activity Overview report — converted from the "CyberSight Activity
+// Activity Summary report — converted from the "CyberSight Activity
 // Overview" PDF template (1400px canvas). Screen-only design annex is omitted.
 // Rendered in light mode (the emailed PDF is a light-mode document); type sizes
 // match the template (product ramp × ~1.5 to compensate the print scale).
@@ -239,55 +239,72 @@ function SecHead({
   );
 }
 
-function BarRow({ row, color }: { row: Row; color: string }) {
+// Rows carry a duration string, not a number, so a row's share of its list is
+// derived from the parsed minutes. Lists that already ship a `sub` keep it.
+function minutesOf(value: string) {
+  const h = /(\d+)\s*h/.exec(value);
+  const m = /(\d+)\s*m/.exec(value);
+  return (h ? Number(h[1]) * 60 : 0) + (m ? Number(m[1]) : 0);
+}
+
+function shareOf(row: Row, rows: Row[]) {
+  const total = rows.reduce((sum, r) => sum + minutesOf(r.val), 0);
+  if (!total) return undefined;
+  return `(${((minutesOf(row.val) / total) * 100).toFixed(1)}%)`;
+}
+
+function BarRow({
+  row,
+  color,
+  share,
+}: {
+  row: Row;
+  color: string;
+  /** e.g. "(26.0%)" — the row's share of its list. */
+  share?: string;
+}) {
   return (
     <Box sx={{ mb: "20px" }}>
       <Box
+        component="span"
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "baseline",
-          gap: "12px",
-          mb: "7px",
+          display: "block",
+          fontSize: 20,
+          fontWeight: 500,
+          minWidth: 0,
+          overflowWrap: "anywhere",
+          wordBreak: "break-word",
         }}
       >
-        <Box
-          component="span"
-          sx={{
-            fontSize: 20,
-            fontWeight: 500,
-            minWidth: 0,
-            overflowWrap: "anywhere",
-            wordBreak: "break-word",
-          }}
-        >
-          {row.nm}
-        </Box>
-        <Box
-          component="span"
-          sx={{
-            fontSize: 19,
-            fontWeight: 600,
-            whiteSpace: "nowrap",
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
-          {row.val}
-          {row.sub && (
-            <Box
-              component="em"
-              sx={{
-                fontStyle: "normal",
-                fontWeight: 400,
-                color: TEXT2,
-                fontSize: 17,
-                ml: "6px",
-              }}
-            >
-              {row.sub}
-            </Box>
-          )}
-        </Box>
+        {row.nm}
+      </Box>
+      {/* Value and share sit on their own line, directly above the bar. */}
+      <Box
+        component="span"
+        sx={{
+          display: "block",
+          fontSize: 16,
+          fontWeight: 400,
+          whiteSpace: "nowrap",
+          fontVariantNumeric: "tabular-nums",
+          my: "4px",
+        }}
+      >
+        {row.val}
+        {share && (
+          <Box
+            component="em"
+            sx={{
+              fontStyle: "normal",
+              fontWeight: 400,
+              color: TEXT2,
+              fontSize: 16,
+              ml: "6px",
+            }}
+          >
+            {share}
+          </Box>
+        )}
       </Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
         <Box
@@ -346,7 +363,12 @@ function TopNColumn({
     <Box>
       <SecHead color={color} title={title} sub={sub} />
       {rows.map((r) => (
-        <BarRow key={r.nm} row={r} color={color} />
+        <BarRow
+          key={r.nm}
+          row={r}
+          color={color}
+          share={r.sub ?? shareOf(r, rows)}
+        />
       ))}
     </Box>
   );
@@ -425,20 +447,29 @@ export default function CustomerActivityOverviewReport() {
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
         <Box
+          sx={{
+            fontSize: 17,
+            fontWeight: 700,
+            letterSpacing: "2.5px",
+            textTransform: "uppercase",
+            color: PRIMARY,
+          }}
+        >
+          Monthly report
+        </Box>
+        <Box
           component="h1"
           sx={{
             fontFamily: montserrat,
             fontWeight: 600,
             fontSize: 44,
             lineHeight: 1.2,
-            m: "10px 0 12px",
+            m: "8px 0",
           }}
         >
-          Customer Activity Overview
+          Activity Summary
         </Box>
-        <Box sx={{ fontSize: 21, color: TEXT2 }}>
-          Prepared for Acme Manufacturing
-        </Box>
+        <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>
 
       {/* KPI band */}
@@ -474,6 +505,7 @@ export default function CustomerActivityOverviewReport() {
                 fontSize: 40,
                 lineHeight: 1,
                 fontVariantNumeric: "tabular-nums",
+                whiteSpace: "nowrap",
               }}
             >
               {k.num}
@@ -503,7 +535,7 @@ export default function CustomerActivityOverviewReport() {
         />
         <Box
           component="svg"
-          viewBox="0 0 1272 372"
+          viewBox="-34 0 1306 402"
           sx={{
             width: "100%",
             height: "auto",
@@ -546,13 +578,24 @@ export default function CustomerActivityOverviewReport() {
               24
             </text>
           </g>
+          {/* Axis titles: the unit reads up the left edge, the dimension
+              sits under the tick labels. */}
           <text
-            x="56"
-            y="12"
+            transform="rotate(-90 -12 178)"
+            x="-12"
+            y="178"
             style={{ fontSize: "14px", letterSpacing: "1.5px" }}
-            textAnchor="start"
+            textAnchor="middle"
           >
             HOURS
+          </text>
+          <text
+            x="650"
+            y="394"
+            style={{ fontSize: "14px", letterSpacing: "1.5px" }}
+            textAnchor="middle"
+          >
+            DATE
           </text>
           <path
             fill="url(#areafill)"
@@ -635,7 +678,7 @@ export default function CustomerActivityOverviewReport() {
         <TopNColumn
           color={C.web}
           title="Top websites"
-          sub="Top 10 of 40,000+ visits recorded"
+          sub="Top 10 of 38,483 visits recorded"
           rows={TOP_WEBSITES}
         />
         <TopNColumn
@@ -693,12 +736,7 @@ export default function CustomerActivityOverviewReport() {
         }}
       >
         <Box>
-          <Box sx={{ fontSize: 17, fontWeight: 600 }}>
-            Prepared by Brightwave IT
-          </Box>
-        </Box>
-        <Box sx={{ fontSize: 16, color: TEXT2, textAlign: "right" }}>
-          Data period Jun 23 – Jul 22, 2026
+          <Box sx={{ fontSize: 17, fontWeight: 600 }}>Brightwave IT</Box>
         </Box>
       </Box>
     </Box>

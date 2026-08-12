@@ -21,12 +21,12 @@ export type ScheduleEditState = {
 
 // Grid tags are short labels; the catalog keys them differently.
 export const TAG_TO_REPORT_KEY: Record<string, string> = {
-  "Customer Activity Overview": "activity",
+  "Activity Summary": "activity",
   "Protection Summary": "protection",
   "Traffic Logs": "traffic",
   "Timeline Logs": "timeline-logs",
-  "Timeline Overview": "timeline-overview",
-  "AI Usage": "ai-usage",
+  "Executive Summary": "timeline-overview",
+  "AI Tool Usage": "ai-usage",
 };
 
 // Mirrors the scheduler's own portal-user list.

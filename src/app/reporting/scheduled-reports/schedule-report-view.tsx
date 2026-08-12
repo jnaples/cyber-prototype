@@ -594,7 +594,8 @@ export function ScheduleReportView({
                       variant="body2"
                       sx={{ color: "text.secondary" }}
                     >
-                      Replaces default service branding in the email and PDF.
+                      Uses your branding in the email and report, and removes
+                      &quot;Powered by DNSFilter.&quot;
                     </Typography>
                   </Box>
                 }
