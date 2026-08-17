@@ -78,6 +78,10 @@ const SCHEDULABLE_REPORTS = REPORTS.filter((r) => r.key !== "custom");
 
 const FREQUENCIES = ["Daily", "Weekly", "Monthly", "Quarterly"] as const;
 
+// Step 4 (white-label branding) is parked while branding lives in MSP >
+// Branding. Flip to true to bring the step back.
+const SHOW_BRANDING_STEP = false;
+
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 // Section wrapper — overline "STEP n — TITLE" then content.
@@ -138,7 +142,7 @@ export function ScheduleReportView({
       ? (edit?.frequency as (typeof FREQUENCIES)[number])
       : FREQUENCIES[0],
   );
-  const [whitelabel, setWhitelabel] = useState(false);
+  const [whitelabel, setWhitelabel] = useState(true);
   const [companyName, setCompanyName] = useState("Brightwave IT");
   const [replyTo, setReplyTo] = useState("reports@brightwaveit.com");
   const [samplePreview, setSamplePreview] = useState<ReportDef | null>(null);
@@ -271,9 +275,7 @@ export function ScheduleReportView({
                       )
                     }
                   >
-                    <MenuItem value="All Organizations">
-                      All Organizations
-                    </MenuItem>
+                    {/* No "All Organizations" — a schedule targets one. */}
                     {ORGS.map((org) => (
                       <MenuItem key={org} value={org}>
                         {org}
@@ -395,7 +397,7 @@ export function ScheduleReportView({
                               mt: 1,
                             }}
                           >
-                            Preview sample
+                            View Sample
                           </Link>
                         </Box>
                       );
@@ -574,100 +576,71 @@ export function ScheduleReportView({
               </Box>
             </Step>
 
-            <Divider sx={{ mt: 1 }} />
-
-            {/* STEP 4 — Branding */}
-            <Step n={4} title="Branding (Optional)">
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={whitelabel}
-                    onChange={(e) => setWhitelabel(e.target.checked)}
-                  />
-                }
-                label={
-                  <Box>
-                    <Typography sx={{ fontWeight: 600 }}>
-                      White-label branding
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.secondary" }}
-                    >
-                      Uses your branding in the email and report, and removes
-                      &quot;Powered by DNSFilter.&quot;
-                    </Typography>
-                  </Box>
-                }
-                sx={{ alignItems: "flex-start", m: 0, gap: 1.5, mb: 2 }}
-              />
-
-              {whitelabel && (
-                <Box
-                  sx={{
-                    display: "grid",
-                    gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                    gap: 2,
-                  }}
-                >
-                  <Box>
-                    <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                      Company name
-                    </FormLabel>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
+            {/* STEP 4 — Branding. Parked, not deleted: the branding story may
+                move here from MSP > Branding, so flip the flag to bring it
+                back. */}
+            {SHOW_BRANDING_STEP && <Divider sx={{ mt: 1 }} />}
+            {SHOW_BRANDING_STEP && (
+              <Step n={4} title="Branding (Optional)">
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={whitelabel}
+                      onChange={(e) => setWhitelabel(e.target.checked)}
                     />
-                  </Box>
-                  <Box>
-                    <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                      Reply-to email
-                    </FormLabel>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      value={replyTo}
-                      onChange={(e) => setReplyTo(e.target.value)}
-                    />
-                  </Box>
-                  <Box
-                    sx={{
-                      border: "1px dashed",
-                      borderColor: "divider",
-                      borderRadius: 1,
-                      p: 2,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.5,
-                    }}
-                  >
-                    <MaterialSymbol
-                      name="upload"
-                      size={22}
-                      sx={{ color: "text.secondary" }}
-                    />
+                  }
+                  label={
                     <Box>
-                      <Link
-                        component="button"
-                        type="button"
-                        underline="hover"
-                        sx={{ fontWeight: 700 }}
-                      >
-                        Upload Logo
-                      </Link>
+                      <Typography sx={{ fontWeight: 600 }}>
+                        White-label branding
+                      </Typography>
                       <Typography
                         variant="body2"
                         sx={{ color: "text.secondary" }}
                       >
-                        PNG or SVG, 512px wide recommended
+                        Uses your branding in the email and report, and removes
+                        &quot;Powered by DNSFilter.&quot;
                       </Typography>
                     </Box>
+                  }
+                  sx={{ alignItems: "flex-start", m: 0, gap: 1.5, mb: 2 }}
+                />
+
+                {/* No logo upload here — the logo comes from MSP > Branding. */}
+                {whitelabel && (
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                      gap: 2,
+                    }}
+                  >
+                    <Box>
+                      <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                        Company name
+                      </FormLabel>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                      />
+                    </Box>
+                    <Box>
+                      <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                        Reply-to email
+                      </FormLabel>
+                      <TextField
+                        fullWidth
+                        size="small"
+                        value={replyTo}
+                        onChange={(e) => setReplyTo(e.target.value)}
+                      />
+                    </Box>
                   </Box>
-                </Box>
-              )}
-            </Step>
+                )}
+              </Step>
+            )}
           </Card>
 
           {/* ---------------------------------------------------------------- */}
@@ -756,7 +729,7 @@ export function ScheduleReportView({
                       Select a report to preview
                     </Typography>
                   ) : (
-                    <Card elevation={0} sx={{ overflow: "hidden" }}>
+                    <Card elevation={1} sx={{ overflow: "hidden" }}>
                       <Box
                         sx={{
                           px: 3,

@@ -9,6 +9,8 @@ import { useState } from "react";
 import { Drawer } from "@/components/drawer";
 import { TextField } from "@/components/text-field";
 
+import { AlreadyAllowedAlert } from "./already-allowed-alert";
+
 export function DenyRequestDrawer({
   open,
   onClose,
@@ -19,6 +21,7 @@ export function DenyRequestDrawer({
   reason,
   category = "Uncategorized",
   policy = "this policy",
+  alreadyAllowed = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -32,14 +35,18 @@ export function DenyRequestDrawer({
   /** The domain's content category, shown alongside the request context. */
   category?: string;
   policy?: string;
+  /** The domain is already on the policy's allow list — the request is stale. */
+  alreadyAllowed?: boolean;
 }) {
   const [message, setMessage] = useState("");
+  const [note, setNote] = useState("");
 
   // Prefill an editable message each time the drawer opens.
   const [wasOpen, setWasOpen] = useState(open);
   if (open !== wasOpen) {
     setWasOpen(open);
     if (open) {
+      setNote("");
       setMessage(
         `Your request to unblock ${domain} was not approved under your organization's policy.`,
       );
@@ -53,15 +60,25 @@ export function DenyRequestDrawer({
       title={ignore ? "Deny Request & Ignore" : "Deny Request"}
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{
-        label: ignore ? "Deny & Ignore" : "Deny Request",
+        // Nothing left to deny once the domain is allowed — the action is
+        // just closing out the stale request.
+        label: alreadyAllowed
+          ? "Resolve Request"
+          : ignore
+            ? "Deny & Ignore"
+            : "Deny Request",
         onClick: () => {
           onDeny?.();
           onClose();
         },
       }}
     >
-      {/* Summary */}
-      {ignore ? (
+      {alreadyAllowed && (
+        <AlreadyAllowedAlert domain={domain} policy={policy} />
+      )}
+
+      {/* Summary — the banner covers it once the domain is already allowed. */}
+      {alreadyAllowed ? null : ignore ? (
         <Typography variant="body2" sx={{ color: "text.primary" }}>
           Stop future requests for this domain from {requester}. No notification
           is sent.
@@ -119,10 +136,11 @@ export function DenyRequestDrawer({
         </Typography>
       </Box>
 
-      {!ignore && <Divider />}
+      {!alreadyAllowed && <Divider />}
 
-      {/* Message to requester — only when notifying. */}
-      {!ignore && (
+      {/* Internal notes — the record of why, kept out of the requester's
+          email. Same field the Approve drawer carries. */}
+      {!alreadyAllowed && (
         <Box>
           <Box
             sx={{
@@ -132,7 +150,42 @@ export function DenyRequestDrawer({
               mb: 0.5,
             }}
           >
-            <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
+            <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
+              Internal Notes
+            </Typography>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              Optional
+            </Typography>
+          </Box>
+          <TextField
+            fullWidth
+            multiline
+            minRows={3}
+            placeholder="Add your notes here..."
+            value={note}
+            helperText="Saved to Request History."
+            onChange={(e) => setNote(e.target.value)}
+            sx={{
+              "& .MuiOutlinedInput-root": { bgcolor: "background.paper" },
+              // 14px: the size the app's other helper copy reads at.
+              "& .MuiFormHelperText-root": { fontSize: 14 },
+            }}
+          />
+        </Box>
+      )}
+
+      {/* Message to requester — only when notifying. */}
+      {!ignore && !alreadyAllowed && (
+        <Box>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 0.5,
+            }}
+          >
+            <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
               Message to Requester
             </Typography>
             <Typography variant="body2" sx={{ color: "text.secondary" }}>

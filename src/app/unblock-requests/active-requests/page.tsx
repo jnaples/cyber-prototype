@@ -202,7 +202,7 @@ function RowActionsCell({
         onSubmit={(scope, policies) =>
           setToast(
             alreadyAllowed ? (
-              "Request resolved."
+              "Approved. Requester notified."
             ) : scope === "universal" ? (
               <>
                 <strong>{domain}</strong> added to in Universal Allow List.
@@ -228,6 +228,7 @@ function RowActionsCell({
         open={denyOpen}
         onClose={() => setDenyOpen(false)}
         ignore={denyIgnore}
+        alreadyAllowed={alreadyAllowed}
         onDeny={() =>
           setToast(
             denyIgnore
@@ -386,6 +387,18 @@ const columns: GridColDef[] = [
     minWidth: 260,
   },
   {
+    field: "deployment",
+    headerName: "Deployment",
+    flex: 1,
+    minWidth: 160,
+  },
+  {
+    field: "deploymentType",
+    headerName: "Deployment Type",
+    flex: 1,
+    minWidth: 150,
+  },
+  {
     field: "actions",
     headerName: "Actions",
     width: 130,
@@ -526,6 +539,10 @@ const REQUESTS: ActiveRequest[] = [
   },
 ];
 
+// Deployment values mirror the DNS Query Log grid's.
+const DEPLOYMENTS = ["macOS Agent 14.2", "Windows Agent 15"];
+const DEPLOYMENT_TYPES = ["Roaming Client", "Relay", "Site"];
+
 // Spread attempts across the last few business days during 9-5 hours (always
 // within the past 30 days), then order oldest first.
 const NOW = new Date();
@@ -542,7 +559,12 @@ const rows = REQUESTS.map((request, i) => {
     timeOfAttempt: fnsFormat(date, "MMM d, yyyy h:mm a"),
     // Kept off the grid — only Investigate Mode needs the exact instant.
     timestampMs: date.getTime(),
+    deployment: DEPLOYMENTS[i % DEPLOYMENTS.length],
+    deploymentType: DEPLOYMENT_TYPES[i % DEPLOYMENT_TYPES.length],
   }));
+
+// Deployment / Deployment Type ship hidden; users turn them on in Preferences.
+const DEFAULT_COLUMN_VISIBILITY = { deployment: false, deploymentType: false };
 
 // The table always has rows, so the no-rows overlay only appears when a search
 // filters everything out.
@@ -564,6 +586,10 @@ function ActiveRequestsEmptyOverlay() {
 }
 
 export default function ActiveRequestsPage() {
+  const [columnVisibility, setColumnVisibility] = useState<
+    Record<string, boolean>
+  >(DEFAULT_COLUMN_VISIBILITY);
+
   return (
     <TabbedDataCard>
       <DataTable
@@ -572,6 +598,8 @@ export default function ActiveRequestsPage() {
         showDefaultView={false}
         noRowsOverlay={ActiveRequestsEmptyOverlay}
         pinnedShadowFields={{ left: "domain" }}
+        columnVisibilityModel={columnVisibility}
+        onColumnVisibilityModelChange={setColumnVisibility}
       />
     </TabbedDataCard>
   );

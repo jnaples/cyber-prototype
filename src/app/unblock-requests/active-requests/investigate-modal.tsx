@@ -6,6 +6,7 @@
 
 import {
   Box,
+  Button,
   Chip,
   Dialog,
   IconButton,
@@ -22,6 +23,7 @@ import {
 import { alpha } from "@mui/material/styles";
 import { format } from "date-fns";
 import { useState } from "react";
+import { useNavigate } from "react-router";
 
 import { InfoChip } from "@/components/info-chip";
 import { MaterialSymbol } from "@/components/material-symbol";
@@ -129,6 +131,7 @@ export function InvestigateModal({
   /** Timestamp (ms) of the blocked request. */
   anchorMs: number;
 }) {
+  const navigate = useNavigate();
   const [window, setWindow] = useState<WindowOption>(WINDOW_OPTIONS[0]);
 
   const seconds = WINDOW_SECONDS[window];
@@ -312,6 +315,40 @@ export function InvestigateModal({
             </TableBody>
           </Table>
         </Paper>
+      </Box>
+
+      {/* Actions — same shape as the drawers': secondary left, primary right. */}
+      <Box
+        sx={{
+          px: 2,
+          py: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 1,
+        }}
+      >
+        <Button
+          type="button"
+          size="small"
+          variant="outlined"
+          color="secondary"
+          onClick={onClose}
+        >
+          Close
+        </Button>
+        <Button
+          type="button"
+          size="small"
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            onClose();
+            navigate("/query-logs");
+          }}
+        >
+          View Full Log
+        </Button>
       </Box>
     </Dialog>
   );

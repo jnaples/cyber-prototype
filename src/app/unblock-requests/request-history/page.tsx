@@ -1,6 +1,7 @@
 import { Box, Chip, Link, Typography } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import { format as fnsFormat } from "date-fns";
+import { useState } from "react";
 
 import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
@@ -97,6 +98,24 @@ const columns: GridColDef[] = [
     minWidth: 180,
   },
   {
+    field: "deployment",
+    headerName: "Deployment",
+    flex: 1,
+    minWidth: 160,
+  },
+  {
+    field: "deploymentType",
+    headerName: "Deployment Type",
+    flex: 1,
+    minWidth: 150,
+  },
+  {
+    field: "internalNote",
+    headerName: "Internal Notes",
+    flex: 1.5,
+    minWidth: 240,
+  },
+  {
     field: "action",
     headerName: "Decision",
     flex: 1,
@@ -143,6 +162,8 @@ type HistoryRequest = {
   requestReason: string;
   actionedBy: string;
   action: string;
+  /** What the admin noted when resolving — blank when they left it empty. */
+  internalNote: string;
 };
 
 const HISTORY: HistoryRequest[] = [
@@ -157,6 +178,8 @@ const HISTORY: HistoryRequest[] = [
     requestReason: "Need LinkedIn for recruiting and sales outreach",
     actionedBy: "Jordan Blake",
     action: "Allowed",
+    internalNote:
+      "Approved for the recruiting team only; revisit at Q3 policy review.",
   },
   {
     domain: "youtube.com",
@@ -169,6 +192,7 @@ const HISTORY: HistoryRequest[] = [
     requestReason: "Vendor posted required machine-training videos",
     actionedBy: "Casey Morgan",
     action: "Allowed",
+    internalNote: "Vendor training runs through end of quarter.",
   },
   {
     domain: "dropbox.com",
@@ -181,6 +205,7 @@ const HISTORY: HistoryRequest[] = [
     requestReason: "Referring clinic shared patient records here",
     actionedBy: "Riley Adams",
     action: "Allowed",
+    internalNote: "Legal signed off — BAA on file with the referring clinic.",
   },
   {
     domain: "github.com",
@@ -193,6 +218,8 @@ const HISTORY: HistoryRequest[] = [
     requestReason: "Miscategorized — needed for internal dev tooling",
     actionedBy: "Jordan Blake",
     action: "Allowed",
+    internalNote:
+      "Miscategorization reported to DNSFilter; added to the policy allow list.",
   },
   {
     domain: "canva.com",
@@ -205,6 +232,7 @@ const HISTORY: HistoryRequest[] = [
     requestReason: "Designing this quarter's promo graphics",
     actionedBy: "Casey Morgan",
     action: "Blocked",
+    internalNote: "Denied — use the licensed design tool already provisioned.",
   },
   {
     domain: "reddit.com",
@@ -217,6 +245,7 @@ const HISTORY: HistoryRequest[] = [
     requestReason: "Customer reported a bug discussed in a thread",
     actionedBy: "Riley Adams",
     action: "Allowed",
+    internalNote: "Temporary, tied to the open support ticket.",
   },
   {
     domain: "wetransfer.com",
@@ -229,6 +258,7 @@ const HISTORY: HistoryRequest[] = [
     requestReason: "Auditor is sending large year-end documents",
     actionedBy: "Jordan Blake",
     action: "Allowed",
+    internalNote: "Year-end audit only; remove after the January close.",
   },
   {
     domain: "chatgpt.com",
@@ -241,6 +271,7 @@ const HISTORY: HistoryRequest[] = [
     requestReason: "Approved for debugging production code",
     actionedBy: "Casey Morgan",
     action: "Allowed",
+    internalNote: "",
   },
   {
     domain: "vimeo.com",
@@ -253,6 +284,7 @@ const HISTORY: HistoryRequest[] = [
     requestReason: "Embedded product demo for the landing page",
     actionedBy: "Riley Adams",
     action: "Blocked",
+    internalNote: "Denied — host the demo on the marketing CDN instead.",
   },
   {
     domain: "nytimes.com",
@@ -265,8 +297,13 @@ const HISTORY: HistoryRequest[] = [
     requestReason: "Industry research for an active client matter",
     actionedBy: "Jordan Blake",
     action: "Allowed",
+    internalNote: "",
   },
 ];
+
+// Deployment values mirror the DNS Query Log grid's.
+const DEPLOYMENTS = ["macOS Agent 14.2", "Windows Agent 15"];
+const DEPLOYMENT_TYPES = ["Roaming Client", "Relay", "Site"];
 
 // Attempts span prior business days; each was resolved a few hours later.
 const NOW = new Date();
@@ -280,8 +317,13 @@ const rows = HISTORY.map((request, i) => {
     ...request,
     timeOfAttempt: fnsFormat(attempt, "MMM d, yyyy h:mm a"),
     resolvedDate: fnsFormat(resolved, "MMM d, yyyy h:mm a"),
+    deployment: DEPLOYMENTS[i % DEPLOYMENTS.length],
+    deploymentType: DEPLOYMENT_TYPES[i % DEPLOYMENT_TYPES.length],
   };
 });
+
+// Deployment / Deployment Type ship hidden; users turn them on in Preferences.
+const DEFAULT_COLUMN_VISIBILITY = { deployment: false, deploymentType: false };
 
 function RequestHistoryEmptyOverlay() {
   return (
@@ -301,6 +343,10 @@ function RequestHistoryEmptyOverlay() {
 }
 
 export default function RequestHistoryPage() {
+  const [columnVisibility, setColumnVisibility] = useState<
+    Record<string, boolean>
+  >(DEFAULT_COLUMN_VISIBILITY);
+
   return (
     <TabbedDataCard>
       <DataTable
@@ -310,6 +356,8 @@ export default function RequestHistoryPage() {
         showDefaultView={false}
         noRowsOverlay={RequestHistoryEmptyOverlay}
         pinnedShadowFields={{ left: "domain" }}
+        columnVisibilityModel={columnVisibility}
+        onColumnVisibilityModelChange={setColumnVisibility}
       />
     </TabbedDataCard>
   );

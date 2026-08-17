@@ -4,11 +4,11 @@
 import type { SvgIconComponent } from "@mui/icons-material";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import DashboardCustomizeOutlinedIcon from "@mui/icons-material/DashboardCustomizeOutlined";
-import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
+import FormatListBulletedOutlinedIcon from "@mui/icons-material/FormatListBulletedOutlined";
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
-import ShowChartOutlinedIcon from "@mui/icons-material/ShowChartOutlined";
 import StackedLineChartOutlinedIcon from "@mui/icons-material/StackedLineChartOutlined";
-import TableChartOutlinedIcon from "@mui/icons-material/TableChartOutlined";
+import ViewListOutlinedIcon from "@mui/icons-material/ViewListOutlined";
+import ViewTimelineOutlinedIcon from "@mui/icons-material/ViewTimelineOutlined";
 
 export type ReportDef = {
   key: string;
@@ -33,7 +33,7 @@ export const REPORTS: ReportDef[] = [
     key: "timeline-overview",
     title: "Executive Summary",
     desc: "Summarized device timelines with notable activity called out.",
-    Icon: ShowChartOutlinedIcon,
+    Icon: ViewTimelineOutlinedIcon,
     file: "Timeline-Overview-Jul-2026.pdf",
     size: "980 KB",
     cybersight: true,
@@ -68,7 +68,7 @@ export const REPORTS: ReportDef[] = [
     key: "timeline-logs",
     title: "Timeline Activity Logs",
     desc: "Detailed CyberSight timeline events for each device, exported as a CSV.",
-    Icon: ReceiptLongOutlinedIcon,
+    Icon: ViewListOutlinedIcon,
     file: "Timeline-Logs-Jul-2026.csv",
     size: "1.4 MB",
     cybersight: true,
@@ -77,7 +77,7 @@ export const REPORTS: ReportDef[] = [
     key: "traffic",
     title: "DNS Query Logs",
     desc: "Full DNS request log for every endpoint, exported as a CSV.",
-    Icon: TableChartOutlinedIcon,
+    Icon: FormatListBulletedOutlinedIcon,
     file: "DNS-Query-Logs-Jul-2026.csv",
     size: "840 KB",
   },

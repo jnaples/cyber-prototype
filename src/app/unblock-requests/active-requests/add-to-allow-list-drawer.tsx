@@ -17,18 +17,13 @@ import {
   Typography,
 } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
-import { format as fnsFormat } from "date-fns";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
 import { PolicySelect } from "@/components/policy-select";
 import { TextField } from "@/components/text-field";
 
-// Date shown in the "already on the allow list" banner (yesterday).
-const ALREADY_ADDED_DATE = fnsFormat(
-  new Date(Date.now() - 24 * 60 * 60 * 1000),
-  "MMM d",
-);
+import { AlreadyAllowedAlert } from "./already-allowed-alert";
 
 export function AddToAllowListDrawer({
   open,
@@ -89,10 +84,12 @@ export function AddToAllowListDrawer({
       title="Approve Request"
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{
-        label: alreadyAllowed ? "Resolve Request" : "Approve Request",
+        label: alreadyAllowed ? "Approve and notify" : "Approve Request",
         sx: { minWidth: 0 },
         disabled: needsPolicy,
-        tooltip: needsPolicy ? "Select a policy first." : "",
+        tooltip: needsPolicy
+          ? "Select a policy or Universal Allow List first."
+          : "",
         onClick: () => {
           onSubmit?.(scope, selectedPolicies);
           onClose();
@@ -116,17 +113,7 @@ export function AddToAllowListDrawer({
       )}
 
       {alreadyAllowed && (
-        <Alert severity="info">
-          <AlertTitle>Already allowed</AlertTitle>
-          <Box component="strong" sx={{ fontWeight: 700 }}>
-            {domain}
-          </Box>{" "}
-          was added to the{" "}
-          <Box component="strong" sx={{ fontWeight: 700 }}>
-            {policy}
-          </Box>{" "}
-          Allow List on {ALREADY_ADDED_DATE}. No new entry is needed.
-        </Alert>
+        <AlreadyAllowedAlert domain={domain} policy={policy} />
       )}
 
       {!alreadyAllowed && (
@@ -223,7 +210,12 @@ export function AddToAllowListDrawer({
                   value={selectedPolicies}
                   onChange={setSelectedPolicies}
                   placeholder="Select Policy"
-                  sx={{ mt: 1, ml: "28px", width: "calc(100% - 28px)" }}
+                  sx={{
+                    mt: "4px",
+                    ml: "28px",
+                    width: "calc(100% - 28px)",
+                    bgcolor: "background.paper",
+                  }}
                 />
               </Box>
 
@@ -283,7 +275,7 @@ export function AddToAllowListDrawer({
                 mb: 0.5,
               }}
             >
-              <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
+              <Typography sx={{ fontWeight: 600, fontSize: 14 }}>
                 Internal Notes
               </Typography>
               <Typography variant="body2" sx={{ color: "text.secondary" }}>
@@ -296,9 +288,12 @@ export function AddToAllowListDrawer({
               minRows={3}
               placeholder="Add your notes here..."
               value={note}
+              helperText="Saved to Request History and the allow list entry."
               onChange={(e) => setNote(e.target.value)}
               sx={{
                 "& .MuiOutlinedInput-root": { bgcolor: "background.paper" },
+                // 14px: the size the app's other helper copy reads at.
+                "& .MuiFormHelperText-root": { fontSize: 14 },
               }}
             />
           </Box>
