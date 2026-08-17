@@ -78,6 +78,7 @@ export function PolicySelect({
   placeholder = "-",
   multiple,
   currentPolicy,
+  sx,
   ...props
 }: Omit<
   SelectProps<string | string[]>,
@@ -140,6 +141,15 @@ export function PolicySelect({
     <Select<string | string[]>
       fullWidth
       displayEmpty
+      // A disabled picker says so on hover rather than looking clickable.
+      sx={[
+        {
+          "&.Mui-disabled, & .MuiSelect-select.Mui-disabled": {
+            cursor: "not-allowed",
+          },
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
       multiple={multiple}
       value={value}
       onChange={(e) =>

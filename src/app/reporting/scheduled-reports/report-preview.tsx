@@ -1,5 +1,5 @@
 // Renders a report's document scaled to fit whatever pane it's dropped into.
-// Used by the Templates tab's preview card and by the "View Sample" modal in
+// Used by the Templates tab's preview card and by the "View sample" modal in
 // the Schedule Report builder.
 
 import { Box, Button } from "@mui/material";

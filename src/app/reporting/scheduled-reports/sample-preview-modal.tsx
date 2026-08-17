@@ -1,4 +1,4 @@
-// Single-report sample preview — opened from a report card's "View Sample"
+// Single-report sample preview — opened from a report card's "View sample"
 // link in the Schedule Report builder. Shows the chosen report's document on a
 // neutral backdrop, under the same "Preview / Sample data" header the Report
 // Library's preview card uses.

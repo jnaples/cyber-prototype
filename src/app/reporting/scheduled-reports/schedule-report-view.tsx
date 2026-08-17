@@ -229,7 +229,7 @@ export function ScheduleReportView({
             <Typography variant="cardTitle">Schedule Details</Typography>
 
             {/* STEP 1 — Reports */}
-            <Step n={1} title="Reports">
+            <Step n={1} title="Select Organization & Reports">
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <Box>
                   <FormLabel sx={{ display: "block", mb: 0.5 }}>
@@ -397,7 +397,7 @@ export function ScheduleReportView({
                               mt: 1,
                             }}
                           >
-                            View Sample
+                            View sample
                           </Link>
                         </Box>
                       );
@@ -410,7 +410,7 @@ export function ScheduleReportView({
             <Divider sx={{ mt: 1 }} />
 
             {/* STEP 2 — Delivery */}
-            <Step n={2} title="Delivery">
+            <Step n={2} title="Add Recipients & Message">
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <SearchableMultiSelect
                   label="Internal Recipients"
@@ -547,7 +547,7 @@ export function ScheduleReportView({
             <Divider sx={{ mt: 1 }} />
 
             {/* STEP 3 — Schedule */}
-            <Step n={3} title="Schedule">
+            <Step n={3} title="Set Frequency">
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <Box>
                   <FormLabel sx={{ display: "block", mb: 0.5 }}>
