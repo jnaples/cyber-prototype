@@ -666,7 +666,7 @@ export default function CustomerActivityOverviewReport() {
         <TopNColumn
           color={C.web}
           title="Top websites"
-          sub="Top 10 of 38,483 visits recorded"
+          sub="Top 10 of 38.4K visits recorded"
           rows={TOP_WEBSITES}
         />
         <TopNColumn
