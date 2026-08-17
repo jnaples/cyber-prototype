@@ -9,11 +9,9 @@ import {
   FormLabel,
   IconButton,
   Link,
-  ListSubheader,
   MenuItem,
   Typography,
 } from "@mui/material";
-import type { Theme } from "@mui/material/styles";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
@@ -22,6 +20,7 @@ import { CopyButton } from "@/components/copy-button";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
+import { PolicySelect } from "@/components/policy-select";
 import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
 
@@ -47,31 +46,6 @@ const SITES = [
     blockPage: "CIPA Notice",
   },
 ];
-
-const POLICY_OPTIONS = [
-  "Standard Policy",
-  "Restricted Policy",
-  "HIPAA Strict",
-  "CIPA Policy",
-  "Default Policy",
-];
-const GLOBAL_POLICY_OPTIONS = [
-  "Global Baseline",
-  "Global Threat Defense",
-  "Global Compliance",
-];
-
-// Caption-style section header inside the Policy dropdown (slightly indented).
-const subheaderSx = (theme: Theme) => ({
-  ...theme.typography.caption,
-  pl: 2,
-  lineHeight: "32px",
-  textTransform: "uppercase" as const,
-  color: theme.vars.palette.text.secondary,
-});
-
-// Items sit more indented than their section header.
-const policyItemSx = { pl: 3.5 } as const;
 
 const BLOCK_PAGE_OPTIONS = [
   "Corporate Block Page",
@@ -226,41 +200,12 @@ export default function CreateClientlessPage() {
               cursor: !site ? "not-allowed" : undefined,
             }}
           >
-            <Select
-              fullWidth
-              displayEmpty
+            <PolicySelect
               disabled={!site}
               sx={{ pointerEvents: !site ? "none" : undefined }}
               value={policy}
-              onChange={(e) => setPolicy(e.target.value)}
-              renderValue={(v) =>
-                v ? (
-                  v
-                ) : (
-                  <Box component="span" sx={{ color: "text.disabled" }}>
-                    -
-                  </Box>
-                )
-              }
-            >
-              <ListSubheader sx={subheaderSx}>Organization</ListSubheader>
-              {POLICY_OPTIONS.map((p) => (
-                <MenuItem key={p} value={p} sx={policyItemSx}>
-                  {p}
-                </MenuItem>
-              ))}
-              <ListSubheader sx={subheaderSx}>Global</ListSubheader>
-              {GLOBAL_POLICY_OPTIONS.map((p) => (
-                <MenuItem key={p} value={p} sx={policyItemSx}>
-                  {p}
-                  <MaterialSymbol
-                    name="globe"
-                    size={16}
-                    sx={{ ml: 0.75, color: "text.secondary" }}
-                  />
-                </MenuItem>
-              ))}
-            </Select>
+              onChange={setPolicy}
+            />
           </Box>
         </ArrowTooltip>
       </Box>

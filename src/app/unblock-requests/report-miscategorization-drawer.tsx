@@ -110,13 +110,13 @@ export function ReportMiscategorizationDrawer({
     >
       {/* Request context */}
       <Box>
-        <Typography variant="body1" sx={{ color: "text.primary" }}>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
           <Box component="span" sx={{ fontWeight: 700 }}>
             Domain:
           </Box>{" "}
           {domain}
         </Typography>
-        <Typography variant="body1" sx={{ color: "text.primary" }}>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
           <Box component="span" sx={{ fontWeight: 700 }}>
             {isThreat ? "Threat Categories:" : "Content Categories:"}
           </Box>{" "}

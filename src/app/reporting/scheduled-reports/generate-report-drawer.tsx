@@ -43,7 +43,9 @@ const ROAMING_CLIENTS = [
 ];
 const USERS = ["Kaya Trojanowski", "Bob Smith", "Priya Xu", "Dana Lowe"];
 
-const NEEDS_ORG = "Select an Organization to enable this filter.";
+// The hint names the filter it's blocking, e.g. "…for specific Sites."
+const needsOrg = (label: string) =>
+  `Select an Organization for specific ${label}.`;
 
 // Label with the required asterisk, matching the rest of the app's forms.
 function RequiredLabel({ children }: { children: React.ReactNode }) {
@@ -65,13 +67,16 @@ const monthPlaceholder = () =>
 // (disabled controls don't fire hover events themselves).
 function ScopeFilter({
   disabled,
+  label,
   children,
 }: {
   disabled: boolean;
+  /** The filter's own label, so the hint can name it. */
+  label: string;
   children: React.ReactElement;
 }) {
   return (
-    <ArrowTooltip title={disabled ? NEEDS_ORG : ""}>
+    <ArrowTooltip title={disabled ? needsOrg(label) : ""}>
       <Box
         component="span"
         sx={{ display: "block", cursor: disabled ? "not-allowed" : undefined }}
@@ -178,7 +183,7 @@ export function GenerateReportDrawer({
       </Box>
 
       {/* Scope filters only make sense once an organization is picked. */}
-      <ScopeFilter disabled={!organization}>
+      <ScopeFilter disabled={!organization} label="Sites">
         <SearchableMultiSelect
           label="Sites"
           options={SITES}
@@ -187,7 +192,7 @@ export function GenerateReportDrawer({
           disabled={!organization}
         />
       </ScopeFilter>
-      <ScopeFilter disabled={!organization}>
+      <ScopeFilter disabled={!organization} label="Roaming Clients">
         <SearchableMultiSelect
           label="Roaming Clients"
           options={ROAMING_CLIENTS}
@@ -196,7 +201,7 @@ export function GenerateReportDrawer({
           disabled={!organization}
         />
       </ScopeFilter>
-      <ScopeFilter disabled={!organization}>
+      <ScopeFilter disabled={!organization} label="Users">
         <SearchableMultiSelect
           label="Users"
           options={USERS}

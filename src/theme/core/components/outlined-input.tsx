@@ -22,10 +22,12 @@ const MuiOutlinedInput: Components<Theme>["MuiOutlinedInput"] = {
         borderColor: theme.vars.palette.divider,
       },
       // Placeholder color for enabled inputs; disabled inputs keep the
-      // default muted state.
+      // default muted state. `text.disabled` is the app's hint tone — the
+      // same one Select renders its own placeholders in, so a text field and
+      // a select sitting side by side read alike.
       "&:not(.Mui-disabled) input::placeholder, &:not(.Mui-disabled) textarea::placeholder":
         {
-          color: theme.vars.palette.text.secondary,
+          color: theme.vars.palette.text.disabled,
           opacity: 1,
         },
       // Neutralize the browser autofill highlight (the blue/gray fill) so

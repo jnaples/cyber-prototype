@@ -17,7 +17,6 @@ import {
   Radio,
   RadioGroup,
   Snackbar,
-  Switch,
   Typography,
 } from "@mui/material";
 import { useState } from "react";
@@ -57,15 +56,6 @@ const DEFAULT_EMAIL_TEMPLATE = EMAIL_TEMPLATES[0].value;
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 /** Label with the explanation on an info icon, as in the DoH Endpoint drawer. */
-// The theme paints enabled input placeholders `text.secondary`; app-standard
-// hint tone is `text.disabled`, matching the Select placeholders.
-const placeholderSx = {
-  "& .MuiOutlinedInput-root:not(.Mui-disabled) input::placeholder": {
-    color: "text.disabled",
-    opacity: 1,
-  },
-} as const;
-
 function FieldLabel({
   label,
   help,
@@ -257,7 +247,6 @@ function ImageDrop({
 }
 
 export default function BrandingPage() {
-  const [enabled, setEnabled] = useState(false);
   const [dashboardName, setDashboardName] = useState("");
   const [dashboardUrl, setDashboardUrl] = useState("");
   const [contactEmail, setContactEmail] = useState("");
@@ -265,7 +254,6 @@ export default function BrandingPage() {
   const [favicon, setFavicon] = useState<string | null>(null);
   // What the form looked like when it was last saved.
   const [saved, setSaved] = useState({
-    enabled: false,
     dashboardName: "",
     dashboardUrl: "",
     contactEmail: "",
@@ -283,7 +271,6 @@ export default function BrandingPage() {
   // the dirty baseline.
   const handleSave = () => {
     setSaved({
-      enabled,
       dashboardName,
       dashboardUrl,
       contactEmail,
@@ -308,7 +295,6 @@ export default function BrandingPage() {
 
   // Save only lights up once something differs from the saved state.
   const dirty =
-    enabled !== saved.enabled ||
     dashboardName !== saved.dashboardName ||
     dashboardUrl !== saved.dashboardUrl ||
     contactEmail !== saved.contactEmail ||
@@ -330,7 +316,6 @@ export default function BrandingPage() {
                 variant="outlined"
                 color="secondary"
                 onClick={() => {
-                  setEnabled(saved.enabled);
                   setDashboardName(saved.dashboardName);
                   setDashboardUrl(saved.dashboardUrl);
                   setContactEmail(saved.contactEmail);
@@ -377,22 +362,6 @@ export default function BrandingPage() {
     >
       <SectionCard title="General Settings">
         <Box>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={enabled}
-                onChange={(e) => setEnabled(e.target.checked)}
-              />
-            }
-            label="Enable Branding"
-          />
-          <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            Turn on branding to apply your custom logo and remove DNSFilter
-            branding.
-          </Typography>
-        </Box>
-
-        <Box>
           <FieldLabel
             label="Dashboard Name"
             help="The name customers see in the browser tab and on the sign-in page."
@@ -400,7 +369,6 @@ export default function BrandingPage() {
           />
           <TextField
             fullWidth
-            sx={placeholderSx}
             placeholder="e.g., Security Portal"
             value={dashboardName}
             onChange={(e) => setDashboardName(e.target.value)}
@@ -414,7 +382,6 @@ export default function BrandingPage() {
           />
           <TextField
             fullWidth
-            sx={placeholderSx}
             placeholder="e.g., dashboard.yourcompany.com"
             value={dashboardUrl}
             onChange={(e) => setDashboardUrl(e.target.value)}
@@ -461,7 +428,6 @@ export default function BrandingPage() {
           />
           <TextField
             fullWidth
-            sx={placeholderSx}
             placeholder="e.g., support@yourcompany.com"
             value={contactEmail}
             onChange={(e) => setContactEmail(e.target.value)}

@@ -2,6 +2,7 @@ import {
   Alert,
   Box,
   Chip,
+  Divider,
   IconButton,
   Link,
   ListItemIcon,
@@ -13,6 +14,7 @@ import {
 } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import type { GridColDef } from "@mui/x-data-grid";
+import { useNavigate } from "react-router";
 import { format as fnsFormat } from "date-fns";
 import { useState } from "react";
 import type { ReactNode } from "react";
@@ -25,6 +27,7 @@ import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { ReportMiscategorizationDrawer } from "../report-miscategorization-drawer";
 import { AddToAllowListDrawer } from "./add-to-allow-list-drawer";
 import { DenyRequestDrawer } from "./deny-request-drawer";
+import { InvestigateModal } from "./investigate-modal";
 
 // ---------------------------------------------------------------------------
 // Row actions
@@ -36,9 +39,32 @@ const DENY_ACTIONS: { label: string; icon: string }[] = [
   { label: "Deny Request & Ignore", icon: "notifications_off" },
 ];
 
-// Items kept in the overflow menu.
-const MENU_ACTIONS: { label: string; icon: string }[] = [
-  { label: "Report miscategorization", icon: "flag" },
+// Items kept in the overflow menu: the "go look at it elsewhere" links first,
+// then a rule and the action that changes something. `to` navigates; the rest
+// open the miscategorization drawer. Icons match the side nav's destinations.
+const MENU_ACTIONS: {
+  label: string;
+  icon: string;
+  /** Navigate here, rather than opening something in place. */
+  to?: string;
+  /** Opened in place; without either, the item opens the report drawer. */
+  opens?: "investigate";
+  /** Draw a rule above this item. */
+  dividerBefore?: boolean;
+}[] = [
+  { label: "View Policy", icon: "library_books", to: "/global-policies" },
+  {
+    label: "View in DNS Query Log",
+    icon: "format_list_bulleted",
+    to: "/query-logs",
+  },
+  // The Query Logs investigate icon — same action, shown in a modal here.
+  {
+    label: "Investigate Mode",
+    icon: "manage_search",
+    opens: "investigate",
+  },
+  { label: "Report miscategorization", icon: "flag", dividerBefore: true },
 ];
 
 // Categories DNSFilter treats as threats — used to flag a malicious request.
@@ -56,19 +82,24 @@ function RowActionsCell({
   reason,
   policy,
   category,
+  timestampMs,
 }: {
   domain: string;
   requester: string;
   reason: string;
   policy: string;
   category: string;
+  /** When the request was submitted — anchors the investigation window. */
+  timestampMs: number;
 }) {
+  const navigate = useNavigate();
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [denyAnchor, setDenyAnchor] = useState<HTMLElement | null>(null);
   const [allowOpen, setAllowOpen] = useState(false);
   const [denyOpen, setDenyOpen] = useState(false);
   const [denyIgnore, setDenyIgnore] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [investigateOpen, setInvestigateOpen] = useState(false);
   const [toast, setToast] = useState<ReactNode>(null);
   // Demo: this domain is already on the allow list, so the request is stale.
   const alreadyAllowed = domain === "nytimes.com";
@@ -137,33 +168,49 @@ function RowActionsCell({
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        {MENU_ACTIONS.map(({ label, icon }) => (
+        {MENU_ACTIONS.flatMap(({ label, icon, to, opens, dividerBefore }) => [
+          ...(dividerBefore ? [<Divider key={`${label}-divider`} />] : []),
           <MenuItem
             key={label}
             onClick={() => {
               closeMenu();
-              setReportOpen(true);
+              if (to) navigate(to);
+              else if (opens === "investigate") setInvestigateOpen(true);
+              else setReportOpen(true);
             }}
           >
             <ListItemIcon>
               <MaterialSymbol name={icon} size={20} />
             </ListItemIcon>
             {label}
-          </MenuItem>
-        ))}
+          </MenuItem>,
+        ])}
       </Menu>
+
+      <InvestigateModal
+        open={investigateOpen}
+        onClose={() => setInvestigateOpen(false)}
+        domain={domain}
+        category={category}
+        requester={requester}
+        anchorMs={timestampMs}
+      />
 
       <AddToAllowListDrawer
         open={allowOpen}
         onClose={() => setAllowOpen(false)}
-        onSubmit={(scope) =>
+        onSubmit={(scope, policies) =>
           setToast(
             alreadyAllowed ? (
               "Request resolved."
+            ) : scope === "universal" ? (
+              <>
+                <strong>{domain}</strong> added to in Universal Allow List.
+              </>
             ) : (
               <>
-                <strong>{domain}</strong> added to the{" "}
-                {scope === "universal" ? "Universal" : policy} Allow List.
+                <strong>{domain}</strong> added to {policies.length} policy
+                allow {policies.length > 1 ? "lists" : "list"}.
               </>
             ),
           )
@@ -171,6 +218,7 @@ function RowActionsCell({
         domain={domain}
         requester={requester}
         reason={reason}
+        category={category}
         policy={policy}
         alreadyAllowed={alreadyAllowed}
         threatCategory={threatCategory}
@@ -190,6 +238,8 @@ function RowActionsCell({
         domain={domain}
         requester={requester}
         reason={reason}
+        category={category}
+        policy={policy}
       />
 
       <ReportMiscategorizationDrawer
@@ -318,7 +368,7 @@ const columns: GridColDef[] = [
   },
   {
     field: "timeOfAttempt",
-    headerName: "Time of Attempt",
+    headerName: "Time of Submission",
     flex: 1,
     minWidth: 180,
   },
@@ -347,10 +397,12 @@ const columns: GridColDef[] = [
     renderCell: (params) => (
       <RowActionsCell
         domain={params.row.domain}
-        requester={params.row.loggedInUser}
+        // The drawer identifies the requester by address, not display name.
+        requester={params.row.email}
         reason={params.row.requestReason}
         policy={params.row.policy}
         category={params.row.category}
+        timestampMs={params.row.timestampMs}
       />
     ),
   },
@@ -488,6 +540,8 @@ const rows = REQUESTS.map((request, i) => {
     id: i + 1,
     ...request,
     timeOfAttempt: fnsFormat(date, "MMM d, yyyy h:mm a"),
+    // Kept off the grid — only Investigate Mode needs the exact instant.
+    timestampMs: date.getTime(),
   }));
 
 // The table always has rows, so the no-rows overlay only appears when a search

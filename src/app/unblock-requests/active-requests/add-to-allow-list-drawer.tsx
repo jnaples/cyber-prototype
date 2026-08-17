@@ -8,6 +8,7 @@ import {
   AlertTitle,
   Box,
   Checkbox,
+  Chip,
   Divider,
   FormControlLabel,
   FormLabel,
@@ -15,16 +16,13 @@ import {
   RadioGroup,
   Typography,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import { format as fnsFormat } from "date-fns";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
+import { PolicySelect } from "@/components/policy-select";
 import { TextField } from "@/components/text-field";
-
-// Placeholder impact figure for the policy scope.
-const POLICY_IMPACT = "7 sites, 142 users on this policy";
 
 // Date shown in the "already on the allow list" banner (yesterday).
 const ALREADY_ADDED_DATE = fnsFormat(
@@ -39,17 +37,21 @@ export function AddToAllowListDrawer({
   domain = "this domain",
   requester = "the requester",
   reason,
+  category = "Uncategorized",
   policy = "this policy",
   alreadyAllowed = false,
   threatCategory,
 }: {
   open: boolean;
   onClose: () => void;
-  /** Called when the user confirms "Save" — receives the chosen scope. */
-  onSubmit?: (scope: "policy" | "universal") => void;
+  /** Called when the user confirms "Save" — receives the chosen scope and,
+   *  for the policy scope, which policies' allow lists the entry lands on. */
+  onSubmit?: (scope: "policy" | "universal", policies: string[]) => void;
   domain?: string;
   requester?: string;
   reason?: string;
+  /** The domain's content category, shown alongside the request context. */
+  category?: string;
   policy?: string;
   /** The domain is already on the policy's allow list — this request is stale.
    *  Shows a banner and switches the action to resolving the request. */
@@ -61,6 +63,7 @@ export function AddToAllowListDrawer({
   const [note, setNote] = useState("");
   const [includeCnames, setIncludeCnames] = useState(false);
   const [scope, setScope] = useState<"policy" | "universal">("policy");
+  const [selectedPolicies, setSelectedPolicies] = useState<string[]>([]);
 
   // Reset the form each time the drawer opens. The note is auto-stamped with a
   // sensible default the admin can edit or clear.
@@ -71,8 +74,13 @@ export function AddToAllowListDrawer({
       setNote("");
       setIncludeCnames(false);
       setScope("policy");
+      setSelectedPolicies([]);
     }
   }
+
+  // The policy scope needs a policy named before the entry can be written.
+  const needsPolicy =
+    !alreadyAllowed && scope === "policy" && selectedPolicies.length === 0;
 
   return (
     <Drawer
@@ -81,10 +89,12 @@ export function AddToAllowListDrawer({
       title="Approve Request"
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{
-        label: alreadyAllowed ? "Resolve Request" : "Add to Allow List",
+        label: alreadyAllowed ? "Resolve Request" : "Approve Request",
         sx: { minWidth: 0 },
+        disabled: needsPolicy,
+        tooltip: needsPolicy ? "Select a policy first." : "",
         onClick: () => {
-          onSubmit?.(scope);
+          onSubmit?.(scope, selectedPolicies);
           onClose();
         },
       }}
@@ -107,7 +117,7 @@ export function AddToAllowListDrawer({
 
       {alreadyAllowed && (
         <Alert severity="info">
-          <AlertTitle>Already on the Allow List</AlertTitle>
+          <AlertTitle>Already allowed</AlertTitle>
           <Box component="strong" sx={{ fontWeight: 700 }}>
             {domain}
           </Box>{" "}
@@ -120,29 +130,49 @@ export function AddToAllowListDrawer({
       )}
 
       {!alreadyAllowed && (
-        <Typography variant="body1" sx={{ color: "text.primary" }}>
-          Approve this request by adding the domain to an allow list. The user
-          will be notified by email.
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
+          Approve this request by adding the domain to a policy allow list. The
+          user will be notified by email.
         </Typography>
       )}
 
       {/* Request context */}
-      <Box>
-        <Typography variant="body1" sx={{ color: "text.primary" }}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
           <Box component="span" sx={{ fontWeight: 700 }}>
             Domain:
           </Box>{" "}
           {domain}
         </Typography>
-        <Typography variant="body1" sx={{ color: "text.primary" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Typography
+            variant="body2"
+            sx={{ color: "text.primary", fontWeight: 700 }}
+          >
+            Category:
+          </Typography>
+          <Chip
+            label={category}
+            size="small"
+            variant="outlined"
+            color="secondary"
+          />
+        </Box>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
           <Box component="span" sx={{ fontWeight: 700 }}>
-            Requested by:
+            Policy:
+          </Box>{" "}
+          {policy}
+        </Typography>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
+          <Box component="span" sx={{ fontWeight: 700 }}>
+            Requester:
           </Box>{" "}
           {requester}
         </Typography>
-        <Typography variant="body1" sx={{ color: "text.primary" }}>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
           <Box component="span" sx={{ fontWeight: 700 }}>
-            Reason:
+            Message:
           </Box>{" "}
           {reason && `“${reason}”`}
         </Typography>
@@ -154,71 +184,72 @@ export function AddToAllowListDrawer({
           <Divider />
           <Box>
             <FormLabel sx={{ display: "block", mb: 1 }}>
-              Select Allow List
+              Add domain to
             </FormLabel>
             <RadioGroup
               value={scope}
               onChange={(e) =>
                 setScope(e.target.value as "policy" | "universal")
               }
-              sx={{ gap: 1 }}
+              sx={{ gap: 2 }}
             >
-              {[
-                {
-                  value: "policy" as const,
-                  title: `${policy} Allow List`,
-                  desc: POLICY_IMPACT,
-                },
-                {
-                  value: "universal" as const,
-                  title: "Universal Allow List",
-                  desc: "Affects all sites and users",
-                },
-              ].map((option) => (
-                <Box
-                  key={option.value}
-                  onClick={() => setScope(option.value)}
-                  sx={(theme) => {
-                    const on = scope === option.value;
-                    return {
-                      display: "flex",
-                      bgcolor: "background.paper",
-                      borderRadius: 1,
-                      boxShadow: theme.shadows[1],
-                      cursor: "pointer",
-                      transition: "background 120ms",
-                      "&:hover": {
-                        bgcolor: alpha(
-                          theme.palette.primary.main,
-                          on ? 0.12 : 0.04,
-                        ),
-                      },
-                    };
-                  }}
-                >
-                  <Box sx={{ pl: 1, pr: 0, py: 1 }}>
-                    <Radio
-                      value={option.value}
-                      checked={scope === option.value}
-                      sx={{
-                        p: "2px 12px",
-                        "& .MuiSvgIcon-root": { fontSize: 20 },
-                      }}
-                    />
-                  </Box>
-                  <Box sx={{ pl: 0, pr: 1, py: 1 }}>
-                    <Typography sx={{ color: "text.primary", mb: 0.5 }}>
-                      {option.title}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.secondary" }}
-                    >
-                      {option.desc}
-                    </Typography>
-                  </Box>
+              {/* Policy scope — which policy is up to the admin, so the
+                  option carries its own picker. */}
+              <Box
+                onClick={() => setScope("policy")}
+                sx={{ cursor: "pointer" }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Radio
+                    value="policy"
+                    checked={scope === "policy"}
+                    sx={{
+                      p: 0,
+                      mr: 1,
+                      "& .MuiSvgIcon-root": { fontSize: 20 },
+                    }}
+                  />
+                  <Typography sx={{ color: "text.primary" }}>
+                    Policies
+                  </Typography>
                 </Box>
-              ))}
+                {/* Indented to the option's label, and dead while the entry is
+                    going to the universal list instead. */}
+                <PolicySelect
+                  multiple
+                  currentPolicy={policy}
+                  disableClear
+                  disabled={scope !== "policy"}
+                  value={selectedPolicies}
+                  onChange={setSelectedPolicies}
+                  placeholder="Select Policy"
+                  sx={{ mt: 1, ml: "28px", width: "calc(100% - 28px)" }}
+                />
+              </Box>
+
+              <Box
+                onClick={() => setScope("universal")}
+                sx={{ display: "flex", cursor: "pointer" }}
+              >
+                <Radio
+                  value="universal"
+                  checked={scope === "universal"}
+                  sx={{
+                    p: 0,
+                    mr: 1,
+                    alignSelf: "flex-start",
+                    "& .MuiSvgIcon-root": { fontSize: 20 },
+                  }}
+                />
+                <Box>
+                  <Typography sx={{ color: "text.primary" }}>
+                    Universal Allow List
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    Affects all sites and users
+                  </Typography>
+                </Box>
+              </Box>
             </RadioGroup>
           </Box>
         </>
@@ -253,7 +284,7 @@ export function AddToAllowListDrawer({
               }}
             >
               <Typography sx={{ fontWeight: 700, fontSize: 14 }}>
-                Domain Note
+                Internal Notes
               </Typography>
               <Typography variant="body2" sx={{ color: "text.secondary" }}>
                 Optional

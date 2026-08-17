@@ -3,7 +3,7 @@
 // what denying does, an editable message sent to the requester, and a
 // secondary "Deny & Ignore" action that also suppresses future requests.
 
-import { Box, Divider, Typography } from "@mui/material";
+import { Box, Chip, Divider, Typography } from "@mui/material";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
@@ -17,6 +17,8 @@ export function DenyRequestDrawer({
   domain = "this domain",
   requester = "the requester",
   reason,
+  category = "Uncategorized",
+  policy = "this policy",
 }: {
   open: boolean;
   onClose: () => void;
@@ -27,6 +29,9 @@ export function DenyRequestDrawer({
   domain?: string;
   requester?: string;
   reason?: string;
+  /** The domain's content category, shown alongside the request context. */
+  category?: string;
+  policy?: string;
 }) {
   const [message, setMessage] = useState("");
 
@@ -57,38 +62,58 @@ export function DenyRequestDrawer({
     >
       {/* Summary */}
       {ignore ? (
-        <Typography variant="body1" sx={{ color: "text.primary" }}>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
           Stop future requests for this domain from {requester}. No notification
           is sent.
         </Typography>
       ) : (
         <Box>
-          <Typography variant="body1" sx={{ color: "text.primary" }}>
+          <Typography variant="body2" sx={{ color: "text.primary" }}>
             Deny the request and notify the user via email.
           </Typography>
-          <Typography variant="body1" sx={{ color: "text.primary", mt: 0.5 }}>
+          <Typography variant="body2" sx={{ color: "text.primary", mt: 0.5 }}>
             {requester} can submit another request later.
           </Typography>
         </Box>
       )}
 
       {/* Request context */}
-      <Box>
-        <Typography variant="body1" sx={{ color: "text.primary" }}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
           <Box component="span" sx={{ fontWeight: 700 }}>
             Domain:
           </Box>{" "}
           {domain}
         </Typography>
-        <Typography variant="body1" sx={{ color: "text.primary" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Typography
+            variant="body2"
+            sx={{ color: "text.primary", fontWeight: 700 }}
+          >
+            Category:
+          </Typography>
+          <Chip
+            label={category}
+            size="small"
+            variant="outlined"
+            color="secondary"
+          />
+        </Box>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
           <Box component="span" sx={{ fontWeight: 700 }}>
-            Requested by:
+            Policy:
+          </Box>{" "}
+          {policy}
+        </Typography>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
+          <Box component="span" sx={{ fontWeight: 700 }}>
+            Requester:
           </Box>{" "}
           {requester}
         </Typography>
-        <Typography variant="body1" sx={{ color: "text.primary" }}>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
           <Box component="span" sx={{ fontWeight: 700 }}>
-            Reason:
+            Message:
           </Box>{" "}
           {reason && `“${reason}”`}
         </Typography>

@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 import Box from "@mui/material/Box";
-import { alpha } from "@mui/material/styles";
 import type { Theme } from "@mui/material/styles";
 import type {
   GridColDef,
@@ -35,6 +34,7 @@ import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
 import { CustomDateTimeRangePicker } from "@/components/custom-date-time-range-picker";
 import type { CustomDateTimeRangePickerValue } from "@/components/custom-date-time-range-picker";
 import { EmptyState } from "@/components/empty-state";
+import { InfoChip } from "@/components/info-chip";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { ReportMiscategorizationDrawer } from "@/app/unblock-requests/report-miscategorization-drawer";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
@@ -196,21 +196,7 @@ function FqdnCell({ row }: { row: QueryLogRow }) {
       >
         {row.fqdn}
       </Box>
-      {anchored && (
-        <Chip
-          size="small"
-          label="Investigating"
-          sx={{
-            flexShrink: 0,
-            bgcolor: "#E2F6FE",
-            color: "#185B9C",
-            '[data-mui-color-scheme="dark"] &': {
-              bgcolor: (t) => alpha(t.palette.info.main, 0.2),
-              color: "info.light",
-            },
-          }}
-        />
-      )}
+      {anchored && <InfoChip label="Investigating" />}
     </Box>
   );
 }

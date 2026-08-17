@@ -1,5 +1,6 @@
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
+import LibraryBooksOutlinedIcon from "@mui/icons-material/LibraryBooksOutlined";
 import MiscellaneousServicesOutlinedIcon from "@mui/icons-material/MiscellaneousServicesOutlined";
 import { Badge, Box, Collapse, Typography } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
@@ -360,7 +361,9 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                 navigate("/global-policies");
               }}
             >
-              <Icon name="menu_book" size={isExpanded ? 20 : 24} />
+              <LibraryBooksOutlinedIcon
+                sx={{ fontSize: isExpanded ? 20 : 24 }}
+              />
               {isExpanded && (
                 <span style={{ margin: "4px 0" }}>
                   {isOrganization ? "Policies" : "Global Policies"}

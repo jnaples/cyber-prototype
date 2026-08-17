@@ -86,7 +86,7 @@ const columns: GridColDef[] = [
   { field: "actionedBy", headerName: "Actioned by", flex: 1, minWidth: 150 },
   {
     field: "timeOfAttempt",
-    headerName: "Time of Attempt",
+    headerName: "Time of Submission",
     flex: 1,
     minWidth: 180,
   },
@@ -108,10 +108,7 @@ const columns: GridColDef[] = [
           <Chip
             size="small"
             icon={
-              <MaterialSymbol
-                name={allowed ? "check" : "block"}
-                size={16}
-              />
+              <MaterialSymbol name={allowed ? "check" : "block"} size={16} />
             }
             label={params.value}
             sx={(theme) => ({
