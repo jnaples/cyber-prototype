@@ -47,12 +47,19 @@ const MENU_ACTIONS: {
   icon: string;
   /** Navigate here, rather than opening something in place. */
   to?: string;
+  /** Open `to` in a new tab, leaving the queue where it is. */
+  newTab?: boolean;
   /** Opened in place; without either, the item opens the report drawer. */
   opens?: "investigate";
   /** Draw a rule above this item. */
   dividerBefore?: boolean;
 }[] = [
-  { label: "View Policy", icon: "library_books", to: "/global-policies" },
+  {
+    label: "View Policy",
+    icon: "library_books",
+    to: "/global-policies",
+    newTab: true,
+  },
   {
     label: "View in DNS Query Log",
     icon: "format_list_bulleted",
@@ -168,23 +175,26 @@ function RowActionsCell({
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        {MENU_ACTIONS.flatMap(({ label, icon, to, opens, dividerBefore }) => [
-          ...(dividerBefore ? [<Divider key={`${label}-divider`} />] : []),
-          <MenuItem
-            key={label}
-            onClick={() => {
-              closeMenu();
-              if (to) navigate(to);
-              else if (opens === "investigate") setInvestigateOpen(true);
-              else setReportOpen(true);
-            }}
-          >
-            <ListItemIcon>
-              <MaterialSymbol name={icon} size={20} />
-            </ListItemIcon>
-            {label}
-          </MenuItem>,
-        ])}
+        {MENU_ACTIONS.flatMap(
+          ({ label, icon, to, newTab, opens, dividerBefore }) => [
+            ...(dividerBefore ? [<Divider key={`${label}-divider`} />] : []),
+            <MenuItem
+              key={label}
+              onClick={() => {
+                closeMenu();
+                if (to && newTab) window.open(to, "_blank", "noopener");
+                else if (to) navigate(to);
+                else if (opens === "investigate") setInvestigateOpen(true);
+                else setReportOpen(true);
+              }}
+            >
+              <ListItemIcon>
+                <MaterialSymbol name={icon} size={20} />
+              </ListItemIcon>
+              {label}
+            </MenuItem>,
+          ],
+        )}
       </Menu>
 
       <InvestigateModal

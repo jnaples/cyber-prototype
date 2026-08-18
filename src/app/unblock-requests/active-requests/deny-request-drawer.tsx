@@ -3,7 +3,7 @@
 // what denying does, an editable message sent to the requester, and a
 // secondary "Deny & Ignore" action that also suppresses future requests.
 
-import { Box, Chip, Divider, Typography } from "@mui/material";
+import { Box, Chip, Divider, Link, Typography } from "@mui/material";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
@@ -100,7 +100,15 @@ export function DenyRequestDrawer({
           <Box component="span" sx={{ fontWeight: 700 }}>
             Domain:
           </Box>{" "}
-          {domain}
+          <Link
+            href={`https://${domain}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            underline="hover"
+            sx={{ color: "text.primary" }}
+          >
+            {domain}
+          </Link>
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <Typography

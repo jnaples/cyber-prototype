@@ -12,6 +12,7 @@ import {
   Divider,
   FormControlLabel,
   FormLabel,
+  Link,
   Radio,
   RadioGroup,
   Typography,
@@ -129,7 +130,15 @@ export function AddToAllowListDrawer({
           <Box component="span" sx={{ fontWeight: 700 }}>
             Domain:
           </Box>{" "}
-          {domain}
+          <Link
+            href={`https://${domain}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            underline="hover"
+            sx={{ color: "text.primary" }}
+          >
+            {domain}
+          </Link>
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <Typography
