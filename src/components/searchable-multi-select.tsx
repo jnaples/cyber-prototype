@@ -34,8 +34,11 @@ export function SearchableMultiSelect({
   allLabel,
   disabled = false,
   chips = false,
+  required = false,
 }: {
   label: string;
+  /** Marks the label with the app's required asterisk. */
+  required?: boolean;
   options: string[];
   selected: string[];
   onChange: (values: string[]) => void;
@@ -67,7 +70,14 @@ export function SearchableMultiSelect({
 
   return (
     <FormControl fullWidth size="small" disabled={disabled}>
-      <FormLabel>{label}</FormLabel>
+      <FormLabel>
+        {label}
+        {required && (
+          <Box component="span" sx={{ ml: 0.25 }}>
+            *
+          </Box>
+        )}
+      </FormLabel>
       <Select
         multiple
         displayEmpty

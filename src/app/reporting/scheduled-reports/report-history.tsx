@@ -65,8 +65,8 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 2,
-    reportType: "Activity Summary",
-    reportName: "Monthly Executive Summary",
+    reportType: "Activity Overview",
+    reportName: "Monthly Timeline",
     customer: "Acme Retail Group",
     period: "Jul 1–31",
     source: "Scheduled",
@@ -87,7 +87,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 4,
-    reportType: "AI Tool Usage",
+    reportType: "AI Usage",
     reportName: "CyberSight AI Monthly Review",
     customer: "Summit Financial Advisors",
     period: "Jul 1–31",
@@ -131,7 +131,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 8,
-    reportType: "Executive Summary",
+    reportType: "Timeline",
     reportName: "Business Review Packet",
     customer: "Acme Retail Group",
     period: "Jul 1–31",
@@ -164,7 +164,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 11,
-    reportType: "Activity Summary",
+    reportType: "Activity Overview",
     reportName: "Acme Weekly Traffic Digest",
     customer: "Acme Retail Group",
     period: "Jul 24–30",
@@ -186,7 +186,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 13,
-    reportType: "AI Tool Usage",
+    reportType: "AI Usage",
     reportName: "AI Adoption Snapshot",
     customer: "Acme Retail Group",
     period: "Jul 1–31",
@@ -197,7 +197,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 14,
-    reportType: "AI Tool Usage",
+    reportType: "AI Usage",
     reportName: "CyberSight AI Monthly Review",
     customer: "Riverside Dental Group",
     period: "Jul 1–31",
@@ -208,7 +208,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 15,
-    reportType: "AI Tool Usage",
+    reportType: "AI Usage",
     reportName: "AI Query Volume by Device",
     customer: "Coastal Property Mgmt",
     period: "Jul 1–29",
@@ -542,7 +542,7 @@ export function ReportHistory() {
       <DataTable
         rows={visibleRows}
         columns={columns}
-        pinnedShadowFields={{ left: "reportType", right: "actions" }}
+        pinnedShadowFields={{ left: "reportName", right: "actions" }}
       />
     </TabbedDataCard>
   );

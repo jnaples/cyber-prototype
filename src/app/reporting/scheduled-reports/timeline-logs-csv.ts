@@ -1,4 +1,4 @@
-// The Timeline Activity Logs export — CyberSight's per-device activity feed,
+// The Activity Logs export — CyberSight's per-device activity feed,
 // columns per the CyberSight spec. Shared by the preview sheet and the History
 // download so the file matches the preview column for column.
 //

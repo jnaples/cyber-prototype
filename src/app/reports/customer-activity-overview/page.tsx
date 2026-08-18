@@ -1,4 +1,4 @@
-// Activity Summary report — converted from the "CyberSight Activity
+// Activity Overview report — converted from the "CyberSight Activity
 // Overview" PDF template (1400px canvas). Screen-only design annex is omitted.
 // Rendered in light mode (the emailed PDF is a light-mode document); type sizes
 // match the template (product ramp × ~1.5 to compensate the print scale).
@@ -444,7 +444,7 @@ export default function CustomerActivityOverviewReport() {
             m: "8px 0",
           }}
         >
-          Activity Summary
+          Activity Overview
         </Box>
         <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>

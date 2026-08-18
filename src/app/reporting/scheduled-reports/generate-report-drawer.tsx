@@ -143,10 +143,10 @@ export function GenerateReportDrawer({
     <Drawer
       open={open}
       onClose={onClose}
-      title="Generate Report"
+      title="Run Report"
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{
-        label: "Generate",
+        label: "Run Now",
         onClick: () => {
           onClose();
           onGenerate();

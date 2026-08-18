@@ -1,6 +1,6 @@
 // A CSV export rendered as a spreadsheet on a landscape sheet — the preview
 // for the reports that ship as data rather than a document. Shared by DNS Query
-// Logs and Timeline Activity Logs so both previews look like the same export.
+// Logs and Activity Logs so both previews look like the same export.
 
 import { Box, Typography } from "@mui/material";
 

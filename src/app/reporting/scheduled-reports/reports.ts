@@ -4,6 +4,7 @@
 import type { SvgIconComponent } from "@mui/icons-material";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import DashboardCustomizeOutlinedIcon from "@mui/icons-material/DashboardCustomizeOutlined";
+import EqualizerOutlinedIcon from "@mui/icons-material/EqualizerOutlined";
 import FormatListBulletedOutlinedIcon from "@mui/icons-material/FormatListBulletedOutlined";
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import StackedLineChartOutlinedIcon from "@mui/icons-material/StackedLineChartOutlined";
@@ -23,7 +24,7 @@ export type ReportDef = {
 export const REPORTS: ReportDef[] = [
   {
     key: "activity",
-    title: "Activity Summary",
+    title: "Activity Overview",
     desc: "Requests, blocked traffic, and top categories across the period.",
     Icon: StackedLineChartOutlinedIcon,
     file: "Activity-Overview-Jul-2026.pdf",
@@ -31,7 +32,7 @@ export const REPORTS: ReportDef[] = [
   },
   {
     key: "timeline-overview",
-    title: "Executive Summary",
+    title: "Timeline",
     desc: "Summarized device timelines with notable activity called out.",
     Icon: ViewTimelineOutlinedIcon,
     file: "Timeline-Overview-Jul-2026.pdf",
@@ -42,7 +43,7 @@ export const REPORTS: ReportDef[] = [
     key: "protection",
     title: "Filter Protection Summary",
     desc: "Threats blocked, categories filtered, and policy coverage.",
-    Icon: ShieldOutlinedIcon,
+    Icon: EqualizerOutlinedIcon,
     file: "Protection-Summary-Jul-2026.pdf",
     size: "1.1 MB",
   },
@@ -57,7 +58,7 @@ export const REPORTS: ReportDef[] = [
   },
   {
     key: "ai-usage",
-    title: "AI Tool Usage",
+    title: "AI Usage",
     desc: "AI queries, insights generated, and usage by device.",
     Icon: AutoAwesomeOutlinedIcon,
     file: "AI-Usage-Jul-2026.pdf",
@@ -66,7 +67,7 @@ export const REPORTS: ReportDef[] = [
   },
   {
     key: "timeline-logs",
-    title: "Timeline Activity Logs",
+    title: "Activity Logs",
     desc: "Detailed CyberSight timeline events for each device, exported as a CSV.",
     Icon: ViewListOutlinedIcon,
     file: "Timeline-Logs-Jul-2026.csv",

@@ -71,19 +71,19 @@ type Schedule = {
 
 // Report-type tags, offered in the filter select.
 const REPORT_TYPES = [
-  "Activity Summary",
+  "Activity Overview",
   "Protection Summary",
   "Traffic Logs",
-  "AI Tool Usage",
-  "Executive Summary",
+  "AI Usage",
+  "Timeline",
   "Timeline Logs",
 ];
 
 const SCHEDULES: Schedule[] = [
   {
     id: 1,
-    name: "Monthly Executive Summary",
-    tags: ["Activity Summary", "Protection Summary"],
+    name: "Monthly Timeline",
+    tags: ["Activity Overview"],
     organizations: "Acme Retail Group",
     recipients: 7,
     freqPrimary: "Monthly",
@@ -109,7 +109,7 @@ const SCHEDULES: Schedule[] = [
   {
     id: 3,
     name: "CyberSight AI Monthly Review",
-    tags: ["AI Tool Usage", "Executive Summary"],
+    tags: ["AI Usage"],
     organizations: "Summit Financial Advisors",
     recipients: 2,
     freqPrimary: "Monthly",
@@ -122,12 +122,7 @@ const SCHEDULES: Schedule[] = [
   {
     id: 4,
     name: "Business Review Packet",
-    tags: [
-      "Activity Summary",
-      "Protection Summary",
-      "Traffic Logs",
-      "AI Tool Usage",
-    ],
+    tags: ["Protection Summary"],
     organizations: "Riverside Dental Group",
     recipients: 6,
     freqPrimary: "Monthly",
@@ -140,7 +135,7 @@ const SCHEDULES: Schedule[] = [
   {
     id: 5,
     name: "Riverside Dental Group Timeline Logs",
-    tags: ["Timeline Logs", "Traffic Logs"],
+    tags: ["Timeline Logs"],
     organizations: "Riverside Dental Group",
     recipients: 1,
     freqPrimary: "Daily",
@@ -170,40 +165,28 @@ function ScheduleCell({ name }: { name: string }) {
 // The reports a schedule sends. Only the first two fit the column, so the rest
 // collapse into a count.
 function ReportTypeCell({ tags }: { tags: string[] }) {
-  const shown = tags.slice(0, 2);
-  const extra = tags.length - shown.length;
-  const chipSx = {
-    bgcolor: "action.hover",
-    color: "text.secondary",
-    // Long titles ellipsize rather than pushing the "+N" out of the cell.
-    minWidth: 0,
-    "& .MuiChip-label": {
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-    },
-  } as const;
+  const [report] = tags;
+  if (!report) return null;
   return (
     <Box
       sx={{
         display: "flex",
         alignItems: "center",
-        gap: 0.5,
         height: "100%",
         minWidth: 0,
       }}
     >
-      {shown.map((t) => (
-        <Chip key={t} size="small" label={t} sx={chipSx} />
-      ))}
-      {extra > 0 && (
-        <ArrowTooltip title={tags.slice(2).join(", ")}>
-          <Chip
-            size="small"
-            label={`+${extra}`}
-            sx={{ ...chipSx, flexShrink: 0 }}
-          />
-        </ArrowTooltip>
-      )}
+      <Chip
+        size="small"
+        variant="outlined"
+        color="secondary"
+        label={report}
+        // Long titles ellipsize rather than overflowing the cell.
+        sx={{
+          minWidth: 0,
+          "& .MuiChip-label": { overflow: "hidden", textOverflow: "ellipsis" },
+        }}
+      />
     </Box>
   );
 }
@@ -235,7 +218,7 @@ function deliveryFor(row: Schedule) {
 
 function attachmentsFor(row: Schedule) {
   return row.tags.map((tag) => {
-    // Grid tags are short labels ("AI Tool Usage"), so they resolve through the same
+    // Grid tags are short labels ("AI Usage"), so they resolve through the same
     // map the edit prefill uses rather than matching catalog titles directly.
     const def = REPORTS.find((r) => r.key === TAG_TO_REPORT_KEY[tag]);
     return {
@@ -426,7 +409,7 @@ const buildColumns = (
   },
   {
     field: "frequency",
-    headerName: "Frequency",
+    headerName: "Delivery Schedule",
     flex: 1,
     minWidth: 150,
     sortable: false,

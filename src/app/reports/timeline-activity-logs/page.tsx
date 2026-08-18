@@ -1,4 +1,4 @@
-// Timeline Activity Logs report — converted from the landscape PDF mockup.
+// Activity Logs report — converted from the landscape PDF mockup.
 // Rendered as one continuous light-mode (PDF-style) document: masthead, KPI
 // band, and per-device "top events by duration" tables. Screen-only design
 // annex omitted.
@@ -471,7 +471,7 @@ export default function TimelineActivityLogsReport() {
             m: "8px 0",
           }}
         >
-          Timeline Activity Logs
+          Activity Logs
         </Box>
         <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>

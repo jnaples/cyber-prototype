@@ -1,5 +1,5 @@
 // Shared CSV plumbing for the report exports that ship as spreadsheets rather
-// than documents (DNS Query Logs, Timeline Activity Logs).
+// than documents (DNS Query Logs, Activity Logs).
 
 export type CsvColumn = { field: string; label: string; width: number };
 

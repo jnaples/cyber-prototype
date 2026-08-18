@@ -18,11 +18,11 @@ const REPORT_GROUPS = [
     header: "CyberSight Reports",
     items: [
       {
-        label: "Activity Summary",
+        label: "Activity Overview",
         path: `${BASE}/customer-activity-overview`,
       },
-      { label: "Executive Summary", path: `${BASE}/timeline-overview` },
-      { label: "AI Tool Usage", path: `${BASE}/cybersight-ai-usage` },
+      { label: "Timeline", path: `${BASE}/timeline-overview` },
+      { label: "AI Usage", path: `${BASE}/cybersight-ai-usage` },
       { label: "Threat Trends", path: `${BASE}/threat-trends` },
     ],
   },
