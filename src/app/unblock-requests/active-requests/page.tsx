@@ -299,6 +299,27 @@ const columns: GridColDef[] = [
       </Link>
     ),
   },
+  {
+    field: "category",
+    headerName: "Category",
+    flex: 1,
+    minWidth: 160,
+    renderCell: (params) => {
+      const threat = THREAT_CATEGORIES.includes(params.row.category);
+      if (!threat) return params.row.category;
+      return (
+        <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+          <Chip
+            size="small"
+            variant="outlined"
+            color="error"
+            icon={<WarningAmberIcon sx={{ fontSize: 16 }} />}
+            label={params.row.category}
+          />
+        </Box>
+      );
+    },
+  },
   { field: "organization", headerName: "Organization", flex: 1, minWidth: 160 },
   {
     field: "site",
@@ -347,25 +368,16 @@ const columns: GridColDef[] = [
     ),
   },
   {
-    field: "category",
-    headerName: "Category",
+    field: "deployment",
+    headerName: "Deployment",
     flex: 1,
     minWidth: 160,
-    renderCell: (params) => {
-      const threat = THREAT_CATEGORIES.includes(params.row.category);
-      if (!threat) return params.row.category;
-      return (
-        <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-          <Chip
-            size="small"
-            variant="outlined"
-            color="error"
-            icon={<WarningAmberIcon sx={{ fontSize: 16 }} />}
-            label={params.row.category}
-          />
-        </Box>
-      );
-    },
+  },
+  {
+    field: "deploymentType",
+    headerName: "Deployment Type",
+    flex: 1,
+    minWidth: 150,
   },
   {
     field: "timeOfAttempt",
@@ -385,18 +397,6 @@ const columns: GridColDef[] = [
     headerName: "Request Reason",
     flex: 1.5,
     minWidth: 260,
-  },
-  {
-    field: "deployment",
-    headerName: "Deployment",
-    flex: 1,
-    minWidth: 160,
-  },
-  {
-    field: "deploymentType",
-    headerName: "Deployment Type",
-    flex: 1,
-    minWidth: 150,
   },
   {
     field: "actions",

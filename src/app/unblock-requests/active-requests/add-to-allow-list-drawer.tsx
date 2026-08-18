@@ -238,7 +238,7 @@ export function AddToAllowListDrawer({
                     Universal Allow List
                   </Typography>
                   <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                    Affects all sites and users
+                    Affects all Sites and users
                   </Typography>
                 </Box>
               </Box>

@@ -882,10 +882,10 @@ function CustomColumnsPanel() {
       <TextField
         fullWidth
         size="small"
-        placeholder="Find column"
+        placeholder="Search..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        sx={{ mb: 1 }}
+        sx={{ mb: 2 }}
       />
       <Divider />
       <Box sx={{ maxHeight: 350, overflowY: "auto", py: 1 }}>
@@ -916,7 +916,7 @@ function CustomColumnsPanel() {
         ))}
       </Box>
       <Divider />
-      <Box sx={{ display: "flex", justifyContent: "space-between", pt: 1.5 }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", pt: 1 }}>
         <Button
           size="small"
           onClick={handleHideAll}

@@ -53,7 +53,7 @@ const PREVIEWS: Preview[] = [
     icon: "monitoring",
     label: "Activity Summary",
     title: "Activity Summary",
-    desc: "Total DNS activity, allows, and blocks across all sites for the reporting period.",
+    desc: "Total DNS activity, allows, and blocks across all Sites for the reporting period.",
     range: "Jul 1 – Jul 31, 2026",
     stats: [
       { v: "1.66M", l: "Total Requests" },

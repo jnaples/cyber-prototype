@@ -307,7 +307,7 @@ function V2Card({
           </Typography>
           {widget.type === "geo-activity" && (
             <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              Showing top 100 sites
+              Showing top 100 Sites
             </Typography>
           )}
         </Box>

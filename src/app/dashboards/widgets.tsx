@@ -87,7 +87,7 @@ function GeoMap() {
     );
   }
   // Spinnable globe (globe.gl) with the top 100 site markers. The
-  // "Showing top 100 sites" caption lives in the card header (see V2Card).
+  // "Showing top 100 Sites" caption lives in the card header (see V2Card).
   return (
     <Box sx={{ position: "relative", height: "100%", minHeight: 240 }}>
       <GeoGlobe />

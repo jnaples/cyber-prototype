@@ -23,6 +23,7 @@ const columns: GridColDef[] = [
       </Link>
     ),
   },
+  { field: "category", headerName: "Category", flex: 1, minWidth: 160 },
   { field: "organization", headerName: "Organization", flex: 1, minWidth: 160 },
   {
     field: "site",
@@ -70,7 +71,18 @@ const columns: GridColDef[] = [
       </Link>
     ),
   },
-  { field: "category", headerName: "Category", flex: 1, minWidth: 160 },
+  {
+    field: "deployment",
+    headerName: "Deployment",
+    flex: 1,
+    minWidth: 160,
+  },
+  {
+    field: "deploymentType",
+    headerName: "Deployment Type",
+    flex: 1,
+    minWidth: 150,
+  },
   {
     field: "loggedInUser",
     headerName: "Logged on User",
@@ -96,18 +108,6 @@ const columns: GridColDef[] = [
     headerName: "Resolved Date",
     flex: 1,
     minWidth: 180,
-  },
-  {
-    field: "deployment",
-    headerName: "Deployment",
-    flex: 1,
-    minWidth: 160,
-  },
-  {
-    field: "deploymentType",
-    headerName: "Deployment Type",
-    flex: 1,
-    minWidth: 150,
   },
   {
     field: "internalNote",

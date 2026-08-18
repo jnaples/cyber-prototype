@@ -2,7 +2,15 @@
 // one-off run's name, scope (organization / sites / clients / users) and date
 // range, then hands off to the (prototype) generate action.
 
-import { Box, Divider, FormLabel, MenuItem } from "@mui/material";
+import CancelIcon from "@mui/icons-material/Cancel";
+import {
+  Box,
+  Divider,
+  FormLabel,
+  IconButton,
+  InputAdornment,
+  MenuItem,
+} from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers-pro";
 import { AdapterDateFns } from "@mui/x-date-pickers-pro/AdapterDateFns";
 import { DateRangePicker } from "@mui/x-date-pickers-pro/DateRangePicker";
@@ -123,6 +131,13 @@ export function GenerateReportDrawer({
   }
 
   const canGenerate = name.trim() !== "" && organization !== "";
+  const hasRange = Boolean(dateRange[0] && dateRange[1]);
+  // Clearing the range drops back to the default, where an incomplete range
+  // lands too.
+  const clearRange = () => {
+    setDateRange([null, null]);
+    setTimeRange("24h");
+  };
 
   return (
     <Drawer
@@ -241,7 +256,39 @@ export function GenerateReportDrawer({
                   size: "small",
                   fullWidth: true,
                   onClick: () => setPickerOpen(true),
-                  sx: { cursor: "pointer" },
+                  // The picker's own `clearable` is suppressed on a read-only
+                  // field, so the ✕ is hand-rolled here to match the app's
+                  // Select: hidden until the field is hovered or focused.
+                  slotProps: {
+                    input: {
+                      endAdornment: hasRange ? (
+                        <InputAdornment
+                          position="end"
+                          className="range-clear"
+                          sx={{ visibility: "hidden", ml: 0 }}
+                        >
+                          <IconButton
+                            size="small"
+                            aria-label="Clear"
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              clearRange();
+                            }}
+                            sx={{ color: "text.disabled", p: 0.25 }}
+                          >
+                            <CancelIcon fontSize="small" />
+                          </IconButton>
+                        </InputAdornment>
+                      ) : undefined,
+                    },
+                  },
+                  sx: {
+                    cursor: "pointer",
+                    "&:hover .range-clear, &:focus-within .range-clear": {
+                      visibility: "visible",
+                    },
+                  },
                 },
               }}
             />

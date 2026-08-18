@@ -268,7 +268,7 @@ const KPIS = [
   { num: "306.2K", cap: "Total requests", color: PRIMARY, Icon: RadarIcon },
   { num: "214", cap: "Blocked threats", color: C_THREAT, Icon: SkullIcon },
   { num: "12.2K", cap: "Blocked content", color: C_CONTENT, Icon: BlockIcon },
-  { num: "4", cap: "Total sites", color: C_SITE, Icon: PinIcon },
+  { num: "4", cap: "Total Sites", color: C_SITE, Icon: PinIcon },
 ];
 
 // ---- Shared blocks --------------------------------------------------------
@@ -621,7 +621,7 @@ export default function FilterProtectionSummaryReport() {
 
       {/* Top active sites */}
       <Box sx={{ mb: "72px" }}>
-        <SectionHead title="Top active sites" mb="16px" />
+        <SectionHead title="Top active Sites" mb="16px" />
         <Box
           sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}
         >
@@ -738,7 +738,7 @@ export default function FilterProtectionSummaryReport() {
       <Box sx={{ mb: "72px" }}>
         <SectionHead
           title="Threat summary"
-          sub="All sites · 214 blocked threat requests"
+          sub="All Sites · 214 blocked threat requests"
           mb="4px"
         />
         <ColHead first>Blocked requests by threat category</ColHead>
@@ -751,7 +751,7 @@ export default function FilterProtectionSummaryReport() {
       <Box sx={{ mb: "72px" }}>
         <SectionHead
           title="Content summary"
-          sub="All sites · 12,186 blocked content requests"
+          sub="All Sites · 12,186 blocked content requests"
         />
         <ColHead first>Blocked requests by content category</ColHead>
         <BarRows rows={CONTENT_CATEGORIES} color={C_CONTENT} />
