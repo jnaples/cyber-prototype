@@ -528,10 +528,10 @@ export default function FilterProtectionSummaryReport() {
               fontWeight: 600,
             }}
           >
-            Reporting period
+            Monthly report
           </Box>
           <Box sx={{ fontSize: 20, fontWeight: 600, mt: "4px" }}>
-            Jun 23 – Jul 22, 2026
+            Jul 1 – Jul 31, 2026
           </Box>
         </Box>
       </Box>
@@ -539,17 +539,6 @@ export default function FilterProtectionSummaryReport() {
 
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
-        <Box
-          sx={{
-            fontSize: 17,
-            fontWeight: 700,
-            letterSpacing: "2.5px",
-            textTransform: "uppercase",
-            color: PRIMARY,
-          }}
-        >
-          Monthly report
-        </Box>
         <Box
           component="h1"
           sx={{

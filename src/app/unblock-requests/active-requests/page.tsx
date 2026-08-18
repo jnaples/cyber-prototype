@@ -10,7 +10,6 @@ import {
   MenuItem,
   Portal,
   Snackbar,
-  Typography,
 } from "@mui/material";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import type { GridColDef } from "@mui/x-data-grid";
@@ -582,25 +581,6 @@ const rows = REQUESTS.map((request, i) => {
 // Deployment / Deployment Type ship hidden; users turn them on in Preferences.
 const DEFAULT_COLUMN_VISIBILITY = { deployment: false, deploymentType: false };
 
-// The table always has rows, so the no-rows overlay only appears when a search
-// filters everything out.
-function ActiveRequestsEmptyOverlay() {
-  return (
-    <Box
-      sx={{
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Typography variant="body2" sx={{ color: "text.primary" }}>
-        No results found.
-      </Typography>
-    </Box>
-  );
-}
-
 export default function ActiveRequestsPage() {
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
@@ -617,7 +597,6 @@ export default function ActiveRequestsPage() {
         rows={visibleRows}
         columns={columns}
         showDefaultView={false}
-        noRowsOverlay={ActiveRequestsEmptyOverlay}
         pinnedShadowFields={{ left: "domain" }}
         columnVisibilityModel={columnVisibility}
         onColumnVisibilityModelChange={setColumnVisibility}

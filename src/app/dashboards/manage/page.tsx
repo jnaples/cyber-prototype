@@ -219,7 +219,6 @@ export default function ManageDashboardsPage() {
           columns={columns}
           checkboxSelection={false}
           showDefaultView={false}
-          noRowsOverlay={ManageDashboardsEmptyOverlay}
         />
       </TabbedDataCard>
 
@@ -307,23 +306,6 @@ export default function ManageDashboardsPage() {
         </Alert>
       </Snackbar>
     </PageShell>
-  );
-}
-
-function ManageDashboardsEmptyOverlay() {
-  return (
-    <Box
-      sx={{
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Typography variant="body2" sx={{ color: "text.primary" }}>
-        No results found.
-      </Typography>
-    </Box>
   );
 }
 

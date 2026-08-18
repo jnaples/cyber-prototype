@@ -1,4 +1,4 @@
-import { Box, Chip, Link, Typography } from "@mui/material";
+import { Box, Chip, Link } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import { format as fnsFormat } from "date-fns";
 import { useState } from "react";
@@ -326,23 +326,6 @@ const rows = HISTORY.map((request, i) => {
 // Deployment / Deployment Type ship hidden; users turn them on in Preferences.
 const DEFAULT_COLUMN_VISIBILITY = { deployment: false, deploymentType: false };
 
-function RequestHistoryEmptyOverlay() {
-  return (
-    <Box
-      sx={{
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Typography variant="body2" sx={{ color: "text.primary" }}>
-        No results found.
-      </Typography>
-    </Box>
-  );
-}
-
 export default function RequestHistoryPage() {
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
@@ -360,7 +343,6 @@ export default function RequestHistoryPage() {
         columns={columns}
         checkboxSelection={false}
         showDefaultView={false}
-        noRowsOverlay={RequestHistoryEmptyOverlay}
         pinnedShadowFields={{ left: "domain" }}
         columnVisibilityModel={columnVisibility}
         onColumnVisibilityModelChange={setColumnVisibility}

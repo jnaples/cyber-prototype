@@ -10,7 +10,6 @@ const TEXT = "#031625";
 const TEXT2 = "rgba(3,22,37,.62)";
 const TEXT3 = "rgba(3,22,37,.45)";
 const DIVIDER = "rgba(3,22,37,.12)";
-const PRIMARY = "#3527fd";
 const TRACK = "#edf0f6";
 const C = {
   site: "#238cd2",
@@ -343,10 +342,10 @@ export default function CyberSightAiUsageReport() {
               fontWeight: 600,
             }}
           >
-            Reporting period
+            Monthly report
           </Box>
           <Box sx={{ fontSize: 20, fontWeight: 600, mt: "4px" }}>
-            Jun 23 – Jul 22, 2026
+            Jul 1 – Jul 31, 2026
           </Box>
         </Box>
       </Box>
@@ -354,17 +353,6 @@ export default function CyberSightAiUsageReport() {
 
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
-        <Box
-          sx={{
-            fontSize: 17,
-            fontWeight: 700,
-            letterSpacing: "2.5px",
-            textTransform: "uppercase",
-            color: PRIMARY,
-          }}
-        >
-          Monthly report
-        </Box>
         <Box
           component="h1"
           sx={{
@@ -524,19 +512,19 @@ export default function CyberSightAiUsageReport() {
           />
           <g textAnchor="middle">
             <text x="56" y="356">
-              Jun 23
+              Jul 1
             </text>
             <text x="302" y="356">
-              Jun 29
+              Jul 7
             </text>
             <text x="589" y="356">
-              Jul 6
+              Jul 14
             </text>
             <text x="876" y="356">
-              Jul 13
+              Jul 21
             </text>
             <text x="1163" y="356">
-              Jul 20
+              Jul 28
             </text>
           </g>
         </Box>
@@ -560,7 +548,7 @@ export default function CyberSightAiUsageReport() {
             <Box
               sx={{ width: 28, height: 0, borderTop: `3px dashed ${C.trend}` }}
             />
-            30-day trend
+            31-day trend
           </Box>
         </Box>
       </Box>

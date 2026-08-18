@@ -44,6 +44,7 @@ import {
 import React, { useState } from "react";
 
 import { MaterialSymbol } from "./material-symbol";
+import { NoResultsOverlay } from "./no-results-overlay";
 
 const DEFAULT_PAGE_SIZE_OPTIONS = [25, 50, 100];
 
@@ -296,9 +297,7 @@ function ActiveFiltersBar({
   timeRangeField?: string;
 }) {
   const timeRangeFilter = timeRangeField
-    ? items.find(
-        (it) => it.field === timeRangeField && it.operator === "range",
-      )
+    ? items.find((it) => it.field === timeRangeField && it.operator === "range")
     : undefined;
   return (
     <Box
@@ -604,7 +603,6 @@ function DeferredFilterPanel(
       items: prev.items.filter((i) => i.id !== item.id),
     }));
   };
-
 
   const addFilter = () => {
     if (!firstColumn) return;
@@ -1062,7 +1060,7 @@ export function DataTable({
   showRefresh = true,
   timeRangeField,
   loading = false,
-  noRowsOverlay,
+  noRowsOverlay = NoResultsOverlay,
   onSearchChange,
   onDefaultViewChange,
   onFiltersClick,
@@ -1112,9 +1110,7 @@ export function DataTable({
   });
   const activeFilterItems = filterModel.items
     .filter(hasFilterValue)
-    .filter(
-      (it) => it.id === undefined || !hiddenFilterIds?.includes(it.id),
-    );
+    .filter((it) => it.id === undefined || !hiddenFilterIds?.includes(it.id));
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -1177,9 +1173,10 @@ export function DataTable({
     pinnedSx[`& .MuiDataGrid-cell[data-field='${rightShadowField}']`] = {
       boxShadow: "rgba(0, 0, 0, 0.21) -2px 0px 4px -2px",
     };
-    pinnedSx[`& .MuiDataGrid-columnHeader[data-field='${rightShadowField}']`] = {
-      boxShadow: "rgba(0, 0, 0, 0.21) -2px 0px 4px -2px",
-    };
+    pinnedSx[`& .MuiDataGrid-columnHeader[data-field='${rightShadowField}']`] =
+      {
+        boxShadow: "rgba(0, 0, 0, 0.21) -2px 0px 4px -2px",
+      };
   }
 
   const showToolbar =
@@ -1431,13 +1428,12 @@ export function DataTable({
                 ? DeferredFilterPanel
                 : StandardFilterPanel,
               loadingOverlay: LoadingOverlay,
-              // Use the same overlay whether the grid has no data at all
-              // (noRowsOverlay) or filtering removed everything
-              // (noResultsOverlay) — otherwise the grid falls back to its
-              // default "No results found." text on column filters.
-              ...(noRowsOverlay
-                ? { noRowsOverlay, noResultsOverlay: noRowsOverlay }
-                : {}),
+              // Same overlay whether the grid has no data at all
+              // (noRowsOverlay) or a filter removed everything
+              // (noResultsOverlay). Grids with a bespoke empty state pass
+              // `noRowsOverlay`; the rest get the shared copy.
+              noRowsOverlay,
+              noResultsOverlay: noRowsOverlay,
             }}
             slotProps={{
               pagination: { pageSizeOptions } as never,

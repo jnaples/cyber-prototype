@@ -12,7 +12,6 @@ const TEXT = "#031625";
 const TEXT2 = "rgba(3,22,37,.62)";
 const TEXT3 = "rgba(3,22,37,.45)";
 const DIVIDER = "rgba(3,22,37,.12)";
-const PRIMARY = "#3527fd";
 const C = {
   web: "#238cd2",
   app: "#7b3ff2",
@@ -377,10 +376,10 @@ export default function TimelineOverviewReport() {
               fontWeight: 600,
             }}
           >
-            Reporting period
+            Monthly report
           </Box>
           <Box sx={{ fontSize: 20, fontWeight: 600, mt: "4px" }}>
-            Jun 23 – Jul 22, 2026
+            Jul 1 – Jul 31, 2026
           </Box>
         </Box>
       </Box>
@@ -388,17 +387,6 @@ export default function TimelineOverviewReport() {
 
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
-        <Box
-          sx={{
-            fontSize: 17,
-            fontWeight: 700,
-            letterSpacing: "2.5px",
-            textTransform: "uppercase",
-            color: PRIMARY,
-          }}
-        >
-          Monthly report
-        </Box>
         <Box
           component="h1"
           sx={{
@@ -542,19 +530,19 @@ export default function TimelineOverviewReport() {
           ))}
           <g textAnchor="middle">
             <text x="76" y="356">
-              Jun 23
+              Jul 1
             </text>
             <text x="314" y="356">
-              Jun 29
+              Jul 7
             </text>
             <text x="591" y="356">
-              Jul 6
+              Jul 14
             </text>
             <text x="868" y="356">
-              Jul 13
+              Jul 21
             </text>
             <text x="1145" y="356">
-              Jul 20
+              Jul 28
             </text>
           </g>
         </Box>

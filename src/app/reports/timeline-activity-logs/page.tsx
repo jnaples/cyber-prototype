@@ -107,7 +107,7 @@ const DEVICES: Device[] = [
         cat: "—",
         catDim: true,
         dur: "1h 12m",
-        started: "Jun 30 · 9:45 AM",
+        started: "Jul 8 · 9:45 AM",
       },
       {
         type: "Website",
@@ -136,7 +136,7 @@ const DEVICES: Device[] = [
         user: "k.trojanowski",
         cat: "Computing & Internet",
         dur: "52m",
-        started: "Jun 26 · 4:05 PM",
+        started: "Jul 4 · 4:05 PM",
       },
     ],
   },
@@ -179,7 +179,7 @@ const DEVICES: Device[] = [
         user: "b.smith",
         cat: "Computing & Internet",
         dur: "1h 21m",
-        started: "Jun 29 · 2:30 PM",
+        started: "Jul 7 · 2:30 PM",
       },
       {
         type: "Machine Lock",
@@ -238,7 +238,7 @@ const DEVICES: Device[] = [
         cat: "—",
         catDim: true,
         dur: "22m",
-        started: "Jun 25 · 3:33 PM",
+        started: "Jul 3 · 3:33 PM",
       },
     ],
   },
@@ -450,10 +450,10 @@ export default function TimelineActivityLogsReport() {
               fontWeight: 600,
             }}
           >
-            Reporting period
+            Monthly report
           </Box>
           <Box sx={{ fontSize: 20, fontWeight: 600, mt: "4px" }}>
-            Jun 23 – Jul 22, 2026
+            Jul 1 – Jul 31, 2026
           </Box>
         </Box>
       </Box>
