@@ -174,7 +174,6 @@ export function DenyRequestDrawer({
             helperText="Saved to Request History."
             onChange={(e) => setNote(e.target.value)}
             sx={{
-              "& .MuiOutlinedInput-root": { bgcolor: "background.paper" },
               // 14px: the size the app's other helper copy reads at.
               "& .MuiFormHelperText-root": { fontSize: 14 },
             }}
@@ -207,7 +206,6 @@ export function DenyRequestDrawer({
             placeholder="Add your message here…"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            sx={{ "& .MuiOutlinedInput-root": { bgcolor: "background.paper" } }}
           />
         </Box>
       )}

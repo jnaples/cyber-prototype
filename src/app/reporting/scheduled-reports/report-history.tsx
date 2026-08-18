@@ -19,6 +19,7 @@ import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+import { useOrgScope } from "@/hooks/use-org-scope";
 
 import { downloadQueryLogsCsv } from "./query-logs-csv";
 import { downloadTimelineLogsCsv } from "./timeline-logs-csv";
@@ -55,7 +56,7 @@ const HISTORY: HistoryRow[] = [
     id: 1,
     reportType: "DNS Query Logs",
     reportName: "DNS Query Logs",
-    customer: "Hamel Services LLC",
+    customer: "Coastal Property Mgmt",
     period: "Aug 5",
     source: "Scheduled",
     runAt: "Aug 6, 2026 11:00 AM",
@@ -66,7 +67,7 @@ const HISTORY: HistoryRow[] = [
     id: 2,
     reportType: "Activity Summary",
     reportName: "Monthly Executive Summary",
-    customer: "Acme Manufacturing",
+    customer: "Acme Retail Group",
     period: "Jul 1–31",
     source: "Scheduled",
     runAt: "Aug 5, 2026 8:00 AM",
@@ -77,7 +78,7 @@ const HISTORY: HistoryRow[] = [
     id: 3,
     reportType: "DNS Query Logs",
     reportName: "DNS Query Logs",
-    customer: "Hamel Services LLC",
+    customer: "Coastal Property Mgmt",
     period: "Aug 4",
     source: "Scheduled",
     runAt: "Aug 5, 2026 11:01 AM",
@@ -88,7 +89,7 @@ const HISTORY: HistoryRow[] = [
     id: 4,
     reportType: "AI Tool Usage",
     reportName: "CyberSight AI Monthly Review",
-    customer: "Globex Financial",
+    customer: "Summit Financial Advisors",
     period: "Jul 1–31",
     source: "Scheduled",
     runAt: "Aug 4, 2026 9:00 AM",
@@ -99,7 +100,7 @@ const HISTORY: HistoryRow[] = [
     id: 5,
     reportType: "DNS Query Logs",
     reportName: "DNS Query Logs",
-    customer: "Hamel Services LLC",
+    customer: "Coastal Property Mgmt",
     period: "Aug 3",
     source: "Scheduled",
     runAt: "Aug 4, 2026 11:01 AM",
@@ -110,7 +111,7 @@ const HISTORY: HistoryRow[] = [
     id: 6,
     reportType: "Filter Protection Summary",
     reportName: "Weekly Protection Recap",
-    customer: "Umbrella Health",
+    customer: "Riverside Dental Group",
     period: "Jul 27–Aug 2",
     source: "Scheduled",
     runAt: "Aug 3, 2026 7:30 AM",
@@ -121,7 +122,7 @@ const HISTORY: HistoryRow[] = [
     id: 7,
     reportType: "DNS Query Logs",
     reportName: "DNS Query Logs",
-    customer: "Hamel Services LLC",
+    customer: "Coastal Property Mgmt",
     period: "Aug 2",
     source: "Scheduled",
     runAt: "Aug 3, 2026 11:01 AM",
@@ -132,7 +133,7 @@ const HISTORY: HistoryRow[] = [
     id: 8,
     reportType: "Executive Summary",
     reportName: "Business Review Packet",
-    customer: "Acme Manufacturing",
+    customer: "Acme Retail Group",
     period: "Jul 1–31",
     source: "Manual",
     runAt: "Aug 2, 2026 6:15 AM",
@@ -143,7 +144,7 @@ const HISTORY: HistoryRow[] = [
     id: 9,
     reportType: "DNS Query Logs",
     reportName: "DNS Query Logs",
-    customer: "Hamel Services LLC",
+    customer: "Coastal Property Mgmt",
     period: "Aug 1",
     source: "Scheduled",
     runAt: "Aug 2, 2026 11:00 AM",
@@ -154,7 +155,7 @@ const HISTORY: HistoryRow[] = [
     id: 10,
     reportType: "DNS Query Logs",
     reportName: "DNS Query Logs",
-    customer: "Hamel Services LLC",
+    customer: "Coastal Property Mgmt",
     period: "Jul 31",
     source: "Scheduled",
     runAt: "Aug 1, 2026 11:01 AM",
@@ -165,7 +166,7 @@ const HISTORY: HistoryRow[] = [
     id: 11,
     reportType: "Activity Summary",
     reportName: "Acme Weekly Traffic Digest",
-    customer: "Acme Manufacturing",
+    customer: "Acme Retail Group",
     period: "Jul 24–30",
     source: "Scheduled",
     runAt: "Jul 31, 2026 7:00 AM",
@@ -176,7 +177,7 @@ const HISTORY: HistoryRow[] = [
     id: 12,
     reportType: "Filter Protection Summary",
     reportName: "Weekly Protection Recap",
-    customer: "Umbrella Health",
+    customer: "Riverside Dental Group",
     period: "Jul 20–26",
     source: "Scheduled",
     runAt: "Jul 27, 2026 7:30 AM",
@@ -187,7 +188,7 @@ const HISTORY: HistoryRow[] = [
     id: 13,
     reportType: "AI Tool Usage",
     reportName: "AI Adoption Snapshot",
-    customer: "Acme Manufacturing",
+    customer: "Acme Retail Group",
     period: "Jul 1–31",
     source: "Manual",
     runAt: "Aug 6, 2026 6:45 AM",
@@ -198,7 +199,7 @@ const HISTORY: HistoryRow[] = [
     id: 14,
     reportType: "AI Tool Usage",
     reportName: "CyberSight AI Monthly Review",
-    customer: "Umbrella Health",
+    customer: "Riverside Dental Group",
     period: "Jul 1–31",
     source: "Scheduled",
     runAt: "Aug 3, 2026 9:12 AM",
@@ -209,7 +210,7 @@ const HISTORY: HistoryRow[] = [
     id: 15,
     reportType: "AI Tool Usage",
     reportName: "AI Query Volume by Device",
-    customer: "Hamel Services LLC",
+    customer: "Coastal Property Mgmt",
     period: "Jul 1–29",
     source: "Manual",
     runAt: "Jul 30, 2026 2:20 PM",
@@ -220,7 +221,7 @@ const HISTORY: HistoryRow[] = [
     id: 16,
     reportType: "Threat Trends",
     reportName: "Monthly Threat Briefing",
-    customer: "Globex Financial",
+    customer: "Summit Financial Advisors",
     period: "Jul 1–31",
     source: "Scheduled",
     runAt: "Aug 5, 2026 5:05 AM",
@@ -231,7 +232,7 @@ const HISTORY: HistoryRow[] = [
     id: 17,
     reportType: "Threat Trends",
     reportName: "Quarterly Threat Review",
-    customer: "Acme Manufacturing",
+    customer: "Acme Retail Group",
     period: "Apr 1–Jun 30",
     source: "Manual",
     runAt: "Jul 29, 2026 8:40 AM",
@@ -469,12 +470,17 @@ const columns: GridColDef<HistoryRow>[] = [
 
 export function ReportHistory() {
   const [cardTab, setCardTab] = useState(0);
+  // The header's scope chip narrows history to one organization.
+  const { organization } = useOrgScope();
 
-  const total = HISTORY.length;
+  const inScope = organization
+    ? HISTORY.filter((r) => r.customer === organization)
+    : HISTORY;
+  const total = inScope.length;
   const counts = {
-    available: HISTORY.filter((r) => r.status === "available").length,
-    processing: HISTORY.filter((r) => r.status === "processing").length,
-    failed: HISTORY.filter((r) => r.status === "failed").length,
+    available: inScope.filter((r) => r.status === "available").length,
+    processing: inScope.filter((r) => r.status === "processing").length,
+    failed: inScope.filter((r) => r.status === "failed").length,
   };
 
   const tabsConfig: StatusTabConfig[] = [
@@ -519,9 +525,13 @@ export function ReportHistory() {
     "failed",
   ];
   const activeStatus = statusForTab[cardTab];
-  const visibleRows = activeStatus
-    ? HISTORY.filter((r) => r.status === activeStatus)
+  // Scope first, then the status tab, so the tab counts and the rows agree.
+  const scopedRows = organization
+    ? HISTORY.filter((r) => r.customer === organization)
     : HISTORY;
+  const visibleRows = activeStatus
+    ? scopedRows.filter((r) => r.status === activeStatus)
+    : scopedRows;
 
   return (
     <TabbedDataCard

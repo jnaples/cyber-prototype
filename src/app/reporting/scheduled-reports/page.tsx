@@ -31,7 +31,9 @@ import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
 import { MaterialSymbol } from "@/components/material-symbol";
+import { useOrgScope } from "@/hooks/use-org-scope";
 import { Modal } from "@/components/modal";
+import { OrgScopeSlot } from "@/components/org-scope-slot";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
@@ -82,7 +84,7 @@ const SCHEDULES: Schedule[] = [
     id: 1,
     name: "Monthly Executive Summary",
     tags: ["Activity Summary", "Protection Summary"],
-    organizations: "Acme Manufacturing",
+    organizations: "Acme Retail Group",
     recipients: 7,
     freqPrimary: "Monthly",
     freqSecondary: "1st",
@@ -95,7 +97,7 @@ const SCHEDULES: Schedule[] = [
     id: 2,
     name: "Acme Weekly Traffic Digest",
     tags: ["Traffic Logs"],
-    organizations: "Acme Manufacturing",
+    organizations: "Acme Retail Group",
     recipients: 3,
     freqPrimary: "Weekly",
     freqSecondary: "Mon",
@@ -108,7 +110,7 @@ const SCHEDULES: Schedule[] = [
     id: 3,
     name: "CyberSight AI Monthly Review",
     tags: ["AI Tool Usage", "Executive Summary"],
-    organizations: "Globex Financial",
+    organizations: "Summit Financial Advisors",
     recipients: 2,
     freqPrimary: "Monthly",
     freqSecondary: "15th",
@@ -126,7 +128,7 @@ const SCHEDULES: Schedule[] = [
       "Traffic Logs",
       "AI Tool Usage",
     ],
-    organizations: "Umbrella Health",
+    organizations: "Riverside Dental Group",
     recipients: 6,
     freqPrimary: "Monthly",
     freqSecondary: "1st",
@@ -137,9 +139,9 @@ const SCHEDULES: Schedule[] = [
   },
   {
     id: 5,
-    name: "Umbrella Health Timeline Logs",
+    name: "Riverside Dental Group Timeline Logs",
     tags: ["Timeline Logs", "Traffic Logs"],
-    organizations: "Umbrella Health",
+    organizations: "Riverside Dental Group",
     recipients: 1,
     freqPrimary: "Daily",
     freqSecondary: "Every day",
@@ -595,19 +597,26 @@ export default function ScheduledReportsPage() {
   const clearSelection = () =>
     setRowSelection({ type: "include", ids: new Set() });
 
-  const counts = useMemo(
-    () => ({
-      all: schedules.length,
-      active: schedules.filter((s) => s.status !== "paused").length,
-      paused: schedules.filter((s) => s.status === "paused").length,
-      issue: schedules.filter((s) => s.status === "issue").length,
-    }),
-    [schedules],
-  );
+  const { organization: scopedOrg } = useOrgScope();
+
+  // Tab counts describe what's on screen, so they follow the org scope too.
+  const counts = useMemo(() => {
+    const inScope = scopedOrg
+      ? schedules.filter((s) => s.organizations === scopedOrg)
+      : schedules;
+    return {
+      all: inScope.length,
+      active: inScope.filter((s) => s.status !== "paused").length,
+      paused: inScope.filter((s) => s.status === "paused").length,
+      issue: inScope.filter((s) => s.status === "issue").length,
+    };
+  }, [schedules, scopedOrg]);
 
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
     return schedules.filter((s) => {
+      // The header's scope chip narrows schedules to one organization.
+      if (scopedOrg && s.organizations !== scopedOrg) return false;
       if (statusFilter === "active" && s.status === "paused") return false;
       if (statusFilter === "paused" && s.status !== "paused") return false;
       if (statusFilter === "issue" && s.status !== "issue") return false;
@@ -621,7 +630,7 @@ export default function ScheduledReportsPage() {
         return false;
       return true;
     });
-  }, [schedules, statusFilter, search, reportType]);
+  }, [schedules, statusFilter, search, reportType, scopedOrg]);
 
   const selectedCount =
     rowSelection.type === "exclude"
@@ -666,7 +675,7 @@ export default function ScheduledReportsPage() {
   return (
     <PageShell
       header={
-        <PageHeader title="Reports">
+        <PageHeader title="Reports" leftSlot={<OrgScopeSlot />}>
           <Box
             sx={{
               mb: -2,

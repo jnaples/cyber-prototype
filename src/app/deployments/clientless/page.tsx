@@ -25,6 +25,7 @@ import { Modal } from "@/components/modal";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+import { useOrgScope } from "@/hooks/use-org-scope";
 
 import { ConnectionDetailsDrawer } from "./connection-details-drawer";
 
@@ -63,7 +64,7 @@ const ROWS: DohRow[] = [
   {
     id: 1,
     name: "Test_Demo",
-    organization: "Acme Manufacturing",
+    organization: "Acme Retail Group",
     policy: "Lincoln Middle School — CIPA Policy",
     endpointId: "3a18ae",
     devices: 1,
@@ -74,7 +75,7 @@ const ROWS: DohRow[] = [
   {
     id: 2,
     name: "HQ Guest Wi-Fi",
-    organization: "Acme Manufacturing",
+    organization: "Acme Retail Group",
     policy: "Default Policy",
     endpointId: "a2fca4",
     devices: 2,
@@ -85,7 +86,7 @@ const ROWS: DohRow[] = [
   {
     id: 3,
     name: "Remote Sales Team",
-    organization: "Globex Financial",
+    organization: "Summit Financial Advisors",
     policy: "Restricted Policy",
     endpointId: "7b91de",
     devices: 1,
@@ -96,7 +97,7 @@ const ROWS: DohRow[] = [
   {
     id: 4,
     name: "Lab Devices",
-    organization: "Initech Software",
+    organization: "Lakeside Law Group",
     policy: "Default Policy",
     endpointId: "3c0f55",
     devices: 0,
@@ -107,7 +108,7 @@ const ROWS: DohRow[] = [
   {
     id: 5,
     name: "Front Desk Kiosk",
-    organization: "Umbrella Health",
+    organization: "Riverside Dental Group",
     policy: "Default Policy",
     endpointId: "5d24bc",
     devices: 1,
@@ -118,7 +119,7 @@ const ROWS: DohRow[] = [
   {
     id: 6,
     name: "Warehouse Scanners",
-    organization: "Acme Manufacturing",
+    organization: "Acme Retail Group",
     policy: "Restricted Policy",
     endpointId: "9ee71a",
     devices: 4,
@@ -129,7 +130,7 @@ const ROWS: DohRow[] = [
   {
     id: 7,
     name: "Conference Room AV",
-    organization: "Globex Financial",
+    organization: "Summit Financial Advisors",
     policy: "Default Policy",
     endpointId: "c14f80",
     devices: 2,
@@ -140,7 +141,7 @@ const ROWS: DohRow[] = [
   {
     id: 8,
     name: "Marketing Laptops",
-    organization: "Initech Software",
+    organization: "Lakeside Law Group",
     policy: "Standard Policy",
     endpointId: "61ab39",
     devices: 3,
@@ -151,7 +152,7 @@ const ROWS: DohRow[] = [
   {
     id: 9,
     name: "Executive Devices",
-    organization: "Umbrella Health",
+    organization: "Riverside Dental Group",
     policy: "HIPAA Strict",
     endpointId: "8fd2e7",
     devices: 2,
@@ -162,7 +163,7 @@ const ROWS: DohRow[] = [
   {
     id: 10,
     name: "Reception iPad",
-    organization: "Globex Financial",
+    organization: "Summit Financial Advisors",
     policy: "Guest Wi-Fi Policy",
     endpointId: "24c9b1",
     devices: 0,
@@ -540,10 +541,17 @@ export default function ClientlessPage() {
     Record<string, boolean>
   >(DEFAULT_COLUMN_VISIBILITY);
 
-  const total = rows.length;
-  const activeCount = rows.filter((r) => r.status === "Active").length;
-  const inactiveCount = rows.filter((r) => r.status === "Inactive").length;
-  const pendingCount = rows.filter((r) => r.status === "Pending").length;
+  // The header's scope chip narrows the list to one organization; tab counts
+  // follow so they describe what's on screen.
+  const { organization } = useOrgScope();
+  const inScope = organization
+    ? rows.filter((r) => r.organization === organization)
+    : rows;
+
+  const total = inScope.length;
+  const activeCount = inScope.filter((r) => r.status === "Active").length;
+  const inactiveCount = inScope.filter((r) => r.status === "Inactive").length;
+  const pendingCount = inScope.filter((r) => r.status === "Pending").length;
 
   const tabsConfig: StatusTabConfig[] = [
     {
@@ -604,8 +612,8 @@ export default function ClientlessPage() {
   ];
   const tabStatus = TAB_STATUS[cardTab];
   const visibleRows = tabStatus
-    ? rows.filter((r) => r.status === tabStatus)
-    : rows;
+    ? inScope.filter((r) => r.status === tabStatus)
+    : inScope;
 
   const columns: GridColDef<DohRow>[] = [
     ...baseColumns,

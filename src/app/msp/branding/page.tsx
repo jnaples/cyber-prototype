@@ -142,13 +142,11 @@ function SectionCard({
  * lives only for the session — a refresh clears it, since nothing is uploaded.
  */
 function ImageDrop({
-  maxWidth,
   previewHeight,
   alt,
   src,
   onChange,
 }: {
-  maxWidth: string;
   /** How tall the preview may render inside the well. */
   previewHeight: number;
   alt: string;
@@ -213,7 +211,7 @@ function ImageDrop({
             }}
           />
         ) : (
-          <Typography variant="body2">Choose an image</Typography>
+          <Typography variant="body1">Choose an image</Typography>
         )}
         {src && (
           <ArrowTooltip title="Remove image">
@@ -239,9 +237,6 @@ function ImageDrop({
           </ArrowTooltip>
         )}
       </Box>
-      <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
-        Max width: {maxWidth}
-      </Typography>
     </Box>
   );
 }
@@ -391,12 +386,9 @@ export default function BrandingPage() {
 
       <SectionCard title="Dashboard Customization" sx={{ mt: 2 }}>
         <Box>
-          <FieldLabel
-            label="Custom Logo"
-            help="Replaces the DNSFilter logo in the dashboard and on reports."
-          />
+          {/* The size cue lives in the label, so no help tooltip here. */}
+          <FieldLabel label="Custom Logo (max width: 500px)" />
           <ImageDrop
-            maxWidth="500px"
             previewHeight={72}
             alt="Custom logo preview"
             src={logo}
@@ -405,12 +397,8 @@ export default function BrandingPage() {
         </Box>
 
         <Box>
-          <FieldLabel
-            label="Custom Favicon"
-            help="Shown in the browser tab beside the dashboard name."
-          />
+          <FieldLabel label="Custom Favicon (max width: 32px)" />
           <ImageDrop
-            maxWidth="32px"
             previewHeight={32}
             alt="Custom favicon preview"
             src={favicon}

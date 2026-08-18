@@ -23,6 +23,7 @@ import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+import { useOrgScope } from "@/hooks/use-org-scope";
 
 import { ReportMiscategorizationDrawer } from "../report-miscategorization-drawer";
 import { AddToAllowListDrawer } from "./add-to-allow-list-drawer";
@@ -464,7 +465,7 @@ const REQUESTS: ActiveRequest[] = [
   },
   {
     domain: "youtube.com",
-    organization: "Globex Manufacturing",
+    organization: "Vanguard Auto Repair",
     site: "Detroit Plant",
     policy: "Default Filtering",
     category: "Streaming Media",
@@ -474,7 +475,7 @@ const REQUESTS: ActiveRequest[] = [
   },
   {
     domain: "dropbox.com",
-    organization: "Contoso Health",
+    organization: "Bright Future Pediatrics",
     site: "Austin Clinic",
     policy: "HIPAA Strict",
     category: "File Sharing",
@@ -484,7 +485,7 @@ const REQUESTS: ActiveRequest[] = [
   },
   {
     domain: "github.com",
-    organization: "Initech Legal",
+    organization: "Lakeside Law Group",
     site: "Chicago Office",
     policy: "Standard Policy",
     category: "Proxy, Anonymizer",
@@ -494,7 +495,7 @@ const REQUESTS: ActiveRequest[] = [
   },
   {
     domain: "canva.com",
-    organization: "Umbrella Retail",
+    organization: "Acme Retail Group",
     site: "Phoenix HQ",
     policy: "Marketing Policy",
     category: "Personal Storage",
@@ -514,7 +515,7 @@ const REQUESTS: ActiveRequest[] = [
   },
   {
     domain: "wetransfer.com",
-    organization: "Contoso Health",
+    organization: "Bright Future Pediatrics",
     site: "Dallas Hospital",
     policy: "Finance Policy",
     category: "File Sharing",
@@ -524,7 +525,7 @@ const REQUESTS: ActiveRequest[] = [
   },
   {
     domain: "chatgpt.com",
-    organization: "Globex Manufacturing",
+    organization: "Vanguard Auto Repair",
     site: "Cincinnati HQ",
     policy: "Engineering Policy",
     category: "AI Tools",
@@ -534,7 +535,7 @@ const REQUESTS: ActiveRequest[] = [
   },
   {
     domain: "vimeo.com",
-    organization: "Umbrella Retail",
+    organization: "Acme Retail Group",
     site: "Tucson Store",
     policy: "Marketing Policy",
     category: "Streaming Media",
@@ -544,7 +545,7 @@ const REQUESTS: ActiveRequest[] = [
   },
   {
     domain: "nytimes.com",
-    organization: "Initech Legal",
+    organization: "Lakeside Law Group",
     site: "NYC Office",
     policy: "Standard Policy",
     category: "News",
@@ -604,11 +605,16 @@ export default function ActiveRequestsPage() {
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
   >(DEFAULT_COLUMN_VISIBILITY);
+  // The header's scope chip narrows the queue to one organization.
+  const { organization } = useOrgScope();
+  const visibleRows = organization
+    ? rows.filter((row) => row.organization === organization)
+    : rows;
 
   return (
     <TabbedDataCard>
       <DataTable
-        rows={rows}
+        rows={visibleRows}
         columns={columns}
         showDefaultView={false}
         noRowsOverlay={ActiveRequestsEmptyOverlay}

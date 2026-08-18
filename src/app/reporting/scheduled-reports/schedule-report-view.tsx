@@ -36,28 +36,28 @@ const PORTAL_USERS = [
   {
     name: "Dana Mori",
     email: "dana.mori@acmemfg.com",
-    org: "Acme Manufacturing",
+    org: "Acme Retail Group",
   },
   {
     name: "Priya Natarajan",
     email: "priya.n@acmemfg.com",
-    org: "Acme Manufacturing",
+    org: "Acme Retail Group",
   },
   {
     name: "Tom Villanueva",
     email: "tom.v@globexfin.com",
-    org: "Globex Financial",
+    org: "Summit Financial Advisors",
   },
   {
     name: "Kim Doyle",
     email: "kim.doyle@globexfin.com",
-    org: "Globex Financial",
+    org: "Summit Financial Advisors",
   },
-  { name: "Sofia Reyes", email: "s.reyes@initech.io", org: "Initech Software" },
+  { name: "Sofia Reyes", email: "s.reyes@initech.io", org: "Lakeside Law Group" },
   {
     name: "Marcus Bell",
     email: "marcus.b@initech.io",
-    org: "Initech Software",
+    org: "Lakeside Law Group",
   },
 ];
 

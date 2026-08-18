@@ -300,7 +300,6 @@ export function AddToAllowListDrawer({
               helperText="Saved to Request History and the allow list entry."
               onChange={(e) => setNote(e.target.value)}
               sx={{
-                "& .MuiOutlinedInput-root": { bgcolor: "background.paper" },
                 // 14px: the size the app's other helper copy reads at.
                 "& .MuiFormHelperText-root": { fontSize: 14 },
               }}

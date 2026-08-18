@@ -6,6 +6,7 @@ import { useState } from "react";
 import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+import { useOrgScope } from "@/hooks/use-org-scope";
 
 const columns: GridColDef[] = [
   {
@@ -183,7 +184,7 @@ const HISTORY: HistoryRequest[] = [
   },
   {
     domain: "youtube.com",
-    organization: "Globex Manufacturing",
+    organization: "Vanguard Auto Repair",
     site: "Detroit Plant",
     policy: "Default Filtering",
     category: "Streaming Media",
@@ -196,7 +197,7 @@ const HISTORY: HistoryRequest[] = [
   },
   {
     domain: "dropbox.com",
-    organization: "Contoso Health",
+    organization: "Bright Future Pediatrics",
     site: "Austin Clinic",
     policy: "HIPAA Strict",
     category: "File Sharing",
@@ -209,7 +210,7 @@ const HISTORY: HistoryRequest[] = [
   },
   {
     domain: "github.com",
-    organization: "Initech Legal",
+    organization: "Lakeside Law Group",
     site: "Chicago Office",
     policy: "Standard Policy",
     category: "Proxy, Anonymizer",
@@ -223,7 +224,7 @@ const HISTORY: HistoryRequest[] = [
   },
   {
     domain: "canva.com",
-    organization: "Umbrella Retail",
+    organization: "Acme Retail Group",
     site: "Phoenix HQ",
     policy: "Marketing Policy",
     category: "Personal Storage",
@@ -249,7 +250,7 @@ const HISTORY: HistoryRequest[] = [
   },
   {
     domain: "wetransfer.com",
-    organization: "Contoso Health",
+    organization: "Bright Future Pediatrics",
     site: "Dallas Hospital",
     policy: "Finance Policy",
     category: "File Sharing",
@@ -262,7 +263,7 @@ const HISTORY: HistoryRequest[] = [
   },
   {
     domain: "chatgpt.com",
-    organization: "Globex Manufacturing",
+    organization: "Vanguard Auto Repair",
     site: "Cincinnati HQ",
     policy: "Engineering Policy",
     category: "AI Tools",
@@ -275,7 +276,7 @@ const HISTORY: HistoryRequest[] = [
   },
   {
     domain: "vimeo.com",
-    organization: "Umbrella Retail",
+    organization: "Acme Retail Group",
     site: "Tucson Store",
     policy: "Marketing Policy",
     category: "Streaming Media",
@@ -288,7 +289,7 @@ const HISTORY: HistoryRequest[] = [
   },
   {
     domain: "nytimes.com",
-    organization: "Initech Legal",
+    organization: "Lakeside Law Group",
     site: "NYC Office",
     policy: "Standard Policy",
     category: "News",
@@ -346,11 +347,16 @@ export default function RequestHistoryPage() {
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
   >(DEFAULT_COLUMN_VISIBILITY);
+  // The header's scope chip narrows the history to one organization.
+  const { organization } = useOrgScope();
+  const visibleRows = organization
+    ? rows.filter((row) => row.organization === organization)
+    : rows;
 
   return (
     <TabbedDataCard>
       <DataTable
-        rows={rows}
+        rows={visibleRows}
         columns={columns}
         checkboxSelection={false}
         showDefaultView={false}

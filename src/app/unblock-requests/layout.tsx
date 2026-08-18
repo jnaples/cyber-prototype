@@ -5,6 +5,7 @@ import React from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 
 import { MaterialSymbol } from "@/components/material-symbol";
+import { OrgScopeSlot } from "@/components/org-scope-slot";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 
@@ -59,7 +60,7 @@ export default function UnblockRequestsLayout() {
   return (
     <PageShell
       header={
-        <PageHeader title="Unblock Requests">
+        <PageHeader title="Unblock Requests" leftSlot={<OrgScopeSlot />}>
           <Box
             sx={{
               mb: -2,

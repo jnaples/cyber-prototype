@@ -29,10 +29,10 @@ import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
 
 const ORGANIZATIONS = [
-  "Acme Manufacturing",
-  "Globex Financial",
-  "Initech Software",
-  "Umbrella Health",
+  "Acme Retail Group",
+  "Summit Financial Advisors",
+  "Lakeside Law Group",
+  "Riverside Dental Group",
 ];
 const SITES = [
   "Headquarters",

@@ -229,7 +229,6 @@ export function ReportMiscategorizationDrawer({
           placeholder="Additional content or notes for the report"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          sx={{ "& .MuiOutlinedInput-root": { bgcolor: "background.paper" } }}
         />
       </Box>
     </Drawer>

@@ -18,6 +18,7 @@ import { MaterialSymbol } from "@/components/material-symbol";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { roamingClientRows } from "@/data/roaming-clients";
+import { useOrgScope } from "@/hooks/use-org-scope";
 
 // ---------------------------------------------------------------------------
 // Column definitions
@@ -32,7 +33,15 @@ const columns: GridColDef[] = [
     minWidth: 120,
     headerAlign: "center",
     renderCell: () => (
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100%",
+          height: "100%",
+        }}
+      >
         <ArrowTooltip title="Protected" direction="top">
           <MaterialSymbol
             name="verified_user"
@@ -52,15 +61,20 @@ const columns: GridColDef[] = [
       const val: string = params.value ?? "";
       const lower = val.toLowerCase();
       let icon: React.ReactNode = null;
-      if (lower === "windows") icon = <img src="/windows.svg" alt="Windows" width={20} height={20} />;
-      else if (lower === "macos") icon = <img src="/mac.svg" alt="macOS" width={20} height={20} />;
-      else if (lower === "ios") icon = <img src="/ios.svg" alt="iOS" width={20} height={20} />;
+      if (lower === "windows")
+        icon = <img src="/windows.svg" alt="Windows" width={20} height={20} />;
+      else if (lower === "macos")
+        icon = <img src="/mac.svg" alt="macOS" width={20} height={20} />;
+      else if (lower === "ios")
+        icon = <img src="/ios.svg" alt="iOS" width={20} height={20} />;
       else if (lower === "android") icon = <AndroidIcon size={20} />;
       if (!icon) return null;
       return (
         <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
           <ArrowTooltip title={val} direction="top">
-            <span style={{ display: "flex", alignItems: "center" }}>{icon}</span>
+            <span style={{ display: "flex", alignItems: "center" }}>
+              {icon}
+            </span>
           </ArrowTooltip>
         </Box>
       );
@@ -212,10 +226,10 @@ function RowActionsCell() {
 // Status tab configuration
 // ---------------------------------------------------------------------------
 
-const tabsConfig: StatusTabConfig[] = [
+const buildTabsConfig = (total: number): StatusTabConfig[] => [
   {
     icon: "devices",
-    count: roamingClientRows.length,
+    count: total,
     label: "All",
     color: "primary.main",
     iconColorVar: "var(--dnsf-palette-primary-main)",
@@ -272,6 +286,11 @@ const tabsConfig: StatusTabConfig[] = [
 
 export default function RoamingClientsPage() {
   const [cardTab, setCardTab] = useState(0);
+  // The header's scope chip narrows the fleet to one organization.
+  const { organization } = useOrgScope();
+  const visibleRows = organization
+    ? roamingClientRows.filter((row) => row.organization === organization)
+    : roamingClientRows;
 
   return (
     <>
@@ -285,13 +304,13 @@ export default function RoamingClientsPage() {
         </Button>
       </Box>
       <TabbedDataCard
-        tabs={tabsConfig}
+        tabs={buildTabsConfig(visibleRows.length)}
         activeTab={cardTab}
         onTabChange={(_, newValue) => setCardTab(newValue)}
       >
         {cardTab === 0 && (
           <DataTable
-            rows={roamingClientRows}
+            rows={visibleRows}
             columns={columns}
             pinnedShadowFields={{ left: "hostname", right: "actions" }}
           />

@@ -10,12 +10,17 @@ import { NoResultsOverlay } from "@/components/no-results-overlay";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { TextField } from "@/components/text-field";
+import { MSP_ORGANIZATIONS } from "@/data/organizations";
+import { useOrgScope } from "@/hooks/use-org-scope";
 
 type Protection = "protected" | "unprotected" | "offline";
 
 type SiteRow = {
   id: number;
   name: string;
+  /** Which client organization owns the site — off-grid, read by the header's
+   *  organization scope. */
+  organization: string;
   protection: Protection;
   ipHostname: string;
   policy: string;
@@ -24,9 +29,14 @@ type SiteRow = {
   blockPage: string;
 };
 
+// Assigned by position so the organization scope has something to bite on;
+// there is no Organization column on this grid.
+const ORG_BY_INDEX = MSP_ORGANIZATIONS;
+
 const ROWS: SiteRow[] = [
   {
     id: 1,
+    organization: ORG_BY_INDEX[0 % ORG_BY_INDEX.length],
     name: "0",
     protection: "offline",
     ipHostname: "",
@@ -35,6 +45,7 @@ const ROWS: SiteRow[] = [
   },
   {
     id: 2,
+    organization: ORG_BY_INDEX[1 % ORG_BY_INDEX.length],
     name: "123",
     protection: "offline",
     ipHostname: "",
@@ -43,6 +54,7 @@ const ROWS: SiteRow[] = [
   },
   {
     id: 3,
+    organization: ORG_BY_INDEX[2 % ORG_BY_INDEX.length],
     name: "ai",
     protection: "offline",
     ipHostname: "",
@@ -51,6 +63,7 @@ const ROWS: SiteRow[] = [
   },
   {
     id: 4,
+    organization: ORG_BY_INDEX[3 % ORG_BY_INDEX.length],
     name: "CleanUpTest1",
     protection: "offline",
     ipHostname: "",
@@ -59,6 +72,7 @@ const ROWS: SiteRow[] = [
   },
   {
     id: 5,
+    organization: ORG_BY_INDEX[4 % ORG_BY_INDEX.length],
     name: "DNSF-4336 Site",
     protection: "offline",
     ipHostname: "",
@@ -67,6 +81,7 @@ const ROWS: SiteRow[] = [
   },
   {
     id: 6,
+    organization: ORG_BY_INDEX[5 % ORG_BY_INDEX.length],
     name: "MSP Scheduled Site",
     protection: "offline",
     ipHostname: "",
@@ -75,6 +90,7 @@ const ROWS: SiteRow[] = [
   },
   {
     id: 7,
+    organization: ORG_BY_INDEX[6 % ORG_BY_INDEX.length],
     name: "MSP Site",
     protection: "offline",
     ipHostname: "",
@@ -84,6 +100,7 @@ const ROWS: SiteRow[] = [
   },
   {
     id: 8,
+    organization: ORG_BY_INDEX[7 % ORG_BY_INDEX.length],
     name: "MSP Site - No Policy",
     protection: "offline",
     ipHostname: "",
@@ -92,6 +109,7 @@ const ROWS: SiteRow[] = [
   },
   {
     id: 9,
+    organization: ORG_BY_INDEX[8 % ORG_BY_INDEX.length],
     name: "z",
     protection: "offline",
     ipHostname: "",
@@ -274,9 +292,13 @@ export default function SitesPage() {
   const [search, setSearch] = useState("");
   const [ipQuery, setIpQuery] = useState("");
 
-  const tabs = buildTabs(ROWS);
+  const { organization } = useOrgScope();
+  const inScope = organization
+    ? ROWS.filter((r) => r.organization === organization)
+    : ROWS;
+  const tabs = buildTabs(inScope);
 
-  const visibleRows = ROWS.filter((r) => {
+  const visibleRows = inScope.filter((r) => {
     const protection = TAB_PROTECTION[tab];
     if (protection && r.protection !== protection) return false;
     if (search && !r.name.toLowerCase().includes(search.toLowerCase())) {

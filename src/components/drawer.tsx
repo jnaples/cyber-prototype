@@ -232,7 +232,10 @@ export function Drawer({
         )}
 
         <Box
-          sx={
+          sx={[
+            // The drawer body sits on the neutral surface, so every field
+            // inside it sits on paper — one rule instead of a per-field sx.
+            { "& .MuiOutlinedInput-root": { bgcolor: "background.paper" } },
             disableContentPadding
               ? { flex: 1, minHeight: 0, overflow: "auto" }
               : {
@@ -243,8 +246,8 @@ export function Drawer({
                   display: "flex",
                   flexDirection: "column",
                   gap: 2,
-                }
-          }
+                },
+          ]}
         >
           {children}
         </Box>
@@ -260,10 +263,14 @@ export function Drawer({
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
+                // Secondary sits left, primary right. On its own, a secondary
+                // action keeps its side; a lone primary stays right.
                 justifyContent:
                   actions || (primaryAction && secondaryAction)
                     ? "space-between"
-                    : "flex-end",
+                    : secondaryAction
+                      ? "flex-start"
+                      : "flex-end",
               }}
             >
               {actions ?? (

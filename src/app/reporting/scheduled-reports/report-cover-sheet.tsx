@@ -10,7 +10,7 @@ const SHEET_TEXT2 = "rgba(3,22,37,.62)";
 const SHEET_DIVIDER = "rgba(3,22,37,.12)";
 const PRIMARY = "#3527fd";
 export const SAMPLE_RANGE = "Jun 1 – 30, 2026";
-export const SAMPLE_ORG = "Acme Manufacturing";
+export const SAMPLE_ORG = "Acme Retail Group";
 
 export function ReportCoverSheet({
   title,

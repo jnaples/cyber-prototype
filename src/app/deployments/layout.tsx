@@ -1,10 +1,11 @@
-import { Chip, Divider, Tab, Tabs, Typography } from "@mui/material";
+import { Tab, Tabs } from "@mui/material";
 import Box from "@mui/material/Box";
 import type { Theme } from "@mui/material/styles";
 import React from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 
 import { MaterialSymbol } from "@/components/material-symbol";
+import { OrgScopeSlot } from "@/components/org-scope-slot";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 
@@ -60,39 +61,7 @@ export default function DeploymentsLayout() {
   return (
     <PageShell
       header={
-        <PageHeader
-          title="Deployments"
-          leftSlot={
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <Typography variant="body2" color="text.secondary">
-                All Organizations
-              </Typography>
-              <Divider
-                orientation="vertical"
-                flexItem
-                sx={{ borderColor: "divider", mx: "8px" }}
-              />
-              <Chip
-                label="Managing 90 Organizations"
-                onClick={() => {}}
-                sx={{
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  "& .MuiChip-deleteIcon": { color: "secondary.main" },
-                }}
-                deleteIcon={
-                  <MaterialSymbol
-                    name="filter_list"
-                    size={20}
-                    sx={{ color: "secondary.main" }}
-                  />
-                }
-                onDelete={() => {}}
-                size="small"
-              />
-            </div>
-          }
-        >
+        <PageHeader title="Deployments" leftSlot={<OrgScopeSlot />}>
           <Box
             sx={{
               mb: -2,
