@@ -64,6 +64,7 @@ const MENU_ACTIONS: {
     label: "View in DNS Query Log",
     icon: "format_list_bulleted",
     to: "/query-logs",
+    newTab: true,
   },
   // The Query Logs investigate icon — same action, shown in a modal here.
   {

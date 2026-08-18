@@ -23,7 +23,6 @@ import {
 import { alpha } from "@mui/material/styles";
 import { format } from "date-fns";
 import { useState } from "react";
-import { useNavigate } from "react-router";
 
 import { InfoChip } from "@/components/info-chip";
 import { MaterialSymbol } from "@/components/material-symbol";
@@ -131,10 +130,9 @@ export function InvestigateModal({
   /** Timestamp (ms) of the blocked request. */
   anchorMs: number;
 }) {
-  const navigate = useNavigate();
-  const [window, setWindow] = useState<WindowOption>(WINDOW_OPTIONS[0]);
+  const [timeWindow, setTimeWindow] = useState<WindowOption>(WINDOW_OPTIONS[0]);
 
-  const seconds = WINDOW_SECONDS[window];
+  const seconds = WINDOW_SECONDS[timeWindow];
   const fmt = (ms: number) => format(new Date(ms), TIME_FORMAT);
   const startMs = anchorMs - seconds * 1000;
   const endMs = anchorMs + seconds * 1000;
@@ -225,9 +223,9 @@ export function InvestigateModal({
               <ToggleButtonGroup
                 size="small"
                 exclusive
-                value={window}
+                value={timeWindow}
                 onChange={(_event, value) => {
-                  if (value) setWindow(value as WindowOption);
+                  if (value) setTimeWindow(value as WindowOption);
                 }}
                 sx={{
                   "& .MuiToggleButton-root": {
@@ -320,8 +318,7 @@ export function InvestigateModal({
       {/* Actions — same shape as the drawers': secondary left, primary right. */}
       <Box
         sx={{
-          px: 2,
-          py: 1,
+          p: 2,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -342,10 +339,8 @@ export function InvestigateModal({
           size="small"
           variant="contained"
           color="primary"
-          onClick={() => {
-            onClose();
-            navigate("/query-logs");
-          }}
+          // A new tab so the request queue stays where it is.
+          onClick={() => window.open("/query-logs", "_blank", "noopener")}
         >
           View Full Log
         </Button>
