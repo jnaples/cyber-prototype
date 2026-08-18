@@ -6,6 +6,9 @@ import {
   Chip,
   CircularProgress,
   IconButton,
+  ListItemIcon,
+  Menu,
+  MenuItem,
   Typography,
 } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
@@ -278,9 +281,20 @@ const CSV_DOWNLOADS: Record<string, (fileName: string) => void> = {
   "timeline-logs": downloadTimelineLogsCsv,
 };
 
+// Overflow actions. Both concern the email that carried the report, so a
+// manual export — which was never emailed — can't use either.
+const MENU_ACTIONS = [
+  { label: "Resend", icon: "send" },
+  { label: "Delivery Details", icon: "receipt_long" },
+];
+
 function ActionsCell({ row }: { row: HistoryRow }) {
   const available = row.status === "available";
   const [printing, setPrinting] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  // A dash means the run was a manual export, so there is no delivery to
+  // resend or inspect.
+  const wasDelivered = row.delivery !== "-";
   const stopPrinting = useCallback(() => setPrinting(false), []);
   // "Aug 6, 2026 4:00 PM" -> "Aug 6, 2026"; the time would put a colon in the
   // file name.
@@ -345,6 +359,45 @@ function ActionsCell({ row }: { row: HistoryRow }) {
           )}
         </IconButton>
       </ArrowTooltip>
+      <IconButton
+        size="small"
+        aria-label="more options"
+        onClick={(e) => setMenuAnchor(e.currentTarget)}
+      >
+        <MaterialSymbol name="more_horiz" size={20} />
+      </IconButton>
+
+      <Menu
+        anchorEl={menuAnchor}
+        open={Boolean(menuAnchor)}
+        onClose={() => setMenuAnchor(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        {MENU_ACTIONS.map(({ label, icon }) => (
+          <MenuItem
+            key={label}
+            disabled={!wasDelivered}
+            onClick={() => setMenuAnchor(null)}
+            // MUI kills pointer events on a disabled item, which takes the
+            // cursor with them — put it back so the block reads as a block,
+            // then keep the hover tint off so it still reads as unavailable.
+            sx={{
+              "&.Mui-disabled": {
+                pointerEvents: "auto",
+                cursor: "not-allowed",
+                "&:hover": { backgroundColor: "transparent" },
+              },
+            }}
+          >
+            <ListItemIcon>
+              <MaterialSymbol name={icon} size={20} />
+            </ListItemIcon>
+            {label}
+          </MenuItem>
+        ))}
+      </Menu>
+
       {printing && (
         <ReportPrintDocument
           reportKey={reportKey}

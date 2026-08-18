@@ -547,7 +547,7 @@ export function ScheduleReportView({
             <Divider sx={{ mt: 1 }} />
 
             {/* STEP 3 — Schedule */}
-            <Step n={3} title="Set Frequency">
+            <Step n={3} title="Choose Frequency">
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <Box>
                   <FormLabel sx={{ display: "block", mb: 0.5 }}>
