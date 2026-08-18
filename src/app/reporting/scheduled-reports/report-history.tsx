@@ -57,7 +57,7 @@ const HISTORY: HistoryRow[] = [
     source: "Scheduled",
     runAt: "Aug 6, 2026 11:00 AM",
     status: "available",
-    delivery: "Sent to 3",
+    delivery: "Delivered",
   },
   {
     id: 2,
@@ -68,7 +68,7 @@ const HISTORY: HistoryRow[] = [
     source: "Scheduled",
     runAt: "Aug 5, 2026 8:00 AM",
     status: "available",
-    delivery: "Sent to 6",
+    delivery: "Delivered",
   },
   {
     id: 3,
@@ -79,7 +79,7 @@ const HISTORY: HistoryRow[] = [
     source: "Scheduled",
     runAt: "Aug 5, 2026 11:01 AM",
     status: "available",
-    delivery: "Sent to 3",
+    delivery: "Delivered",
   },
   {
     id: 4,
@@ -101,7 +101,7 @@ const HISTORY: HistoryRow[] = [
     source: "Scheduled",
     runAt: "Aug 4, 2026 11:01 AM",
     status: "available",
-    delivery: "Sent to 3",
+    delivery: "Delivered",
   },
   {
     id: 6,
@@ -112,7 +112,7 @@ const HISTORY: HistoryRow[] = [
     source: "Scheduled",
     runAt: "Aug 3, 2026 7:30 AM",
     status: "available",
-    delivery: "Sent to 1",
+    delivery: "Delivered",
   },
   {
     id: 7,
@@ -145,7 +145,7 @@ const HISTORY: HistoryRow[] = [
     source: "Scheduled",
     runAt: "Aug 2, 2026 11:00 AM",
     status: "available",
-    delivery: "Sent to 3",
+    delivery: "Delivered",
   },
   {
     id: 10,
@@ -156,7 +156,7 @@ const HISTORY: HistoryRow[] = [
     source: "Scheduled",
     runAt: "Aug 1, 2026 11:01 AM",
     status: "available",
-    delivery: "Sent to 3",
+    delivery: "Delivered",
   },
   {
     id: 11,
@@ -167,7 +167,7 @@ const HISTORY: HistoryRow[] = [
     source: "Scheduled",
     runAt: "Jul 31, 2026 7:00 AM",
     status: "available",
-    delivery: "Sent to 3",
+    delivery: "Delivered",
   },
   {
     id: 12,
@@ -178,7 +178,7 @@ const HISTORY: HistoryRow[] = [
     source: "Scheduled",
     runAt: "Jul 27, 2026 7:30 AM",
     status: "available",
-    delivery: "Sent to 1",
+    delivery: "Delivered",
   },
   {
     id: 13,
@@ -222,7 +222,7 @@ const HISTORY: HistoryRow[] = [
     source: "Scheduled",
     runAt: "Aug 5, 2026 5:05 AM",
     status: "available",
-    delivery: "Sent to 4",
+    delivery: "Delivered",
   },
   {
     id: 17,
