@@ -231,9 +231,13 @@ function RowActionsCell({
         alreadyAllowed={alreadyAllowed}
         onDeny={() =>
           setToast(
-            denyIgnore
-              ? `Request denied. Future requests from ${requester} ignored.`
-              : "Request denied.",
+            // Nothing was denied when the domain is already allowed — the
+            // action just closed out a stale request.
+            alreadyAllowed
+              ? "Request resolved."
+              : denyIgnore
+                ? `Request denied. Future requests from ${requester} ignored.`
+                : "Request denied.",
           )
         }
         domain={domain}

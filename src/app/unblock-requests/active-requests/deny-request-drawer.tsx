@@ -74,7 +74,7 @@ export function DenyRequestDrawer({
       }}
     >
       {alreadyAllowed && (
-        <AlreadyAllowedAlert domain={domain} policy={policy} />
+        <AlreadyAllowedAlert domain={domain} policy={policy} action="link" />
       )}
 
       {/* Summary — the banner covers it once the domain is already allowed. */}
