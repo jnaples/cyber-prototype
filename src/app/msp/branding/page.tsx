@@ -362,7 +362,7 @@ export default function BrandingPage() {
         <Box>
           <FieldLabel
             label="Dashboard Name"
-            help='Shown as the browser tab title, on your login page as "Service provided by {Dashboard Name}," and in your dashboard URL.'
+            help='Sets the browser tab title, the dashboard URL, and the login screen text "Service provided by {Dashboard Name}."'
             required
           />
           <TextField
@@ -395,7 +395,7 @@ export default function BrandingPage() {
         <Box>
           <FieldLabel
             label="Custom Logo (max width: 500px)"
-            help="Used across your dashboard, emails, and block pages. Organizations can override this on their block pages."
+            help="Displayed across the dashboard, emails, and block pages. Organizations can set a different logo on block pages."
           />
           <ImageDrop
             previewHeight={72}
@@ -408,7 +408,7 @@ export default function BrandingPage() {
         <Box>
           <FieldLabel
             label="Custom Favicon (max width: 32px)"
-            help="Upload a favicon for browser tabs and branded pages."
+            help="Shown in the browser tab on the dashboard and other branded pages."
           />
           <ImageDrop
             previewHeight={32}
@@ -423,7 +423,7 @@ export default function BrandingPage() {
         <Box>
           <FieldLabel
             label="Customer Contact Email"
-            help="Where customers reply when they receive an email from the dashboard."
+            help="The address that receives unblock requests submitted by customers through the dashboard."
             required
           />
           <TextField
