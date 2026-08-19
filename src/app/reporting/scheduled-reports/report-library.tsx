@@ -53,50 +53,47 @@ export function ReportLibrary() {
 
   return (
     <>
-      {/* Filter strip — same shape as the Dashboards toolbar. */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          mb: 2,
-          fontSize: 14,
-        }}
-      >
-        <Box sx={{ flex: 1 }} />
-        {/* Quick product filter — same toggle treatment as the scheduler's
-            days of the week. Nothing selected means every report. */}
-        <ToggleButtonGroup
-          size="small"
-          // "All" stands in for an empty filter, so the group always shows
-          // something selected.
-          value={productFilter.length > 0 ? productFilter : [ALL]}
-          onChange={(_event, next: string[]) => {
-            if (next.includes(ALL) && productFilter.length > 0) {
-              setProductFilter([]);
-              return;
-            }
-            setProductFilter(next.filter((value) => value !== ALL));
-          }}
-          sx={{
-            "& .MuiToggleButton-root": {
-              py: "4px",
-              px: "12px",
-            },
-          }}
-        >
-          {[ALL, ...PRODUCTS].map((product) => (
-            <ToggleButton key={product} value={product}>
-              {product}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-      </Box>
-
       <Box>
         <Card sx={{ minWidth: 0 }}>
           <CardContent sx={{ p: 2 }}>
-            <Typography variant="cardTitle">Reports</Typography>
+            {/* Title row — the product filter sits opposite the title. */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 2,
+              }}
+            >
+              <Typography variant="cardTitle">Report Library</Typography>
+              {/* Quick product filter — same toggle treatment as the scheduler's
+              days of the week. Nothing selected means every report. */}
+              <ToggleButtonGroup
+                size="small"
+                // "All" stands in for an empty filter, so the group always shows
+                // something selected.
+                value={productFilter.length > 0 ? productFilter : [ALL]}
+                onChange={(_event, next: string[]) => {
+                  if (next.includes(ALL) && productFilter.length > 0) {
+                    setProductFilter([]);
+                    return;
+                  }
+                  setProductFilter(next.filter((value) => value !== ALL));
+                }}
+                sx={{
+                  "& .MuiToggleButton-root": {
+                    py: "4px",
+                    px: "12px",
+                  },
+                }}
+              >
+                {[ALL, ...PRODUCTS].map((product) => (
+                  <ToggleButton key={product} value={product}>
+                    {product}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            </Box>
             <TextField
               fullWidth
               size="small"
