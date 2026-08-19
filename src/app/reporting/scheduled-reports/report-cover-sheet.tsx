@@ -8,6 +8,8 @@ import { Box, Typography } from "@mui/material";
 const SHEET_TEXT = "#031625";
 const SHEET_TEXT2 = "rgba(3,22,37,.62)";
 const SHEET_DIVIDER = "rgba(3,22,37,.12)";
+// The sheet's own edge, matching the report documents.
+const PAGE_BORDER = "#E5E5EC";
 const PRIMARY = "#3527fd";
 export const SAMPLE_RANGE = "Jun 1 – 30, 2026";
 export const SAMPLE_ORG = "Acme Retail Group";
@@ -22,16 +24,15 @@ export function ReportCoverSheet({
   return (
     <Box
       data-mui-color-scheme="light"
-      sx={(theme) => ({
+      sx={{
         width: "100%",
         maxWidth: 800,
         minHeight: 600,
         bgcolor: "#fff",
         color: SHEET_TEXT,
-        borderRadius: 1,
-        boxShadow: theme.shadows[2],
+        border: `1px solid ${PAGE_BORDER}`,
         p: "56px 64px",
-      })}
+      }}
     >
       {/* Brand */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 6 }}>

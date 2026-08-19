@@ -46,6 +46,7 @@ import { ReportHistory } from "./report-history";
 import { scheduleEditState, TAG_TO_REPORT_KEY } from "./schedule-edit-state";
 import { REPORT_MANAGER_BASE, REPORT_MANAGER_TABS } from "./routes";
 import { ReportLibrary } from "./report-library";
+import { ReportLibraryV2 } from "./report-library-v2";
 import { REPORTS } from "./reports";
 
 // ---------------------------------------------------------------------------
@@ -703,9 +704,11 @@ export default function ScheduledReportsPage() {
     >
       {pageTab === 0 && <ReportLibrary />}
 
-      {pageTab === 2 && <ReportHistory />}
+      {pageTab === 1 && <ReportLibraryV2 />}
 
-      {pageTab === 1 && (
+      {pageTab === 3 && <ReportHistory />}
+
+      {pageTab === 2 && (
         <>
           {/* Actions */}
           <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>

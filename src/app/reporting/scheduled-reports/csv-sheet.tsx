@@ -9,6 +9,8 @@ import type { CsvColumn } from "./csv";
 const SHEET_TEXT = "#031625";
 const SHEET_TEXT2 = "rgba(3,22,37,.62)";
 const GRID_LINE = "rgba(3,22,37,.10)";
+// The page's own edge — lighter than the rules inside it.
+const PAGE_BORDER = "#E5E5EC";
 const HEADER_BG = "#eef1f6";
 const ZEBRA_BG = "rgba(3,22,37,.025)";
 
@@ -24,16 +26,15 @@ export function CsvSheet({
   return (
     <Box
       data-mui-color-scheme="light"
-      sx={(theme) => ({
+      sx={{
         // Landscape sheet — wider than tall, like the exported CSV.
         width: "100%",
         maxWidth: 1400,
         bgcolor: "#fff",
         color: SHEET_TEXT,
-        borderRadius: 1,
-        boxShadow: theme.shadows[2],
+        border: `1px solid ${PAGE_BORDER}`,
         p: "40px 48px 48px",
-      })}
+      }}
     >
       {/* Masthead */}
       <Box

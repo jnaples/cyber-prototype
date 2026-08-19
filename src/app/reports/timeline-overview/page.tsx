@@ -12,6 +12,8 @@ const TEXT = "#031625";
 const TEXT2 = "rgba(3,22,37,.62)";
 const TEXT3 = "rgba(3,22,37,.45)";
 const DIVIDER = "rgba(3,22,37,.12)";
+// The page's own edge — lighter than the rules inside it.
+const PAGE_BORDER = "#E5E5EC";
 const C = {
   web: "#238cd2",
   app: "#7b3ff2",
@@ -326,8 +328,7 @@ export default function TimelineOverviewReport() {
         mx: "auto",
         bgcolor: "#ffffff",
         color: TEXT,
-        border: `1px solid ${DIVIDER}`,
-        borderRadius: 1,
+        border: `1px solid ${PAGE_BORDER}`,
         p: "64px 64px 48px",
         fontFamily: "'Inter Variable', sans-serif",
       }}

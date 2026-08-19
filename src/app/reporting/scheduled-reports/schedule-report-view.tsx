@@ -124,13 +124,13 @@ const SEND_TIMES = [
 // A weekly schedule picks its days; the labels are the short forms the
 // product asked for (Thursday reads "Tr", Sunday "Sn").
 const WEEK_DAYS = [
-  { value: "Mon", label: "M" },
-  { value: "Tue", label: "T" },
-  { value: "Wed", label: "W" },
-  { value: "Thu", label: "Tr" },
-  { value: "Fri", label: "F" },
-  { value: "Sat", label: "S" },
-  { value: "Sun", label: "Sn" },
+  { value: "Mon", label: "M", name: "Monday" },
+  { value: "Tue", label: "T", name: "Tuesday" },
+  { value: "Wed", label: "W", name: "Wednesday" },
+  { value: "Thu", label: "Tr", name: "Thursday" },
+  { value: "Fri", label: "F", name: "Friday" },
+  { value: "Sat", label: "S", name: "Saturday" },
+  { value: "Sun", label: "Sn", name: "Sunday" },
 ];
 
 const TIME_ZONES = [
@@ -613,13 +613,21 @@ export function ScheduleReportView({
                         }}
                       >
                         {WEEK_DAYS.map((day) => (
-                          <ToggleButton
+                          // Slow tip: the abbreviations are only ambiguous on
+                          // a second look, so it shouldn't chase the pointer
+                          // across the row.
+                          <ArrowTooltip
                             key={day.value}
-                            value={day.value}
-                            aria-label={day.value}
+                            title={day.name}
+                            enterDelay={2000}
                           >
-                            {day.label}
-                          </ToggleButton>
+                            <ToggleButton
+                              value={day.value}
+                              aria-label={day.name}
+                            >
+                              {day.label}
+                            </ToggleButton>
+                          </ArrowTooltip>
                         ))}
                       </ToggleButtonGroup>
                     </Box>
@@ -654,8 +662,9 @@ export function ScheduleReportView({
                           // The calendar glyph is decoration; clicking the
                           // field is what opens the picker.
                           disableOpenPicker
-                          // Only the day matters, so that's all the field shows.
-                          format="d"
+                          // Only the day matters, read the way a person says
+                          // it: 1st, 2nd, 13th.
+                          format="do"
                           slotProps={{
                             field: { readOnly: true },
                             textField: {

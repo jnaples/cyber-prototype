@@ -3,7 +3,14 @@
 // neutral backdrop, under the same "Preview / Sample data" header the Report
 // Library's preview card uses.
 
-import { Box, Chip, Dialog, IconButton, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  IconButton,
+  Typography,
+} from "@mui/material";
 import type { SvgIconComponent } from "@mui/icons-material";
 
 import { MaterialSymbol } from "@/components/material-symbol";
@@ -16,9 +23,15 @@ export function SamplePreviewModal({
   reportKey,
   title,
   Icon,
+  onRunNow,
+  onSchedule,
 }: {
   open: boolean;
   onClose: () => void;
+  /** Footer actions — the two things you can do with the report you're
+   *  looking at. */
+  onRunNow?: () => void;
+  onSchedule?: () => void;
   /** Catalog key — picks the document rendered in the body. */
   reportKey?: string;
   title?: string;
@@ -83,6 +96,55 @@ export function SamplePreviewModal({
           sx={{ flex: 1, minHeight: 0 }}
         />
       </Box>
+
+      {(onRunNow || onSchedule) && (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            p: 2,
+            bgcolor: "background.paper",
+          }}
+        >
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="small"
+            onClick={onClose}
+          >
+            Close
+          </Button>
+          <Box sx={{ flex: 1 }} />
+          {onRunNow && (
+            <Button
+              variant="outlined"
+              color="secondary"
+              size="small"
+              onClick={() => {
+                onClose();
+                onRunNow();
+              }}
+            >
+              Run Now
+            </Button>
+          )}
+          {onSchedule && (
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              startIcon={<MaterialSymbol name="add" size={18} />}
+              onClick={() => {
+                onClose();
+                onSchedule();
+              }}
+            >
+              Schedule Report
+            </Button>
+          )}
+        </Box>
+      )}
     </Dialog>
   );
 }

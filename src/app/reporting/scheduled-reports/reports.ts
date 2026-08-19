@@ -19,6 +19,8 @@ export type ReportDef = {
   file: string;
   size: string;
   cybersight?: boolean;
+  /** Products the report belongs to — rendered as chips on the report card. */
+  products?: string[];
 };
 
 export const REPORTS: ReportDef[] = [
@@ -28,6 +30,7 @@ export const REPORTS: ReportDef[] = [
     desc: "Requests, blocked traffic, and top categories across the period.",
     Icon: StackedLineChartOutlinedIcon,
     file: "Activity-Overview-Jul-2026.pdf",
+    products: ["Filtering"],
     size: "1.2 MB",
   },
   {
@@ -36,6 +39,7 @@ export const REPORTS: ReportDef[] = [
     desc: "Summarized device timelines with notable activity called out.",
     Icon: ViewTimelineOutlinedIcon,
     file: "Timeline-Overview-Jul-2026.pdf",
+    products: ["CyberSight"],
     size: "980 KB",
     cybersight: true,
   },
@@ -45,6 +49,7 @@ export const REPORTS: ReportDef[] = [
     desc: "Threats blocked, categories filtered, and policy coverage.",
     Icon: EqualizerOutlinedIcon,
     file: "Protection-Summary-Jul-2026.pdf",
+    products: ["Filtering"],
     size: "1.1 MB",
   },
   {
@@ -53,6 +58,7 @@ export const REPORTS: ReportDef[] = [
     desc: "Threat events over time, with the domains and devices behind them.",
     Icon: ShieldOutlinedIcon,
     file: "Threat-Trends-Jul-2026.pdf",
+    products: ["CyberSight"],
     size: "1.0 MB",
     cybersight: true,
   },
@@ -62,6 +68,7 @@ export const REPORTS: ReportDef[] = [
     desc: "AI queries, insights generated, and usage by device.",
     Icon: AutoAwesomeOutlinedIcon,
     file: "AI-Usage-Jul-2026.pdf",
+    products: ["CyberSight"],
     size: "760 KB",
     cybersight: true,
   },
@@ -71,6 +78,7 @@ export const REPORTS: ReportDef[] = [
     desc: "Detailed CyberSight timeline events for each device, exported as a CSV.",
     Icon: ViewListOutlinedIcon,
     file: "Timeline-Logs-Jul-2026.csv",
+    products: ["CyberSight"],
     size: "1.4 MB",
     cybersight: true,
   },
@@ -80,6 +88,7 @@ export const REPORTS: ReportDef[] = [
     desc: "Full DNS request log for every endpoint, exported as a CSV.",
     Icon: FormatListBulletedOutlinedIcon,
     file: "DNS-Query-Logs-Jul-2026.csv",
+    products: ["Filtering"],
     size: "840 KB",
   },
   {
@@ -87,6 +96,7 @@ export const REPORTS: ReportDef[] = [
     title: "Custom Report",
     desc: "Your own selection of metrics, dimensions, and filters.",
     Icon: DashboardCustomizeOutlinedIcon,
+    products: ["CyberSight", "Filtering"],
     file: "Custom-Report-Jul-2026.pdf",
     size: "890 KB",
   },
