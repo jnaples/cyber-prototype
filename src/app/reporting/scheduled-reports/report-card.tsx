@@ -21,7 +21,7 @@ export function ReportCard({
   onRunNow,
   runLabel = "Run Now",
   onSchedule,
-  height = 320,
+  height = 400,
 }: {
   /** Catalog key — decides which document the thumbnail renders. */
   reportKey: string;

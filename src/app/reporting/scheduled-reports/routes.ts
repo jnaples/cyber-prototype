@@ -5,8 +5,8 @@ export const REPORT_MANAGER_BASE = "/reporting/scheduled-reports";
 
 export const REPORT_MANAGER_TABS = [
   { label: "Report Library", icon: "list_alt", path: "templates" },
-  // Parked while the proof of concept is on hold — drop `hidden` to bring the
-  // tab back.
+  // A duplicate of the Library tab trying a second card style. Off the tab
+  // strip — still routable, so /templates-v2 reaches it directly.
   {
     label: "Report Library v2",
     icon: "list_alt",

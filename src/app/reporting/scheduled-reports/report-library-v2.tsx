@@ -1,22 +1,20 @@
-// Report Manager → Library v2. A copy of the Library tab, kept separate so a
-// second proof of concept can diverge from the shipping one without touching
-// it. Same behaviour today: pick a report on the left, preview it on the right.
+// Report Manager → Library v2. A duplicate of the shipping Library tab, kept
+// separate so a second widget style can be tried side by side without touching
+// the real one. Same catalog, same filters, same actions — only the card
+// differs (see report-card-v2).
 
 import {
   Alert,
   Box,
-  Button,
   Card,
   CardContent,
-  Chip,
-  Container,
   InputAdornment,
   Link,
-  Radio,
   Snackbar,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { alpha } from "@mui/material/styles";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -24,43 +22,85 @@ import { MaterialSymbol } from "@/components/material-symbol";
 import { TextField } from "@/components/text-field";
 
 import { GenerateReportDrawer } from "./generate-report-drawer";
-import { ReportPreview } from "./report-preview";
+import { ReportCardV2 } from "./report-card-v2";
+import { SamplePreviewModal } from "./sample-preview-modal";
 import { REPORT_MANAGER_BASE } from "./routes";
-import { REPORTS } from "./reports";
+import { REPORTS, type ReportDef } from "./reports";
+
+const ALL = "All";
+const PRODUCTS = ["CyberSight", "Filtering"];
 
 export function ReportLibraryV2() {
-  const [selectedKey, setSelectedKey] = useState(REPORTS[0].key);
-  const selected = REPORTS.find((r) => r.key === selectedKey) ?? REPORTS[0];
-  const isCustom = selected.key === "custom";
   const [search, setSearch] = useState("");
+  const [productFilter, setProductFilter] = useState<string | null>(null);
+  const navigate = useNavigate();
+  // Which report's document is open in the preview modal.
+  const [preview, setPreview] = useState<ReportDef | null>(null);
+  const [generateOpen, setGenerateOpen] = useState(false);
+  const [generateToast, setGenerateToast] = useState(false);
   // Title or description — the description is what tells two threat reports
   // apart.
   const query = search.trim().toLowerCase();
-  const matches = query
-    ? REPORTS.filter(
-        (r) =>
-          r.title.toLowerCase().includes(query) ||
-          r.desc.toLowerCase().includes(query),
-      )
-    : REPORTS;
-  const navigate = useNavigate();
-  const [generateOpen, setGenerateOpen] = useState(false);
-  const [generateToast, setGenerateToast] = useState(false);
+  const matches = REPORTS.filter((r) => {
+    const matchesQuery =
+      !query ||
+      r.title.toLowerCase().includes(query) ||
+      r.desc.toLowerCase().includes(query);
+    const matchesProduct =
+      productFilter === null || (r.products ?? []).includes(productFilter);
+    return matchesQuery && matchesProduct;
+  });
 
   return (
-    <Container maxWidth="lg">
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
-          alignItems: "start",
-          gap: 2,
-        }}
-      >
-        {/* Reports — 1 column */}
+    <>
+      <Box>
         <Card sx={{ minWidth: 0 }}>
           <CardContent sx={{ p: 2 }}>
-            <Typography variant="cardTitle">Reports</Typography>
+            {/* Title row — the product filter sits opposite the title. */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                gap: 2,
+              }}
+            >
+              <Box>
+                <Typography variant="cardTitle">Report Library</Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ mt: 0.5, color: "text.primary" }}
+                >
+                  Preview any report, run it on demand, or schedule it for
+                  delivery.
+                </Typography>
+              </Box>
+              {/* Quick product filter — same toggle treatment as the scheduler's
+              days of the week. Nothing selected means every report. */}
+              <ToggleButtonGroup
+                exclusive
+                size="small"
+                // "All" stands in for an empty filter, so the group always
+                // shows exactly one selection.
+                value={productFilter ?? ALL}
+                onChange={(_event, next: string | null) => {
+                  if (!next) return;
+                  setProductFilter(next === ALL ? null : next);
+                }}
+                sx={{
+                  "& .MuiToggleButton-root": {
+                    py: "4px",
+                    px: "12px",
+                  },
+                }}
+              >
+                {[ALL, ...PRODUCTS].map((product) => (
+                  <ToggleButton key={product} value={product}>
+                    {product}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            </Box>
             <TextField
               fullWidth
               size="small"
@@ -82,180 +122,72 @@ export function ReportLibraryV2() {
               }}
               sx={{ mt: 2 }}
             />
+            {/* Three across, same as the shipping tab — it's the card that
+                changes here, not the grid. */}
             <Box
-              sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}
+              sx={{
+                pt: 2,
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "repeat(2, minmax(0, 1fr))",
+                  md: "repeat(3, minmax(0, 1fr))",
+                },
+                alignItems: "start",
+                gap: 2,
+              }}
             >
-              {matches.map((r) => {
-                const isSelected = r.key === selectedKey;
-                return (
-                  <Box
-                    key={r.key}
-                    onClick={() => setSelectedKey(r.key)}
-                    sx={(theme) => ({
-                      position: "relative",
-                      border: "1px solid",
-                      borderColor: isSelected ? "primary.main" : "divider",
-                      borderRadius: 1,
-                      bgcolor: isSelected
-                        ? alpha(theme.palette.primary.main, 0.08)
-                        : "transparent",
-                      p: 2,
-                      cursor: "pointer",
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 1,
-                      transition: "background 120ms",
-                      "&:hover": {
-                        bgcolor: alpha(
-                          theme.palette.primary.main,
-                          isSelected ? 0.12 : 0.04,
-                        ),
-                      },
-                      ...theme.applyStyles("dark", {
-                        borderColor: isSelected
-                          ? theme.vars.palette.primary.light
-                          : theme.vars.palette.divider,
-                      }),
-                    })}
-                  >
-                    <Radio
-                      checked={isSelected}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={() => setSelectedKey(r.key)}
-                      slotProps={{ input: { "aria-label": r.title } }}
-                      sx={(theme) => ({
-                        position: "absolute",
-                        top: 8,
-                        right: 8,
-                        p: 0.5,
-                        "& .MuiSvgIcon-root": { fontSize: 20 },
-                        // Matches the card's own border, which lightens on dark.
-                        ...theme.applyStyles("dark", {
-                          "&.Mui-checked": {
-                            color: theme.vars.palette.primary.light,
-                          },
-                        }),
-                      })}
-                    />
-                    <Box
-                      sx={(theme) => ({
-                        width: 36,
-                        height: 36,
-                        borderRadius: 1,
-                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                        color: "primary.main",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        ...theme.applyStyles("dark", {
-                          color: theme.vars.palette.primary.light,
-                        }),
-                      })}
-                    >
-                      <Box component={r.Icon} sx={{ fontSize: 20 }} />
-                    </Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 0.5,
-                      }}
-                    >
-                      <Typography sx={{ fontWeight: 700, fontSize: 15, pr: 3 }}>
-                        {r.title}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "text.secondary" }}
-                      >
-                        {r.desc}
-                      </Typography>
-                    </Box>
-                  </Box>
-                );
-              })}
+              {matches.map((r) => (
+                <ReportCardV2
+                  key={r.key}
+                  reportKey={r.key}
+                  title={r.title}
+                  desc={r.desc}
+                  Icon={r.Icon}
+                  products={r.products}
+                  // Nothing to preview until the report is built.
+                  onPreview={
+                    r.key === "custom" ? undefined : () => setPreview(r)
+                  }
+                  // A custom report is built to order: it goes to the
+                  // builder rather than running a stock document.
+                  runLabel={r.key === "custom" ? "Create Report" : undefined}
+                  onRunNow={
+                    r.key === "custom"
+                      ? () =>
+                          navigate("/reporting/custom-reports", {
+                            state: { builder: true },
+                          })
+                      : () => setGenerateOpen(true)
+                  }
+                  // …and it can't be put on a schedule from here.
+                  onSchedule={
+                    r.key === "custom"
+                      ? undefined
+                      : () =>
+                          navigate("/reporting/report-scheduler", {
+                            state: { reportKeys: [r.key] },
+                          })
+                  }
+                />
+              ))}
             </Box>
           </CardContent>
         </Card>
 
-        {/* Preview — 2 columns */}
-        <Card
-          sx={{
-            gridColumn: { xs: "auto", md: "span 2" },
-            minWidth: 0,
-            // Keep the preview in view while the reports list scrolls.
-            position: { xs: "static", md: "sticky" },
-            top: 0,
-          }}
-        >
-          <CardContent sx={{ p: 2 }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 1.5,
-                flexWrap: "wrap",
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography variant="cardTitle">Preview</Typography>
-                {/* A custom report has no sample to show — the pane pitches the
-                  builder instead. */}
-                {!isCustom && <Chip label="Sample data" size="small" />}
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                {isCustom ? (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    startIcon={<MaterialSymbol name="add" size={18} />}
-                    onClick={() =>
-                      navigate("/reporting/custom-reports", {
-                        state: { builder: true },
-                      })
-                    }
-                  >
-                    Create Custom Report
-                  </Button>
-                ) : (
-                  <>
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      size="small"
-                      onClick={() => setGenerateOpen(true)}
-                    >
-                      Run Now
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      size="small"
-                      startIcon={<MaterialSymbol name="add" size={18} />}
-                      // Carries the previewed report into the builder.
-                      onClick={() =>
-                        navigate("/reporting/report-scheduler", {
-                          state: { reportKeys: [selected.key] },
-                        })
-                      }
-                    >
-                      Schedule Report
-                    </Button>
-                  </>
-                )}
-              </Box>
-            </Box>
-            <ReportPreview
-              reportKey={selected.key}
-              title={selected.title}
-              Icon={selected.Icon}
-              fitViewport
-              sx={{ mt: 2 }}
-            />
-          </CardContent>
-        </Card>
+        <SamplePreviewModal
+          open={Boolean(preview)}
+          onClose={() => setPreview(null)}
+          reportKey={preview?.key}
+          title={preview?.title}
+          Icon={preview?.Icon}
+          onRunNow={() => setGenerateOpen(true)}
+          onSchedule={() =>
+            navigate("/reporting/report-scheduler", {
+              state: { reportKeys: preview ? [preview.key] : [] },
+            })
+          }
+        />
 
         <GenerateReportDrawer
           open={generateOpen}
@@ -295,6 +227,6 @@ export function ReportLibraryV2() {
           </Alert>
         </Snackbar>
       </Box>
-    </Container>
+    </>
   );
 }
