@@ -525,7 +525,7 @@ const STATUS_KEYS: SummaryKey[] = ["all", "active", "paused", "issue"];
 // Page-level tabs shown under the header (same treatment as Unblock Requests).
 // Each tab owns a URL so it can be linked to and survives a refresh. The bare
 // base path lands on Templates.
-const PAGE_TABS = REPORT_MANAGER_TABS;
+const PAGE_TABS = REPORT_MANAGER_TABS.filter((tab) => !("hidden" in tab));
 
 // Selected page tab reads as a card lifted out of the neutral strip.
 const selectedTabSx = {
@@ -570,6 +570,11 @@ export default function ScheduledReportsPage() {
     (t) => pathname === `${REPORT_MANAGER_BASE}/${t.path}`,
   );
   const pageTab = activeTab === -1 ? 0 : activeTab;
+  // A hidden tab is still routable, so the panel follows the path.
+  const activePath =
+    REPORT_MANAGER_TABS.find(
+      (t) => pathname === `${REPORT_MANAGER_BASE}/${t.path}`,
+    )?.path ?? PAGE_TABS[0].path;
   const [statusFilter, setStatusFilter] = useState<SummaryKey>("all");
   const [search, setSearch] = useState("");
   const [reportType, setReportType] = useState("all");
@@ -702,13 +707,13 @@ export default function ScheduledReportsPage() {
         </PageHeader>
       }
     >
-      {pageTab === 0 && <ReportLibrary />}
+      {activePath === "templates" && <ReportLibrary />}
 
-      {pageTab === 1 && <ReportLibraryV2 />}
+      {activePath === "templates-v2" && <ReportLibraryV2 />}
 
-      {pageTab === 3 && <ReportHistory />}
+      {activePath === "history" && <ReportHistory />}
 
-      {pageTab === 2 && (
+      {activePath === "schedules" && (
         <>
           {/* Actions */}
           <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>
