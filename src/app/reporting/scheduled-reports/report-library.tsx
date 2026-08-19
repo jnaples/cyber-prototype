@@ -126,12 +126,17 @@ export function ReportLibrary() {
             {/* The cards live in a padded, neutral well — v3's one
                 difference from the shipping tab. */}
             <Box
-              sx={{
+              sx={(theme) => ({
                 mt: 2,
                 p: 2,
                 borderRadius: 1,
                 bgcolor: "background.neutral",
-              }}
+                // Neutral is too close to the card on dark; the page ground
+                // reads as a recess instead.
+                ...theme.applyStyles("dark", {
+                  bgcolor: theme.vars.palette.background.default,
+                }),
+              })}
             >
               {matches.length === 0 && (
                 // Same empty state the data grids show when a search or filter
