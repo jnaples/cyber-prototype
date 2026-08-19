@@ -31,7 +31,7 @@ const PRODUCTS = ["CyberSight", "Filtering"];
 
 export function ReportLibrary() {
   const [search, setSearch] = useState("");
-  const [productFilter, setProductFilter] = useState<string[]>([]);
+  const [productFilter, setProductFilter] = useState<string | null>(null);
   const navigate = useNavigate();
   // Which report's document is open in the preview modal.
   const [preview, setPreview] = useState<ReportDef | null>(null);
@@ -46,8 +46,7 @@ export function ReportLibrary() {
       r.title.toLowerCase().includes(query) ||
       r.desc.toLowerCase().includes(query);
     const matchesProduct =
-      productFilter.length === 0 ||
-      (r.products ?? []).some((product) => productFilter.includes(product));
+      productFilter === null || (r.products ?? []).includes(productFilter);
     return matchesQuery && matchesProduct;
   });
 
@@ -60,25 +59,32 @@ export function ReportLibrary() {
             <Box
               sx={{
                 display: "flex",
-                alignItems: "center",
+                alignItems: "flex-start",
                 justifyContent: "space-between",
                 gap: 2,
               }}
             >
-              <Typography variant="cardTitle">Report Library</Typography>
+              <Box>
+                <Typography variant="cardTitle">Report Library</Typography>
+                <Typography
+                  variant="body1"
+                  sx={{ mt: 0.5, color: "text.primary" }}
+                >
+                  Preview any report, run it on demand, or schedule it for
+                  delivery.
+                </Typography>
+              </Box>
               {/* Quick product filter — same toggle treatment as the scheduler's
               days of the week. Nothing selected means every report. */}
               <ToggleButtonGroup
+                exclusive
                 size="small"
-                // "All" stands in for an empty filter, so the group always shows
-                // something selected.
-                value={productFilter.length > 0 ? productFilter : [ALL]}
-                onChange={(_event, next: string[]) => {
-                  if (next.includes(ALL) && productFilter.length > 0) {
-                    setProductFilter([]);
-                    return;
-                  }
-                  setProductFilter(next.filter((value) => value !== ALL));
+                // "All" stands in for an empty filter, so the group always
+                // shows exactly one selection.
+                value={productFilter ?? ALL}
+                onChange={(_event, next: string | null) => {
+                  if (!next) return;
+                  setProductFilter(next === ALL ? null : next);
                 }}
                 sx={{
                   "& .MuiToggleButton-root": {
@@ -138,10 +144,22 @@ export function ReportLibrary() {
                   desc={r.desc}
                   Icon={r.Icon}
                   products={r.products}
-                  onPreview={() => setPreview(r)}
-                  onRunNow={() => setGenerateOpen(true)}
-                  // A custom report is built to order, so it can't be put on
-                  // a schedule from here.
+                  // Nothing to preview until the report is built.
+                  onPreview={
+                    r.key === "custom" ? undefined : () => setPreview(r)
+                  }
+                  // A custom report is built to order: it goes to the
+                  // builder rather than running a stock document.
+                  runLabel={r.key === "custom" ? "Create Report" : undefined}
+                  onRunNow={
+                    r.key === "custom"
+                      ? () =>
+                          navigate("/reporting/custom-reports", {
+                            state: { builder: true },
+                          })
+                      : () => setGenerateOpen(true)
+                  }
+                  // …and it can't be put on a schedule from here.
                   onSchedule={
                     r.key === "custom"
                       ? undefined

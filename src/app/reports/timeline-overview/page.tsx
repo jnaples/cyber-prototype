@@ -329,6 +329,7 @@ export default function TimelineOverviewReport() {
         bgcolor: "#ffffff",
         color: TEXT,
         border: `1px solid ${PAGE_BORDER}`,
+        boxShadow: (theme) => theme.shadows[3],
         p: "64px 64px 48px",
         fontFamily: "'Inter Variable', sans-serif",
       }}

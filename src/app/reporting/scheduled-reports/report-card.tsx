@@ -19,6 +19,7 @@ export function ReportCard({
   onClick,
   onPreview,
   onRunNow,
+  runLabel = "Run Now",
   onSchedule,
   height = 320,
 }: {
@@ -34,6 +35,8 @@ export function ReportCard({
    *  runs the report now or takes the user to the scheduler. */
   onPreview?: () => void;
   onRunNow?: () => void;
+  /** Label for the run action — a custom report is created, not run. */
+  runLabel?: string;
   onSchedule?: () => void;
   height?: number;
 }) {
@@ -41,7 +44,7 @@ export function ReportCard({
   // With one action there's nothing to choose between, so the button just
   // does it; with both, it opens the menu.
   const templateActions = [
-    { label: "Run Now", run: onRunNow },
+    { label: runLabel, run: onRunNow },
     { label: "Schedule Report", run: onSchedule },
   ].filter((action): action is { label: string; run: () => void } =>
     Boolean(action.run),
@@ -57,9 +60,8 @@ export function ReportCard({
         height,
         display: "flex",
         flexDirection: "column",
-        gap: 2,
-        // The card's own surface shows as a gutter around the thumbnail.
-        p: 2,
+        // No card padding: the text block carries its own, so the preview
+        // runs flush to the card's edges.
         overflow: "hidden",
         // Same frame and hover tint the v2 tab's cards use.
         border: "1px solid",
@@ -74,6 +76,65 @@ export function ReportCard({
         },
       })}
     >
+      {/* Title row — chips sit opposite the name; the blurb runs under both. */}
+      <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 0.5 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 1,
+          }}
+        >
+          <Typography
+            sx={(theme) => ({
+              // Montserrat, as the report titles are set in the documents.
+              fontFamily: theme.typography.fontSecondaryFamily,
+              fontWeight: 600,
+              fontSize: 16,
+              minWidth: 0,
+            })}
+          >
+            {title}
+          </Typography>
+          {products.length > 0 && (
+            <Box sx={{ display: "flex", flexShrink: 0, gap: 1 }}>
+              {products.map((product) => (
+                <Chip
+                  key={product}
+                  label={product}
+                  size="small"
+                  variant="outlined"
+                  // Each product in its own colour: Filtering blue, CyberSight
+                  // the threat magenta. Chip's `color` prop has no tertiary,
+                  // so the palette is applied directly.
+                  sx={(theme) => {
+                    // theme.vars resolves per scheme; theme.palette would
+                    // freeze the light values into both.
+                    const tone =
+                      product === "CyberSight"
+                        ? theme.vars.palette.tertiary
+                        : theme.vars.palette.primary;
+                    return {
+                      borderColor: tone.main,
+                      color: tone.main,
+                      // Full-strength primary is too dark on the dark surface.
+                      ...theme.applyStyles("dark", {
+                        borderColor: tone.light,
+                        color: tone.light,
+                      }),
+                    };
+                  }}
+                />
+              ))}
+            </Box>
+          )}
+        </Box>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          {desc}
+        </Typography>
+      </Box>
+
       {/* A thumbnail of the real document, cropped to the top of the page —
           enough to recognise the report by. */}
       <Box
@@ -83,48 +144,19 @@ export function ReportCard({
           minHeight: 0,
           overflow: "hidden",
           bgcolor: "background.neutral",
-          borderRadius: 1,
         }}
       >
-        {reportKey === "custom" ? (
-          // Same framing the document previews get: a white page inset on the
-          // neutral pane, running off the bottom edge like a cropped document.
-          <Box sx={{ height: "100%", p: 1, pb: 0 }}>
-            <Box
-              sx={{
-                height: "100%",
-                // The report documents and CSV sheets are square-cornered white
-                // pages with a hairline edge; this stand-in matches.
-                bgcolor: "#fff",
-                // Same edge the report documents draw.
-                border: "0.5px solid #E5E5EC",
-                borderBottom: "none",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Box
-                component="img"
-                src="/report-icon.svg"
-                alt=""
-                sx={{ width: 80, height: "auto", opacity: 0.9 }}
-              />
-            </Box>
-          </Box>
-        ) : (
-          <ReportPreview
-            reportKey={reportKey}
-            title={title}
-            Icon={Icon}
-            sx={{
-              height: "100%",
-              alignItems: "flex-start",
-              p: 1,
-              pointerEvents: "none",
-            }}
-          />
-        )}
+        <ReportPreview
+          reportKey={reportKey}
+          title={title}
+          Icon={Icon}
+          sx={{
+            height: "100%",
+            alignItems: "flex-start",
+            p: 3,
+            pointerEvents: "none",
+          }}
+        />
 
         {/* Hover actions over the same scrim the drawers dim the page with. */}
         {hasActions && (
@@ -205,35 +237,6 @@ export function ReportCard({
           </MenuItem>
         ))}
       </Menu>
-
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-        <Typography
-          sx={(theme) => ({
-            // Montserrat, as the report titles are set in the documents.
-            fontFamily: theme.typography.fontSecondaryFamily,
-            fontWeight: 600,
-            fontSize: 16,
-          })}
-        >
-          {title}
-        </Typography>
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          {desc}
-        </Typography>
-        {products.length > 0 && (
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 0.5 }}>
-            {products.map((product) => (
-              <Chip
-                key={product}
-                label={product}
-                size="small"
-                variant="outlined"
-                color="secondary"
-              />
-            ))}
-          </Box>
-        )}
-      </Box>
     </Box>
   );
 }

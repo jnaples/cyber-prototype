@@ -205,6 +205,7 @@ export default function ThreatTrendsReport() {
         bgcolor: "#ffffff",
         color: TEXT,
         border: `1px solid ${PAGE_BORDER}`,
+        boxShadow: (theme) => theme.shadows[3],
         p: "64px 64px 48px",
         fontFamily: "'Inter Variable', sans-serif",
       }}
@@ -274,7 +275,7 @@ export default function ThreatTrendsReport() {
             m: "8px 0",
           }}
         >
-          Threat Overview
+          Threat Trends
         </Box>
         <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>

@@ -33,6 +33,7 @@ export function CsvSheet({
         bgcolor: "#fff",
         color: SHEET_TEXT,
         border: `1px solid ${PAGE_BORDER}`,
+        boxShadow: (theme) => theme.shadows[3],
         p: "40px 48px 48px",
       }}
     >

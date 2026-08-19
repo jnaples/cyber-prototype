@@ -12,6 +12,7 @@ import FilterProtectionSummaryReport from "@/app/reports/filter-protection-summa
 import ThreatTrendsReport from "@/app/reports/threat-trends/page";
 import TimelineOverviewReport from "@/app/reports/timeline-overview/page";
 
+import { CustomReportSheet } from "./custom-report-sheet";
 import { QueryLogsCsvSheet } from "./query-logs-csv-sheet";
 import { TimelineLogsCsvSheet } from "./timeline-logs-csv-sheet";
 
@@ -23,4 +24,6 @@ export const REPORT_PAGES: Record<string, ComponentType> = {
   "timeline-overview": TimelineOverviewReport,
   "threat-trends": ThreatTrendsReport,
   "ai-usage": CyberSightAiUsageReport,
+  // Nothing built yet — a blank page with the report mark.
+  custom: CustomReportSheet,
 };

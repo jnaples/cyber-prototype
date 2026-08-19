@@ -31,6 +31,7 @@ export function ReportCoverSheet({
         bgcolor: "#fff",
         color: SHEET_TEXT,
         border: `1px solid ${PAGE_BORDER}`,
+        boxShadow: (theme) => theme.shadows[3],
         p: "56px 64px",
       }}
     >

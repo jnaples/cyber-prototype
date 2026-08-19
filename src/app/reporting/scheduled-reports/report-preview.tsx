@@ -2,14 +2,11 @@
 // Used by the Templates tab's preview card and by the "View sample" modal in
 // the Schedule Report builder.
 
-import { Box, Button } from "@mui/material";
+import { Box } from "@mui/material";
 import type { SxProps, Theme } from "@mui/material/styles";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router";
 
 import type { SvgIconComponent } from "@mui/icons-material";
-
-import { EmptyState } from "@/components/empty-state";
 
 import { ReportCoverSheet } from "./report-cover-sheet";
 import { REPORT_PAGES } from "./report-pages";
@@ -88,7 +85,6 @@ export function ReportPreview({
   fitViewport?: boolean;
   sx?: SxProps<Theme>;
 }) {
-  const navigate = useNavigate();
   const ReportPage = REPORT_PAGES[reportKey];
   const { paneRef, docRef, scale, docHeight, paneMaxHeight } = useFitScale(
     reportKey,
@@ -113,29 +109,7 @@ export function ReportPreview({
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      {/* A custom report has no fixed document to preview — it's built to
-          order — so the pane pitches the builder instead. */}
-      {reportKey === "custom" ? (
-        <EmptyState
-          illustration="/report-icon.svg"
-          illustrationAlt=""
-          title="Build your own report"
-          description="Choose the metrics, dimensions, and filters that matter to you, then schedule it like any other report."
-          action={
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() =>
-                navigate("/reporting/custom-reports", {
-                  state: { builder: true },
-                })
-              }
-            >
-              Create Custom Report
-            </Button>
-          }
-        />
-      ) : ReportPage ? (
+      {ReportPage ? (
         <Box
           sx={{
             position: "relative",
