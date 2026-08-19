@@ -53,6 +53,9 @@ const EMAIL_TEMPLATES: {
 
 const DEFAULT_EMAIL_TEMPLATE = EMAIL_TEMPLATES[0].value;
 
+/** How long a dashboard name may be before the field errors. */
+const NAME_LIMIT = 40;
+
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 /** Label with the explanation on an info icon, as in the DoH Endpoint drawer. */
@@ -243,14 +246,12 @@ function ImageDrop({
 
 export default function BrandingPage() {
   const [dashboardName, setDashboardName] = useState("");
-  const [dashboardUrl, setDashboardUrl] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [logo, setLogo] = useState<string | null>(null);
   const [favicon, setFavicon] = useState<string | null>(null);
   // What the form looked like when it was last saved.
   const [saved, setSaved] = useState({
     dashboardName: "",
-    dashboardUrl: "",
     contactEmail: "",
     emailTemplate: DEFAULT_EMAIL_TEMPLATE,
     logo: null as string | null,
@@ -267,7 +268,6 @@ export default function BrandingPage() {
   const handleSave = () => {
     setSaved({
       dashboardName,
-      dashboardUrl,
       contactEmail,
       emailTemplate,
       logo,
@@ -283,15 +283,17 @@ export default function BrandingPage() {
       ? "Enter a valid email address."
       : "";
 
+  const nameTooLong = dashboardName.length > NAME_LIMIT;
+
   const missingRequired =
     dashboardName.trim() === "" ||
+    nameTooLong ||
     contactEmail.trim() === "" ||
     Boolean(emailError);
 
   // Save only lights up once something differs from the saved state.
   const dirty =
     dashboardName !== saved.dashboardName ||
-    dashboardUrl !== saved.dashboardUrl ||
     contactEmail !== saved.contactEmail ||
     emailTemplate !== saved.emailTemplate ||
     logo !== saved.logo ||
@@ -312,7 +314,6 @@ export default function BrandingPage() {
                 color="secondary"
                 onClick={() => {
                   setDashboardName(saved.dashboardName);
-                  setDashboardUrl(saved.dashboardUrl);
                   setContactEmail(saved.contactEmail);
                   setEmailTemplate(saved.emailTemplate);
                   setLogo(saved.logo);
@@ -323,13 +324,15 @@ export default function BrandingPage() {
               </Button>
               <ArrowTooltip
                 title={
-                  emailError
-                    ? emailError
-                    : missingRequired
-                      ? "Fill in the required fields first."
-                      : dirty
-                        ? ""
-                        : "No changes to save."
+                  nameTooLong
+                    ? `Dashboard Name is limited to ${NAME_LIMIT} characters.`
+                    : emailError
+                      ? emailError
+                      : missingRequired
+                        ? "Fill in the required fields first."
+                        : dirty
+                          ? ""
+                          : "No changes to save."
                 }
               >
                 <Box
@@ -355,11 +358,11 @@ export default function BrandingPage() {
         />
       }
     >
-      <SectionCard title="General Settings">
+      <SectionCard title="Dashboard Customization">
         <Box>
           <FieldLabel
             label="Dashboard Name"
-            help="The name customers see in the browser tab and on the sign-in page."
+            help='Shown as the browser tab title, on your login page as "Service provided by {Dashboard Name}," and in your dashboard URL.'
             required
           />
           <TextField
@@ -367,27 +370,33 @@ export default function BrandingPage() {
             placeholder="e.g., Security Portal"
             value={dashboardName}
             onChange={(e) => setDashboardName(e.target.value)}
+            error={nameTooLong}
+            // MUI indents contained helper text on both sides; dropping the
+            // right inset puts the count flush with the field's edge.
+            sx={{ "& .MuiFormHelperText-root": { mr: 0 } }}
+            // Typing past the limit isn't blocked — the field goes red and the
+            // count says by how much.
+            helperText={
+              <Box
+                component="span"
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 1,
+                }}
+              >
+                <span>{`${NAME_LIMIT} character limit`}</span>
+                <span>{`${dashboardName.length}/${NAME_LIMIT}`}</span>
+              </Box>
+            }
           />
         </Box>
 
         <Box>
           <FieldLabel
-            label="Custom Dashboard URL"
-            help="The address customers use to reach the dashboard. Requires a CNAME record."
+            label="Custom Logo (max width: 500px)"
+            help="Used across your dashboard, emails, and block pages. Organizations can override this on their block pages."
           />
-          <TextField
-            fullWidth
-            placeholder="e.g., dashboard.yourcompany.com"
-            value={dashboardUrl}
-            onChange={(e) => setDashboardUrl(e.target.value)}
-          />
-        </Box>
-      </SectionCard>
-
-      <SectionCard title="Dashboard Customization" sx={{ mt: 2 }}>
-        <Box>
-          {/* The size cue lives in the label, so no help tooltip here. */}
-          <FieldLabel label="Custom Logo (max width: 500px)" />
           <ImageDrop
             previewHeight={72}
             alt="Custom logo preview"
@@ -397,7 +406,10 @@ export default function BrandingPage() {
         </Box>
 
         <Box>
-          <FieldLabel label="Custom Favicon (max width: 32px)" />
+          <FieldLabel
+            label="Custom Favicon (max width: 32px)"
+            help="Upload a favicon for browser tabs and branded pages."
+          />
           <ImageDrop
             previewHeight={32}
             alt="Custom favicon preview"

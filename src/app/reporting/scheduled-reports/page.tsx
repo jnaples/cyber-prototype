@@ -47,6 +47,7 @@ import { scheduleEditState, TAG_TO_REPORT_KEY } from "./schedule-edit-state";
 import { REPORT_MANAGER_BASE, REPORT_MANAGER_TABS } from "./routes";
 import { ReportLibrary } from "./report-library";
 import { ReportLibraryV2 } from "./report-library-v2";
+import { ReportLibraryV3 } from "./report-library-v3";
 import { REPORTS } from "./reports";
 
 // ---------------------------------------------------------------------------
@@ -710,6 +711,7 @@ export default function ScheduledReportsPage() {
       {activePath === "templates" && <ReportLibrary />}
 
       {activePath === "templates-v2" && <ReportLibraryV2 />}
+      {activePath === "templates-v3" && <ReportLibraryV3 />}
 
       {activePath === "history" && <ReportHistory />}
 

@@ -1,7 +1,7 @@
 // Stand-in document for a custom report — there's nothing built yet, so the
-// page is blank apart from the report mark. Laid out on the same 1400px canvas
-// as the real documents so it scales, borders and shadows identically wherever
-// a report preview is rendered.
+// page is blank apart from the report mark and its title. Laid out on the same
+// 1400px canvas as the real documents so it scales, borders and shadows
+// identically wherever a report preview is rendered.
 
 import { Box } from "@mui/material";
 
@@ -41,7 +41,7 @@ export function CustomReportSheet() {
         component="img"
         src="/report-icon.svg"
         alt=""
-        sx={{ width: 240, height: "auto", opacity: 0.9 }}
+        sx={{ width: 320, height: "auto", opacity: 0.9 }}
       />
       {/* Set like a real report's title block, so the stand-in reads as the
           same kind of document. */}

@@ -1,12 +1,20 @@
-// A second take on the report card, for the Library v2 proof of concept.
+// Prototyping variant of the report card, used only by Library v2 so the
+// shipping card stays untouched.
 //
-// Where the shipping card leads with the name and hides its actions behind a
-// hover scrim, this one leads with the document, labels it underneath next to
-// the report's icon, and keeps the actions on the card at all times — nothing
-// is discoverable only by hovering.
+// Same anatomy as ReportCard — name and chips, blurb, a thumbnail of the real
+// document, actions behind a hover scrim — but the surface is an elevated
+// Card rather than an outlined box.
 
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
-import { Box, Button, Chip, Menu, MenuItem, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  Chip,
+  Menu,
+  MenuItem,
+  Typography,
+} from "@mui/material";
 import type { SvgIconComponent } from "@mui/icons-material";
 import { alpha } from "@mui/material/styles";
 import { useState } from "react";
@@ -34,8 +42,8 @@ export function ReportCardV2({
   /** Products the report belongs to, e.g. ["CyberSight"] or ["Filtering"]. */
   products?: string[];
   onClick?: () => void;
-  /** Footer actions. Preview shows the document; Use Template either runs the
-   *  report now or takes the user to the scheduler. */
+  /** Hover actions. Preview shows the document; the Use template menu either
+   *  runs the report now or takes the user to the scheduler. */
   onPreview?: () => void;
   onRunNow?: () => void;
   /** Label for the run action — a custom report is created, not run. */
@@ -52,25 +60,93 @@ export function ReportCardV2({
   ].filter((action): action is { label: string; run: () => void } =>
     Boolean(action.run),
   );
+  // The menu's backdrop takes the pointer, so :hover stops matching — the
+  // overlay stays put while the menu is open.
+  const menuOpen = Boolean(menuAnchor);
+  const hasActions = Boolean(onPreview || onRunNow || onSchedule);
   return (
-    <Box
+    <Card
+      // The variant's whole point: a raised surface instead of an outline.
+      elevation={1}
       onClick={onClick}
       sx={(theme) => ({
         height,
         display: "flex",
         flexDirection: "column",
+        // One 16px inset on the card itself — the text block and the preview
+        // pane both sit inside it, separated by the same 16px.
+        p: 2,
+        gap: 2,
         overflow: "hidden",
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 1,
-        bgcolor: "background.paper",
         cursor: onClick ? "pointer" : "default",
         transition: "background 120ms",
-        "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+        "&:hover": {
+          bgcolor: alpha(theme.palette.primary.main, 0.04),
+          ".report-card-actions": { opacity: 1, pointerEvents: "auto" },
+        },
       })}
     >
-      {/* The document leads — cropped to the top of the page, which is the
-          part that identifies the report. */}
+      {/* Title row — chips sit opposite the name; the blurb runs under both. */}
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 1,
+          }}
+        >
+          <Typography
+            sx={(theme) => ({
+              // Montserrat, as the report titles are set in the documents.
+              fontFamily: theme.typography.fontSecondaryFamily,
+              fontWeight: 600,
+              fontSize: 16,
+              minWidth: 0,
+            })}
+          >
+            {title}
+          </Typography>
+          {products.length > 0 && (
+            <Box sx={{ display: "flex", flexShrink: 0, gap: 1 }}>
+              {products.map((product) => (
+                <Chip
+                  key={product}
+                  label={product}
+                  size="small"
+                  variant="outlined"
+                  // Each product in its own colour: Filtering blue, CyberSight
+                  // the threat magenta. Chip's `color` prop has no tertiary,
+                  // so the palette is applied directly.
+                  sx={(theme) => {
+                    // theme.vars resolves per scheme; theme.palette would
+                    // freeze the light values into both.
+                    const tone =
+                      product === "CyberSight"
+                        ? theme.vars.palette.tertiary
+                        : theme.vars.palette.primary;
+                    return {
+                      borderColor: tone.main,
+                      color: tone.main,
+                      // Full-strength primary is too dark on the dark surface.
+                      ...theme.applyStyles("dark", {
+                        borderColor: tone.light,
+                        color: tone.light,
+                      }),
+                    };
+                  }}
+                />
+              ))}
+            </Box>
+          )}
+        </Box>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          {desc}
+        </Typography>
+      </Box>
+
+      {/* A thumbnail of the real document, cropped to the top of the page —
+          enough to recognise the report by. */}
       <Box
         sx={{
           position: "relative",
@@ -78,8 +154,6 @@ export function ReportCardV2({
           minHeight: 0,
           overflow: "hidden",
           bgcolor: "background.neutral",
-          borderBottom: "1px solid",
-          borderColor: "divider",
         }}
       >
         <ReportPreview
@@ -93,136 +167,63 @@ export function ReportCardV2({
             pointerEvents: "none",
           }}
         />
-      </Box>
 
-      {/* Name, blurb and chips, with the report's icon as the anchor. */}
-      <Box sx={{ p: 2, display: "flex", gap: 1.5 }}>
-        {Icon && (
+        {/* Hover actions over the same scrim the drawers dim the page with. */}
+        {hasActions && (
           <Box
-            sx={(theme) => ({
-              flexShrink: 0,
-              width: 36,
-              height: 36,
-              borderRadius: 1,
-              bgcolor: alpha(theme.palette.primary.main, 0.1),
-              color: "primary.main",
+            className="report-card-actions"
+            sx={{
+              position: "absolute",
+              inset: 0,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              // Full-strength primary is too dark on the dark surface.
-              ...theme.applyStyles("dark", {
-                color: theme.vars.palette.primary.light,
-              }),
-            })}
-          >
-            <Box component={Icon} sx={{ fontSize: 20 }} />
-          </Box>
-        )}
-        <Box sx={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
               gap: 1,
+              bgcolor: "rgba(0, 0, 0, 0.5)",
+              opacity: menuOpen ? 1 : 0,
+              transition: "opacity 120ms",
+              pointerEvents: menuOpen ? "auto" : "none",
             }}
           >
-            <Typography
-              sx={(theme) => ({
-                // Montserrat, as the report titles are set in the documents.
-                fontFamily: theme.typography.fontSecondaryFamily,
-                fontWeight: 600,
-                fontSize: 16,
-                minWidth: 0,
-              })}
-            >
-              {title}
-            </Typography>
-            {products.length > 0 && (
-              <Box sx={{ display: "flex", flexShrink: 0, gap: 1 }}>
-                {products.map((product) => (
-                  <Chip
-                    key={product}
-                    label={product}
-                    size="small"
-                    variant="outlined"
-                    // Each product in its own colour: Filtering blue,
-                    // CyberSight the threat magenta. Chip's `color` prop has no
-                    // tertiary, so the palette is applied directly.
-                    sx={(theme) => {
-                      // theme.vars resolves per scheme; theme.palette would
-                      // freeze the light values into both.
-                      const tone =
-                        product === "CyberSight"
-                          ? theme.vars.palette.tertiary
-                          : theme.vars.palette.primary;
-                      return {
-                        borderColor: tone.main,
-                        color: tone.main,
-                        ...theme.applyStyles("dark", {
-                          borderColor: tone.light,
-                          color: tone.light,
-                        }),
-                      };
-                    }}
-                  />
-                ))}
-              </Box>
+            {onPreview && (
+              <Button
+                variant="contained"
+                color="secondary"
+                size="small"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onPreview();
+                }}
+              >
+                Preview
+              </Button>
+            )}
+            {templateActions.length > 0 && (
+              // Same shape as the Dashboards header's Actions button.
+              <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  if (templateActions.length === 1) {
+                    templateActions[0].run();
+                    return;
+                  }
+                  setMenuAnchor(event.currentTarget);
+                }}
+                endIcon={
+                  templateActions.length > 1 ? (
+                    <ArrowDropDownOutlinedIcon sx={{ opacity: 0.6 }} />
+                  ) : undefined
+                }
+              >
+                {templateActions.length === 1
+                  ? templateActions[0].label
+                  : "Use Template"}
+              </Button>
             )}
           </Box>
-          <Typography variant="body2" sx={{ mt: 0.5, color: "text.secondary" }}>
-            {desc}
-          </Typography>
-        </Box>
-      </Box>
-
-      {/* Actions stay on the card rather than behind a hover state. */}
-      <Box
-        sx={{
-          px: 2,
-          pb: 2,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          gap: 1,
-        }}
-      >
-        {onPreview && (
-          <Button
-            variant="outlined"
-            color="secondary"
-            size="small"
-            onClick={(event) => {
-              event.stopPropagation();
-              onPreview();
-            }}
-          >
-            Preview
-          </Button>
-        )}
-        {templateActions.length > 0 && (
-          <Button
-            variant="contained"
-            color="primary"
-            size="small"
-            onClick={(event) => {
-              event.stopPropagation();
-              if (templateActions.length === 1) {
-                templateActions[0].run();
-                return;
-              }
-              setMenuAnchor(event.currentTarget);
-            }}
-            endIcon={
-              templateActions.length > 1 ? (
-                <ArrowDropDownOutlinedIcon sx={{ opacity: 0.6 }} />
-              ) : undefined
-            }
-          >
-            {templateActions.length === 1
-              ? templateActions[0].label
-              : "Use Template"}
-          </Button>
         )}
       </Box>
 
@@ -246,6 +247,6 @@ export function ReportCardV2({
           </MenuItem>
         ))}
       </Menu>
-    </Box>
+    </Card>
   );
 }
