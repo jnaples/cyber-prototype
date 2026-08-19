@@ -1,6 +1,6 @@
-// Report Manager → Library. A 3-column grid: the Reports card (1 col) lists
-// every report as a single-select card; picking one renders its sample cover
-// sheet in the Preview card (2 cols). Activity Overview is preselected.
+// Report Manager → Library. Every report as a card, three across, inside a
+// padded neutral well. Searching or filtering to nothing shows the same empty
+// state the data grids use.
 
 import {
   Alert,
@@ -21,7 +21,9 @@ import { MaterialSymbol } from "@/components/material-symbol";
 import { TextField } from "@/components/text-field";
 
 import { GenerateReportDrawer } from "./generate-report-drawer";
-import { ReportCard } from "./report-card";
+import { NoResultsOverlay } from "@/components/no-results-overlay";
+
+import { ReportCardV2 } from "./report-card-v2";
 import { SamplePreviewModal } from "./sample-preview-modal";
 import { REPORT_MANAGER_BASE } from "./routes";
 import { REPORTS, type ReportDef } from "./reports";
@@ -121,55 +123,68 @@ export function ReportLibrary() {
               }}
               sx={{ mt: 2 }}
             />
-            {/* Three across — the preview pane is gone, so the cards get the
-                full width. */}
+            {/* The cards live in a padded, neutral well — v3's one
+                difference from the shipping tab. */}
             <Box
               sx={{
-                pt: 2,
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  sm: "repeat(2, minmax(0, 1fr))",
-                  md: "repeat(3, minmax(0, 1fr))",
-                },
-                alignItems: "start",
-                gap: 2,
+                mt: 2,
+                p: 2,
+                borderRadius: 1,
+                bgcolor: "background.neutral",
               }}
             >
-              {matches.map((r) => (
-                <ReportCard
-                  key={r.key}
-                  reportKey={r.key}
-                  title={r.title}
-                  desc={r.desc}
-                  Icon={r.Icon}
-                  products={r.products}
-                  // Nothing to preview until the report is built.
-                  onPreview={
-                    r.key === "custom" ? undefined : () => setPreview(r)
-                  }
-                  // A custom report is built to order: it goes to the
-                  // builder rather than running a stock document.
-                  runLabel={r.key === "custom" ? "Create Report" : undefined}
-                  onRunNow={
-                    r.key === "custom"
-                      ? () =>
-                          navigate("/reporting/custom-reports", {
-                            state: { builder: true },
-                          })
-                      : () => setGenerateOpen(true)
-                  }
-                  // …and it can't be put on a schedule from here.
-                  onSchedule={
-                    r.key === "custom"
-                      ? undefined
-                      : () =>
-                          navigate("/reporting/report-scheduler", {
-                            state: { reportKeys: [r.key] },
-                          })
-                  }
-                />
-              ))}
+              {matches.length === 0 && (
+                // Same empty state the data grids show when a search or filter
+                // clears every row.
+                <NoResultsOverlay />
+              )}
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, minmax(0, 1fr))",
+                    md: "repeat(3, minmax(0, 1fr))",
+                  },
+                  alignItems: "start",
+                  gap: 2,
+                }}
+              >
+                {matches.map((r) => (
+                  <ReportCardV2
+                    key={r.key}
+                    reportKey={r.key}
+                    title={r.title}
+                    desc={r.desc}
+                    Icon={r.Icon}
+                    products={r.products}
+                    // Nothing to preview until the report is built.
+                    onPreview={
+                      r.key === "custom" ? undefined : () => setPreview(r)
+                    }
+                    // A custom report is built to order: it goes to the
+                    // builder rather than running a stock document.
+                    runLabel={r.key === "custom" ? "Create Report" : undefined}
+                    onRunNow={
+                      r.key === "custom"
+                        ? () =>
+                            navigate("/reporting/custom-reports", {
+                              state: { builder: true },
+                            })
+                        : () => setGenerateOpen(true)
+                    }
+                    // …and it can't be put on a schedule from here.
+                    onSchedule={
+                      r.key === "custom"
+                        ? undefined
+                        : () =>
+                            navigate("/reporting/report-scheduler", {
+                              state: { reportKeys: [r.key] },
+                            })
+                    }
+                  />
+                ))}
+              </Box>
             </Box>
           </CardContent>
         </Card>

@@ -34,7 +34,7 @@ export function CustomReportSheet() {
         alignItems: "center",
         justifyContent: "flex-start",
         gap: "64px",
-        pt: "220px",
+        pt: "300px",
       }}
     >
       <Box

@@ -641,6 +641,8 @@ function PreviewPane({
       <Box sx={{ flex: 1, overflow: "auto", px: 3, pb: 3 }}>
         {empty ? (
           <Card
+            // A dashed placeholder well, not a raised surface — no shadow.
+            elevation={0}
             sx={{
               minHeight: 420,
               display: "flex",
