@@ -7,22 +7,14 @@ import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { useOrgScope } from "@/hooks/use-org-scope";
+import { DomainCell } from "../domain-cell";
 
 const columns: GridColDef[] = [
   {
     field: "domain",
     headerName: "Domain",
     width: 240,
-    renderCell: (params) => (
-      <Link
-        href={`https://${params.row.domain}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        underline="hover"
-      >
-        {params.row.domain}
-      </Link>
-    ),
+    renderCell: (params) => <DomainCell domain={params.row.domain} />,
   },
   { field: "category", headerName: "Category", flex: 1, minWidth: 160 },
   { field: "organization", headerName: "Organization", flex: 1, minWidth: 160 },

@@ -99,11 +99,15 @@ export function GenerateReportDrawer({
   open,
   onClose,
   onGenerate,
+  reportTitle,
 }: {
   open: boolean;
   onClose: () => void;
   /** Fired when the run is kicked off (the drawer closes itself first). */
   onGenerate: () => void;
+  /** The report being run — named under the title, as the DoH drawer names
+   *  its deployment. */
+  reportTitle?: string;
 }) {
   const [name, setName] = useState("");
   const [organization, setOrganization] = useState("");
@@ -144,6 +148,7 @@ export function GenerateReportDrawer({
       open={open}
       onClose={onClose}
       title="Run Report"
+      subheader={reportTitle}
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{
         label: "Run Now",

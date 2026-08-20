@@ -35,7 +35,8 @@ export function ReportLibraryV3() {
   const navigate = useNavigate();
   // Which report's document is open in the preview modal.
   const [preview, setPreview] = useState<ReportDef | null>(null);
-  const [generateOpen, setGenerateOpen] = useState(false);
+  // Which report Run Now was pressed on — the drawer names it.
+  const [generateFor, setGenerateFor] = useState<ReportDef | null>(null);
   const [generateToast, setGenerateToast] = useState(false);
   // Title or description — the description is what tells two threat reports
   // apart.
@@ -157,7 +158,7 @@ export function ReportLibraryV3() {
                           navigate("/reporting/custom-reports", {
                             state: { builder: true },
                           })
-                      : () => setGenerateOpen(true)
+                      : () => setGenerateFor(r)
                   }
                   // …and it can't be put on a schedule from here.
                   onSchedule={
@@ -180,7 +181,7 @@ export function ReportLibraryV3() {
           reportKey={preview?.key}
           title={preview?.title}
           Icon={preview?.Icon}
-          onRunNow={() => setGenerateOpen(true)}
+          onRunNow={() => setGenerateFor(preview)}
           onSchedule={() =>
             navigate("/reporting/report-scheduler", {
               state: { reportKeys: preview ? [preview.key] : [] },
@@ -189,8 +190,9 @@ export function ReportLibraryV3() {
         />
 
         <GenerateReportDrawer
-          open={generateOpen}
-          onClose={() => setGenerateOpen(false)}
+          open={Boolean(generateFor)}
+          onClose={() => setGenerateFor(null)}
+          reportTitle={generateFor?.title}
           onGenerate={() => setGenerateToast(true)}
         />
 

@@ -26,7 +26,7 @@ export default function ReportSchedulerPage() {
       edit={edit}
       initialReports={reportKeys}
       onCancel={() => back()}
-      onSave={() => back(edit ? `${edit.scheduleName} updated.` : undefined)}
+      onSave={(name) => back(`"${name}" ${edit ? "updated" : "created"}.`)}
     />
   );
 }

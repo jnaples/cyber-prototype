@@ -13,7 +13,6 @@ import {
   Divider,
   FormControlLabel,
   FormLabel,
-  IconButton,
   InputAdornment,
   Link,
   MenuItem,
@@ -22,11 +21,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import CancelIcon from "@mui/icons-material/Cancel";
-import { LocalizationProvider } from "@mui/x-date-pickers-pro";
-import { AdapterDateFns } from "@mui/x-date-pickers-pro/AdapterDateFns";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { CalendarIcon, ClockIcon } from "@mui/x-date-pickers/icons";
+import { CalendarIcon } from "@mui/x-date-pickers/icons";
 import { useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
@@ -91,34 +86,6 @@ const SCHEDULABLE_REPORTS = REPORTS.filter((r) => r.key !== "custom");
 
 const FREQUENCIES = ["Daily", "Weekly", "Monthly", "Quarterly"] as const;
 
-// Send clock — on the hour, in the timezone picked below.
-const SEND_TIMES = [
-  "12:00 AM",
-  "1:00 AM",
-  "2:00 AM",
-  "3:00 AM",
-  "4:00 AM",
-  "5:00 AM",
-  "6:00 AM",
-  "7:00 AM",
-  "8:00 AM",
-  "9:00 AM",
-  "10:00 AM",
-  "11:00 AM",
-  "12:00 PM",
-  "1:00 PM",
-  "2:00 PM",
-  "3:00 PM",
-  "4:00 PM",
-  "5:00 PM",
-  "6:00 PM",
-  "7:00 PM",
-  "8:00 PM",
-  "9:00 PM",
-  "10:00 PM",
-  "11:00 PM",
-];
-
 // The zones an MSP schedules against — US business zones first, then the
 // international ones their clients sit in.
 // A weekly schedule picks its days; the labels are the short forms the
@@ -131,28 +98,6 @@ const WEEK_DAYS = [
   { value: "Fri", label: "F", name: "Friday" },
   { value: "Sat", label: "S", name: "Saturday" },
   { value: "Sun", label: "Sn", name: "Sunday" },
-];
-
-const TIME_ZONES = [
-  "(UTC-10:00) Hawaii",
-  "(UTC-09:00) Alaska",
-  "(UTC-08:00) Pacific Time (US & Canada)",
-  "(UTC-07:00) Mountain Time (US & Canada)",
-  "(UTC-06:00) Central Time (US & Canada)",
-  "(UTC-05:00) Eastern Time (US & Canada)",
-  "(UTC-04:00) Atlantic Time (Canada)",
-  "(UTC-03:00) Sao Paulo",
-  "(UTC+00:00) UTC",
-  "(UTC+00:00) London",
-  "(UTC+01:00) Berlin, Paris, Madrid",
-  "(UTC+02:00) Athens, Helsinki",
-  "(UTC+03:00) Moscow, Istanbul",
-  "(UTC+04:00) Dubai",
-  "(UTC+05:30) India Standard Time",
-  "(UTC+08:00) Singapore, Hong Kong",
-  "(UTC+09:00) Tokyo, Seoul",
-  "(UTC+10:00) Sydney",
-  "(UTC+12:00) Auckland",
 ];
 
 // Step 4 (white-label branding) is parked while branding lives in MSP >
@@ -184,6 +129,17 @@ function Step({
   );
 }
 
+// Only days every month has, so a monthly schedule always has a date to land
+// on.
+const MONTH_DAYS = Array.from({ length: 28 }, (_, i) => i + 1);
+
+// 1 -> "1st", 22 -> "22nd". The teens are all "th".
+const ordinal = (n: number) => {
+  const teen = n % 100 >= 11 && n % 100 <= 13;
+  const suffix = teen ? "th" : { 1: "st", 2: "nd", 3: "rd" }[n % 10] || "th";
+  return `${n}${suffix}`;
+};
+
 export function ScheduleReportView({
   onCancel,
   onSave,
@@ -191,7 +147,8 @@ export function ScheduleReportView({
   initialReports,
 }: {
   onCancel: () => void;
-  onSave: () => void;
+  /** Receives the schedule's name so the list can confirm it by name. */
+  onSave: (name: string) => void;
   /** Seeds the form from an existing schedule and switches to edit mode. */
   edit?: ScheduleEditState;
   /** Report keys to preselect — set when opened from a Library preview. */
@@ -219,14 +176,11 @@ export function ScheduleReportView({
       ? (edit?.frequency as (typeof FREQUENCIES)[number])
       : FREQUENCIES[0],
   );
-  const [sendTime, setSendTime] = useState(SEND_TIMES[0]);
   const [weekDay, setWeekDay] = useState("Mon");
   // Monthly picks a date; only its day-of-month drives the schedule.
-  const [monthDay, setMonthDay] = useState<Date | null>(new Date());
-  const [monthDayOpen, setMonthDayOpen] = useState(false);
+  const [monthDay, setMonthDay] = useState(1);
   const [samplesOpen, setSamplesOpen] = useState(false);
   // Eastern — where most of the MSP's clients run.
-  const [timeZone, setTimeZone] = useState(TIME_ZONES[5]);
   const [whitelabel, setWhitelabel] = useState(true);
   const [companyName, setCompanyName] = useState("Brightwave IT");
   const [replyTo, setReplyTo] = useState("reports@brightwaveit.com");
@@ -256,10 +210,8 @@ export function ScheduleReportView({
     emailSubject,
     emailMessage,
     frequency,
-    sendTime,
     weekDay,
-    monthDay: monthDay?.getDate() ?? null,
-    timeZone,
+    monthDay,
     whitelabel,
     companyName,
     replyTo,
@@ -301,7 +253,7 @@ export function ScheduleReportView({
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={onSave}
+                  onClick={() => onSave(scheduleName)}
                   disabled={!canSave}
                 >
                   {edit ? "Save" : "Create schedule"}
@@ -356,67 +308,47 @@ export function ScheduleReportView({
                       }}
                     />
                   </Box>
-                  <Box>
-                    <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                      Organization
-                      <Box component="span" sx={{ ml: 0.25 }}>
-                        *
-                      </Box>
-                    </FormLabel>
-                    <Select
-                      displayEmpty
-                      fullWidth
-                      size="small"
-                      value={selectedOrg}
-                      onChange={(e) => setSelectedOrg(e.target.value)}
-                      renderValue={(v) =>
-                        v ? (
-                          v
-                        ) : (
-                          <Box component="span" sx={{ color: "text.disabled" }}>
-                            Select organization
-                          </Box>
-                        )
-                      }
-                    >
-                      {/* No "All Organizations" — a schedule targets one. */}
-                      {ORGS.map((org) => (
-                        <MenuItem key={org} value={org}>
-                          {org}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </Box>
+                  {/* A schedule targets one organization. */}
+                  <SearchableSelect
+                    label="Organization"
+                    required
+                    placeholder="Select organization"
+                    options={ORGS}
+                    value={selectedOrg}
+                    onChange={setSelectedOrg}
+                  />
 
                   {/* One dropdown rather than a card per report — the list
                       only grows, and the builder shouldn't scroll for it. */}
-                  <SearchableSelect
-                    label="Report type"
-                    required
-                    placeholder="Select report type"
-                    options={SCHEDULABLE_REPORTS.map((r) => r.title).sort(
-                      (a, b) => a.localeCompare(b),
-                    )}
-                    value={selectedReportDefs[0]?.title ?? ""}
-                    onChange={(title) =>
-                      setSelectedReports(
-                        SCHEDULABLE_REPORTS.filter(
-                          (r) => r.title === title,
-                        ).map((r) => r.key),
-                      )
-                    }
-                    helperText={
-                      <Link
-                        component="button"
-                        type="button"
-                        underline="hover"
-                        onClick={() => setSamplesOpen(true)}
-                        sx={{ fontSize: 14, verticalAlign: "baseline" }}
-                      >
-                        Preview reports
-                      </Link>
-                    }
-                  />
+                  <Box>
+                    <SearchableSelect
+                      label="Report type"
+                      required
+                      placeholder="Select report type"
+                      options={SCHEDULABLE_REPORTS.map((r) => r.title).sort(
+                        (a, b) => a.localeCompare(b),
+                      )}
+                      value={selectedReportDefs[0]?.title ?? ""}
+                      onChange={(title) =>
+                        setSelectedReports(
+                          SCHEDULABLE_REPORTS.filter(
+                            (r) => r.title === title,
+                          ).map((r) => r.key),
+                        )
+                      }
+                    />
+                    {/* The multi-select has no helper slot, so the link sits
+                        under it. */}
+                    <Link
+                      component="button"
+                      type="button"
+                      underline="hover"
+                      onClick={() => setSamplesOpen(true)}
+                      sx={{ mt: 0.5, fontSize: 14, verticalAlign: "baseline" }}
+                    >
+                      Preview reports
+                    </Link>
+                  </Box>
                 </Box>
               </Step>
 
@@ -443,7 +375,7 @@ export function ScheduleReportView({
                         mb: 0.5,
                       }}
                     >
-                      Other recipients
+                      External recipients
                       <ArrowTooltip title="Send emails to recipients who don't have DNSFilter accounts. Their email addresses must be valid.">
                         <Box
                           component="span"
@@ -563,11 +495,35 @@ export function ScheduleReportView({
               <Step n={3} title="Choose Frequency">
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   <Box>
-                    <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                      Delivery schedule
-                      <Box component="span" sx={{ ml: 0.25 }}>
-                        *
+                    {/* Same label + info treatment as External recipients. */}
+                    <FormLabel
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                        mb: 0.5,
+                      }}
+                    >
+                      <Box component="span">
+                        Delivery schedule
+                        <Box component="span" sx={{ ml: 0.25 }}>
+                          *
+                        </Box>
                       </Box>
+                      <ArrowTooltip title="Send time is optimized automatically for each delivery day.">
+                        <Box
+                          component="span"
+                          sx={(theme) => ({
+                            display: "inline-flex",
+                            color: "primary.main",
+                            ...theme.applyStyles("dark", {
+                              color: theme.vars.palette.primary.light,
+                            }),
+                          })}
+                        >
+                          <MaterialSymbol name="info" size={20} />
+                        </Box>
+                      </ArrowTooltip>
                     </FormLabel>
                     <Select
                       fullWidth
@@ -633,9 +589,6 @@ export function ScheduleReportView({
                     </Box>
                   )}
 
-                  {/* Time and zone read as one setting, so they share a row.
-                      minmax(0, …) lets the long zone names truncate instead of
-                      stretching their column. */}
                   {frequency === "Monthly" && (
                     <Box>
                       <FormLabel sx={{ display: "block", mb: 0.5 }}>
@@ -644,161 +597,27 @@ export function ScheduleReportView({
                           *
                         </Box>
                       </FormLabel>
-                      <LocalizationProvider
-                        dateAdapter={AdapterDateFns}
-                        // The field holds a single day section, so its
-                        // placeholder is the field's placeholder.
-                        localeText={{
-                          fieldDayPlaceholder: () => "Select a day",
-                        }}
-                      >
-                        <DatePicker
-                          value={monthDay}
-                          onChange={(value) => setMonthDay(value)}
-                          open={monthDayOpen}
-                          onOpen={() => setMonthDayOpen(true)}
-                          onClose={() => setMonthDayOpen(false)}
-                          views={["day"]}
-                          // The calendar glyph is decoration; clicking the
-                          // field is what opens the picker.
-                          disableOpenPicker
-                          // Only the day matters, read the way a person says
-                          // it: 1st, 2nd, 13th.
-                          format="do"
-                          slotProps={{
-                            field: { readOnly: true },
-                            textField: {
-                              size: "small",
-                              fullWidth: true,
-                              onClick: () => setMonthDayOpen(true),
-                              slotProps: {
-                                input: {
-                                  startAdornment: (
-                                    <InputAdornment
-                                      position="start"
-                                      sx={{ pointerEvents: "none" }}
-                                    >
-                                      <CalendarIcon
-                                        sx={{
-                                          fontSize: 20,
-                                          color: "action.active",
-                                        }}
-                                      />
-                                    </InputAdornment>
-                                  ),
-                                  endAdornment: monthDay ? (
-                                    <InputAdornment
-                                      position="end"
-                                      className="day-clear"
-                                      sx={{ visibility: "hidden", ml: 0 }}
-                                    >
-                                      <IconButton
-                                        size="small"
-                                        aria-label="Clear"
-                                        onMouseDown={(e) => e.stopPropagation()}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setMonthDay(null);
-                                        }}
-                                        sx={{ color: "text.disabled", p: 0.25 }}
-                                      >
-                                        <CancelIcon sx={{ fontSize: 20 }} />
-                                      </IconButton>
-                                    </InputAdornment>
-                                  ) : undefined,
-                                },
-                              },
-                              sx: {
-                                cursor: "pointer",
-                                "&:hover .day-clear, &:focus-within .day-clear":
-                                  { visibility: "visible" },
-                                // Empty reads as a placeholder, like the
-                                // selects either side of it.
-                                ...(monthDay
-                                  ? {}
-                                  : {
-                                      "& .MuiPickersSectionList-root": {
-                                        color: "text.disabled",
-                                      },
-                                    }),
-                              },
-                            },
-                          }}
-                        />
-                      </LocalizationProvider>
-                    </Box>
-                  )}
-
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: {
-                        xs: "1fr",
-                        sm: "minmax(0, 1fr) minmax(0, 1fr)",
-                      },
-                      gap: 2,
-                    }}
-                  >
-                    <Box>
-                      <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                        Send time
-                        <Box component="span" sx={{ ml: 0.25 }}>
-                          *
-                        </Box>
-                      </FormLabel>
+                      {/* 1st–28th: every month has those days, so a schedule
+                          can't land on a date that doesn't exist. */}
                       <Select
                         fullWidth
-                        displayEmpty
                         size="small"
-                        value={sendTime}
-                        onChange={(e) => setSendTime(e.target.value)}
-                        renderValue={(value) =>
-                          value ? (
-                            (value as string)
-                          ) : (
-                            <Box
-                              component="span"
-                              sx={{ color: "text.disabled" }}
-                            >
-                              Select send time
-                            </Box>
-                          )
-                        }
+                        value={monthDay}
+                        onChange={(e) => setMonthDay(Number(e.target.value))}
                         startAdornment={
                           <InputAdornment position="start">
-                            <ClockIcon sx={{ fontSize: 20 }} />
+                            <CalendarIcon sx={{ fontSize: 20 }} />
                           </InputAdornment>
                         }
                       >
-                        {SEND_TIMES.map((time) => (
-                          <MenuItem key={time} value={time}>
-                            {time}
+                        {MONTH_DAYS.map((day) => (
+                          <MenuItem key={day} value={day}>
+                            {ordinal(day)}
                           </MenuItem>
                         ))}
                       </Select>
                     </Box>
-
-                    <Box>
-                      <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                        Time zone
-                        <Box component="span" sx={{ ml: 0.25 }}>
-                          *
-                        </Box>
-                      </FormLabel>
-                      <Select
-                        fullWidth
-                        size="small"
-                        value={timeZone}
-                        onChange={(e) => setTimeZone(e.target.value)}
-                      >
-                        {TIME_ZONES.map((zone) => (
-                          <MenuItem key={zone} value={zone}>
-                            {zone}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </Box>
-                  </Box>
+                  )}
                 </Box>
               </Step>
 

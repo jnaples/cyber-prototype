@@ -259,6 +259,7 @@ export function ReportLibraryV4() {
         <GenerateReportDrawer
           open={generateOpen}
           onClose={() => setGenerateOpen(false)}
+          reportTitle={selected.title}
           onGenerate={() => setGenerateToast(true)}
         />
 

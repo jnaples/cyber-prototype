@@ -38,7 +38,6 @@ import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
-import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
 
 import { DeliveryDetailsDrawer } from "./delivery-details-drawer";
@@ -72,16 +71,6 @@ type Schedule = {
   status: ScheduleStatus;
 };
 
-// Report-type tags, offered in the filter select.
-const REPORT_TYPES = [
-  "Activity Overview",
-  "Protection Summary",
-  "Traffic Logs",
-  "AI Usage",
-  "Timeline",
-  "Timeline Logs",
-];
-
 const SCHEDULES: Schedule[] = [
   {
     id: 1,
@@ -91,8 +80,8 @@ const SCHEDULES: Schedule[] = [
     recipients: 7,
     freqPrimary: "Monthly",
     freqSecondary: "1st",
-    nextDelivery: "Aug 1",
-    lastDate: "Jul 1",
+    nextDelivery: "Aug 1, 2026",
+    lastDate: "Jul 1, 2026",
     lastStatus: "sent",
     status: "active",
   },
@@ -104,8 +93,8 @@ const SCHEDULES: Schedule[] = [
     recipients: 3,
     freqPrimary: "Weekly",
     freqSecondary: "Mon",
-    nextDelivery: "Mon, Jul 27",
-    lastDate: "Jul 20",
+    nextDelivery: "Mon, Jul 27, 2026",
+    lastDate: "Jul 20, 2026",
     lastStatus: "sent",
     status: "active",
   },
@@ -117,8 +106,8 @@ const SCHEDULES: Schedule[] = [
     recipients: 2,
     freqPrimary: "Monthly",
     freqSecondary: "15th",
-    nextDelivery: "Aug 15",
-    lastDate: "Jul 15",
+    nextDelivery: "Aug 15, 2026",
+    lastDate: "Jul 15, 2026",
     lastStatus: "failed",
     status: "issue",
   },
@@ -131,7 +120,7 @@ const SCHEDULES: Schedule[] = [
     freqPrimary: "Monthly",
     freqSecondary: "1st",
     nextDelivery: "Paused",
-    lastDate: "Apr 1",
+    lastDate: "Apr 1, 2026",
     lastStatus: "sent",
     status: "paused",
   },
@@ -143,12 +132,21 @@ const SCHEDULES: Schedule[] = [
     recipients: 1,
     freqPrimary: "Daily",
     freqSecondary: "Every day",
-    nextDelivery: "Wed, Jul 22",
-    lastDate: "Jul 21",
+    nextDelivery: "Wed, Jul 22, 2026",
+    lastDate: "Jul 21, 2026",
     lastStatus: "sent",
     status: "active",
   },
 ];
+
+// Each schedule's own Next delivery, so resuming a paused one puts its date
+// back rather than leaving "Paused" behind.
+const NEXT_DELIVERY: Record<number, string> = Object.fromEntries(
+  SCHEDULES.filter((s) => s.nextDelivery !== "Paused").map((s) => [
+    s.id,
+    s.nextDelivery,
+  ]),
+);
 
 // ---------------------------------------------------------------------------
 // Cells
@@ -194,12 +192,21 @@ function ReportTypeCell({ tags }: { tags: string[] }) {
   );
 }
 
-// Status toggle — seeded from the row, holds its own on/off state.
-function StatusCell({ status }: { status: ScheduleStatus }) {
-  const [on, setOn] = useState(status !== "paused");
+// Status toggle. The row owns the state, so pausing moves the schedule into
+// the Paused tab and out of Active.
+function StatusCell({
+  status,
+  onToggle,
+}: {
+  status: ScheduleStatus;
+  onToggle: (active: boolean) => void;
+}) {
   return (
     <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-      <Switch checked={on} onChange={(e) => setOn(e.target.checked)} />
+      <Switch
+        checked={status !== "paused"}
+        onChange={(e) => onToggle(e.target.checked)}
+      />
     </Box>
   );
 }
@@ -233,12 +240,10 @@ function attachmentsFor(row: Schedule) {
 
 function ActionsCell({
   row,
-  onSendTest,
   onDelete,
   onResend,
 }: {
   row: Schedule;
-  onSendTest: () => void;
   onDelete: () => void;
   onResend: (count: number) => void;
 }) {
@@ -289,17 +294,6 @@ function ActionsCell({
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <MenuItem
-          onClick={() => {
-            closeMenu();
-            onSendTest();
-          }}
-        >
-          <ListItemIcon>
-            <MaterialSymbol name="send" size={20} />
-          </ListItemIcon>
-          Send test
-        </MenuItem>
         {/* Only meaningful when the last run didn't reach everyone. */}
         {failedDelivery && (
           <MenuItem
@@ -314,7 +308,8 @@ function ActionsCell({
             View delivery details
           </MenuItem>
         )}
-        <Divider />
+        {/* Nothing above Delete on most rows, so no rule to draw. */}
+        {failedDelivery && <Divider />}
         <MenuItem
           onClick={() => {
             closeMenu();
@@ -379,9 +374,9 @@ function ActionsCell({
 }
 
 const buildColumns = (
-  onSendTest: (row: Schedule) => void,
   onDelete: (row: Schedule) => void,
   onResend: (row: Schedule, count: number) => void,
+  onToggleStatus: (row: Schedule, active: boolean) => void,
 ): GridColDef<Schedule>[] => [
   {
     field: "name",
@@ -450,38 +445,14 @@ const buildColumns = (
     flex: 1,
     minWidth: 160,
     sortable: false,
-    renderCell: (params) => {
-      const failed = params.row.lastStatus === "failed";
-      return (
-        <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-          <Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <MaterialSymbol
-                name={failed ? "error" : "check_circle"}
-                size={18}
-                sx={{
-                  color: failed ? "error.main" : "success.main",
-                  flexShrink: 0,
-                }}
-              />
-              <Typography variant="body2" sx={{ color: "text.primary" }}>
-                {params.row.lastDate}
-              </Typography>
-            </Box>
-            <Typography
-              variant="caption"
-              sx={{
-                display: "block",
-                ml: "26px",
-                color: failed ? "error.main" : "text.secondary",
-              }}
-            >
-              {failed ? "Failed" : "Sent"}
-            </Typography>
-          </Box>
-        </Box>
-      );
-    },
+    // Just the date — the outcome lives in the row's own status.
+    renderCell: (params) => (
+      <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
+          {params.row.lastDate}
+        </Typography>
+      </Box>
+    ),
   },
   {
     field: "status",
@@ -489,7 +460,12 @@ const buildColumns = (
     width: 90,
     sortable: false,
     filterable: false,
-    renderCell: (params) => <StatusCell status={params.row.status} />,
+    renderCell: (params) => (
+      <StatusCell
+        status={params.row.status}
+        onToggle={(active) => onToggleStatus(params.row, active)}
+      />
+    ),
   },
   {
     field: "actions",
@@ -503,7 +479,6 @@ const buildColumns = (
     renderCell: (params) => (
       <ActionsCell
         row={params.row}
-        onSendTest={() => onSendTest(params.row)}
         onDelete={() => onDelete(params.row)}
         onResend={(count) => onResend(params.row, count)}
       />
@@ -556,7 +531,6 @@ export default function ScheduledReportsPage() {
   const columns = useMemo(
     () =>
       buildColumns(
-        (row) => setToast(`Test report sent for "${row.name}".`),
         (row) => {
           setSchedules((rows) => rows.filter((r) => r.id !== row.id));
           setToast(`"${row.name}" deleted.`);
@@ -565,6 +539,23 @@ export default function ScheduledReportsPage() {
           setToast(
             `Resent "${row.name}" to ${count} recipient${count === 1 ? "" : "s"}.`,
           ),
+        (row, active) => {
+          setSchedules((rows) =>
+            rows.map((r) =>
+              r.id === row.id
+                ? {
+                    ...r,
+                    status: active ? "active" : "paused",
+                    // A row with no stored date was paused to begin with.
+                    nextDelivery: active
+                      ? (NEXT_DELIVERY[r.id] ?? "Today")
+                      : "Paused",
+                  }
+                : r,
+            ),
+          );
+          setToast(`"${row.name}" ${active ? "resumed" : "paused"}.`);
+        },
       ),
     [],
   );
@@ -579,7 +570,6 @@ export default function ScheduledReportsPage() {
     )?.path ?? PAGE_TABS[0].path;
   const [statusFilter, setStatusFilter] = useState<SummaryKey>("all");
   const [search, setSearch] = useState("");
-  const [reportType, setReportType] = useState("all");
   const navigate = useNavigate();
   const [rowSelection, setRowSelection] = useState<GridRowSelectionModel>({
     type: "include",
@@ -611,7 +601,6 @@ export default function ScheduledReportsPage() {
       if (statusFilter === "active" && s.status === "paused") return false;
       if (statusFilter === "paused" && s.status !== "paused") return false;
       if (statusFilter === "issue" && s.status !== "issue") return false;
-      if (reportType !== "all" && !s.tags.includes(reportType)) return false;
       if (
         q &&
         !s.name.toLowerCase().includes(q) &&
@@ -621,7 +610,7 @@ export default function ScheduledReportsPage() {
         return false;
       return true;
     });
-  }, [schedules, statusFilter, search, reportType, scopedOrg]);
+  }, [schedules, statusFilter, search, scopedOrg]);
 
   const selectedCount =
     rowSelection.type === "exclude"
@@ -770,19 +759,6 @@ export default function ScheduledReportsPage() {
                   },
                 }}
               />
-              <Select
-                size="small"
-                value={reportType}
-                onChange={(e) => setReportType(e.target.value)}
-                sx={{ minWidth: 200 }}
-              >
-                <MenuItem value="all">All report types</MenuItem>
-                {REPORT_TYPES.map((t) => (
-                  <MenuItem key={t} value={t}>
-                    {t}
-                  </MenuItem>
-                ))}
-              </Select>
             </Box>
 
             <DataTable
@@ -793,8 +769,8 @@ export default function ScheduledReportsPage() {
               showSearch={false}
               showFilters
               showDefaultView={false}
+              showExport={false}
               showPreferences={false}
-              showExport
               showRefresh
               rowSelectionModel={rowSelection}
               onRowSelectionModelChange={setRowSelection}
@@ -841,11 +817,13 @@ export default function ScheduledReportsPage() {
         open={Boolean(toast)}
         autoHideDuration={4000}
         onClose={() => setToast(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
+        {/* Same treatment as the Library's toasts. */}
         <Alert
           severity="success"
-          variant="filled"
+          variant="standard"
+          elevation={8}
           onClose={() => setToast(null)}
         >
           {toast}
