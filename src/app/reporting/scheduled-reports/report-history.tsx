@@ -358,14 +358,13 @@ const columns: GridColDef<HistoryRow>[] = [
     flex: 1.2,
     minWidth: 200,
   },
+  { field: "customer", headerName: "Organization", flex: 1, minWidth: 170 },
   {
     field: "reportType",
     headerName: "Report Type",
     flex: 1.1,
     minWidth: 190,
   },
-  { field: "customer", headerName: "Organization", flex: 1, minWidth: 170 },
-  { field: "period", headerName: "Period", flex: 0.8, minWidth: 130 },
   { field: "source", headerName: "Source", flex: 0.7, minWidth: 110 },
   { field: "runAt", headerName: "Generated", flex: 1, minWidth: 170 },
   {
@@ -463,6 +462,7 @@ export function ReportHistory() {
         rows={visibleRows}
         columns={columns}
         showExport={false}
+        showDefaultView={false}
         pinnedShadowFields={{ left: "reportName", right: "actions" }}
       />
     </TabbedDataCard>

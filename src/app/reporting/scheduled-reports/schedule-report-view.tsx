@@ -195,14 +195,13 @@ export function ScheduleReportView({
     selectedReports.includes(r.key),
   );
 
-  // Required to save: a name, a report, an organization, a recipient, and a
-  // subject.
+  // Required to save: a name, a report, an organization and a recipient. An
+  // empty subject falls back to the generated one.
   const isComplete =
     scheduleName.trim() !== "" &&
     selectedReports.length > 0 &&
     selectedOrg !== "" &&
-    recipientCount > 0 &&
-    emailSubject.trim() !== "";
+    recipientCount > 0;
 
   // Editing an existing schedule saves only what changed, so the form's
   // current shape is compared against the one it opened with.
@@ -450,9 +449,6 @@ export function ScheduleReportView({
                   <Box>
                     <FormLabel sx={{ display: "block", mb: 0.5 }}>
                       Email Subject
-                      <Box component="span" sx={{ ml: 0.25 }}>
-                        *
-                      </Box>
                     </FormLabel>
                     <TextField
                       fullWidth
@@ -555,7 +551,7 @@ export function ScheduleReportView({
                         sx={{ mt: 0.5, color: "text.secondary" }}
                       >
                         Delivered on the first day of each quarter (Jan 1, Apr
-                        1, Jul 1, Oct 1), covering the previous quarter.
+                        1, Jul 1, Oct 1). Report covers the previous quarter.
                       </Typography>
                     )}
                   </Box>

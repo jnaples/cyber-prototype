@@ -402,17 +402,17 @@ const buildColumns = (
     renderCell: (params) => <ScheduleCell name={params.row.name} />,
   },
   {
+    field: "organizations",
+    headerName: "Organization",
+    flex: 1,
+    minWidth: 160,
+  },
+  {
     field: "tags",
     headerName: "Report Type",
     width: 280,
     sortable: false,
     renderCell: (params) => <ReportTypeCell tags={params.row.tags} />,
-  },
-  {
-    field: "organizations",
-    headerName: "Organization",
-    flex: 1,
-    minWidth: 160,
   },
   {
     field: "recipients",
@@ -783,7 +783,6 @@ export default function ScheduledReportsPage() {
               showFilters
               showDefaultView={false}
               showExport={false}
-              showPreferences={false}
               showRefresh
               rowSelectionModel={rowSelection}
               onRowSelectionModelChange={setRowSelection}
