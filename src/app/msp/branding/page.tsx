@@ -144,17 +144,24 @@ function SectionCard({
  * Upload well. Picking a file previews it in place via an object URL, which
  * lives only for the session — a refresh clears it, since nothing is uploaded.
  */
+// The dark scheme's own neutral surface, pinned so the dark-mode well shows a
+// logo against the background it will actually sit on, in either scheme.
+const DARK_SURFACE = "#29323D";
+
 function ImageDrop({
   previewHeight,
   alt,
   src,
   onChange,
+  dark,
 }: {
   /** How tall the preview may render inside the well. */
   previewHeight: number;
   alt: string;
   src: string | null;
   onChange: (src: string | null) => void;
+  /** Preview the image on the dark surface rather than the page's own. */
+  dark?: boolean;
 }) {
   const pick = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -183,12 +190,12 @@ function ImageDrop({
           border: "1px dashed",
           borderColor: "divider",
           borderRadius: 1,
-          bgcolor: "background.neutral",
+          bgcolor: dark ? DARK_SURFACE : "background.neutral",
           minHeight: previewHeight + 32,
           p: 2,
           textAlign: "center",
           cursor: "pointer",
-          color: "text.primary",
+          color: dark ? theme.vars.palette.common.white : "text.primary",
           "&:hover": { borderColor: "primary.main" },
           // Full-strength primary is too dark against the dark surface.
           ...theme.applyStyles("dark", {
@@ -248,6 +255,7 @@ export default function BrandingPage() {
   const [dashboardName, setDashboardName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [logo, setLogo] = useState<string | null>(null);
+  const [darkLogo, setDarkLogo] = useState<string | null>(null);
   const [favicon, setFavicon] = useState<string | null>(null);
   // What the form looked like when it was last saved.
   const [saved, setSaved] = useState({
@@ -255,6 +263,7 @@ export default function BrandingPage() {
     contactEmail: "",
     emailTemplate: DEFAULT_EMAIL_TEMPLATE,
     logo: null as string | null,
+    darkLogo: null as string | null,
     favicon: null as string | null,
   });
   const [emailTemplate, setEmailTemplate] = useState<string>(
@@ -271,6 +280,7 @@ export default function BrandingPage() {
       contactEmail,
       emailTemplate,
       logo,
+      darkLogo,
       favicon,
     });
     setToast(true);
@@ -297,6 +307,7 @@ export default function BrandingPage() {
     contactEmail !== saved.contactEmail ||
     emailTemplate !== saved.emailTemplate ||
     logo !== saved.logo ||
+    darkLogo !== saved.darkLogo ||
     favicon !== saved.favicon;
 
   const canSave = dirty && !missingRequired;
@@ -317,6 +328,7 @@ export default function BrandingPage() {
                   setContactEmail(saved.contactEmail);
                   setEmailTemplate(saved.emailTemplate);
                   setLogo(saved.logo);
+                  setDarkLogo(saved.darkLogo);
                   setFavicon(saved.favicon);
                 }}
               >
@@ -392,30 +404,62 @@ export default function BrandingPage() {
           />
         </Box>
 
-        <Box>
-          <FieldLabel
-            label="Custom Logo (max width: 500px)"
-            help="Displayed across the dashboard, emails, and block pages. Organizations can set a different logo on block pages."
-          />
-          <ImageDrop
-            previewHeight={72}
-            alt="Custom logo preview"
-            src={logo}
-            onChange={setLogo}
-          />
+        {/* The two logos side by side, so light and dark read as one choice. */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 2,
+          }}
+        >
+          <Box>
+            <FieldLabel
+              label="Default Logo (max width: 500px)"
+              help="Displayed across the dashboard, emails, and block pages. Organizations can set a different logo on block pages."
+            />
+            <ImageDrop
+              previewHeight={72}
+              alt="Default logo preview"
+              src={logo}
+              onChange={setLogo}
+            />
+          </Box>
+          <Box>
+            <FieldLabel
+              label="Dark Mode Logo (max width: 500px)"
+              help="Used wherever the dashboard is in dark mode. Previewed on the dark surface it will sit on."
+            />
+            <ImageDrop
+              dark
+              previewHeight={72}
+              alt="Dark mode logo preview"
+              src={darkLogo}
+              onChange={setDarkLogo}
+            />
+          </Box>
         </Box>
 
-        <Box>
-          <FieldLabel
-            label="Custom Favicon (max width: 32px)"
-            help="Shown in the browser tab on the dashboard and other branded pages."
-          />
-          <ImageDrop
-            previewHeight={32}
-            alt="Custom favicon preview"
-            src={favicon}
-            onChange={setFavicon}
-          />
+        {/* Favicon keeps the left column; the right one is deliberately empty. */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 2,
+          }}
+        >
+          <Box>
+            <FieldLabel
+              label="Custom Favicon (max width: 32px)"
+              help="Shown in the browser tab on the dashboard and other branded pages."
+            />
+            <ImageDrop
+              previewHeight={32}
+              alt="Custom favicon preview"
+              src={favicon}
+              onChange={setFavicon}
+            />
+          </Box>
+          <Box />
         </Box>
       </SectionCard>
 
@@ -423,7 +467,7 @@ export default function BrandingPage() {
         <Box>
           <FieldLabel
             label="Customer Contact Email"
-            help="The address that receives unblock requests submitted by customers through the dashboard."
+            help="Shown to organizations on the account-cancellation login error, as the contact for assistance."
             required
           />
           <TextField
