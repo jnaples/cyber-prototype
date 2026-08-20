@@ -19,7 +19,10 @@ import { ReportPreview } from "./report-preview";
 import { REPORTS } from "./reports";
 
 // A custom report is built to order, so there's no sample of it to show.
-const SAMPLE_REPORTS = REPORTS.filter((r) => r.key !== "custom");
+// Same two the Library hides: neither has a home yet.
+const SAMPLE_REPORTS = REPORTS.filter(
+  (r) => r.key !== "custom" && r.key !== "traffic",
+);
 
 export function SampleReportsModal({
   open,

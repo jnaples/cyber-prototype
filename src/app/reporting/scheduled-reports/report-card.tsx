@@ -1,9 +1,17 @@
-// A report as a card: a thumbnail of the real document, its name and blurb,
-// and a chip per product it belongs to. Shared so any surface listing reports
-// (Library, and the v2 proof of concept) renders them the same way.
+// A report as a card: its name and product chips, a blurb, and a thumbnail of
+// the real document with the actions behind a hover scrim. Rendered on an
+// elevated Card so it lifts off the Library's neutral well.
 
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
-import { Box, Button, Chip, Menu, MenuItem, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Card,
+  Chip,
+  Menu,
+  MenuItem,
+  Typography,
+} from "@mui/material";
 import type { SvgIconComponent } from "@mui/icons-material";
 import { alpha } from "@mui/material/styles";
 import { useState } from "react";
@@ -54,20 +62,18 @@ export function ReportCard({
   const menuOpen = Boolean(menuAnchor);
   const hasActions = Boolean(onPreview || onRunNow || onSchedule);
   return (
-    <Box
+    <Card
+      elevation={1}
       onClick={onClick}
       sx={(theme) => ({
         height,
         display: "flex",
         flexDirection: "column",
-        // No card padding: the text block carries its own, so the preview
-        // runs flush to the card's edges.
+        // One 16px inset on the card itself — the text block and the preview
+        // pane both sit inside it, separated by the same 16px.
+        p: 2,
+        gap: 2,
         overflow: "hidden",
-        // Same frame and hover tint the v2 tab's cards use.
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: 1,
-        bgcolor: "background.paper",
         cursor: onClick ? "pointer" : "default",
         transition: "background 120ms",
         "&:hover": {
@@ -77,7 +83,7 @@ export function ReportCard({
       })}
     >
       {/* Title row — chips sit opposite the name; the blurb runs under both. */}
-      <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 0.5 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
         <Box
           sx={{
             display: "flex",
@@ -237,6 +243,6 @@ export function ReportCard({
           </MenuItem>
         ))}
       </Menu>
-    </Box>
+    </Card>
   );
 }

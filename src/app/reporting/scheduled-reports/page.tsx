@@ -45,9 +45,6 @@ import { ReportHistory } from "./report-history";
 import { scheduleEditState, TAG_TO_REPORT_KEY } from "./schedule-edit-state";
 import { REPORT_MANAGER_BASE, REPORT_MANAGER_TABS } from "./routes";
 import { ReportLibrary } from "./report-library";
-import { ReportLibraryV2 } from "./report-library-v2";
-import { ReportLibraryV3 } from "./report-library-v3";
-import { ReportLibraryV4 } from "./report-library-v4";
 import { REPORTS } from "./reports";
 
 // ---------------------------------------------------------------------------
@@ -308,8 +305,28 @@ function ActionsCell({
             View delivery details
           </MenuItem>
         )}
-        {/* Nothing above Delete on most rows, so no rule to draw. */}
         {failedDelivery && <Divider />}
+        <MenuItem
+          onClick={() => {
+            closeMenu();
+            // Same settings, saved as a new schedule — the scheduler opens
+            // with the cursor in the name.
+            navigate("/reporting/report-scheduler", {
+              state: {
+                clone: {
+                  ...scheduleEditState(row),
+                  scheduleName: `${row.name} (copy)`,
+                },
+              },
+            });
+          }}
+        >
+          <ListItemIcon>
+            <MaterialSymbol name="content_copy" size={20} />
+          </ListItemIcon>
+          Clone
+        </MenuItem>
+        <Divider />
         <MenuItem
           onClick={() => {
             closeMenu();
@@ -699,10 +716,6 @@ export default function ScheduledReportsPage() {
       }
     >
       {activePath === "templates" && <ReportLibrary />}
-
-      {activePath === "templates-v2" && <ReportLibraryV2 />}
-      {activePath === "templates-v3" && <ReportLibraryV3 />}
-      {activePath === "templates-v4" && <ReportLibraryV4 />}
 
       {activePath === "history" && <ReportHistory />}
 

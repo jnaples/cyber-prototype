@@ -11,8 +11,9 @@ export default function ReportSchedulerPage() {
   const location = useLocation();
   // Arriving from a Schedules row's Edit action seeds the whole form from that
   // row; arriving from a Library preview only carries the report being viewed.
-  const { edit, reportKeys } = (location.state ?? {}) as {
+  const { edit, clone, reportKeys } = (location.state ?? {}) as {
     edit?: ScheduleEditState;
+    clone?: ScheduleEditState;
     reportKeys?: string[];
   };
 
@@ -23,7 +24,11 @@ export default function ReportSchedulerPage() {
 
   return (
     <ScheduleReportView
-      edit={edit}
+      // A clone opens on a copy of the row's settings but saves as new, with
+      // the cursor waiting in the name it needs renaming from.
+      edit={edit ?? clone}
+      isEdit={Boolean(edit)}
+      autoFocusName={Boolean(clone)}
       initialReports={reportKeys}
       onCancel={() => back()}
       onSave={(name) => back(`"${name}" ${edit ? "updated" : "created"}.`)}

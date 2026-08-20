@@ -13,7 +13,6 @@ import {
   Divider,
   FormControlLabel,
   FormLabel,
-  InputAdornment,
   Link,
   MenuItem,
   Switch,
@@ -21,7 +20,6 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { CalendarIcon } from "@mui/x-date-pickers/icons";
 import { useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
@@ -144,13 +142,20 @@ export function ScheduleReportView({
   onCancel,
   onSave,
   edit,
+  isEdit = Boolean(edit),
+  autoFocusName = false,
   initialReports,
 }: {
   onCancel: () => void;
   /** Receives the schedule's name so the list can confirm it by name. */
   onSave: (name: string) => void;
-  /** Seeds the form from an existing schedule and switches to edit mode. */
+  /** Seeds the form from an existing schedule. */
   edit?: ScheduleEditState;
+  /** Editing an existing schedule rather than creating one. A clone seeds from
+   *  `edit` but is still a create. Defaults to whether `edit` was given. */
+  isEdit?: boolean;
+  /** Put the cursor in Schedule name on open — a clone lands there to rename. */
+  autoFocusName?: boolean;
   /** Report keys to preselect — set when opened from a Library preview. */
   initialReports?: string[];
 }) {
@@ -219,10 +224,10 @@ export function ScheduleReportView({
   const [openedWith] = useState(formState);
   const isDirty = formState !== openedWith;
 
-  const canSave = isComplete && (!edit || isDirty);
+  const canSave = isComplete && (!isEdit || isDirty);
   const saveTooltip = !isComplete
-    ? `${edit ? "Save" : "Create Schedule"} will enable once all required fields are filled out.`
-    : edit && !isDirty
+    ? `${isEdit ? "Save" : "Create Schedule"} will enable once all required fields are filled out.`
+    : isEdit && !isDirty
       ? "No changes to save."
       : "";
 
@@ -236,7 +241,7 @@ export function ScheduleReportView({
       }}
     >
       <PageHeader
-        title={edit ? "Edit Schedule" : "Schedule Report"}
+        title={isEdit ? "Edit Schedule" : "Schedule Report"}
         onBack={onCancel}
         actions={
           <>
@@ -256,7 +261,7 @@ export function ScheduleReportView({
                   onClick={() => onSave(scheduleName)}
                   disabled={!canSave}
                 >
-                  {edit ? "Save" : "Create schedule"}
+                  {isEdit ? "Save" : "Create schedule"}
                 </Button>
               </span>
             </ArrowTooltip>
@@ -298,6 +303,7 @@ export function ScheduleReportView({
                     <TextField
                       fullWidth
                       size="small"
+                      autoFocus={autoFocusName}
                       placeholder="e.g. Monthly Timeline"
                       value={scheduleName}
                       onChange={(e) => setScheduleName(e.target.value)}
@@ -541,6 +547,17 @@ export function ScheduleReportView({
                         </MenuItem>
                       ))}
                     </Select>
+                    {frequency === "Quarterly" && (
+                      // Quarterly has no day to pick, so the rule is spelled
+                      // out instead.
+                      <Typography
+                        variant="body2"
+                        sx={{ mt: 0.5, color: "text.secondary" }}
+                      >
+                        Delivered on the first day of each quarter (Jan 1, Apr
+                        1, Jul 1, Oct 1), covering the previous quarter.
+                      </Typography>
+                    )}
                   </Box>
 
                   {frequency === "Weekly" && (
@@ -604,11 +621,6 @@ export function ScheduleReportView({
                         size="small"
                         value={monthDay}
                         onChange={(e) => setMonthDay(Number(e.target.value))}
-                        startAdornment={
-                          <InputAdornment position="start">
-                            <CalendarIcon sx={{ fontSize: 20 }} />
-                          </InputAdornment>
-                        }
                       >
                         {MONTH_DAYS.map((day) => (
                           <MenuItem key={day} value={day}>

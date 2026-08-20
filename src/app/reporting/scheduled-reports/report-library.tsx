@@ -23,7 +23,7 @@ import { TextField } from "@/components/text-field";
 import { GenerateReportDrawer } from "./generate-report-drawer";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 
-import { ReportCardV2 } from "./report-card-v2";
+import { ReportCard } from "./report-card";
 import { SamplePreviewModal } from "./sample-preview-modal";
 import { REPORT_MANAGER_BASE } from "./routes";
 import { REPORTS, type ReportDef } from "./reports";
@@ -160,7 +160,7 @@ export function ReportLibrary() {
                 }}
               >
                 {matches.map((r) => (
-                  <ReportCardV2
+                  <ReportCard
                     key={r.key}
                     reportKey={r.key}
                     title={r.title}
