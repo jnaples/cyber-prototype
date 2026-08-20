@@ -30,7 +30,7 @@ export const REPORTS: ReportDef[] = [
     desc: "Requests, blocked traffic, and top categories across the period.",
     Icon: StackedLineChartOutlinedIcon,
     file: "Activity-Overview-Jul-2026.pdf",
-    products: ["Filtering"],
+    products: ["CyberSight"],
     size: "1.2 MB",
   },
   {

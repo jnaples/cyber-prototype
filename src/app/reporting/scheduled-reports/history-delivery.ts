@@ -3,7 +3,7 @@
 
 export type DeliveryRecipient = {
   email: string;
-  /** Delivery time, or why the address rejected it. */
+  /** Why the address rejected it — empty for a delivered address. */
   detail: string;
 };
 
@@ -33,7 +33,6 @@ const BOUNCE_REASONS = [
  */
 export function splitRecipients(
   delivery: string,
-  runAt: string,
   rowId: number,
 ): { delivered: DeliveryRecipient[]; bounced: DeliveryRecipient[] } {
   // Nothing left the building for a manual export or an unsent run.
@@ -52,8 +51,9 @@ export function splitRecipients(
       email,
       detail: BOUNCE_REASONS[i % BOUNCE_REASONS.length],
     }));
+  // Delivered rows carry no detail — the run time is already on the grid row.
   const delivered = emails
     .slice(0, emails.length - bouncedCount)
-    .map((email) => ({ email, detail: runAt }));
+    .map((email) => ({ email, detail: "" }));
   return { delivered, bounced };
 }

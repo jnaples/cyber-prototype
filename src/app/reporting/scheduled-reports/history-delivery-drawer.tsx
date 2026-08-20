@@ -5,7 +5,16 @@
 // The counts come from the row itself: a row reading "Bounced (2)" shows two
 // bounced addresses, and every other row shows none.
 
-import { Box, Collapse, Typography } from "@mui/material";
+import {
+  Box,
+  Collapse,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
@@ -17,18 +26,15 @@ import type { DeliveryRecipient } from "./history-delivery";
 function RecipientGroup({
   label,
   recipients,
-  tone,
-  icon,
-  defaultOpen = false,
+  showReason = false,
 }: {
   label: string;
   recipients: DeliveryRecipient[];
-  /** Palette key for the per-row status icon. */
-  tone: "success" | "error";
-  icon: string;
-  defaultOpen?: boolean;
+  /** Add the Reason column — bounces only. */
+  showReason?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  // Both groups start closed — the counts in the headers are the summary.
+  const [open, setOpen] = useState(false);
   const empty = recipients.length === 0;
   return (
     <Box>
@@ -74,53 +80,24 @@ function RecipientGroup({
       <Collapse in={open && !empty}>
         {/* Long lists scroll inside the group rather than pushing the other
             group off the bottom of the drawer. */}
-        <Box
-          sx={{
-            maxHeight: 220,
-            overflowY: "auto",
-            px: 1,
-            pt: 0.5,
-            pb: 1,
-            display: "flex",
-            flexDirection: "column",
-            gap: 1.5,
-          }}
-        >
-          {recipients.map((r) => (
-            <Box
-              key={r.email}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 2,
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.75,
-                  minWidth: 0,
-                }}
-              >
-                <MaterialSymbol
-                  name={icon}
-                  size={18}
-                  sx={{ color: `${tone}.main`, flexShrink: 0 }}
-                />
-                <Typography variant="body2" noWrap sx={{ minWidth: 0 }}>
-                  {r.email}
-                </Typography>
-              </Box>
-              <Typography
-                variant="body2"
-                sx={{ color: "text.secondary", flexShrink: 0 }}
-              >
-                {r.detail}
-              </Typography>
-            </Box>
-          ))}
+        <Box sx={{ maxHeight: 220, overflowY: "auto" }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Recipient</TableCell>
+                {/* Only a bounce has anything to say beyond the address. */}
+                {showReason && <TableCell>Reason</TableCell>}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {recipients.map((r) => (
+                <TableRow key={r.email}>
+                  <TableCell>{r.email}</TableCell>
+                  {showReason && <TableCell>{r.detail}</TableCell>}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </Box>
       </Collapse>
     </Box>
@@ -146,21 +123,8 @@ export function HistoryDeliveryDrawer({
       // A lone secondary action keeps the left side of the footer.
       secondaryAction={{ label: "Back", onClick: onClose }}
     >
-      <RecipientGroup
-        label="Delivered"
-        recipients={delivered}
-        tone="success"
-        icon="check_circle"
-        defaultOpen
-      />
-      <RecipientGroup
-        label="Bounced"
-        recipients={bounced}
-        tone="error"
-        icon="error"
-        // The reason the drawer was opened, when there is one.
-        defaultOpen={bounced.length > 0}
-      />
+      <RecipientGroup label="Delivered" recipients={delivered} />
+      <RecipientGroup label="Bounced" recipients={bounced} showReason />
     </Drawer>
   );
 }

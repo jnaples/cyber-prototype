@@ -297,7 +297,7 @@ function ActionsCell({ row }: { row: HistoryRow }) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
   // The drawer's counts come off the row, so it can't disagree with the grid.
-  const recipients = splitRecipients(row.delivery, row.runAt, row.id);
+  const recipients = splitRecipients(row.delivery, row.id);
   // A dash means the run was a manual export, so there is no delivery to
   // resend or inspect.
   const wasDelivered = row.delivery !== "-";
