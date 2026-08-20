@@ -19,6 +19,13 @@ export const REPORT_MANAGER_TABS = [
     path: "templates-v3",
     hidden: true,
   },
+  // The Library's original two-column design, restored from git.
+  {
+    label: "Report Library v4",
+    icon: "list_alt",
+    path: "templates-v4",
+    hidden: true,
+  },
   { label: "Schedules", icon: "schedule_send", path: "schedules" },
   { label: "History", icon: "history", path: "history" },
 ] as const;

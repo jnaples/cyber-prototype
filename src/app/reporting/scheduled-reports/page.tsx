@@ -48,6 +48,7 @@ import { REPORT_MANAGER_BASE, REPORT_MANAGER_TABS } from "./routes";
 import { ReportLibrary } from "./report-library";
 import { ReportLibraryV2 } from "./report-library-v2";
 import { ReportLibraryV3 } from "./report-library-v3";
+import { ReportLibraryV4 } from "./report-library-v4";
 import { REPORTS } from "./reports";
 
 // ---------------------------------------------------------------------------
@@ -712,6 +713,7 @@ export default function ScheduledReportsPage() {
 
       {activePath === "templates-v2" && <ReportLibraryV2 />}
       {activePath === "templates-v3" && <ReportLibraryV3 />}
+      {activePath === "templates-v4" && <ReportLibraryV4 />}
 
       {activePath === "history" && <ReportHistory />}
 

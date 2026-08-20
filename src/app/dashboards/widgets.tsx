@@ -252,7 +252,7 @@ export function WidgetBody({ type }: { type: string }) {
           color={PAL.purple}
           num={74}
           denom={75}
-          label="Users Protected"
+          label="Users"
         />
       );
     case "status-relays":
@@ -262,7 +262,7 @@ export function WidgetBody({ type }: { type: string }) {
           color={PAL.ink}
           num={2}
           denom={2}
-          label="Relays Protected"
+          label="Relays"
         />
       );
 

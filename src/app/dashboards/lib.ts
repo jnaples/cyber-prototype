@@ -107,8 +107,8 @@ export const WIDGET_CATALOG: WidgetDef[] = [
 
   { type: "status-sites",   name: "Sites Protected",          desc: "Status fraction", icon: "location_on", cat: "Status", span: 1 },
   { type: "status-roaming", name: "Roaming Clients Protected",desc: "Status fraction", icon: "devices",  cat: "Status", span: 1 },
-  { type: "status-users",   name: "Users Protected",          desc: "Status fraction", icon: "person",      cat: "Status", span: 1 },
-  { type: "status-relays",  name: "Relays Protected",         desc: "Status fraction", icon: "device_hub",  cat: "Status", span: 1 },
+  { type: "status-users",   name: "Users",                    desc: "Status fraction", icon: "person",      cat: "Status", span: 1 },
+  { type: "status-relays",  name: "Relays",                   desc: "Status fraction", icon: "device_hub",  cat: "Status", span: 1 },
 
   { type: "request-activity", name: "Request Activity",     desc: "Allowed / blocked / threats over time", icon: "show_chart",      cat: "Charts", span: 4 },
   { type: "threats-time",     name: "Threats Over Time",    desc: "Threat categories trend",               icon: "trending_up",     cat: "Charts", span: 3 },

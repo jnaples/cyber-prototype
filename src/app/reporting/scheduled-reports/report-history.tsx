@@ -21,6 +21,8 @@ import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { useOrgScope } from "@/hooks/use-org-scope";
 
+import { HistoryDeliveryDrawer } from "./history-delivery-drawer";
+import { splitRecipients } from "./history-delivery";
 import { downloadQueryLogsCsv } from "./query-logs-csv";
 import { downloadTimelineLogsCsv } from "./timeline-logs-csv";
 import { ReportPrintDocument } from "./report-print";
@@ -293,6 +295,9 @@ function ActionsCell({ row }: { row: HistoryRow }) {
   const available = row.status === "available";
   const [printing, setPrinting] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+  const [deliveryOpen, setDeliveryOpen] = useState(false);
+  // The drawer's counts come off the row, so it can't disagree with the grid.
+  const recipients = splitRecipients(row.delivery, row.runAt, row.id);
   // A dash means the run was a manual export, so there is no delivery to
   // resend or inspect.
   const wasDelivered = row.delivery !== "-";
@@ -379,7 +384,10 @@ function ActionsCell({ row }: { row: HistoryRow }) {
           <MenuItem
             key={label}
             disabled={!wasDelivered}
-            onClick={() => setMenuAnchor(null)}
+            onClick={() => {
+              setMenuAnchor(null);
+              if (label === "Delivery Details") setDeliveryOpen(true);
+            }}
             // MUI kills pointer events on a disabled item, which takes the
             // cursor with them — put it back so the block reads as a block,
             // then keep the hover tint off so it still reads as unavailable.
@@ -398,6 +406,13 @@ function ActionsCell({ row }: { row: HistoryRow }) {
           </MenuItem>
         ))}
       </Menu>
+
+      <HistoryDeliveryDrawer
+        open={deliveryOpen}
+        onClose={() => setDeliveryOpen(false)}
+        delivered={recipients.delivered}
+        bounced={recipients.bounced}
+      />
 
       {printing && (
         <ReportPrintDocument
