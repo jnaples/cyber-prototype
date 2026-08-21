@@ -380,7 +380,7 @@ export default function CyberSightAiUsageReport() {
         }}
       >
         {[
-          { num: "79h 0m", cap: "Total AI tool time" },
+          { num: "15m", cap: "Avg AI tool time per device per day" },
           { num: "31%", cap: "Of all active time" },
           { num: "23", cap: "AI tools detected" },
           { num: "10", cap: "Devices using AI" },
@@ -550,7 +550,7 @@ export default function CyberSightAiUsageReport() {
             <Box
               sx={{ width: 28, height: 0, borderTop: `3px dashed ${C.trend}` }}
             />
-            31-day trend
+            Monthly trend
           </Box>
         </Box>
       </Box>
@@ -567,19 +567,19 @@ export default function CyberSightAiUsageReport() {
         <TopNColumn
           color={C.site}
           title="Top AI websites"
-          sub="Top 10 of 12 AI sites accessed"
+          sub="12 accessed"
           rows={TOP_AI_WEBSITES}
         />
         <TopNColumn
           color={C.app}
           title="Top AI applications"
-          sub="Top 10 of 11 AI applications detected"
+          sub="11 detected"
           rows={TOP_AI_APPS}
         />
         <TopNColumn
           color={C.client}
           title="Top AI clients"
-          sub="All 10 devices using AI tools"
+          sub="10 total"
           rows={TOP_AI_CLIENTS}
         />
       </Box>

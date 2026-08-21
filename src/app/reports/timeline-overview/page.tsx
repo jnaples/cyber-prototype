@@ -267,7 +267,7 @@ function SecHead({
 }: {
   color?: string;
   title: string;
-  sub: string;
+  sub?: string;
 }) {
   return (
     <Box sx={{ mb: "24px" }}>
@@ -283,9 +283,11 @@ function SecHead({
       >
         {title}
       </Box>
-      <Box component="p" sx={{ m: 0, fontSize: 16, color: TEXT2, mt: "4px" }}>
-        {sub}
-      </Box>
+      {sub && (
+        <Box component="p" sx={{ m: 0, fontSize: 16, color: TEXT2, mt: "4px" }}>
+          {sub}
+        </Box>
+      )}
     </Box>
   );
 }
@@ -460,11 +462,7 @@ export default function TimelineOverviewReport() {
 
       {/* Events — stacked daily bars */}
       <Box sx={{ mb: "72px" }}>
-        <SecHead
-          color={C.active}
-          title="Events"
-          sub="Daily events by activity type"
-        />
+        <SecHead color={C.active} title="Events" />
         <Box
           component="svg"
           viewBox="-34 0 1306 402"
@@ -564,14 +562,10 @@ export default function TimelineOverviewReport() {
         </Box>
       </Box>
 
-      {/* Top activities */}
+      {/* Activity breakdown */}
       <Box sx={{ mb: "72px" }}>
         <Box>
-          <SecHead
-            color={C.app}
-            title="Top activities"
-            sub="Top 5 of 168 activities"
-          />
+          <SecHead color={C.app} title="Activity Breakdown" />
           <Box sx={{ display: "flex", alignItems: "center", gap: "48px" }}>
             <Box
               component="svg"

@@ -2,7 +2,6 @@
 // box, a "Select all" row, and a rule before the options. Used by the dashboard
 // Filters drawer and the Generate Report drawer.
 
-import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Checkbox,
@@ -10,7 +9,6 @@ import {
   Divider,
   FormControl,
   FormLabel,
-  InputAdornment,
   ListItemText,
   ListSubheader,
   MenuItem,
@@ -20,10 +18,22 @@ import type { SelectChangeEvent } from "@mui/material";
 import { useState } from "react";
 
 import { Select } from "@/components/select";
-import { TextField } from "@/components/text-field";
+import { DropdownSearch } from "@/components/dropdown-search";
 
 // Sentinel row value for the "Select all" item (same trick as Query Logs).
 const SELECT_ALL_VALUE = "__select_all__";
+
+/** Options bucketed by `groupBy`, in the order the groups first appear. */
+function groupOptions(options: string[], groupBy: (option: string) => string) {
+  const groups = new Map<string, string[]>();
+  for (const option of options) {
+    const key = groupBy(option);
+    const bucket = groups.get(key);
+    if (bucket) bucket.push(option);
+    else groups.set(key, [option]);
+  }
+  return [...groups];
+}
 
 export function SearchableMultiSelect({
   label,
@@ -31,6 +41,8 @@ export function SearchableMultiSelect({
   selected,
   onChange,
   searchable = true,
+  selectAll = true,
+  groupBy,
   allLabel,
   disabled = false,
   chips = false,
@@ -47,11 +59,27 @@ export function SearchableMultiSelect({
   chips?: boolean;
   /** The search box + Select all + rule. On by default; turn off for short lists. */
   searchable?: boolean;
+  /** The "Select all" row. On by default; turn off where picking everyone
+   *  isn't a sensible shortcut. */
+  selectAll?: boolean;
+  /** Files each option under a heading — e.g. the organization it belongs to.
+   *  Return the fallback heading yourself for options with no group. */
+  groupBy?: (option: string) => string;
   /** Empty-state text; defaults to "All {label}". Set it where the label is
    *  singular and wouldn't read right (e.g. Result -> "All Results"). */
   allLabel?: string;
 }) {
   const [search, setSearch] = useState("");
+  const renderOption = (option: string) => (
+    <MenuItem key={option} value={option}>
+      <Checkbox
+        size="small"
+        checked={selected.includes(option)}
+        sx={{ p: 0.5, mr: 1 }}
+      />
+      <ListItemText primary={option} />
+    </MenuItem>
+  );
   const allSelected = options.length > 0 && selected.length === options.length;
   const someSelected = selected.length > 0 && !allSelected;
   const visibleOptions = search
@@ -131,31 +159,8 @@ export function SearchableMultiSelect({
           );
         }}
       >
-        {searchable && (
-          <ListSubheader sx={{ px: 2, py: 1 }}>
-            <TextField
-              size="small"
-              autoFocus
-              fullWidth
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key !== "Escape") e.stopPropagation();
-              }}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-          </ListSubheader>
-        )}
-        {searchable && (
+        {searchable && <DropdownSearch value={search} onChange={setSearch} />}
+        {searchable && selectAll && (
           <MenuItem value={SELECT_ALL_VALUE}>
             <Checkbox
               size="small"
@@ -166,17 +171,28 @@ export function SearchableMultiSelect({
             <ListItemText primary="Select all" />
           </MenuItem>
         )}
-        {searchable && <Divider />}
-        {visibleOptions.map((option) => (
-          <MenuItem key={option} value={option}>
-            <Checkbox
-              size="small"
-              checked={selected.includes(option)}
-              sx={{ p: 0.5, mr: 1 }}
-            />
-            <ListItemText primary={option} />
-          </MenuItem>
-        ))}
+        {/* Breathing room around the rule under the search box, matching the
+            Query Logs dropdowns. */}
+        {searchable && <Divider sx={{ my: 1 }} />}
+        {groupBy
+          ? groupOptions(visibleOptions, groupBy).flatMap(([group, opts]) => [
+              <ListSubheader
+                key={`group-${group}`}
+                // Same heading treatment as the Query Logs Roaming Clients &
+                // Relays dropdown.
+                sx={{
+                  typography: "overline",
+                  lineHeight: 1.5,
+                  color: "text.secondary",
+                  pt: 1,
+                  position: "static",
+                }}
+              >
+                {group}
+              </ListSubheader>,
+              ...opts.map(renderOption),
+            ])
+          : visibleOptions.map(renderOption)}
       </Select>
     </FormControl>
   );

@@ -29,10 +29,12 @@ import { SearchableMultiSelect } from "@/components/searchable-multi-select";
 import { SearchableSelect } from "@/components/searchable-select";
 import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
+import { MSP_ORGANIZATIONS } from "@/data/organizations";
 
 import type { ScheduleEditState } from "./schedule-edit-state";
 import { REPORTS } from "./reports";
 import { SampleReportsModal } from "./sample-reports-modal";
+import type { NewSchedule } from "./created-schedules";
 
 const PORTAL_USERS = [
   {
@@ -65,18 +67,79 @@ const PORTAL_USERS = [
     email: "marcus.b@initech.io",
     org: "Lakeside Law Group",
   },
+  {
+    name: "Elena Duarte",
+    email: "e.duarte@riversidedental.com",
+    org: "Riverside Dental Group",
+  },
+  {
+    name: "Nathan Cole",
+    email: "n.cole@riversidedental.com",
+    org: "Riverside Dental Group",
+  },
+  {
+    name: "Marcus Hall",
+    email: "m.hall@coastalpm.com",
+    org: "Coastal Property Mgmt",
+  },
+  {
+    name: "Yuki Tanaka",
+    email: "y.tanaka@coastalpm.com",
+    org: "Coastal Property Mgmt",
+  },
+  {
+    name: "Renee Alvarez",
+    email: "r.alvarez@coastalpm.com",
+    org: "Coastal Property Mgmt",
+  },
+  {
+    name: "Grace Kim",
+    email: "g.kim@brightfuturepeds.com",
+    org: "Bright Future Pediatrics",
+  },
+  {
+    name: "Omar Haddad",
+    email: "o.haddad@brightfuturepeds.com",
+    org: "Bright Future Pediatrics",
+  },
+  {
+    name: "Derek Salas",
+    email: "d.salas@vanguardauto.com",
+    org: "Vanguard Auto Repair",
+  },
+  {
+    name: "Bianca Rossi",
+    email: "b.rossi@northwindtraders.com",
+    org: "Northwind Traders",
+  },
+  {
+    name: "Peter Osei",
+    email: "p.osei@northwindtraders.com",
+    org: "Northwind Traders",
+  },
+  {
+    name: "Hannah Vogel",
+    email: "h.vogel@northwindtraders.com",
+    org: "Northwind Traders",
+  },
+  // The MSP's own staff — they work across every organization, so they carry
+  // no single one.
+  { name: "Joe Naples", email: "joe.naples@mspdash.com" },
+  { name: "Alicia Braun", email: "alicia.braun@mspdash.com" },
+  { name: "Devon Okafor", email: "devon.okafor@mspdash.com" },
+  { name: "Rina Patel", email: "rina.patel@mspdash.com" },
+  { name: "Sam Whitfield", email: "sam.whitfield@mspdash.com" },
 ];
 
-const PORTAL_USER_EMAILS = PORTAL_USERS.map((u) => u.email);
+// Recipients are listed under the organization they belong to; anyone who
+// isn't tied to one reaches more than one, so they group together.
+const orgOfRecipient = (email: string) =>
+  PORTAL_USERS.find((u) => u.email === email)?.org ||
+  "Multi-Organization Access";
 
-const ORGS = [
-  "Austin Office",
-  "Berlin Hub",
-  "Boston Lab",
-  "Chicago HQ",
-  "Headquarters",
-  "London Branch",
-];
+// The client organizations the rest of the app lists — these were sites, which
+// is a different thing entirely.
+const ORGS = MSP_ORGANIZATIONS;
 
 // A custom report is built to order in the Custom Report builder, so there's
 // nothing here to put on a schedule.
@@ -147,8 +210,8 @@ export function ScheduleReportView({
   initialReports,
 }: {
   onCancel: () => void;
-  /** Receives the schedule's name so the list can confirm it by name. */
-  onSave: (name: string) => void;
+  /** Receives the finished schedule, so the list can add it and confirm it. */
+  onSave: (schedule: NewSchedule) => void;
   /** Seeds the form from an existing schedule. */
   edit?: ScheduleEditState;
   /** Editing an existing schedule rather than creating one. A clone seeds from
@@ -176,11 +239,24 @@ export function ScheduleReportView({
   const [emailError, setEmailError] = useState("");
   const [emailSubject, setEmailSubject] = useState(edit?.emailSubject ?? "");
   const [emailMessage, setEmailMessage] = useState(edit?.emailMessage ?? "");
-  const [frequency, setFrequency] = useState<(typeof FREQUENCIES)[number]>(
+  const [frequency, setFrequency] = useState<(typeof FREQUENCIES)[number] | "">(
     (FREQUENCIES as readonly string[]).includes(edit?.frequency ?? "")
       ? (edit?.frequency as (typeof FREQUENCIES)[number])
-      : FREQUENCIES[0],
+      : "",
   );
+  // Recipients follow the organization: its own people, plus the MSP staff
+  // who aren't tied to one. Before an organization is picked, everyone shows.
+  const scopedRecipients = PORTAL_USERS.filter(
+    (u) => !selectedOrg || !u.org || u.org === selectedOrg,
+  ).map((u) => u.email);
+  // Switching organizations drops anyone the new one can't reach (adjusting
+  // state during render rather than in an effect).
+  const [lastOrg, setLastOrg] = useState(selectedOrg);
+  if (selectedOrg !== lastOrg) {
+    setLastOrg(selectedOrg);
+    setPortalUsers((prev) => prev.filter((e) => scopedRecipients.includes(e)));
+  }
+
   const [weekDay, setWeekDay] = useState("Mon");
   // Monthly picks a date; only its day-of-month drives the schedule.
   const [monthDay, setMonthDay] = useState(1);
@@ -201,7 +277,8 @@ export function ScheduleReportView({
     scheduleName.trim() !== "" &&
     selectedReports.length > 0 &&
     selectedOrg !== "" &&
-    recipientCount > 0;
+    recipientCount > 0 &&
+    frequency !== "";
 
   // Editing an existing schedule saves only what changed, so the form's
   // current shape is compared against the one it opened with.
@@ -257,7 +334,21 @@ export function ScheduleReportView({
                 <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => onSave(scheduleName)}
+                  onClick={() =>
+                    onSave({
+                      name: scheduleName,
+                      tags: selectedReportDefs.map((r) => r.title),
+                      organization: selectedOrg,
+                      recipients: recipientCount,
+                      frequency,
+                      frequencyDetail:
+                        frequency === "Weekly"
+                          ? weekDay
+                          : frequency === "Monthly"
+                            ? ordinal(monthDay)
+                            : "",
+                    })
+                  }
                   disabled={!canSave}
                 >
                   {isEdit ? "Save" : "Create schedule"}
@@ -363,10 +454,14 @@ export function ScheduleReportView({
               <Step n={2} title="Add Recipients & Message">
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                   <SearchableMultiSelect
-                    label="Internal Recipients"
-                    options={PORTAL_USER_EMAILS}
+                    label="Internal recipients"
+                    options={scopedRecipients}
                     selected={portalUsers}
                     onChange={setPortalUsers}
+                    // Emailing every portal user isn't a shortcut worth
+                    // offering — recipients are picked deliberately.
+                    selectAll={false}
+                    groupBy={orgOfRecipient}
                     allLabel="Select internal recipients"
                     chips
                   />
@@ -448,12 +543,12 @@ export function ScheduleReportView({
 
                   <Box>
                     <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                      Email Subject
+                      Email subject
                     </FormLabel>
                     <TextField
                       fullWidth
                       size="small"
-                      placeholder={`e.g. ${frequency} Security Report`}
+                      placeholder={`e.g. ${frequency || "Monthly"} Security Report`}
                       value={emailSubject}
                       onChange={(e) => setEmailSubject(e.target.value)}
                     />
@@ -512,7 +607,7 @@ export function ScheduleReportView({
                           *
                         </Box>
                       </Box>
-                      <ArrowTooltip title="Send time is optimized automatically for each delivery day.">
+                      <ArrowTooltip title="Schedule frequency also sets the reporting period. Send time is optimized automatically for each delivery day.">
                         <Box
                           component="span"
                           sx={(theme) => ({
@@ -529,11 +624,21 @@ export function ScheduleReportView({
                     </FormLabel>
                     <Select
                       fullWidth
+                      displayEmpty
                       size="small"
                       value={frequency}
                       onChange={(e) =>
                         setFrequency(
                           e.target.value as (typeof FREQUENCIES)[number],
+                        )
+                      }
+                      renderValue={(value) =>
+                        value ? (
+                          (value as string)
+                        ) : (
+                          <Box component="span" sx={{ color: "text.disabled" }}>
+                            Select delivery schedule
+                          </Box>
                         )
                       }
                     >
@@ -763,7 +868,8 @@ export function ScheduleReportView({
                       Subject:
                     </Typography>
                     <Typography variant="body2" sx={{ color: "text.primary" }}>
-                      {emailSubject.trim() || `${frequency} Security Report`}
+                      {emailSubject.trim() ||
+                        `${frequency || "Monthly"} Security Report`}
                     </Typography>
                   </Box>
 

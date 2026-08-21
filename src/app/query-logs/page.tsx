@@ -24,7 +24,6 @@ import type {
 } from "@mui/x-data-grid";
 import { getGridStringOperators, useGridApiRef } from "@mui/x-data-grid";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
-import SearchIcon from "@mui/icons-material/Search";
 import { endOfDay, startOfDay, subDays, subHours, subMinutes } from "date-fns";
 import { createContext, useContext, useState } from "react";
 
@@ -43,6 +42,7 @@ import { PageShell } from "@/components/page-shell";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { Select } from "@/components/select";
+import { DropdownSearch } from "@/components/dropdown-search";
 import { TextField } from "@/components/text-field";
 import { AdvancedFilters } from "@/app/dashboards/advanced-filters";
 import type {
@@ -1113,28 +1113,10 @@ export default function QueryLogsPage() {
                           slotProps: { paper: { sx: { maxHeight: 400 } } },
                         }}
                       >
-                        <ListSubheader sx={{ px: 2, py: 1 }}>
-                          <TextField
-                            size="small"
-                            autoFocus
-                            fullWidth
-                            placeholder="Search..."
-                            value={sitesSearch}
-                            onChange={(e) => setSitesSearch(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key !== "Escape") e.stopPropagation();
-                            }}
-                            slotProps={{
-                              input: {
-                                startAdornment: (
-                                  <InputAdornment position="start">
-                                    <SearchIcon fontSize="small" />
-                                  </InputAdornment>
-                                ),
-                              },
-                            }}
-                          />
-                        </ListSubheader>
+                        <DropdownSearch
+                          value={sitesSearch}
+                          onChange={setSitesSearch}
+                        />
                         <MenuItem value={SELECT_ALL_VALUE}>
                           <Checkbox
                             size="small"
@@ -1190,28 +1172,10 @@ export default function QueryLogsPage() {
                           slotProps: { paper: { sx: { maxHeight: 400 } } },
                         }}
                       >
-                        <ListSubheader sx={{ px: 2, py: 1 }}>
-                          <TextField
-                            size="small"
-                            autoFocus
-                            fullWidth
-                            placeholder="Search..."
-                            value={clientsSearch}
-                            onChange={(e) => setClientsSearch(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key !== "Escape") e.stopPropagation();
-                            }}
-                            slotProps={{
-                              input: {
-                                startAdornment: (
-                                  <InputAdornment position="start">
-                                    <SearchIcon fontSize="small" />
-                                  </InputAdornment>
-                                ),
-                              },
-                            }}
-                          />
-                        </ListSubheader>
+                        <DropdownSearch
+                          value={clientsSearch}
+                          onChange={setClientsSearch}
+                        />
                         <MenuItem value={SELECT_ALL_VALUE}>
                           <Checkbox
                             size="small"
@@ -1245,8 +1209,6 @@ export default function QueryLogsPage() {
                             <ListItemText primary={name} />
                           </MenuItem>
                         ))}
-                        {filteredRoamingClients.length > 0 &&
-                          filteredRelays.length > 0 && <Divider />}
                         {filteredRelays.length > 0 && (
                           <ListSubheader
                             sx={{
@@ -1313,28 +1275,10 @@ export default function QueryLogsPage() {
                           slotProps: { paper: { sx: { maxHeight: 400 } } },
                         }}
                       >
-                        <ListSubheader sx={{ px: 2, py: 1 }}>
-                          <TextField
-                            size="small"
-                            autoFocus
-                            fullWidth
-                            placeholder="Search..."
-                            value={usersSearch}
-                            onChange={(e) => setUsersSearch(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key !== "Escape") e.stopPropagation();
-                            }}
-                            slotProps={{
-                              input: {
-                                startAdornment: (
-                                  <InputAdornment position="start">
-                                    <SearchIcon fontSize="small" />
-                                  </InputAdornment>
-                                ),
-                              },
-                            }}
-                          />
-                        </ListSubheader>
+                        <DropdownSearch
+                          value={usersSearch}
+                          onChange={setUsersSearch}
+                        />
                         <MenuItem value={SELECT_ALL_VALUE}>
                           <Checkbox
                             size="small"

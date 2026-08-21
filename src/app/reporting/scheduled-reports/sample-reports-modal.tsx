@@ -170,7 +170,7 @@ export function SampleReportsModal({
             onChoose?.(selected.key);
           }}
         >
-          Select
+          Use this report
         </Button>
       </Box>
     </Dialog>

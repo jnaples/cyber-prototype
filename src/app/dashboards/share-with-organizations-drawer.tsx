@@ -9,20 +9,17 @@ import {
   FormControl,
   FormLabel,
   IconButton,
-  InputAdornment,
   ListItemText,
-  ListSubheader,
   MenuItem,
   Typography,
 } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material";
 import CancelIcon from "@mui/icons-material/Cancel";
-import SearchIcon from "@mui/icons-material/Search";
 import { useState } from "react";
 
 import { Drawer } from "@/components/drawer";
 import { Select } from "@/components/select";
-import { TextField } from "@/components/text-field";
+import { DropdownSearch } from "@/components/dropdown-search";
 import { MSP_ORGANIZATIONS } from "@/data/organizations";
 
 const SELECT_ALL_VALUE = "__select_all__";
@@ -161,28 +158,7 @@ export function ShareWithOrganizationsDrawer({
             slotProps: { paper: { sx: { maxHeight: 400 } } },
           }}
         >
-          <ListSubheader sx={{ px: 2, py: 1 }}>
-            <TextField
-              size="small"
-              autoFocus
-              fullWidth
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key !== "Escape") e.stopPropagation();
-              }}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-          </ListSubheader>
+          <DropdownSearch value={search} onChange={setSearch} />
           <MenuItem value={SELECT_ALL_VALUE}>
             <Checkbox
               size="small"

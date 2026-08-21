@@ -27,13 +27,10 @@ import { Drawer } from "@/components/drawer";
 import { SearchableMultiSelect } from "@/components/searchable-multi-select";
 import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
+import { MSP_ORGANIZATIONS } from "@/data/organizations";
 
-const ORGANIZATIONS = [
-  "Acme Retail Group",
-  "Summit Financial Advisors",
-  "Lakeside Law Group",
-  "Riverside Dental Group",
-];
+// Every client organization, as the org switcher and the scheduler list them.
+const ORGANIZATIONS = MSP_ORGANIZATIONS;
 const SITES = [
   "Headquarters",
   "Austin Office",

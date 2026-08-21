@@ -231,7 +231,9 @@ export function ReportLibrary() {
             elevation={8}
             onClose={() => setGenerateToast(false)}
           >
-            Report generation started. Large reports can take a few minutes.{" "}
+            Report generation started. Depending on the configuration, this may
+            take significant time. You will receive an email notification when
+            it&apos;s ready.{" "}
             <Link
               component="button"
               type="button"

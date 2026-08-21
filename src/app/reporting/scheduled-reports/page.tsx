@@ -42,6 +42,7 @@ import { TextField } from "@/components/text-field";
 
 import { DeliveryDetailsDrawer } from "./delivery-details-drawer";
 import { ReportHistory } from "./report-history";
+import { getCreatedSchedules, type NewSchedule } from "./created-schedules";
 import { scheduleEditState, TAG_TO_REPORT_KEY } from "./schedule-edit-state";
 import { REPORT_MANAGER_BASE, REPORT_MANAGER_TABS } from "./routes";
 import { ReportLibrary } from "./report-library";
@@ -135,6 +136,22 @@ const SCHEDULES: Schedule[] = [
     status: "active",
   },
 ];
+
+// A schedule created this session, as a grid row. It has never run, so the
+// last-delivery columns read as a dash.
+const toScheduleRow = (s: NewSchedule, i: number): Schedule => ({
+  id: 1000 + i,
+  name: s.name,
+  tags: s.tags,
+  organizations: s.organization,
+  recipients: s.recipients,
+  freqPrimary: s.frequency,
+  freqSecondary: s.frequencyDetail,
+  nextDelivery: "Scheduled",
+  lastDate: "—",
+  lastStatus: "sent",
+  status: "active",
+});
 
 // Each schedule's own Next delivery, so resuming a paused one puts its date
 // back rather than leaving "Paused" behind.
@@ -543,7 +560,11 @@ export default function ScheduledReportsPage() {
   const [toast, setToast] = useState<string | null>(
     (state as { toast?: string } | null)?.toast ?? null,
   );
-  const [schedules, setSchedules] = useState<Schedule[]>(SCHEDULES);
+  const [schedules, setSchedules] = useState<Schedule[]>(() => [
+    // Anything created this session sits on top of the seeded rows.
+    ...getCreatedSchedules().map(toScheduleRow),
+    ...SCHEDULES,
+  ]);
 
   const columns = useMemo(
     () =>

@@ -640,7 +640,7 @@ export default function CustomerActivityOverviewReport() {
             <Box
               sx={{ width: 28, height: 0, borderTop: `3px dashed ${C.stream}` }}
             />
-            31-day trend
+            Monthly trend
           </Box>
         </Box>
       </Box>
@@ -657,19 +657,19 @@ export default function CustomerActivityOverviewReport() {
         <TopNColumn
           color={C.web}
           title="Top websites"
-          sub="Top 10 of 38.4K visits recorded"
+          sub="38.4K accessed"
           rows={TOP_WEBSITES}
         />
         <TopNColumn
           color={C.app}
           title="Top applications"
-          sub="Top 10 of 142 applications detected"
+          sub="142 detected"
           rows={TOP_APPS}
         />
         <TopNColumn
           color={C.cat}
           title="Top categories"
-          sub="Top 10 of 38 categories triggered"
+          sub="38 triggered"
           rows={TOP_CATEGORIES}
         />
       </Box>
@@ -686,19 +686,19 @@ export default function CustomerActivityOverviewReport() {
         <TopNColumn
           color={C.stream}
           title="Top streaming activities"
-          sub="5 streaming sources detected"
+          sub="5 detected"
           rows={TOP_STREAMING}
         />
         <TopNColumn
           color={C.ai}
           title="Top AI tools"
-          sub="8 AI tools detected"
+          sub="8 detected"
           rows={TOP_AI}
         />
         <TopNColumn
           color={C.client}
           title="Top active clients"
-          sub="All 10 monitored devices"
+          sub="2 total"
           rows={TOP_CLIENTS}
         />
       </Box>

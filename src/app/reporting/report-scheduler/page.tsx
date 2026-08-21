@@ -3,6 +3,7 @@
 
 import { useLocation, useNavigate } from "react-router";
 
+import { addCreatedSchedule } from "../scheduled-reports/created-schedules";
 import { ScheduleReportView } from "../scheduled-reports/schedule-report-view";
 import type { ScheduleEditState } from "../scheduled-reports/schedule-edit-state";
 
@@ -31,7 +32,12 @@ export default function ReportSchedulerPage() {
       autoFocusName={Boolean(clone)}
       initialReports={reportKeys}
       onCancel={() => back()}
-      onSave={(name) => back(`"${name}" ${edit ? "updated" : "created"}.`)}
+      onSave={(schedule) => {
+        // A new schedule joins the list for the rest of the session; editing
+        // an existing one just confirms.
+        if (!edit) addCreatedSchedule(schedule);
+        back(`"${schedule.name}" ${edit ? "updated" : "created"}.`);
+      }}
     />
   );
 }

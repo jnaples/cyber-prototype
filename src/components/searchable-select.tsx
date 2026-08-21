@@ -2,15 +2,12 @@
 // above the options. The multi-select sibling is SearchableMultiSelect; this
 // one is for fields that take exactly one value.
 
-import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Divider,
   FormControl,
   FormHelperText,
   FormLabel,
-  InputAdornment,
-  ListSubheader,
   MenuItem,
   Typography,
 } from "@mui/material";
@@ -18,7 +15,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { Select } from "@/components/select";
-import { TextField } from "@/components/text-field";
+import { DropdownSearch } from "@/components/dropdown-search";
 
 export function SearchableSelect({
   label,
@@ -79,29 +76,7 @@ export function SearchableSelect({
           )
         }
       >
-        <ListSubheader sx={{ px: 2, py: 1 }}>
-          <TextField
-            size="small"
-            autoFocus
-            fullWidth
-            placeholder="Search..."
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            // Otherwise the menu's type-ahead swallows what's typed.
-            onKeyDown={(event) => {
-              if (event.key !== "Escape") event.stopPropagation();
-            }}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
-        </ListSubheader>
+        <DropdownSearch value={search} onChange={setSearch} />
         <Divider />
         {visibleOptions.map((option) => (
           <MenuItem key={option} value={option}>

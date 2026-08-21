@@ -34,15 +34,6 @@ const TOP_THREATS: Row[] = [
   { nm: "Very New Domains", val: "15 events", pct: 16.7, users: "1 user" },
 ];
 
-const TOP_CATEGORIES: Row[] = [
-  { nm: "Adult Content", val: "90 events", pct: 100, users: "3 users" },
-  { nm: "Alcohol & Tobacco", val: "85 events", pct: 94.4, users: "2 users" },
-  { nm: "Gambling", val: "80 events", pct: 88.9, users: "2 users" },
-  { nm: "Games", val: "70 events", pct: 77.8, users: "2 users" },
-  { nm: "Weapons", val: "20 events", pct: 22.2, users: "2 users" },
-  { nm: "Terrorism & Hate", val: "15 events", pct: 16.7, users: "2 users" },
-];
-
 const TOP_USERS: Row[] = [
   { nm: "z-ktrojanowski", val: "90 events", pct: 100 },
   { nm: "px-home", val: "80 events", pct: 88.9 },
@@ -469,7 +460,7 @@ export default function ThreatTrendsReport() {
             <Box
               sx={{ width: 28, height: 0, borderTop: `3px dashed ${C.user}` }}
             />
-            31-day trend
+            Monthly trend
           </Box>
         </Box>
       </Box>
@@ -478,7 +469,7 @@ export default function ThreatTrendsReport() {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
+          gridTemplateColumns: "repeat(2, 1fr)",
           gap: "48px",
           mb: "72px",
         }}
@@ -486,19 +477,13 @@ export default function ThreatTrendsReport() {
         <TopNColumn
           color={C.threat}
           title="Top observed threats"
-          sub="7 threat types detected"
+          sub="7 detected"
           rows={TOP_THREATS}
         />
         <TopNColumn
-          color={C.cat}
-          title="Top blocked categories"
-          sub="6 content categories triggered"
-          rows={TOP_CATEGORIES}
-        />
-        <TopNColumn
           color={C.user}
-          title="Top users with threat events"
-          sub="10 users · 390 events total"
+          title="Top Risky Users"
+          sub="10 flagged"
           rows={TOP_USERS}
         />
       </Box>
