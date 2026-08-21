@@ -25,6 +25,13 @@ import { TextField } from "@/components/text-field";
 
 import { AlreadyAllowedAlert } from "./already-allowed-alert";
 
+// Prototype stand-in: the policies whose allow list already carries the
+// domain, so picking them again would be a no-op.
+const ALREADY_ALLOWED_POLICIES = [
+  "CIPA Policy",
+  "Super, Duper, Extra Secure, Extra Strict Policy",
+];
+
 export function AddToAllowListDrawer({
   open,
   onClose,
@@ -205,6 +212,7 @@ export function AddToAllowListDrawer({
                 <PolicySelect
                   multiple
                   currentPolicy={policy}
+                  allowedPolicies={ALREADY_ALLOWED_POLICIES}
                   disableClear
                   disabled={scope !== "policy"}
                   value={selectedPolicies}

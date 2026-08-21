@@ -3,10 +3,20 @@
 // every surface that assigns a policy — Add Clientless Device, the Approve
 // Request drawer — offers the same list in the same shape.
 
-import { Box, Checkbox, ListSubheader, MenuItem } from "@mui/material";
+import {
+  Box,
+  Checkbox,
+  Chip,
+  Divider,
+  ListSubheader,
+  MenuItem,
+} from "@mui/material";
 import type { Theme } from "@mui/material/styles";
+import { useState } from "react";
 import type { ReactNode } from "react";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
+import { DropdownSearch } from "@/components/dropdown-search";
 import { InfoChip } from "@/components/info-chip";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { Select } from "@/components/select";
@@ -17,7 +27,7 @@ const POLICY_OPTIONS = [
   "Restricted Policy",
   "HIPAA Strict",
   "CIPA Policy",
-  "Default Policy",
+  "Super, Duper, Extra Secure, Extra Strict Policy",
 ];
 
 const GLOBAL_POLICY_OPTIONS = [
@@ -44,7 +54,7 @@ function GlobalMark() {
     <MaterialSymbol
       name="globe"
       size={20}
-      sx={{ ml: 1, color: "text.secondary" }}
+      sx={{ ml: 1, flexShrink: 0, color: "text.secondary" }}
     />
   );
 }
@@ -57,6 +67,9 @@ type Common = {
   /** The policy already in force — flagged in the list with a chip, and added
    *  to the organization section if it isn't one of the stock policies. */
   currentPolicy?: string;
+  /** Policies that already allow the domain — flagged so the same entry isn't
+   *  added twice. */
+  allowedPolicies?: string[];
 };
 
 type SingleProps = Common & {
@@ -78,6 +91,7 @@ export function PolicySelect({
   placeholder = "-",
   multiple,
   currentPolicy,
+  allowedPolicies = [],
   sx,
   ...props
 }: Omit<
@@ -85,6 +99,7 @@ export function PolicySelect({
   "children" | "renderValue" | "onChange" | "value" | "multiple"
 > &
   (SingleProps | MultiProps)) {
+  const [search, setSearch] = useState("");
   // Checked state in the multi list, and the summary in the closed field.
   const selectedList = multiple ? value : [];
   const isChecked = (policy: string) => selectedList.includes(policy);
@@ -98,6 +113,11 @@ export function PolicySelect({
       ? [currentPolicy, ...POLICY_OPTIONS]
       : POLICY_OPTIONS;
 
+  const matches = (policy: string) =>
+    policy.toLowerCase().includes(search.trim().toLowerCase());
+  const visibleOrg = orgOptions.filter(matches);
+  const visibleGlobal = GLOBAL_POLICY_OPTIONS.filter(matches);
+
   const item = (policy: string, global: boolean) => (
     <MenuItem
       key={policy}
@@ -109,30 +129,49 @@ export function PolicySelect({
       {multiple && (
         <Checkbox
           checked={isChecked(policy)}
-          sx={{
-            p: 0.5,
-            mr: 1,
-            "& .MuiSvgIcon-root": { width: 18, height: 18 },
-          }}
+          // Same box the Query Logs dropdowns use.
+          size="small"
+          sx={{ p: 0.5, mr: 1 }}
         />
       )}
       {/* Name (and its globe) take the room the chip leaves; a long name
-          truncates rather than pushing the chip out of the row. */}
-      <Box sx={{ display: "flex", alignItems: "center", flex: 1, minWidth: 0 }}>
+          truncates rather than pushing the chip out of the row. The cap is
+          what forces it: the menu sizes itself to its content, so without one
+          the row just grows and the chip rides out with it. */}
+      <ArrowTooltip title={policy}>
         <Box
-          component="span"
           sx={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
+            display: "flex",
+            alignItems: "center",
+            flex: 1,
+            minWidth: 0,
+            maxWidth: 200,
           }}
         >
-          {policy}
+          <Box
+            component="span"
+            sx={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {policy}
+          </Box>
+          {global && <GlobalMark />}
         </Box>
-        {global && <GlobalMark />}
-      </Box>
+      </ArrowTooltip>
       {policy === currentPolicy && (
         <InfoChip label="Current Policy" sx={{ ml: 1 }} />
+      )}
+      {allowedPolicies.includes(policy) && (
+        // Neutral, not informational: it's a statement of fact about the
+        // policy, not a status worth colouring.
+        <Chip
+          size="small"
+          label="Already allowed"
+          sx={{ ml: 1, flexShrink: 0 }}
+        />
       )}
     </MenuItem>
   );
@@ -151,6 +190,7 @@ export function PolicySelect({
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
       multiple={multiple}
+      onClose={() => setSearch("")}
       value={value}
       onChange={(e) =>
         multiple
@@ -176,10 +216,20 @@ export function PolicySelect({
       }}
       {...props}
     >
-      <ListSubheader sx={subheaderSx}>Organization</ListSubheader>
-      {orgOptions.map((policy) => item(policy, false))}
-      <ListSubheader sx={subheaderSx}>Global</ListSubheader>
-      {GLOBAL_POLICY_OPTIONS.map((policy) => item(policy, true))}
+      <DropdownSearch
+        value={search}
+        onChange={setSearch}
+        placeholder="Search policies..."
+      />
+      <Divider sx={{ my: 1 }} />
+      {visibleOrg.length > 0 && (
+        <ListSubheader sx={subheaderSx}>Organization</ListSubheader>
+      )}
+      {visibleOrg.map((policy) => item(policy, false))}
+      {visibleGlobal.length > 0 && (
+        <ListSubheader sx={subheaderSx}>Global</ListSubheader>
+      )}
+      {visibleGlobal.map((policy) => item(policy, true))}
     </Select>
   );
 }

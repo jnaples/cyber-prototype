@@ -70,6 +70,12 @@ const MENU_ACTIONS: {
   { label: "Report miscategorization", icon: "flag", dividerBefore: true },
 ];
 
+// DNS Query Log retention. Past this, there's nothing left to investigate.
+const QUERY_LOG_DAYS = 7;
+const RETENTION_MS = QUERY_LOG_DAYS * 24 * 60 * 60 * 1000;
+// Read once at load rather than per render, which would be impure.
+const LOADED_AT = Date.now();
+
 // Categories DNSFilter treats as threats — used to flag a malicious request.
 const THREAT_CATEGORIES = [
   "Malware",
@@ -96,6 +102,8 @@ function RowActionsCell({
   timestampMs: number;
 }) {
   const navigate = useNavigate();
+  // Requests older than the log's retention have no data behind them.
+  const beyondRetention = LOADED_AT - timestampMs > RETENTION_MS;
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
   const [denyAnchor, setDenyAnchor] = useState<HTMLElement | null>(null);
   const [allowOpen, setAllowOpen] = useState(false);
@@ -172,24 +180,50 @@ function RowActionsCell({
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
         {MENU_ACTIONS.flatMap(
-          ({ label, icon, to, newTab, opens, dividerBefore }) => [
-            ...(dividerBefore ? [<Divider key={`${label}-divider`} />] : []),
-            <MenuItem
-              key={label}
-              onClick={() => {
-                closeMenu();
-                if (to && newTab) window.open(to, "_blank", "noopener");
-                else if (to) navigate(to);
-                else if (opens === "investigate") setInvestigateOpen(true);
-                else setReportOpen(true);
-              }}
-            >
-              <ListItemIcon>
-                <MaterialSymbol name={icon} size={20} />
-              </ListItemIcon>
-              {label}
-            </MenuItem>,
-          ],
+          ({ label, icon, to, newTab, opens, dividerBefore }) => {
+            const disabled = opens === "investigate" && beyondRetention;
+            return [
+              ...(dividerBefore ? [<Divider key={`${label}-divider`} />] : []),
+              // The tooltip has to wrap the item: MUI drops pointer events on
+              // a disabled one, so it would never fire a hover itself.
+              <ArrowTooltip
+                key={label}
+                title={
+                  disabled
+                    ? `Investigate Mode uses DNS Query Log data, which is kept for ${QUERY_LOG_DAYS} days. This request is past ${QUERY_LOG_DAYS} days.`
+                    : ""
+                }
+              >
+                <Box component="span" sx={{ display: "block" }}>
+                  <MenuItem
+                    disabled={disabled}
+                    onClick={() => {
+                      closeMenu();
+                      if (to && newTab) window.open(to, "_blank", "noopener");
+                      else if (to) navigate(to);
+                      else if (opens === "investigate")
+                        setInvestigateOpen(true);
+                      else setReportOpen(true);
+                    }}
+                    // Pointer events go back so the block reads as a block,
+                    // without the hover tint that would suggest it's live.
+                    sx={{
+                      "&.Mui-disabled": {
+                        pointerEvents: "auto",
+                        cursor: "not-allowed",
+                        "&:hover": { backgroundColor: "transparent" },
+                      },
+                    }}
+                  >
+                    <ListItemIcon>
+                      <MaterialSymbol name={icon} size={20} />
+                    </ListItemIcon>
+                    {label}
+                  </MenuItem>
+                </Box>
+              </ArrowTooltip>,
+            ];
+          },
         )}
       </Menu>
 
@@ -435,6 +469,8 @@ type ActiveRequest = {
   loggedInUser: string;
   email: string;
   requestReason: string;
+  /** Pins the request to a fixed age instead of the generated spread. */
+  daysAgo?: number;
 };
 
 const REQUESTS: ActiveRequest[] = [
@@ -538,6 +574,29 @@ const REQUESTS: ActiveRequest[] = [
     email: "tom.bradley@initechlegal.com",
     requestReason: "Industry research for an active client matter",
   },
+  {
+    domain: "dropbox.com",
+    organization: "Coastal Property Mgmt",
+    site: "Tampa Office",
+    policy: "Standard Policy",
+    category: "File Sharing",
+    loggedInUser: "Renee Alvarez",
+    email: "r.alvarez@coastalpm.com",
+    requestReason: "Client sends lease packets through Dropbox",
+    daysAgo: 12,
+  },
+  {
+    domain: "reddit.com",
+    organization: "Vanguard Auto Repair",
+    site: "Detroit Plant",
+    policy: "Default Filtering",
+    category: "Social Networking",
+    loggedInUser: "Derek Salas",
+    email: "d.salas@vanguardauto.com",
+    requestReason:
+      "Following manufacturer service bulletins in r/MechanicAdvice",
+    daysAgo: 14,
+  },
 ];
 
 // Deployment values mirror the DNS Query Log grid's.
@@ -545,11 +604,13 @@ const DEPLOYMENTS = ["macOS Agent 14.2", "Windows Agent 15"];
 const DEPLOYMENT_TYPES = ["Roaming Client", "Relay", "Site"];
 
 // Spread attempts across the last few business days during 9-5 hours (always
-// within the past 30 days), then order oldest first.
+// within the past 30 days), then order oldest first. A request carrying its
+// own `daysAgo` sits where it says — the two past the Query Log's 7-day
+// retention are there so the blocked Investigate Mode is always reachable.
 const NOW = new Date();
 const rows = REQUESTS.map((request, i) => {
   const date = new Date(NOW);
-  date.setDate(date.getDate() - Math.floor(i / 3));
+  date.setDate(date.getDate() - (request.daysAgo ?? Math.floor(i / 3)));
   date.setHours(9 + (i % 3) * 3, (i * 17) % 60, 0, 0);
   return { request, date };
 })
