@@ -31,7 +31,8 @@ const EMAIL_TEMPLATES: {
   value: string;
   label: string;
   helper: string;
-  learnMore?: boolean;
+  /** Trailing link after the helper copy. */
+  linkLabel?: string;
 }[] = [
   {
     value: "dnsfilter",
@@ -46,8 +47,8 @@ const EMAIL_TEMPLATES: {
   {
     value: "custom",
     label: "Use a custom email domain",
-    helper: "Emails include your organization's branding.",
-    learnMore: true,
+    helper: "Send transactional emails from a branded company domain.",
+    linkLabel: "Set up a custom email domain",
   },
 ];
 
@@ -63,10 +64,13 @@ function FieldLabel({
   label,
   help,
   required,
+  optional,
 }: {
   label: string;
   help?: string;
   required?: boolean;
+  /** Marks the field as optional, opposite the label. */
+  optional?: boolean;
 }) {
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
@@ -91,6 +95,14 @@ function FieldLabel({
             })}
           />
         </ArrowTooltip>
+      )}
+      {optional && (
+        <Typography
+          variant="body2"
+          sx={{ ml: "auto", color: "text.secondary" }}
+        >
+          Optional
+        </Typography>
       )}
     </Box>
   );
@@ -253,6 +265,7 @@ function ImageDrop({
 
 export default function BrandingPage() {
   const [dashboardName, setDashboardName] = useState("");
+  const [dashboardUrl, setDashboardUrl] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [logo, setLogo] = useState<string | null>(null);
   const [darkLogo, setDarkLogo] = useState<string | null>(null);
@@ -260,6 +273,7 @@ export default function BrandingPage() {
   // What the form looked like when it was last saved.
   const [saved, setSaved] = useState({
     dashboardName: "",
+    dashboardUrl: "",
     contactEmail: "",
     emailTemplate: DEFAULT_EMAIL_TEMPLATE,
     logo: null as string | null,
@@ -277,6 +291,7 @@ export default function BrandingPage() {
   const handleSave = () => {
     setSaved({
       dashboardName,
+      dashboardUrl,
       contactEmail,
       emailTemplate,
       logo,
@@ -295,15 +310,15 @@ export default function BrandingPage() {
 
   const nameTooLong = dashboardName.length > NAME_LIMIT;
 
+  // The contact email is optional, but it still has to be a valid address if
+  // one is given.
   const missingRequired =
-    dashboardName.trim() === "" ||
-    nameTooLong ||
-    contactEmail.trim() === "" ||
-    Boolean(emailError);
+    dashboardName.trim() === "" || nameTooLong || Boolean(emailError);
 
   // Save only lights up once something differs from the saved state.
   const dirty =
     dashboardName !== saved.dashboardName ||
+    dashboardUrl !== saved.dashboardUrl ||
     contactEmail !== saved.contactEmail ||
     emailTemplate !== saved.emailTemplate ||
     logo !== saved.logo ||
@@ -325,6 +340,7 @@ export default function BrandingPage() {
                 color="secondary"
                 onClick={() => {
                   setDashboardName(saved.dashboardName);
+                  setDashboardUrl(saved.dashboardUrl);
                   setContactEmail(saved.contactEmail);
                   setEmailTemplate(saved.emailTemplate);
                   setLogo(saved.logo);
@@ -374,7 +390,7 @@ export default function BrandingPage() {
         <Box>
           <FieldLabel
             label="Dashboard Name"
-            help='Sets the browser tab title, the dashboard URL, and the login screen text "Service provided by {Dashboard Name}."'
+            help='Sets the browser tab title and login screen text "Service provided by {Dashboard Name}".'
             required
           />
           <TextField
@@ -404,6 +420,19 @@ export default function BrandingPage() {
           />
         </Box>
 
+        <Box>
+          <FieldLabel
+            label="Custom Dashboard URL"
+            help="Brands the dashboard and login page with a custom domain."
+          />
+          <TextField
+            fullWidth
+            placeholder="yourcompanyname.app.dnsfilter.com"
+            value={dashboardUrl}
+            onChange={(e) => setDashboardUrl(e.target.value)}
+          />
+        </Box>
+
         {/* The two logos side by side, so light and dark read as one choice. */}
         <Box
           sx={{
@@ -427,7 +456,8 @@ export default function BrandingPage() {
           <Box>
             <FieldLabel
               label="Dark Mode Logo (max width: 500px)"
-              help="Used wherever the dashboard is in dark mode. Previewed on the dark surface it will sit on."
+              optional
+              help="Used on the side navigation and in dark mode. Helpful when a logo needs more contrast to stay visible, such as one with dark or low-contrast colors."
             />
             <ImageDrop
               dark
@@ -468,7 +498,6 @@ export default function BrandingPage() {
           <FieldLabel
             label="Customer Contact Email"
             help="Shown to organizations on the account-cancellation login error, as the contact for assistance."
-            required
           />
           <TextField
             fullWidth
@@ -502,11 +531,11 @@ export default function BrandingPage() {
                   sx={{ color: "text.secondary", ml: "26px", mt: "-4px" }}
                 >
                   {t.helper}
-                  {t.learnMore && (
+                  {t.linkLabel && (
                     <>
                       {" "}
                       <Link href="#" underline="hover">
-                        Learn more
+                        {t.linkLabel}
                       </Link>
                     </>
                   )}

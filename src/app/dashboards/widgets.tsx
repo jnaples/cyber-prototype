@@ -220,7 +220,7 @@ export function WidgetBody({ type }: { type: string }) {
         <StatCard
           icon="skull"
           color={PAL.magenta}
-          label="Blocked Threats"
+          label="Threats"
           value={fmt(scale(115056))}
         />
       );

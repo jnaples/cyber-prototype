@@ -103,7 +103,7 @@ export const WIDGET_CATALOG: WidgetDef[] = [
   { type: "kpi-total",   name: "Total Requests",   desc: "KPI counter", icon: "radio_button_checked", cat: "KPIs", span: 1 },
   { type: "kpi-allowed", name: "Allowed Requests", desc: "KPI counter", icon: "check",                cat: "KPIs", span: 1 },
   { type: "kpi-blocked", name: "Blocked Requests", desc: "KPI counter", icon: "block",                cat: "KPIs", span: 1 },
-  { type: "kpi-threats", name: "Blocked Threats",  desc: "KPI counter", icon: "skull",                cat: "KPIs", span: 1 },
+  { type: "kpi-threats", name: "Threats",          desc: "KPI counter", icon: "skull",                cat: "KPIs", span: 1 },
 
   { type: "status-sites",   name: "Sites Protected",          desc: "Status fraction", icon: "location_on", cat: "Status", span: 1 },
   { type: "status-roaming", name: "Roaming Clients Protected",desc: "Status fraction", icon: "devices",  cat: "Status", span: 1 },
