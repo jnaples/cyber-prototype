@@ -80,9 +80,16 @@ export function AddToAllowListDrawer({
     }
   }
 
-  // The policy scope needs a policy named before the entry can be written.
+  // The policy scope needs a policy named before the entry can be written —
+  // and specifically the one that blocked the request, since an entry on any
+  // other policy wouldn't reach this user.
   const needsPolicy =
     !alreadyAllowed && scope === "policy" && selectedPolicies.length === 0;
+  const missingCurrentPolicy =
+    !alreadyAllowed &&
+    scope === "policy" &&
+    selectedPolicies.length > 0 &&
+    !selectedPolicies.includes(policy);
 
   return (
     <Drawer
@@ -93,10 +100,11 @@ export function AddToAllowListDrawer({
       primaryAction={{
         label: alreadyAllowed ? "Approve and notify" : "Approve Request",
         sx: { minWidth: 0 },
-        disabled: needsPolicy,
-        tooltip: needsPolicy
-          ? "Select a policy or Universal Allow List first."
-          : "",
+        disabled: needsPolicy || missingCurrentPolicy,
+        tooltip:
+          needsPolicy || missingCurrentPolicy
+            ? "Add the domain to the current policy or Universal Allow List to approve request."
+            : "",
         onClick: () => {
           onSubmit?.(scope, selectedPolicies);
           onClose();
