@@ -39,7 +39,7 @@ export function ReportCard({
   /** Products the report belongs to, e.g. ["CyberSight"] or ["Filtering"]. */
   products?: string[];
   onClick?: () => void;
-  /** Hover actions. Preview shows the document; the Use template menu either
+  /** Hover actions. Preview shows the document; the Create Report menu either
    *  runs the report now or takes the user to the scheduler. */
   onPreview?: () => void;
   onRunNow?: () => void;
@@ -216,7 +216,7 @@ export function ReportCard({
               >
                 {templateActions.length === 1
                   ? templateActions[0].label
-                  : "Use Template"}
+                  : "Create Report"}
               </Button>
             )}
           </Box>
