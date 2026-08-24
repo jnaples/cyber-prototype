@@ -2,12 +2,15 @@
 // the real document with the actions behind a hover scrim. Rendered on an
 // elevated Card so it lifts off the Library's neutral well.
 
+import AddIcon from "@mui/icons-material/Add";
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import {
   Box,
   Button,
   Card,
   Chip,
+  IconButton,
   Menu,
   MenuItem,
   Typography,
@@ -26,8 +29,11 @@ export function ReportCard({
   products = [],
   onClick,
   onPreview,
+  onExpand,
   onRunNow,
   runLabel = "Run Now",
+  previewLabel = "Preview",
+  scheduleLabel = "Schedule Report",
   onSchedule,
   height = 400,
 }: {
@@ -42,9 +48,15 @@ export function ReportCard({
   /** Hover actions. Preview shows the document; the Create Report menu either
    *  runs the report now or takes the user to the scheduler. */
   onPreview?: () => void;
+  /** Corner action on the preview pane — opens the same preview modal. */
+  onExpand?: () => void;
   onRunNow?: () => void;
   /** Label for the run action — a custom report is created, not run. */
   runLabel?: string;
+  /** Label for the left-hand hover action. */
+  previewLabel?: string;
+  /** Label for the schedule action when it stands alone. */
+  scheduleLabel?: string;
   onSchedule?: () => void;
   height?: number;
 }) {
@@ -53,14 +65,14 @@ export function ReportCard({
   // does it; with both, it opens the menu.
   const templateActions = [
     { label: runLabel, run: onRunNow },
-    { label: "Schedule Report", run: onSchedule },
+    { label: scheduleLabel, run: onSchedule },
   ].filter((action): action is { label: string; run: () => void } =>
     Boolean(action.run),
   );
   // The menu's backdrop takes the pointer, so :hover stops matching — the
   // overlay stays put while the menu is open.
   const menuOpen = Boolean(menuAnchor);
-  const hasActions = Boolean(onPreview || onRunNow || onSchedule);
+  const hasActions = Boolean(onPreview || onExpand || onRunNow || onSchedule);
   return (
     <Card
       elevation={1}
@@ -184,6 +196,23 @@ export function ReportCard({
               pointerEvents: menuOpen ? "auto" : "none",
             }}
           >
+            {onExpand && (
+              <IconButton
+                aria-label="Open preview"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onExpand();
+                }}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  color: "common.white",
+                }}
+              >
+                <OpenInFullIcon sx={{ fontSize: 24 }} />
+              </IconButton>
+            )}
             {onPreview && (
               <Button
                 variant="contained"
@@ -194,7 +223,7 @@ export function ReportCard({
                   onPreview();
                 }}
               >
-                Preview
+                {previewLabel}
               </Button>
             )}
             {templateActions.length > 0 && (
@@ -214,6 +243,13 @@ export function ReportCard({
                 endIcon={
                   templateActions.length > 1 ? (
                     <ArrowDropDownOutlinedIcon sx={{ opacity: 0.6 }} />
+                  ) : undefined
+                }
+                // A lone schedule action reads as an add, like the scheduler's
+                // own button.
+                startIcon={
+                  templateActions.length === 1 && onSchedule ? (
+                    <AddIcon sx={{ fontSize: 18 }} />
                   ) : undefined
                 }
               >

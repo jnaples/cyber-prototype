@@ -793,15 +793,15 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Collapse>
           </Box>
 
-          {/* Reports Link — a single destination; the page's own tabs cover
-              Report Library / Schedules / History. */}
+          {/* Reports — drawer-based scheduling. The original Report Manager is
+              still routable at /reporting/scheduled-reports. */}
           {withCollapsedTooltip(
             "Reports",
             <Box
-              sx={getItemStyles("reporting")}
+              sx={getItemStyles("reporting-v2")}
               onClick={() => {
-                handleItemClick("reporting");
-                navigate("/reporting/scheduled-reports");
+                handleItemClick("reporting-v2");
+                navigate("/reporting/reports-v2");
               }}
             >
               <DescriptionOutlinedIcon
@@ -811,14 +811,14 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Box>,
           )}
 
-          {/* Reports v2 — the same page with drawer-based scheduling. */}
+          {/* Reports v2 — a second variation of the drawer flow. */}
           {withCollapsedTooltip(
             "Reports v2",
             <Box
-              sx={getItemStyles("reporting-v2")}
+              sx={getItemStyles("reporting-v3")}
               onClick={() => {
-                handleItemClick("reporting-v2");
-                navigate("/reporting/reports-v2");
+                handleItemClick("reporting-v3");
+                navigate("/reporting/reports-v3");
               }}
             >
               <DescriptionOutlinedIcon

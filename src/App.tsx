@@ -29,6 +29,7 @@ import QueryLogsPage from "@/app/query-logs/page";
 import CustomReportsPage from "@/app/reporting/custom-reports/page";
 import ScheduledReportsPage from "@/app/reporting/scheduled-reports/page";
 import ReportsV2Page from "@/app/reporting/reports-v2/page";
+import ReportsV3Page from "@/app/reporting/reports-v3/page";
 import ReportSchedulerPage from "@/app/reporting/report-scheduler/page";
 import ReportsLayout from "@/app/reports/layout";
 import CustomerActivityOverviewReport from "@/app/reports/customer-activity-overview/page";
@@ -76,6 +77,8 @@ function App() {
           {/* v2 trial: same Report Manager, drawer-based scheduling. */}
           <Route path="reports-v2" element={<ReportsV2Page />} />
           <Route path="reports-v2/:tab" element={<ReportsV2Page />} />
+          <Route path="reports-v3" element={<ReportsV3Page />} />
+          <Route path="reports-v3/:tab" element={<ReportsV3Page />} />
         </Route>
         <Route path="settings" element={<SettingsPage />} />
         <Route path="msp/branding" element={<BrandingPage />} />

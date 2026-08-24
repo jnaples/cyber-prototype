@@ -77,7 +77,8 @@ export function SearchableSelect({
         }
       >
         <DropdownSearch value={search} onChange={setSearch} />
-        <Divider />
+        {/* Same breathing room the multi-select gives its search box. */}
+        <Divider sx={{ my: 1 }} />
         {visibleOptions.map((option) => (
           <MenuItem key={option} value={option}>
             {option}

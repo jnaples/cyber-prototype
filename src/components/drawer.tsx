@@ -75,6 +75,9 @@ export interface DrawerProps {
     Omit<MuiDrawerProps, "open" | "onClose" | "anchor" | "children">
   >;
 
+  /** Style overrides for the scrollable body. */
+  contentSx?: SxProps<Theme>;
+
   /** Remove default content padding (useful when children manage their own layout). */
   disableContentPadding?: boolean;
 
@@ -130,6 +133,7 @@ export function Drawer({
   width,
   anchor = "right",
   drawerProps,
+  contentSx,
   disableContentPadding = false,
   disableHeaderDivider = false,
 }: DrawerProps) {
@@ -247,6 +251,7 @@ export function Drawer({
                   flexDirection: "column",
                   gap: 2,
                 },
+            ...(Array.isArray(contentSx) ? contentSx : [contentSx]),
           ]}
         >
           {children}

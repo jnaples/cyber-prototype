@@ -42,8 +42,17 @@ import { TextField } from "@/components/text-field";
 
 import { DeliveryDetailsDrawer } from "./delivery-details-drawer";
 import { ReportHistory } from "./report-history";
-import { getCreatedSchedules, type NewSchedule } from "./created-schedules";
-import { scheduleEditState, TAG_TO_REPORT_KEY } from "./schedule-edit-state";
+import {
+  addCreatedSchedule,
+  getCreatedSchedules,
+  type NewSchedule,
+} from "./created-schedules";
+import { ScheduleReportView } from "./schedule-report-view";
+import {
+  scheduleEditState,
+  TAG_TO_REPORT_KEY,
+  type ScheduleEditState,
+} from "./schedule-edit-state";
 import { REPORT_MANAGER_BASE, REPORT_MANAGER_TABS } from "./routes";
 import { ReportLibrary } from "./report-library";
 import { REPORTS } from "./reports";
@@ -256,10 +265,13 @@ function ActionsCell({
   row,
   onDelete,
   onResend,
+  onEdit,
 }: {
   row: Schedule;
   onDelete: () => void;
   onResend: (count: number) => void;
+  /** Set when the page edits in a drawer instead of the builder page. */
+  onEdit?: () => void;
 }) {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -283,11 +295,14 @@ function ActionsCell({
         <IconButton
           size="small"
           aria-label="Edit"
-          // Opens the scheduler seeded from this row.
+          // Opens the scheduler seeded from this row — in a drawer where the
+          // page runs that flow, otherwise on the builder page.
           onClick={() =>
-            navigate("/reporting/report-scheduler", {
-              state: { edit: scheduleEditState(row) },
-            })
+            onEdit
+              ? onEdit()
+              : navigate("/reporting/report-scheduler", {
+                  state: { edit: scheduleEditState(row) },
+                })
           }
         >
           <EditOutlinedIcon sx={{ fontSize: 20 }} />
@@ -411,6 +426,7 @@ const buildColumns = (
   onDelete: (row: Schedule) => void,
   onResend: (row: Schedule, count: number) => void,
   onToggleStatus: (row: Schedule, active: boolean) => void,
+  onEdit?: (row: Schedule) => void,
 ): GridColDef<Schedule>[] => [
   {
     field: "name",
@@ -515,6 +531,7 @@ const buildColumns = (
         row={params.row}
         onDelete={() => onDelete(params.row)}
         onResend={(count) => onResend(params.row, count)}
+        onEdit={onEdit ? () => onEdit(params.row) : undefined}
       />
     ),
   },
@@ -556,12 +573,12 @@ const selectedTabSx = {
 
 export default function ScheduledReportsPage({
   basePath = REPORT_MANAGER_BASE,
-  scheduleInDrawer = false,
+  scheduleDrawer,
 }: {
-  /** Route the tabs live under — v2 runs the same page on its own path. */
+  /** Route the tabs live under — each variation runs on its own path. */
   basePath?: string;
-  /** v2 trial: Schedule Report opens a drawer instead of the builder page. */
-  scheduleInDrawer?: boolean;
+  /** Which drawer Schedule Report opens, if any. Unset uses the builder page. */
+  scheduleDrawer?: "drawer" | "drawer-v3";
 } = {}) {
   const { pathname, state } = useLocation();
   // Saving an edited schedule returns here with a confirmation to show.
@@ -602,8 +619,11 @@ export default function ScheduledReportsPage({
           );
           setToast(`"${row.name}" ${active ? "resumed" : "paused"}.`);
         },
+        scheduleDrawer
+          ? (row) => setEditing({ row, state: scheduleEditState(row) })
+          : undefined,
       ),
-    [],
+    [scheduleDrawer],
   );
   const activeTab = PAGE_TABS.findIndex(
     (t) => pathname === `${basePath}/${t.path}`,
@@ -613,6 +633,13 @@ export default function ScheduledReportsPage({
   const activePath =
     REPORT_MANAGER_TABS.find((t) => pathname === `${basePath}/${t.path}`)
       ?.path ?? PAGE_TABS[0].path;
+  // v3 trial: the Schedules tab's own action opens the scheduler in a drawer,
+  // and a row's Edit opens the same drawer seeded from that row.
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [editing, setEditing] = useState<{
+    row: Schedule;
+    state: ScheduleEditState;
+  } | null>(null);
   const [statusFilter, setStatusFilter] = useState<SummaryKey>("all");
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
@@ -744,7 +771,7 @@ export default function ScheduledReportsPage({
       }
     >
       {activePath === "templates" && (
-        <ReportLibrary scheduleInDrawer={scheduleInDrawer} />
+        <ReportLibrary scheduleDrawer={scheduleDrawer} />
       )}
 
       {activePath === "history" && <ReportHistory />}
@@ -758,7 +785,11 @@ export default function ScheduledReportsPage({
               color="primary"
               size="small"
               startIcon={<MaterialSymbol name="add" size={18} />}
-              onClick={() => navigate("/reporting/report-scheduler")}
+              onClick={() =>
+                scheduleDrawer
+                  ? setScheduleOpen(true)
+                  : navigate("/reporting/report-scheduler")
+              }
             >
               Schedule Report
             </Button>
@@ -853,6 +884,58 @@ export default function ScheduledReportsPage({
             />
           </TabbedDataCard>
         </>
+      )}
+
+      {scheduleDrawer && editing && (
+        <ScheduleReportView
+          variant={scheduleDrawer}
+          open
+          edit={editing.state}
+          deliveryChoice={false}
+          showReportType
+          onCancel={() => setEditing(null)}
+          onSave={(schedule) => {
+            setSchedules((rows) =>
+              rows.map((r) =>
+                r.id === editing.row.id
+                  ? {
+                      ...r,
+                      name: schedule.name,
+                      tags: schedule.tags,
+                      organizations: schedule.organization,
+                      recipients: schedule.recipients,
+                      freqPrimary: schedule.frequency,
+                      freqSecondary: schedule.frequencyDetail,
+                    }
+                  : r,
+              ),
+            );
+            setEditing(null);
+            setToast(`"${schedule.name}" updated.`);
+          }}
+        />
+      )}
+
+      {scheduleDrawer && scheduleOpen && (
+        <ScheduleReportView
+          variant={scheduleDrawer}
+          open
+          // This entry is for schedules only: no delivery choice, and the
+          // report is picked here rather than carried in from a card.
+          deliveryChoice={false}
+          showReportType
+          primaryLabel="Create Schedule"
+          onCancel={() => setScheduleOpen(false)}
+          onSave={(schedule) => {
+            addCreatedSchedule(schedule);
+            setSchedules((rows) => [
+              toScheduleRow(schedule, rows.length),
+              ...rows,
+            ]);
+            setScheduleOpen(false);
+            setToast(`"${schedule.name}" created.`);
+          }}
+        />
       )}
 
       <Snackbar

@@ -34,11 +34,11 @@ const ALL = "All";
 const PRODUCTS = ["Filtering", "CyberSight"];
 
 export function ReportLibrary({
-  scheduleInDrawer = false,
+  scheduleDrawer,
 }: {
-  /** v2 trial: Schedule Report opens the form in a drawer instead of taking
-   *  the user to the full builder page. */
-  scheduleInDrawer?: boolean;
+  /** Which drawer Schedule Report opens, if any. Unset takes the user to the
+   *  full builder page, as the shipping tab does. */
+  scheduleDrawer?: "drawer" | "drawer-v3";
 }) {
   const [search, setSearch] = useState("");
   const [productFilter, setProductFilter] = useState<string | null>(null);
@@ -49,12 +49,29 @@ export function ReportLibrary({
   const [generateFor, setGenerateFor] = useState<ReportDef | null>(null);
   const [generateToast, setGenerateToast] = useState(false);
   // Reports queued for the drawer scheduler, when that's the flow in play.
-  const [scheduleFor, setScheduleFor] = useState<string[] | null>(null);
+  // The reports the drawer opens with, and whether the caller left the
+  // delivery choice open (the card's Generate Report) or asked for a schedule.
+  const [scheduleFor, setScheduleFor] = useState<{
+    reportKeys: string[];
+    choice: boolean;
+    /** Forces the mode when the choice isn't offered. */
+    delivery?: "scheduled" | "one-time";
+  } | null>(null);
   const [scheduleToast, setScheduleToast] = useState<string | null>(null);
   // Title or description — the description is what tells two threat reports
   // apart.
-  const schedule = (reportKeys: string[]) => {
-    if (scheduleInDrawer) setScheduleFor(reportKeys);
+  // v2 splits the card's hover actions: Run Now on the left, Schedule on the
+  // right, with the preview moved to the pane's corner icon.
+  const runNowOnCard = scheduleDrawer === "drawer";
+  // v3 shows one button per card instead of a Use Template dropdown.
+  const oneCreateAction = scheduleDrawer === "drawer-v3";
+
+  const schedule = (
+    reportKeys: string[],
+    choice = false,
+    delivery?: "scheduled" | "one-time",
+  ) => {
+    if (scheduleDrawer) setScheduleFor({ reportKeys, choice, delivery });
     else navigate("/reporting/report-scheduler", { state: { reportKeys } });
   };
 
@@ -186,23 +203,48 @@ export function ReportLibrary({
                     Icon={r.Icon}
                     products={r.products}
                     // Nothing to preview until the report is built.
+                    previewLabel={runNowOnCard ? "Run Now" : undefined}
+                    scheduleLabel={runNowOnCard ? "Schedule" : undefined}
                     onPreview={
-                      r.key === "custom" ? undefined : () => setPreview(r)
+                      r.key === "custom"
+                        ? undefined
+                        : runNowOnCard
+                          ? () => schedule([r.key], false, "one-time")
+                          : () => setPreview(r)
                     }
-                    // A custom report is built to order: it goes to the
-                    // builder rather than running a stock document.
-                    runLabel={r.key === "custom" ? "Create Report" : undefined}
+                    // v2 trial: a corner control on the pane itself.
+                    onExpand={
+                      r.key === "custom" || scheduleDrawer !== "drawer"
+                        ? undefined
+                        : () => setPreview(r)
+                    }
+                    // v3 folds run-now and schedule into one Create Report
+                    // drawer, so the card needs no dropdown at all.
+                    runLabel={
+                      oneCreateAction
+                        ? "Generate Report"
+                        : r.key === "custom"
+                          ? "Create Report"
+                          : undefined
+                    }
                     onRunNow={
                       r.key === "custom"
                         ? () =>
                             navigate("/reporting/custom-reports", {
                               state: { builder: true },
                             })
-                        : () => setGenerateFor(r)
+                        : oneCreateAction
+                          ? () => schedule([r.key], true)
+                          : runNowOnCard
+                            ? undefined
+                            : () => setGenerateFor(r)
                     }
-                    // …and it can't be put on a schedule from here.
+                    // A custom report can't be put on a schedule from here,
+                    // and v3's single action already covers both.
                     onSchedule={
-                      r.key === "custom" ? undefined : () => schedule([r.key])
+                      r.key === "custom" || oneCreateAction
+                        ? undefined
+                        : () => schedule([r.key])
                     }
                   />
                 ))}
@@ -217,20 +259,41 @@ export function ReportLibrary({
           reportKey={preview?.key}
           title={preview?.title}
           Icon={preview?.Icon}
-          onRunNow={() => setGenerateFor(preview)}
-          onSchedule={() => schedule(preview ? [preview.key] : [])}
+          onRunNow={
+            oneCreateAction
+              ? undefined
+              : () =>
+                  preview &&
+                  (scheduleDrawer
+                    ? schedule([preview.key], false, "one-time")
+                    : setGenerateFor(preview))
+          }
+          onSchedule={() =>
+            schedule(preview ? [preview.key] : [], oneCreateAction)
+          }
         />
 
         {/* v2 trial: the whole Schedule Details form, in a drawer. */}
         {scheduleFor && (
           <ScheduleReportView
-            variant="drawer"
+            variant={scheduleDrawer}
             open
-            initialReports={scheduleFor}
+            initialReports={scheduleFor.reportKeys}
+            deliveryChoice={scheduleFor.choice}
+            initialDelivery={scheduleFor.delivery}
+            {...(scheduleFor.delivery === "one-time"
+              ? { drawerTitle: "Run Report", primaryLabel: "Run now" }
+              : {})}
             onCancel={() => setScheduleFor(null)}
-            onSave={(schedule) => {
-              addCreatedSchedule(schedule);
+            onSave={(schedule, mode) => {
               setScheduleFor(null);
+              // A one-time run isn't saved — it starts generating, and says so
+              // with the same toast Run Now shows.
+              if (mode === "one-time") {
+                setGenerateToast(true);
+                return;
+              }
+              addCreatedSchedule(schedule);
               setScheduleToast(`"${schedule.name}" created.`);
             }}
           />

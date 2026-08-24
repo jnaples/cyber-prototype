@@ -7,5 +7,7 @@ import ScheduledReportsPage from "../scheduled-reports/page";
 export const REPORTS_V2_BASE = "/reporting/reports-v2";
 
 export default function ReportsV2Page() {
-  return <ScheduledReportsPage basePath={REPORTS_V2_BASE} scheduleInDrawer />;
+  return (
+    <ScheduledReportsPage basePath={REPORTS_V2_BASE} scheduleDrawer="drawer" />
+  );
 }

@@ -16,6 +16,9 @@ export type NewSchedule = {
 const created: NewSchedule[] = [];
 
 export function addCreatedSchedule(schedule: NewSchedule) {
+  // A schedule with no name would show as a blank row — the form requires one,
+  // so this only guards against a caller that skipped that check.
+  if (!schedule.name.trim()) return;
   created.push(schedule);
 }
 

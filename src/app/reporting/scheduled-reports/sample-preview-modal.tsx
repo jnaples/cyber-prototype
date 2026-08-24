@@ -30,6 +30,7 @@ export function SamplePreviewModal({
   onClose: () => void;
   /** Footer actions — the two things you can do with the report you're
    *  looking at. */
+  /** Runs the report now. Omit where one action covers both. */
   onRunNow?: () => void;
   onSchedule?: () => void;
   /** Catalog key — picks the document rendered in the body. */
@@ -116,6 +117,8 @@ export function SamplePreviewModal({
             Close
           </Button>
           <Box sx={{ flex: 1 }} />
+          {/* Two actions where the surface separates running from scheduling;
+              one where a single drawer covers both. */}
           {onRunNow && (
             <Button
               variant="outlined"
@@ -134,13 +137,15 @@ export function SamplePreviewModal({
               variant="contained"
               color="primary"
               size="small"
-              startIcon={<MaterialSymbol name="add" size={18} />}
+              startIcon={
+                onRunNow ? <MaterialSymbol name="add" size={18} /> : undefined
+              }
               onClick={() => {
                 onClose();
                 onSchedule();
               }}
             >
-              Schedule Report
+              {onRunNow ? "Schedule Report" : "Generate report"}
             </Button>
           )}
         </Box>

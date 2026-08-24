@@ -30,24 +30,10 @@ import { SearchableMultiSelect } from "@/components/searchable-multi-select";
 import { Select } from "@/components/select";
 import { MSP_ORGANIZATIONS } from "@/data/organizations";
 
+import { ROAMING_CLIENTS, SITES, USERS } from "./scope-options";
+
 // Every client organization, as the org switcher and the scheduler list them.
 const ORGANIZATIONS = MSP_ORGANIZATIONS;
-const SITES = [
-  "Headquarters",
-  "Austin Office",
-  "Berlin Hub",
-  "Boston Lab",
-  "Chicago HQ",
-  "London Branch",
-];
-const ROAMING_CLIENTS = [
-  "z-ktrojanowski",
-  "YOGA-BSMITH",
-  "px-home",
-  "LOWES-MACBOOK-07",
-  "LOWES-SURFACE-09",
-];
-const USERS = ["Kaya Trojanowski", "Bob Smith", "Priya Xu", "Dana Lowe"];
 
 // The hint names the filter it's blocking, e.g. "…for specific Sites."
 const needsOrg = (label: string) =>

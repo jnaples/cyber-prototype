@@ -17,6 +17,7 @@ import {
 import type { SelectChangeEvent } from "@mui/material";
 import { useState } from "react";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { Select } from "@/components/select";
 import { DropdownSearch } from "@/components/dropdown-search";
 
@@ -47,10 +48,20 @@ export function SearchableMultiSelect({
   disabled = false,
   chips = false,
   required = false,
+  optional = false,
+  summarize = false,
+  disabledTooltip,
 }: {
   label: string;
   /** Marks the label with the app's required asterisk. */
   required?: boolean;
+  /** Marks the field optional, opposite the label. */
+  optional?: boolean;
+  /** Show the first selection plus a count instead of the whole list. */
+  summarize?: boolean;
+  /** Explains why the field is disabled. Shown on hover — the tooltip wraps
+   *  the control, since MUI drops pointer events on a disabled one. */
+  disabledTooltip?: string;
   options: string[];
   selected: string[];
   onChange: (values: string[]) => void;
@@ -96,14 +107,46 @@ export function SearchableMultiSelect({
     onChange(next);
   };
 
-  return (
-    <FormControl fullWidth size="small" disabled={disabled}>
-      <FormLabel>
-        {label}
-        {required && (
-          <Box component="span" sx={{ ml: 0.25 }}>
-            *
-          </Box>
+  const field = (
+    <FormControl
+      fullWidth
+      size="small"
+      disabled={disabled}
+      // The Select drops pointer events while disabled, so the cursor comes
+      // from here, which still receives the hover.
+      sx={{ cursor: disabled ? "not-allowed" : undefined }}
+    >
+      <FormLabel
+        sx={
+          optional
+            ? {
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 0.5,
+              }
+            : undefined
+        }
+      >
+        <Box component="span">
+          {label}
+          {required && (
+            <Box component="span" sx={{ ml: 0.25 }}>
+              *
+            </Box>
+          )}
+        </Box>
+        {optional && (
+          <Typography
+            component="span"
+            variant="body2"
+            sx={{
+              color: disabled ? "text.disabled" : "text.secondary",
+              fontWeight: 400,
+            }}
+          >
+            Optional
+          </Typography>
         )}
       </FormLabel>
       <Select
@@ -130,7 +173,12 @@ export function SearchableMultiSelect({
               </Typography>
             );
           }
-          if (!chips) return sel.join(", ");
+          // "Austin Office, +2" keeps the closed field one line whatever is
+          // picked; the joined list is the default elsewhere.
+          if (!chips)
+            return summarize && sel.length > 1
+              ? `${sel[0]}, +${sel.length - 1}`
+              : sel.join(", ");
           return (
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
               {sel.map((value) => (
@@ -195,5 +243,15 @@ export function SearchableMultiSelect({
           : visibleOptions.map(renderOption)}
       </Select>
     </FormControl>
+  );
+
+  if (!disabled || !disabledTooltip) return field;
+  // A block wrapper keeps the field full width inside its parent.
+  return (
+    <ArrowTooltip title={disabledTooltip}>
+      <Box component="span" sx={{ display: "block" }}>
+        {field}
+      </Box>
+    </ArrowTooltip>
   );
 }
