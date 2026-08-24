@@ -703,7 +703,7 @@ export function ScheduleReportView({
             fontSize: 14,
           }}
         >
-          Add recipients
+          Email this report
           <ArrowDropDownIcon sx={{ fontSize: 20 }} />
         </Link>
       )}
