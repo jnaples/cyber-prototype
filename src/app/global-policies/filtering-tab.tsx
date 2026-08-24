@@ -5,6 +5,7 @@
 import { Box, Button, Chip, IconButton, Link } from "@mui/material";
 import type { GridColDef } from "@mui/x-data-grid";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
@@ -294,6 +295,7 @@ function buildColumns(
 // ---------------------------------------------------------------------------
 
 export function FilteringTab() {
+  const navigate = useNavigate();
   const [cardTab, setCardTab] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activePolicy, setActivePolicy] = useState<PolicyRow | null>(null);
@@ -353,6 +355,7 @@ export function FilteringTab() {
           variant="contained"
           color="primary"
           startIcon={<MaterialSymbol name="add" size={20} />}
+          onClick={() => navigate("/global-policies/create")}
         >
           Add Policy
         </Button>

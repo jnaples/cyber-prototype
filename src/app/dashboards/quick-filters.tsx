@@ -25,13 +25,10 @@ import { SearchableMultiSelect } from "@/components/searchable-multi-select";
 import { Select } from "@/components/select";
 
 import {
-  CONTENT_CATEGORY_OPTIONS,
   ORGANIZATION_OPTIONS,
-  POLICY_OPTIONS,
   RESULT_OPTIONS,
   ROAMING_RELAY_OPTIONS,
   SITE_OPTIONS,
-  THREAT_CATEGORY_OPTIONS,
   TIME_RANGE_OPTIONS,
   USER_OPTIONS,
   type DashboardFilters,
@@ -285,25 +282,6 @@ export function QuickFilters({
           allLabel="All Results"
           // Only ever three options — no need for search / Select all.
           searchable={false}
-        />
-        <SearchableMultiSelect
-          label="Policy"
-          options={POLICY_OPTIONS}
-          selected={draft.policies}
-          onChange={(v) => setGroup("policies", v)}
-          allLabel="All Policies"
-        />
-        <SearchableMultiSelect
-          label="Content Categories"
-          options={CONTENT_CATEGORY_OPTIONS}
-          selected={draft.categories}
-          onChange={(v) => setGroup("categories", v)}
-        />
-        <SearchableMultiSelect
-          label="Threat Categories"
-          options={THREAT_CATEGORY_OPTIONS}
-          selected={draft.threatCategories}
-          onChange={(v) => setGroup("threatCategories", v)}
         />
       </FilterGroup>
     </Drawer>
