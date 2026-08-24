@@ -554,7 +554,15 @@ const selectedTabSx = {
   },
 };
 
-export default function ScheduledReportsPage() {
+export default function ScheduledReportsPage({
+  basePath = REPORT_MANAGER_BASE,
+  scheduleInDrawer = false,
+}: {
+  /** Route the tabs live under — v2 runs the same page on its own path. */
+  basePath?: string;
+  /** v2 trial: Schedule Report opens a drawer instead of the builder page. */
+  scheduleInDrawer?: boolean;
+} = {}) {
   const { pathname, state } = useLocation();
   // Saving an edited schedule returns here with a confirmation to show.
   const [toast, setToast] = useState<string | null>(
@@ -598,14 +606,13 @@ export default function ScheduledReportsPage() {
     [],
   );
   const activeTab = PAGE_TABS.findIndex(
-    (t) => pathname === `${REPORT_MANAGER_BASE}/${t.path}`,
+    (t) => pathname === `${basePath}/${t.path}`,
   );
   const pageTab = activeTab === -1 ? 0 : activeTab;
   // A hidden tab is still routable, so the panel follows the path.
   const activePath =
-    REPORT_MANAGER_TABS.find(
-      (t) => pathname === `${REPORT_MANAGER_BASE}/${t.path}`,
-    )?.path ?? PAGE_TABS[0].path;
+    REPORT_MANAGER_TABS.find((t) => pathname === `${basePath}/${t.path}`)
+      ?.path ?? PAGE_TABS[0].path;
   const [statusFilter, setStatusFilter] = useState<SummaryKey>("all");
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
@@ -718,7 +725,7 @@ export default function ScheduledReportsPage() {
             <Tabs
               value={pageTab}
               onChange={(_e, next: number) =>
-                navigate(`${REPORT_MANAGER_BASE}/${PAGE_TABS[next].path}`)
+                navigate(`${basePath}/${PAGE_TABS[next].path}`)
               }
               aria-label="report manager tabs"
               sx={{ px: 3 }}
@@ -736,7 +743,9 @@ export default function ScheduledReportsPage() {
         </PageHeader>
       }
     >
-      {activePath === "templates" && <ReportLibrary />}
+      {activePath === "templates" && (
+        <ReportLibrary scheduleInDrawer={scheduleInDrawer} />
+      )}
 
       {activePath === "history" && <ReportHistory />}
 

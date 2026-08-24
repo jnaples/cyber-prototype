@@ -811,6 +811,25 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Box>,
           )}
 
+          {/* Reports v2 — the same page with drawer-based scheduling. */}
+          {withCollapsedTooltip(
+            "Reports v2",
+            <Box
+              sx={getItemStyles("reporting-v2")}
+              onClick={() => {
+                handleItemClick("reporting-v2");
+                navigate("/reporting/reports-v2");
+              }}
+            >
+              <DescriptionOutlinedIcon
+                sx={{ fontSize: isExpanded ? 20 : 24 }}
+              />
+              {isExpanded && (
+                <span style={{ margin: "4px 0" }}>Reports v2</span>
+              )}
+            </Box>,
+          )}
+
           {sectionLabel("Admin")}
 
           {/* Organization Link */}

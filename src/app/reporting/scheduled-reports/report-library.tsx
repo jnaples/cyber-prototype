@@ -20,7 +20,9 @@ import { useNavigate } from "react-router";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { TextField } from "@/components/text-field";
 
+import { addCreatedSchedule } from "./created-schedules";
 import { GenerateReportDrawer } from "./generate-report-drawer";
+import { ScheduleReportView } from "./schedule-report-view";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 
 import { ReportCard } from "./report-card";
@@ -31,7 +33,13 @@ import { REPORTS, type ReportDef } from "./reports";
 const ALL = "All";
 const PRODUCTS = ["Filtering", "CyberSight"];
 
-export function ReportLibrary() {
+export function ReportLibrary({
+  scheduleInDrawer = false,
+}: {
+  /** v2 trial: Schedule Report opens the form in a drawer instead of taking
+   *  the user to the full builder page. */
+  scheduleInDrawer?: boolean;
+}) {
   const [search, setSearch] = useState("");
   const [productFilter, setProductFilter] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -40,8 +48,16 @@ export function ReportLibrary() {
   // Which report Run Now was pressed on — the drawer names it.
   const [generateFor, setGenerateFor] = useState<ReportDef | null>(null);
   const [generateToast, setGenerateToast] = useState(false);
+  // Reports queued for the drawer scheduler, when that's the flow in play.
+  const [scheduleFor, setScheduleFor] = useState<string[] | null>(null);
+  const [scheduleToast, setScheduleToast] = useState<string | null>(null);
   // Title or description — the description is what tells two threat reports
   // apart.
+  const schedule = (reportKeys: string[]) => {
+    if (scheduleInDrawer) setScheduleFor(reportKeys);
+    else navigate("/reporting/report-scheduler", { state: { reportKeys } });
+  };
+
   const query = search.trim().toLowerCase();
   const matches = REPORTS.filter((r) => {
     // Hidden for now: Custom Report has nothing behind it yet, and DNS Query
@@ -186,12 +202,7 @@ export function ReportLibrary() {
                     }
                     // …and it can't be put on a schedule from here.
                     onSchedule={
-                      r.key === "custom"
-                        ? undefined
-                        : () =>
-                            navigate("/reporting/report-scheduler", {
-                              state: { reportKeys: [r.key] },
-                            })
+                      r.key === "custom" ? undefined : () => schedule([r.key])
                     }
                   />
                 ))}
@@ -207,12 +218,23 @@ export function ReportLibrary() {
           title={preview?.title}
           Icon={preview?.Icon}
           onRunNow={() => setGenerateFor(preview)}
-          onSchedule={() =>
-            navigate("/reporting/report-scheduler", {
-              state: { reportKeys: preview ? [preview.key] : [] },
-            })
-          }
+          onSchedule={() => schedule(preview ? [preview.key] : [])}
         />
+
+        {/* v2 trial: the whole Schedule Details form, in a drawer. */}
+        {scheduleFor && (
+          <ScheduleReportView
+            variant="drawer"
+            open
+            initialReports={scheduleFor}
+            onCancel={() => setScheduleFor(null)}
+            onSave={(schedule) => {
+              addCreatedSchedule(schedule);
+              setScheduleFor(null);
+              setScheduleToast(`"${schedule.name}" created.`);
+            }}
+          />
+        )}
 
         <GenerateReportDrawer
           open={Boolean(generateFor)}
@@ -220,6 +242,23 @@ export function ReportLibrary() {
           reportTitle={generateFor?.title}
           onGenerate={() => setGenerateToast(true)}
         />
+
+        {/* Confirms a schedule created from the drawer. */}
+        <Snackbar
+          open={Boolean(scheduleToast)}
+          autoHideDuration={4000}
+          onClose={() => setScheduleToast(null)}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <Alert
+            severity="success"
+            variant="standard"
+            elevation={8}
+            onClose={() => setScheduleToast(null)}
+          >
+            {scheduleToast}
+          </Alert>
+        </Snackbar>
 
         <Snackbar
           open={generateToast}

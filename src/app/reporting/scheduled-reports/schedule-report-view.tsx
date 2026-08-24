@@ -23,6 +23,7 @@ import {
 import { useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
+import { Drawer } from "@/components/drawer";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { SearchableMultiSelect } from "@/components/searchable-multi-select";
@@ -208,6 +209,8 @@ export function ScheduleReportView({
   isEdit = Boolean(edit),
   autoFocusName = false,
   initialReports,
+  variant = "page",
+  open = true,
 }: {
   onCancel: () => void;
   /** Receives the finished schedule, so the list can add it and confirm it. */
@@ -221,6 +224,11 @@ export function ScheduleReportView({
   autoFocusName?: boolean;
   /** Report keys to preselect — set when opened from a Library preview. */
   initialReports?: string[];
+  /** "page" is the full builder with its live preview; "drawer" is the same
+   *  form on its own, for surfaces trying the simplified flow. */
+  variant?: "page" | "drawer";
+  /** Drawer variant only: whether the drawer is open. */
+  open?: boolean;
 }) {
   // Editing seeds every step the grid row can account for; otherwise nothing is
   // chosen unless a Library preview sent a report along. Branding stays default.
@@ -307,6 +315,485 @@ export function ScheduleReportView({
       ? "No changes to save."
       : "";
 
+  // The stepped form itself. The page wraps it in a card beside the live
+  // preview; the drawer variant shows it on its own.
+  const form = (
+    <>
+      {/* The branding note belongs to the title, so they group rather
+            than sitting a full step apart. */}
+      <Box>
+        {variant === "page" && (
+          <Typography variant="cardTitle">Schedule Details</Typography>
+        )}
+        <Typography
+          variant="body2"
+          sx={{ mt: variant === "page" ? 1 : 0, color: "text.primary" }}
+        >
+          Reports use branding from Branding settings.
+        </Typography>
+        <Typography variant="body2" component="div">
+          <Link
+            href="/msp/branding"
+            target="_blank"
+            rel="noopener"
+            underline="hover"
+            sx={{ fontWeight: 700 }}
+          >
+            View Branding
+          </Link>
+        </Typography>
+      </Box>
+
+      {/* STEP 1 — Reports */}
+      <Step n={1} title="Select Organization & Reports">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box>
+            <FormLabel sx={{ display: "block", mb: 0.5 }}>
+              Schedule name
+              <Box component="span" sx={{ ml: 0.25 }}>
+                *
+              </Box>
+            </FormLabel>
+            <TextField
+              fullWidth
+              size="small"
+              autoFocus={autoFocusName}
+              placeholder="e.g. Monthly Timeline"
+              value={scheduleName}
+              onChange={(e) => setScheduleName(e.target.value)}
+              helperText="Recipients won't see this name."
+              // 14px: the size the app's other helper copy reads at.
+              sx={{
+                "& .MuiFormHelperText-root": { fontSize: 14 },
+              }}
+            />
+          </Box>
+          {/* A schedule targets one organization. */}
+          <SearchableSelect
+            label="Organization"
+            required
+            placeholder="Select organization"
+            options={ORGS}
+            value={selectedOrg}
+            onChange={setSelectedOrg}
+          />
+
+          {/* One dropdown rather than a card per report — the list
+                only grows, and the builder shouldn't scroll for it. */}
+          <Box>
+            <SearchableSelect
+              label="Report type"
+              required
+              placeholder="Select report type"
+              options={SCHEDULABLE_REPORTS.map((r) => r.title).sort((a, b) =>
+                a.localeCompare(b),
+              )}
+              value={selectedReportDefs[0]?.title ?? ""}
+              onChange={(title) =>
+                setSelectedReports(
+                  SCHEDULABLE_REPORTS.filter((r) => r.title === title).map(
+                    (r) => r.key,
+                  ),
+                )
+              }
+            />
+            {/* The multi-select has no helper slot, so the link sits
+                  under it. */}
+            <Link
+              component="button"
+              type="button"
+              underline="hover"
+              onClick={() => setSamplesOpen(true)}
+              sx={{ mt: 0.5, fontSize: 14, verticalAlign: "baseline" }}
+            >
+              Preview reports
+            </Link>
+          </Box>
+        </Box>
+      </Step>
+
+      <Divider sx={{ mt: 1 }} />
+
+      {/* STEP 2 — Delivery */}
+      <Step n={2} title="Add Recipients & Message">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <SearchableMultiSelect
+            label="Internal recipients"
+            options={scopedRecipients}
+            selected={portalUsers}
+            onChange={setPortalUsers}
+            // Emailing every portal user isn't a shortcut worth
+            // offering — recipients are picked deliberately.
+            selectAll={false}
+            groupBy={orgOfRecipient}
+            allLabel="Select internal recipients"
+            chips
+          />
+
+          <Box>
+            <FormLabel
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                mb: 0.5,
+              }}
+            >
+              External recipients
+              <ArrowTooltip title="Send emails to recipients who don't have DNSFilter accounts. Their email addresses must be valid.">
+                <Box
+                  component="span"
+                  sx={(theme) => ({
+                    display: "inline-flex",
+                    color: "primary.main",
+                    ...theme.applyStyles("dark", {
+                      color: theme.vars.palette.primary.light,
+                    }),
+                  })}
+                >
+                  <MaterialSymbol name="info" size={20} />
+                </Box>
+              </ArrowTooltip>
+            </FormLabel>
+            <Autocomplete<string, true, false, true>
+              multiple
+              freeSolo
+              options={[] as string[]}
+              value={externalEmails}
+              inputValue={externalEmail}
+              onInputChange={(_e, v) => {
+                setExternalEmail(v);
+                if (emailError) setEmailError("");
+              }}
+              onChange={(_e, values) => {
+                const next = (values as string[])
+                  .map((v) => v.trim())
+                  .filter(Boolean);
+                const invalid = next.find((v) => !isEmail(v));
+                if (invalid) {
+                  setEmailError(`"${invalid}" is not a valid email address.`);
+                  return;
+                }
+                setEmailError("");
+                setExternalEmails([...new Set(next)]);
+              }}
+              // Let MUI render the chips so they keep their delete
+              // button and tag sizing; just restyle them to match the
+              // dashboard's active-filter chips.
+              slotProps={{
+                chip: {
+                  size: "small",
+                  sx: {
+                    borderRadius: (t) => t.spacing(1),
+                    "& .MuiChip-deleteIcon": {
+                      color: "text.disabled",
+                      "&:hover": { color: "text.secondary" },
+                    },
+                  },
+                },
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  size="small"
+                  error={Boolean(emailError)}
+                  helperText={emailError}
+                />
+              )}
+            />
+          </Box>
+
+          {/* The simplified drawer flow leaves the email copy to defaults. */}
+          {variant === "page" && (
+            <>
+              <Box>
+                <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                  Email subject
+                </FormLabel>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder={`e.g. ${frequency || "Monthly"} Security Report`}
+                  value={emailSubject}
+                  onChange={(e) => setEmailSubject(e.target.value)}
+                />
+              </Box>
+
+              <Box>
+                <FormLabel
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 0.5,
+                    mb: 0.5,
+                  }}
+                >
+                  Email message
+                  <Typography
+                    component="span"
+                    variant="body2"
+                    sx={{ color: "text.secondary", fontWeight: 400 }}
+                  >
+                    Optional
+                  </Typography>
+                </FormLabel>
+                <TextField
+                  fullWidth
+                  multiline
+                  minRows={4}
+                  size="small"
+                  placeholder="e.g. Your monthly security report is attached. Reach out with any questions."
+                  value={emailMessage}
+                  onChange={(e) => setEmailMessage(e.target.value)}
+                />
+              </Box>
+            </>
+          )}
+        </Box>
+      </Step>
+
+      <Divider sx={{ mt: 1 }} />
+
+      {/* STEP 3 — Schedule */}
+      <Step n={3} title="Choose Frequency">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box>
+            {/* Same label + info treatment as External recipients. */}
+            <FormLabel
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                mb: 0.5,
+              }}
+            >
+              <Box component="span">
+                Delivery schedule
+                <Box component="span" sx={{ ml: 0.25 }}>
+                  *
+                </Box>
+              </Box>
+              <ArrowTooltip title="Schedule frequency also sets the reporting period. Send time is optimized automatically for each delivery day.">
+                <Box
+                  component="span"
+                  sx={(theme) => ({
+                    display: "inline-flex",
+                    color: "primary.main",
+                    ...theme.applyStyles("dark", {
+                      color: theme.vars.palette.primary.light,
+                    }),
+                  })}
+                >
+                  <MaterialSymbol name="info" size={20} />
+                </Box>
+              </ArrowTooltip>
+            </FormLabel>
+            <Select
+              fullWidth
+              displayEmpty
+              size="small"
+              value={frequency}
+              onChange={(e) =>
+                setFrequency(e.target.value as (typeof FREQUENCIES)[number])
+              }
+              renderValue={(value) =>
+                value ? (
+                  (value as string)
+                ) : (
+                  <Box component="span" sx={{ color: "text.disabled" }}>
+                    Select delivery schedule
+                  </Box>
+                )
+              }
+            >
+              {FREQUENCIES.map((f) => (
+                <MenuItem key={f} value={f}>
+                  {f}
+                </MenuItem>
+              ))}
+            </Select>
+            {frequency === "Quarterly" && (
+              // Quarterly has no day to pick, so the rule is spelled
+              // out instead.
+              <Typography
+                variant="body2"
+                sx={{ mt: 0.5, color: "text.secondary" }}
+              >
+                Delivered on the first day of each quarter (Jan 1, Apr 1, Jul 1,
+                Oct 1). Report covers the previous quarter.
+              </Typography>
+            )}
+          </Box>
+
+          {frequency === "Weekly" && (
+            <Box>
+              <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                Day of the week
+                <Box component="span" sx={{ ml: 0.25 }}>
+                  *
+                </Box>
+              </FormLabel>
+              <ToggleButtonGroup
+                exclusive
+                size="small"
+                value={weekDay}
+                // A weekly schedule always runs on some day, so the
+                // current pick stands until another is chosen.
+                onChange={(_event, next: string | null) => {
+                  if (next) setWeekDay(next);
+                }}
+                sx={{
+                  "& .MuiToggleButton-root": {
+                    minWidth: 44,
+                    py: "4px",
+                    textTransform: "none",
+                  },
+                }}
+              >
+                {WEEK_DAYS.map((day) => (
+                  // Slow tip: the abbreviations are only ambiguous on
+                  // a second look, so it shouldn't chase the pointer
+                  // across the row.
+                  <ArrowTooltip
+                    key={day.value}
+                    title={day.name}
+                    enterDelay={2000}
+                  >
+                    <ToggleButton value={day.value} aria-label={day.name}>
+                      {day.label}
+                    </ToggleButton>
+                  </ArrowTooltip>
+                ))}
+              </ToggleButtonGroup>
+            </Box>
+          )}
+
+          {frequency === "Monthly" && (
+            <Box>
+              <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                Day of the month
+                <Box component="span" sx={{ ml: 0.25 }}>
+                  *
+                </Box>
+              </FormLabel>
+              {/* 1st–28th: every month has those days, so a schedule
+                    can't land on a date that doesn't exist. */}
+              <Select
+                fullWidth
+                size="small"
+                value={monthDay}
+                onChange={(e) => setMonthDay(Number(e.target.value))}
+              >
+                {MONTH_DAYS.map((day) => (
+                  <MenuItem key={day} value={day}>
+                    {ordinal(day)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+          )}
+        </Box>
+      </Step>
+
+      {/* STEP 4 — Branding. Parked, not deleted: the branding story may
+          move here from MSP > Branding, so flip the flag to bring it
+          back. */}
+      {SHOW_BRANDING_STEP && <Divider sx={{ mt: 1 }} />}
+      {SHOW_BRANDING_STEP && (
+        <Step n={4} title="Branding (Optional)">
+          <FormControlLabel
+            control={
+              <Switch
+                checked={whitelabel}
+                onChange={(e) => setWhitelabel(e.target.checked)}
+              />
+            }
+            label={
+              <Box>
+                <Typography sx={{ fontWeight: 600 }}>
+                  White-label branding
+                </Typography>
+                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                  Uses your branding in the email and report, and removes
+                  &quot;Powered by DNSFilter.&quot;
+                </Typography>
+              </Box>
+            }
+            sx={{ alignItems: "flex-start", m: 0, gap: 1.5, mb: 2 }}
+          />
+
+          {/* No logo upload here — the logo comes from MSP > Branding. */}
+          {whitelabel && (
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+                gap: 2,
+              }}
+            >
+              <Box>
+                <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                  Company name
+                </FormLabel>
+                <TextField
+                  fullWidth
+                  size="small"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                />
+              </Box>
+              <Box>
+                <FormLabel sx={{ display: "block", mb: 0.5 }}>
+                  Reply-to email
+                </FormLabel>
+                <TextField
+                  fullWidth
+                  size="small"
+                  value={replyTo}
+                  onChange={(e) => setReplyTo(e.target.value)}
+                />
+              </Box>
+            </Box>
+          )}
+        </Step>
+      )}
+    </>
+  );
+
+  if (variant === "drawer") {
+    return (
+      <Drawer
+        open={open}
+        onClose={onCancel}
+        title={isEdit ? "Edit Schedule" : "Schedule Report"}
+        subheader={selectedReportDefs[0]?.title}
+        secondaryAction={{ label: "Cancel", onClick: onCancel }}
+        primaryAction={{
+          label: isEdit ? "Save" : "Create schedule",
+          disabled: !canSave,
+          tooltip: saveTooltip,
+          onClick: () =>
+            onSave({
+              name: scheduleName,
+              tags: selectedReportDefs.map((r) => r.title),
+              organization: selectedOrg,
+              recipients: recipientCount,
+              frequency,
+              frequencyDetail:
+                frequency === "Weekly"
+                  ? weekDay
+                  : frequency === "Monthly"
+                    ? ordinal(monthDay)
+                    : "",
+            }),
+        }}
+      >
+        {form}
+      </Drawer>
+    );
+  }
+
   return (
     <Box
       sx={{
@@ -378,448 +865,7 @@ export function ScheduleReportView({
             <Card
               sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}
             >
-              {/* The branding note belongs to the title, so they group rather
-                  than sitting a full step apart. */}
-              <Box>
-                <Typography variant="cardTitle">Schedule Details</Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ mt: 1, color: "text.primary" }}
-                >
-                  Reports use branding from Branding settings.
-                </Typography>
-                <Typography variant="body2" component="div">
-                  <Link
-                    href="/msp/branding"
-                    target="_blank"
-                    rel="noopener"
-                    underline="hover"
-                    sx={{ fontWeight: 700 }}
-                  >
-                    View Branding
-                  </Link>
-                </Typography>
-              </Box>
-
-              {/* STEP 1 — Reports */}
-              <Step n={1} title="Select Organization & Reports">
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <Box>
-                    <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                      Schedule name
-                      <Box component="span" sx={{ ml: 0.25 }}>
-                        *
-                      </Box>
-                    </FormLabel>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      autoFocus={autoFocusName}
-                      placeholder="e.g. Monthly Timeline"
-                      value={scheduleName}
-                      onChange={(e) => setScheduleName(e.target.value)}
-                      helperText="Recipients won't see this name."
-                      // 14px: the size the app's other helper copy reads at.
-                      sx={{
-                        "& .MuiFormHelperText-root": { fontSize: 14 },
-                      }}
-                    />
-                  </Box>
-                  {/* A schedule targets one organization. */}
-                  <SearchableSelect
-                    label="Organization"
-                    required
-                    placeholder="Select organization"
-                    options={ORGS}
-                    value={selectedOrg}
-                    onChange={setSelectedOrg}
-                  />
-
-                  {/* One dropdown rather than a card per report — the list
-                      only grows, and the builder shouldn't scroll for it. */}
-                  <Box>
-                    <SearchableSelect
-                      label="Report type"
-                      required
-                      placeholder="Select report type"
-                      options={SCHEDULABLE_REPORTS.map((r) => r.title).sort(
-                        (a, b) => a.localeCompare(b),
-                      )}
-                      value={selectedReportDefs[0]?.title ?? ""}
-                      onChange={(title) =>
-                        setSelectedReports(
-                          SCHEDULABLE_REPORTS.filter(
-                            (r) => r.title === title,
-                          ).map((r) => r.key),
-                        )
-                      }
-                    />
-                    {/* The multi-select has no helper slot, so the link sits
-                        under it. */}
-                    <Link
-                      component="button"
-                      type="button"
-                      underline="hover"
-                      onClick={() => setSamplesOpen(true)}
-                      sx={{ mt: 0.5, fontSize: 14, verticalAlign: "baseline" }}
-                    >
-                      Preview reports
-                    </Link>
-                  </Box>
-                </Box>
-              </Step>
-
-              <Divider sx={{ mt: 1 }} />
-
-              {/* STEP 2 — Delivery */}
-              <Step n={2} title="Add Recipients & Message">
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <SearchableMultiSelect
-                    label="Internal recipients"
-                    options={scopedRecipients}
-                    selected={portalUsers}
-                    onChange={setPortalUsers}
-                    // Emailing every portal user isn't a shortcut worth
-                    // offering — recipients are picked deliberately.
-                    selectAll={false}
-                    groupBy={orgOfRecipient}
-                    allLabel="Select internal recipients"
-                    chips
-                  />
-
-                  <Box>
-                    <FormLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.5,
-                        mb: 0.5,
-                      }}
-                    >
-                      External recipients
-                      <ArrowTooltip title="Send emails to recipients who don't have DNSFilter accounts. Their email addresses must be valid.">
-                        <Box
-                          component="span"
-                          sx={(theme) => ({
-                            display: "inline-flex",
-                            color: "primary.main",
-                            ...theme.applyStyles("dark", {
-                              color: theme.vars.palette.primary.light,
-                            }),
-                          })}
-                        >
-                          <MaterialSymbol name="info" size={20} />
-                        </Box>
-                      </ArrowTooltip>
-                    </FormLabel>
-                    <Autocomplete<string, true, false, true>
-                      multiple
-                      freeSolo
-                      options={[] as string[]}
-                      value={externalEmails}
-                      inputValue={externalEmail}
-                      onInputChange={(_e, v) => {
-                        setExternalEmail(v);
-                        if (emailError) setEmailError("");
-                      }}
-                      onChange={(_e, values) => {
-                        const next = (values as string[])
-                          .map((v) => v.trim())
-                          .filter(Boolean);
-                        const invalid = next.find((v) => !isEmail(v));
-                        if (invalid) {
-                          setEmailError(
-                            `"${invalid}" is not a valid email address.`,
-                          );
-                          return;
-                        }
-                        setEmailError("");
-                        setExternalEmails([...new Set(next)]);
-                      }}
-                      // Let MUI render the chips so they keep their delete
-                      // button and tag sizing; just restyle them to match the
-                      // dashboard's active-filter chips.
-                      slotProps={{
-                        chip: {
-                          size: "small",
-                          sx: {
-                            borderRadius: (t) => t.spacing(1),
-                            "& .MuiChip-deleteIcon": {
-                              color: "text.disabled",
-                              "&:hover": { color: "text.secondary" },
-                            },
-                          },
-                        },
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          size="small"
-                          error={Boolean(emailError)}
-                          helperText={emailError}
-                        />
-                      )}
-                    />
-                  </Box>
-
-                  <Box>
-                    <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                      Email subject
-                    </FormLabel>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      placeholder={`e.g. ${frequency || "Monthly"} Security Report`}
-                      value={emailSubject}
-                      onChange={(e) => setEmailSubject(e.target.value)}
-                    />
-                  </Box>
-
-                  <Box>
-                    <FormLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 0.5,
-                        mb: 0.5,
-                      }}
-                    >
-                      Email message
-                      <Typography
-                        component="span"
-                        variant="body2"
-                        sx={{ color: "text.secondary", fontWeight: 400 }}
-                      >
-                        Optional
-                      </Typography>
-                    </FormLabel>
-                    <TextField
-                      fullWidth
-                      multiline
-                      minRows={4}
-                      size="small"
-                      placeholder="e.g. Your monthly security report is attached. Reach out with any questions."
-                      value={emailMessage}
-                      onChange={(e) => setEmailMessage(e.target.value)}
-                    />
-                  </Box>
-                </Box>
-              </Step>
-
-              <Divider sx={{ mt: 1 }} />
-
-              {/* STEP 3 — Schedule */}
-              <Step n={3} title="Choose Frequency">
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <Box>
-                    {/* Same label + info treatment as External recipients. */}
-                    <FormLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.5,
-                        mb: 0.5,
-                      }}
-                    >
-                      <Box component="span">
-                        Delivery schedule
-                        <Box component="span" sx={{ ml: 0.25 }}>
-                          *
-                        </Box>
-                      </Box>
-                      <ArrowTooltip title="Schedule frequency also sets the reporting period. Send time is optimized automatically for each delivery day.">
-                        <Box
-                          component="span"
-                          sx={(theme) => ({
-                            display: "inline-flex",
-                            color: "primary.main",
-                            ...theme.applyStyles("dark", {
-                              color: theme.vars.palette.primary.light,
-                            }),
-                          })}
-                        >
-                          <MaterialSymbol name="info" size={20} />
-                        </Box>
-                      </ArrowTooltip>
-                    </FormLabel>
-                    <Select
-                      fullWidth
-                      displayEmpty
-                      size="small"
-                      value={frequency}
-                      onChange={(e) =>
-                        setFrequency(
-                          e.target.value as (typeof FREQUENCIES)[number],
-                        )
-                      }
-                      renderValue={(value) =>
-                        value ? (
-                          (value as string)
-                        ) : (
-                          <Box component="span" sx={{ color: "text.disabled" }}>
-                            Select delivery schedule
-                          </Box>
-                        )
-                      }
-                    >
-                      {FREQUENCIES.map((f) => (
-                        <MenuItem key={f} value={f}>
-                          {f}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {frequency === "Quarterly" && (
-                      // Quarterly has no day to pick, so the rule is spelled
-                      // out instead.
-                      <Typography
-                        variant="body2"
-                        sx={{ mt: 0.5, color: "text.secondary" }}
-                      >
-                        Delivered on the first day of each quarter (Jan 1, Apr
-                        1, Jul 1, Oct 1). Report covers the previous quarter.
-                      </Typography>
-                    )}
-                  </Box>
-
-                  {frequency === "Weekly" && (
-                    <Box>
-                      <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                        Day of the week
-                        <Box component="span" sx={{ ml: 0.25 }}>
-                          *
-                        </Box>
-                      </FormLabel>
-                      <ToggleButtonGroup
-                        exclusive
-                        size="small"
-                        value={weekDay}
-                        // A weekly schedule always runs on some day, so the
-                        // current pick stands until another is chosen.
-                        onChange={(_event, next: string | null) => {
-                          if (next) setWeekDay(next);
-                        }}
-                        sx={{
-                          "& .MuiToggleButton-root": {
-                            minWidth: 44,
-                            py: "4px",
-                            textTransform: "none",
-                          },
-                        }}
-                      >
-                        {WEEK_DAYS.map((day) => (
-                          // Slow tip: the abbreviations are only ambiguous on
-                          // a second look, so it shouldn't chase the pointer
-                          // across the row.
-                          <ArrowTooltip
-                            key={day.value}
-                            title={day.name}
-                            enterDelay={2000}
-                          >
-                            <ToggleButton
-                              value={day.value}
-                              aria-label={day.name}
-                            >
-                              {day.label}
-                            </ToggleButton>
-                          </ArrowTooltip>
-                        ))}
-                      </ToggleButtonGroup>
-                    </Box>
-                  )}
-
-                  {frequency === "Monthly" && (
-                    <Box>
-                      <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                        Day of the month
-                        <Box component="span" sx={{ ml: 0.25 }}>
-                          *
-                        </Box>
-                      </FormLabel>
-                      {/* 1st–28th: every month has those days, so a schedule
-                          can't land on a date that doesn't exist. */}
-                      <Select
-                        fullWidth
-                        size="small"
-                        value={monthDay}
-                        onChange={(e) => setMonthDay(Number(e.target.value))}
-                      >
-                        {MONTH_DAYS.map((day) => (
-                          <MenuItem key={day} value={day}>
-                            {ordinal(day)}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </Box>
-                  )}
-                </Box>
-              </Step>
-
-              {/* STEP 4 — Branding. Parked, not deleted: the branding story may
-                move here from MSP > Branding, so flip the flag to bring it
-                back. */}
-              {SHOW_BRANDING_STEP && <Divider sx={{ mt: 1 }} />}
-              {SHOW_BRANDING_STEP && (
-                <Step n={4} title="Branding (Optional)">
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={whitelabel}
-                        onChange={(e) => setWhitelabel(e.target.checked)}
-                      />
-                    }
-                    label={
-                      <Box>
-                        <Typography sx={{ fontWeight: 600 }}>
-                          White-label branding
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "text.secondary" }}
-                        >
-                          Uses your branding in the email and report, and
-                          removes &quot;Powered by DNSFilter.&quot;
-                        </Typography>
-                      </Box>
-                    }
-                    sx={{ alignItems: "flex-start", m: 0, gap: 1.5, mb: 2 }}
-                  />
-
-                  {/* No logo upload here — the logo comes from MSP > Branding. */}
-                  {whitelabel && (
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                        gap: 2,
-                      }}
-                    >
-                      <Box>
-                        <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                          Company name
-                        </FormLabel>
-                        <TextField
-                          fullWidth
-                          size="small"
-                          value={companyName}
-                          onChange={(e) => setCompanyName(e.target.value)}
-                        />
-                      </Box>
-                      <Box>
-                        <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                          Reply-to email
-                        </FormLabel>
-                        <TextField
-                          fullWidth
-                          size="small"
-                          value={replyTo}
-                          onChange={(e) => setReplyTo(e.target.value)}
-                        />
-                      </Box>
-                    </Box>
-                  )}
-                </Step>
-              )}
+              {form}
             </Card>
 
             {/* ---------------------------------------------------------------- */}
