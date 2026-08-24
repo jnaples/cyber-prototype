@@ -801,7 +801,7 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
               sx={getItemStyles("reporting-v2")}
               onClick={() => {
                 handleItemClick("reporting-v2");
-                navigate("/reporting/reports-v2");
+                navigate("/reporting/reports");
               }}
             >
               <DescriptionOutlinedIcon
