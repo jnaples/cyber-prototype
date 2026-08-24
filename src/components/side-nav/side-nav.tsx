@@ -811,11 +811,13 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Box>,
           )}
 
-          {/* Reports v2 — a second variation of the drawer flow. */}
+          {/* Reports v2 — a second variation of the drawer flow. Parked out of
+              the nav while it's undecided; /reporting/reports-v3 still opens
+              it. Drop the display rule to bring the item back. */}
           {withCollapsedTooltip(
             "Reports v2",
             <Box
-              sx={getItemStyles("reporting-v3")}
+              sx={[getItemStyles("reporting-v3"), { display: "none" }]}
               onClick={() => {
                 handleItemClick("reporting-v3");
                 navigate("/reporting/reports-v3");
