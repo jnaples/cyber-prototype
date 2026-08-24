@@ -71,7 +71,7 @@ const MENU_ACTIONS: {
 ];
 
 // DNS Query Log retention. Past this, there's nothing left to investigate.
-const QUERY_LOG_DAYS = 7;
+const QUERY_LOG_DAYS = 9;
 const RETENTION_MS = QUERY_LOG_DAYS * 24 * 60 * 60 * 1000;
 // Read once at load rather than per render, which would be impure.
 const LOADED_AT = Date.now();
@@ -583,7 +583,7 @@ const REQUESTS: ActiveRequest[] = [
     loggedInUser: "Renee Alvarez",
     email: "r.alvarez@coastalpm.com",
     requestReason: "Client sends lease packets through Dropbox",
-    daysAgo: 12,
+    daysAgo: 11,
   },
   {
     domain: "reddit.com",
@@ -595,7 +595,7 @@ const REQUESTS: ActiveRequest[] = [
     email: "d.salas@vanguardauto.com",
     requestReason:
       "Following manufacturer service bulletins in r/MechanicAdvice",
-    daysAgo: 14,
+    daysAgo: 16,
   },
 ];
 
@@ -605,7 +605,7 @@ const DEPLOYMENT_TYPES = ["Roaming Client", "Relay", "Site"];
 
 // Spread attempts across the last few business days during 9-5 hours (always
 // within the past 30 days), then order oldest first. A request carrying its
-// own `daysAgo` sits where it says — the two past the Query Log's 7-day
+// own `daysAgo` sits where it says — the two past the Query Log's 9-day
 // retention are there so the blocked Investigate Mode is always reachable.
 const NOW = new Date();
 const rows = REQUESTS.map((request, i) => {

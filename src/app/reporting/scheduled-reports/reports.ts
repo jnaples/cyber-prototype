@@ -25,9 +25,18 @@ export type ReportDef = {
 
 export const REPORTS: ReportDef[] = [
   {
+    key: "protection",
+    title: "Filter Protection Overview",
+    desc: "Threat and content-block activity to support security and policy reporting.",
+    Icon: EqualizerOutlinedIcon,
+    file: "Protection-Summary-Jul-2026.pdf",
+    products: ["Filtering"],
+    size: "1.1 MB",
+  },
+  {
     key: "activity",
     title: "Activity Overview",
-    desc: "Requests, blocked traffic, and top categories across the period.",
+    desc: "Aggregated user activity and time trends to establish behavioral baselines.",
     Icon: StackedLineChartOutlinedIcon,
     file: "Activity-Overview-Jul-2026.pdf",
     products: ["CyberSight"],
@@ -35,8 +44,8 @@ export const REPORTS: ReportDef[] = [
   },
   {
     key: "timeline-overview",
-    title: "Timeline",
-    desc: "Summarized device timelines with notable activity called out.",
+    title: "Activity Timeline",
+    desc: "Chronological record of user and agent activity to reconstruct the sequence around security events.",
     Icon: ViewTimelineOutlinedIcon,
     file: "Timeline-Overview-Jul-2026.pdf",
     products: ["CyberSight"],
@@ -44,18 +53,9 @@ export const REPORTS: ReportDef[] = [
     cybersight: true,
   },
   {
-    key: "protection",
-    title: "Filter Protection Summary",
-    desc: "Threats blocked, categories filtered, and policy coverage.",
-    Icon: EqualizerOutlinedIcon,
-    file: "Protection-Summary-Jul-2026.pdf",
-    products: ["Filtering"],
-    size: "1.1 MB",
-  },
-  {
     key: "threat-trends",
-    title: "Threat Trends",
-    desc: "Threat events over time, with the domains and devices behind them.",
+    title: "User Threat Activity",
+    desc: "Threat activity initiated by users, excluding background traffic, to isolate deliberate risk.",
     Icon: ShieldOutlinedIcon,
     file: "Threat-Trends-Jul-2026.pdf",
     products: ["CyberSight"],
@@ -64,8 +64,8 @@ export const REPORTS: ReportDef[] = [
   },
   {
     key: "ai-usage",
-    title: "AI Usage",
-    desc: "AI queries, insights generated, and usage by device.",
+    title: "AI Tool Usage",
+    desc: "AI tool usage across users and devices to surface shadow AI adoption.",
     Icon: AutoAwesomeOutlinedIcon,
     file: "AI-Usage-Jul-2026.pdf",
     products: ["CyberSight"],
@@ -75,7 +75,7 @@ export const REPORTS: ReportDef[] = [
   {
     key: "timeline-logs",
     title: "Activity Logs",
-    desc: "Detailed CyberSight timeline events for each device, exported as a CSV.",
+    desc: "Raw per-event forensic records to drive custom analysis and reporting.",
     Icon: ViewListOutlinedIcon,
     file: "Timeline-Logs-Jul-2026.csv",
     products: ["CyberSight"],

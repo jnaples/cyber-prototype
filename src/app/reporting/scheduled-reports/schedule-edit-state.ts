@@ -25,8 +25,8 @@ export const TAG_TO_REPORT_KEY: Record<string, string> = {
   "Protection Summary": "protection",
   "Traffic Logs": "traffic",
   "Timeline Logs": "timeline-logs",
-  Timeline: "timeline-overview",
-  "AI Usage": "ai-usage",
+  "Activity Timeline": "timeline-overview",
+  "AI Tool Usage": "ai-usage",
 };
 
 // Mirrors the scheduler's own portal-user list.

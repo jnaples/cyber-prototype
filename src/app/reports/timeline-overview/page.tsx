@@ -1,4 +1,4 @@
-// Timeline report — converted from the "Timeline" PDF
+// Activity Timeline report — converted from the "Timeline" PDF
 // template (1400px canvas). Adds a stacked daily-events bar chart, a Top
 // Activities donut, a Notable panel, and per-device Active/Idle/Locked
 // composition bars. Screen-only annex omitted. Light-mode (PDF-style) document.
@@ -401,7 +401,7 @@ export default function TimelineOverviewReport() {
             m: "8px 0",
           }}
         >
-          Timeline
+          Activity Timeline
         </Box>
         <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>

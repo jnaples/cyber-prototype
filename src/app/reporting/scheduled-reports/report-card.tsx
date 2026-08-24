@@ -172,6 +172,9 @@ export function ReportCard({
               position: "absolute",
               inset: 0,
               display: "flex",
+              // Side by side from lg up; below that the two buttons would
+              // squeeze each other in a narrower card.
+              flexDirection: { xs: "column", lg: "row" },
               alignItems: "center",
               justifyContent: "center",
               gap: 1,

@@ -1,4 +1,4 @@
-// Filter Protection Summary report — converted from the revised "Filter
+// Filter Protection Overview report — converted from the revised "Filter
 // Protection Summary" PDF template (1400px canvas): KPI band, top active sites
 // (per-site request/threat/content trios), threat summary, content summary.
 // Screen-only design annex omitted. Light-mode (PDF-style) document.
@@ -551,7 +551,7 @@ export default function FilterProtectionSummaryReport() {
             m: "8px 0",
           }}
         >
-          Filter Protection Summary
+          Filter Protection Overview
         </Box>
         <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>

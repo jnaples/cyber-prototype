@@ -21,16 +21,16 @@ const REPORT_GROUPS = [
         label: "Activity Overview",
         path: `${BASE}/customer-activity-overview`,
       },
-      { label: "Timeline", path: `${BASE}/timeline-overview` },
-      { label: "AI Usage", path: `${BASE}/cybersight-ai-usage` },
-      { label: "Threat Trends", path: `${BASE}/threat-trends` },
+      { label: "Activity Timeline", path: `${BASE}/timeline-overview` },
+      { label: "AI Tool Usage", path: `${BASE}/cybersight-ai-usage` },
+      { label: "User Threat Activity", path: `${BASE}/threat-trends` },
     ],
   },
   {
     header: "Legacy Reports",
     items: [
       {
-        label: "Filter Protection Summary",
+        label: "Filter Protection Overview",
         path: `${BASE}/filter-protection-summary`,
       },
     ],

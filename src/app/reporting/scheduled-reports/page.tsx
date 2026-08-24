@@ -99,7 +99,7 @@ const SCHEDULES: Schedule[] = [
   {
     id: 3,
     name: "CyberSight AI Monthly Review",
-    tags: ["AI Usage"],
+    tags: ["AI Tool Usage"],
     organizations: "Summit Financial Advisors",
     recipients: 2,
     freqPrimary: "Monthly",
@@ -242,7 +242,7 @@ function deliveryFor(row: Schedule) {
 
 function attachmentsFor(row: Schedule) {
   return row.tags.map((tag) => {
-    // Grid tags are short labels ("AI Usage"), so they resolve through the same
+    // Grid tags are short labels ("AI Tool Usage"), so they resolve through the same
     // map the edit prefill uses rather than matching catalog titles directly.
     const def = REPORTS.find((r) => r.key === TAG_TO_REPORT_KEY[tag]);
     return {

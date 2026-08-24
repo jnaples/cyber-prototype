@@ -1,4 +1,4 @@
-// AI Usage report — converted from the "AI Usage" PDF
+// AI Tool Usage report — converted from the "AI Usage" PDF
 // template (1400px canvas). Same chrome/components as the other CyberSight
 // reports; AI-specific series, a rescaled 0–6h trend chart, and AI accent
 // colors. Screen-only design annex omitted. Rendered light mode (PDF-style).
@@ -365,7 +365,7 @@ export default function CyberSightAiUsageReport() {
             m: "8px 0",
           }}
         >
-          AI Usage
+          AI Tool Usage
         </Box>
         <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>

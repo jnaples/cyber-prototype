@@ -29,7 +29,7 @@ import { REPORT_MANAGER_BASE } from "./routes";
 import { REPORTS, type ReportDef } from "./reports";
 
 const ALL = "All";
-const PRODUCTS = ["CyberSight", "Filtering"];
+const PRODUCTS = ["Filtering", "CyberSight"];
 
 export function ReportLibrary() {
   const [search, setSearch] = useState("");
@@ -150,10 +150,12 @@ export function ReportLibrary() {
               <Box
                 sx={{
                   display: "grid",
+                  // Two across until there's room for a third: at md–lg a
+                  // three-column card is too narrow for its preview.
                   gridTemplateColumns: {
                     xs: "1fr",
-                    sm: "repeat(2, minmax(0, 1fr))",
-                    md: "repeat(3, minmax(0, 1fr))",
+                    md: "repeat(2, minmax(0, 1fr))",
+                    xl: "repeat(3, minmax(0, 1fr))",
                   },
                   alignItems: "start",
                   gap: 2,

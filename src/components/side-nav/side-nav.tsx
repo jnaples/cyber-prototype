@@ -669,7 +669,8 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           )}
 
           {/* CyberSight Link — a single destination; the page's own tabs cover
-              Activity Overview / Timeline / Threat Trends / Activity Logs. */}
+              Activity Overview / Activity Timeline / User Threat Activity /
+              Activity Logs. */}
           {withCollapsedTooltip(
             "CyberSight",
             <Box

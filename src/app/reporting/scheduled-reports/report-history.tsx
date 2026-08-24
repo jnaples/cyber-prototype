@@ -78,7 +78,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 4,
-    reportType: "AI Usage",
+    reportType: "AI Tool Usage",
     reportName: "CyberSight AI Monthly Review",
     customer: "Summit Financial Advisors",
     period: "Jul 1–31",
@@ -100,7 +100,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 6,
-    reportType: "Filter Protection Summary",
+    reportType: "Filter Protection Overview",
     reportName: "Weekly Protection Recap",
     customer: "Riverside Dental Group",
     period: "Jul 27–Aug 2",
@@ -122,7 +122,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 8,
-    reportType: "Timeline",
+    reportType: "Activity Timeline",
     reportName: "Business Review Packet",
     customer: "Acme Retail Group",
     period: "Jul 1–31",
@@ -166,7 +166,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 12,
-    reportType: "Filter Protection Summary",
+    reportType: "Filter Protection Overview",
     reportName: "Weekly Protection Recap",
     customer: "Riverside Dental Group",
     period: "Jul 20–26",
@@ -177,7 +177,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 13,
-    reportType: "AI Usage",
+    reportType: "AI Tool Usage",
     reportName: "AI Adoption Snapshot",
     customer: "Acme Retail Group",
     period: "Jul 1–31",
@@ -188,7 +188,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 14,
-    reportType: "AI Usage",
+    reportType: "AI Tool Usage",
     reportName: "CyberSight AI Monthly Review",
     customer: "Riverside Dental Group",
     period: "Jul 1–31",
@@ -199,7 +199,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 15,
-    reportType: "AI Usage",
+    reportType: "AI Tool Usage",
     reportName: "AI Query Volume by Device",
     customer: "Coastal Property Mgmt",
     period: "Jul 1–29",
@@ -210,7 +210,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 16,
-    reportType: "Threat Trends",
+    reportType: "User Threat Activity",
     reportName: "Monthly Threat Briefing",
     customer: "Summit Financial Advisors",
     period: "Jul 1–31",
@@ -221,7 +221,7 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 17,
-    reportType: "Threat Trends",
+    reportType: "User Threat Activity",
     reportName: "Quarterly Threat Review",
     customer: "Acme Retail Group",
     period: "Apr 1–Jun 30",

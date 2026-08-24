@@ -1,4 +1,4 @@
-// Threat Trends report — converted from the "CyberSight Threat Overview" PDF
+// User Threat Activity report — converted from the "CyberSight Threat Overview" PDF
 // template (1400px canvas). Same chrome/components as Customer Activity
 // Overview; different series, labels, and accent colors. Screen-only design
 // annex omitted. Rendered light mode (PDF-style document).
@@ -266,7 +266,7 @@ export default function ThreatTrendsReport() {
             m: "8px 0",
           }}
         >
-          Threat Trends
+          User Threat Activity
         </Box>
         <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>
