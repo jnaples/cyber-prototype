@@ -1,5 +1,5 @@
 // "Generate Report" drawer — opened from the Templates preview. Collects the
-// one-off run's name, scope (organization / sites / clients / users) and date
+// one-off run's scope (organization / sites / clients / users) and date
 // range, then hands off to the (prototype) generate action.
 
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -9,7 +9,9 @@ import {
   FormLabel,
   IconButton,
   InputAdornment,
+  Link,
   MenuItem,
+  Typography,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers-pro";
 import { AdapterDateFns } from "@mui/x-date-pickers-pro/AdapterDateFns";
@@ -26,7 +28,6 @@ import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { Drawer } from "@/components/drawer";
 import { SearchableMultiSelect } from "@/components/searchable-multi-select";
 import { Select } from "@/components/select";
-import { TextField } from "@/components/text-field";
 import { MSP_ORGANIZATIONS } from "@/data/organizations";
 
 // Every client organization, as the org switcher and the scheduler list them.
@@ -63,10 +64,6 @@ function RequiredLabel({ children }: { children: React.ReactNode }) {
     </FormLabel>
   );
 }
-
-// e.g. "e.g. August Activity Snapshot" — follows whatever month it is today.
-const monthPlaceholder = () =>
-  `e.g. ${new Date().toLocaleString(undefined, { month: "long" })} Activity Snapshot`;
 
 // Wraps a scope filter so a disabled one still shows the "pick an org" hint
 // (disabled controls don't fire hover events themselves).
@@ -106,7 +103,6 @@ export function GenerateReportDrawer({
    *  its deployment. */
   reportTitle?: string;
 }) {
-  const [name, setName] = useState("");
   const [organization, setOrganization] = useState("");
   const [sites, setSites] = useState<string[]>([]);
   const [clients, setClients] = useState<string[]>([]);
@@ -121,7 +117,6 @@ export function GenerateReportDrawer({
   if (open !== wasOpen) {
     setWasOpen(open);
     if (open) {
-      setName("");
       setOrganization("");
       setSites([]);
       setClients([]);
@@ -131,7 +126,7 @@ export function GenerateReportDrawer({
     }
   }
 
-  const canGenerate = name.trim() !== "" && organization !== "";
+  const canGenerate = organization !== "";
   const hasRange = Boolean(dateRange[0] && dateRange[1]);
   // Clearing the range drops back to the default, where an incomplete range
   // lands too.
@@ -154,18 +149,26 @@ export function GenerateReportDrawer({
           onGenerate();
         },
         disabled: !canGenerate,
-        tooltip: canGenerate ? "" : "Add a report name and organization first.",
+        tooltip: canGenerate ? "" : "Select an organization first.",
       }}
     >
+      {/* The run picks up whatever branding is configured, so the settings are
+          one click away rather than a surprise on the finished report. */}
       <Box>
-        <RequiredLabel>Report name</RequiredLabel>
-        <TextField
-          fullWidth
-          autoFocus
-          placeholder={monthPlaceholder()}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
+          Reports use branding from Branding settings.
+        </Typography>
+        <Typography variant="body2" component="div">
+          <Link
+            href="/msp/branding"
+            target="_blank"
+            rel="noopener"
+            underline="hover"
+            sx={{ fontWeight: 700 }}
+          >
+            View Branding
+          </Link>
+        </Typography>
       </Box>
 
       <Box>

@@ -27,6 +27,8 @@ import { useNavigate } from "react-router";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 
+import { AppAwareControls } from "./appaware-controls";
+
 type PolicyTab = {
   label: string;
   Icon: SvgIconComponent;
@@ -144,14 +146,18 @@ export default function CreatePolicyPage() {
         </PageHeader>
       }
     >
-      <Card>
-        <CardContent sx={{ p: 2 }}>
-          <Typography variant="cardTitle">{active.label}</Typography>
-          <Typography variant="body1" sx={{ mt: 0.5, color: "text.primary" }}>
-            {active.blurb}
-          </Typography>
-        </CardContent>
-      </Card>
+      {active.label === "AppAware" ? (
+        <AppAwareControls />
+      ) : (
+        <Card>
+          <CardContent sx={{ p: 2 }}>
+            <Typography variant="cardTitle">{active.label}</Typography>
+            <Typography variant="body1" sx={{ mt: 0.5, color: "text.primary" }}>
+              {active.blurb}
+            </Typography>
+          </CardContent>
+        </Card>
+      )}
     </PageShell>
   );
 }

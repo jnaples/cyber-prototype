@@ -378,7 +378,28 @@ export function ScheduleReportView({
             <Card
               sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}
             >
-              <Typography variant="cardTitle">Schedule Details</Typography>
+              {/* The branding note belongs to the title, so they group rather
+                  than sitting a full step apart. */}
+              <Box>
+                <Typography variant="cardTitle">Schedule Details</Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ mt: 1, color: "text.primary" }}
+                >
+                  Reports use branding from Branding settings.
+                </Typography>
+                <Typography variant="body2" component="div">
+                  <Link
+                    href="/msp/branding"
+                    target="_blank"
+                    rel="noopener"
+                    underline="hover"
+                    sx={{ fontWeight: 700 }}
+                  >
+                    View Branding
+                  </Link>
+                </Typography>
+              </Box>
 
               {/* STEP 1 — Reports */}
               <Step n={1} title="Select Organization & Reports">

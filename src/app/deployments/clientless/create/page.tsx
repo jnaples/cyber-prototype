@@ -493,8 +493,10 @@ export default function CreateClientlessPage() {
             )}
           </Box>
           <Collapse in={saved ? overviewOpen : true}>
+            {/* 8px under the title: the intro reads as part of it, while the
+                steps below keep their own 16px rhythm. */}
             <Box
-              sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}
+              sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 1 }}
             >
               {/* Intro */}
               <Box>

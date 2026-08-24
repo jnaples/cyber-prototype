@@ -353,19 +353,13 @@ function ActionsCell({ row }: { row: HistoryRow }) {
 
 const columns: GridColDef<HistoryRow>[] = [
   {
-    field: "reportName",
-    headerName: "Report Name",
-    flex: 1.2,
-    minWidth: 200,
-  },
-  { field: "customer", headerName: "Organization", flex: 1, minWidth: 170 },
-  {
     field: "reportType",
     headerName: "Report Type",
     flex: 1.1,
     minWidth: 190,
   },
   { field: "source", headerName: "Source", flex: 0.7, minWidth: 110 },
+  { field: "customer", headerName: "Organization", flex: 1, minWidth: 170 },
   { field: "runAt", headerName: "Generated", flex: 1, minWidth: 170 },
   {
     field: "status",
@@ -463,7 +457,7 @@ export function ReportHistory() {
         columns={columns}
         showExport={false}
         showDefaultView={false}
-        pinnedShadowFields={{ left: "reportName", right: "actions" }}
+        pinnedShadowFields={{ left: "reportType", right: "actions" }}
       />
     </TabbedDataCard>
   );
