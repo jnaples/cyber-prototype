@@ -24,6 +24,18 @@ const SAMPLE_REPORTS = REPORTS.filter(
   (r) => r.key !== "custom" && r.key !== "traffic",
 );
 
+// The list reads product by product, the way the side nav groups its
+// destinations: Filtering first, then CyberSight.
+const PRODUCT_ORDER = ["Filtering", "CyberSight"];
+
+const SAMPLE_GROUPS = PRODUCT_ORDER.map(
+  (product) =>
+    [
+      product,
+      SAMPLE_REPORTS.filter((r) => (r.products ?? []).includes(product)),
+    ] as const,
+).filter(([, reports]) => reports.length > 0);
+
 export function SampleReportsModal({
   open,
   onClose,
@@ -94,39 +106,59 @@ export function SampleReportsModal({
             gap: 0.5,
           }}
         >
-          {SAMPLE_REPORTS.map((report) => {
-            const on = report.key === selectedKey;
-            return (
-              <Box
-                key={report.key}
-                onClick={() => setSelectedKey(report.key)}
-                sx={(theme) => ({
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  p: 1,
-                  borderRadius: 1,
-                  cursor: "pointer",
-                  color: on ? "text.primary" : "text.secondary",
-                  // Match the data-grid selected-row tint.
-                  bgcolor: on
-                    ? alpha(theme.palette.primary.main, 0.08)
-                    : "transparent",
-                  "&:hover": {
-                    bgcolor: on
-                      ? alpha(theme.palette.primary.main, 0.12)
-                      : theme.palette.action.hover,
-                  },
-                })}
+          {SAMPLE_GROUPS.map(([product, reports], groupIndex) => (
+            <Box key={product}>
+              {/* Same overline heading the side nav sections use. */}
+              <Typography
+                component="div"
+                variant="overline"
+                sx={{
+                  px: 1,
+                  mt: groupIndex === 0 ? 0 : 2,
+                  mb: 0.5,
+                  lineHeight: 1.4,
+                  color: "text.secondary",
+                }}
               >
-                <Box
-                  component={report.Icon}
-                  sx={{ fontSize: 20, flexShrink: 0 }}
-                />
-                <Typography variant="body1">{report.title}</Typography>
+                {product}
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                {reports.map((report) => {
+                  const on = report.key === selectedKey;
+                  return (
+                    <Box
+                      key={report.key}
+                      onClick={() => setSelectedKey(report.key)}
+                      sx={(theme) => ({
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        p: 1,
+                        borderRadius: 1,
+                        cursor: "pointer",
+                        color: on ? "text.primary" : "text.secondary",
+                        // Match the data-grid selected-row tint.
+                        bgcolor: on
+                          ? alpha(theme.palette.primary.main, 0.08)
+                          : "transparent",
+                        "&:hover": {
+                          bgcolor: on
+                            ? alpha(theme.palette.primary.main, 0.12)
+                            : theme.palette.action.hover,
+                        },
+                      })}
+                    >
+                      <Box
+                        component={report.Icon}
+                        sx={{ fontSize: 20, flexShrink: 0 }}
+                      />
+                      <Typography variant="body1">{report.title}</Typography>
+                    </Box>
+                  );
+                })}
               </Box>
-            );
-          })}
+            </Box>
+          ))}
         </Box>
 
         {/* The document itself, not a mock of it. */}
