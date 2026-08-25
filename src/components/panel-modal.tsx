@@ -18,6 +18,7 @@ export function PanelModal({
   headerContent,
   actions,
   width = 900,
+  fullHeight = false,
   bodySx,
   children,
 }: {
@@ -33,6 +34,9 @@ export function PanelModal({
   /** The bottom row. Lay the buttons out as the surface needs them. */
   actions?: ReactNode;
   width?: number;
+  /** Always run to the cap — for a body that scrolls itself (a grid, say)
+   *  and so needs a height to fill rather than one to grow into. */
+  fullHeight?: boolean;
   /** Overrides for the scrolling body — padding, background, layout. */
   bodySx?: SxProps<Theme>;
   children?: ReactNode;
@@ -51,6 +55,7 @@ export function PanelModal({
             // The ceiling every panel modal shares — shorter content hugs,
             // taller content scrolls in the body.
             maxHeight: "min(880px, 92vh)",
+            ...(fullHeight ? { height: "min(880px, 92vh)" } : {}),
             borderRadius: 1,
             display: "flex",
             flexDirection: "column",

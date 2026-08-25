@@ -1034,6 +1034,12 @@ export interface DataTableProps {
    */
   hiddenFilterIds?: ReadonlyArray<string | number>;
   sx?: DataGridProps["sx"];
+  /**
+   * Fill the parent's height instead of growing with the rows: the rows scroll
+   * under pinned column headers, with the pagination footer pinned below. The
+   * parent has to be a flex column with a bounded height.
+   */
+  fillHeight?: boolean;
 }
 
 export function DataTable({
@@ -1078,6 +1084,7 @@ export function DataTable({
   apiRef: apiRefProp,
   hiddenFilterIds,
   sx: sxOverrides,
+  fillHeight = false,
 }: DataTableProps) {
   const internalApiRef = useGridApiRef();
   const apiRef = apiRefProp ?? internalApiRef;
@@ -1392,7 +1399,18 @@ export function DataTable({
         />
       )}
 
-      <Box sx={{ minWidth: 0, width: "100%", overflowX: "auto" }}>
+      <Box
+        sx={[
+          { minWidth: 0, width: "100%", overflowX: "auto" },
+          // Filling means the grid — not the page — owns the scrolling.
+          fillHeight && {
+            flex: 1,
+            minHeight: 0,
+            display: "flex",
+            overflowX: "visible",
+          },
+        ]}
+      >
         {
           <DataGrid
             apiRef={apiRef}
@@ -1453,6 +1471,7 @@ export function DataTable({
             }}
             sx={{
               width: "100%",
+              ...(fillHeight ? { height: "100%", minHeight: 0 } : {}),
               border: "none",
               backgroundColor: "transparent",
               "--DataGrid-overlayHeight": "320px",

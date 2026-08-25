@@ -960,6 +960,9 @@ export default function ClientlessPage() {
         onClose={closeArchived}
         title="Archived Endpoints"
         width={900}
+        // The grid does its own scrolling, so the panel takes the full height.
+        fullHeight
+        bodySx={{ display: "flex", overflowY: "hidden", pb: 2 }}
         actions={
           <Button
             type="button"
@@ -973,12 +976,31 @@ export default function ClientlessPage() {
         }
       >
         {/* The grid as a card on a neutral pane, scrolling inside the body. */}
-        <Box sx={{ bgcolor: "background.neutral", borderRadius: 1, p: 2 }}>
-          <Card sx={{ overflow: "hidden" }}>
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            display: "flex",
+            bgcolor: "background.neutral",
+            borderRadius: 1,
+            p: 2,
+          }}
+        >
+          <Card
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+            }}
+          >
             <DataTable
               rows={archived}
               columns={archivedColumns}
               initialPageSize={25}
+              // Rows scroll under the column headers; the pager stays put.
+              fillHeight
               rowSelectionModel={archivedSelection}
               onRowSelectionModelChange={setArchivedSelection}
               bulkActions={
