@@ -187,7 +187,6 @@ export function InvestigateModal({
           borderRadius: 1,
           p: 2,
           mx: 2,
-          mb: 2,
         }}
       >
         {/* Anchor summary — the banner from the Query Logs investigation. */}

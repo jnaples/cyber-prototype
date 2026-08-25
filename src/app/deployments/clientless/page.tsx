@@ -252,6 +252,13 @@ const ARCHIVED_ROWS: ArchivedRow[] = [
     deleted: "Aug 23, 2026 5:44 PM",
   },
 ];
+/** Empty archive — nothing has been deleted, so there's nothing to restore. */
+function ArchivedEmptyOverlay() {
+  return (
+    <NoResultsOverlay description="There are no Clientless Devices to restore." />
+  );
+}
+
 // Router state the create page reads to open in edit mode instead of add mode.
 const editStateFor = (row: DohRow) => ({
   editName: row.name,
@@ -729,7 +736,8 @@ export default function ClientlessPage() {
     if (picked.length === 0) return;
     setRows((prev) => [...picked.map(toDevice), ...prev]);
     setArchived((prev) => prev.filter((r) => !picked.includes(r)));
-    clearArchivedSelection();
+    // The restored devices are on the grid behind, so that's where to look.
+    closeArchived();
     setToast(
       picked.length === 1
         ? `"${picked[0].name}" restored.`
@@ -895,7 +903,6 @@ export default function ClientlessPage() {
             borderRadius: 1,
             p: 2,
             mx: 2,
-            mb: 2,
           }}
         >
           <Card sx={{ overflow: "hidden" }}>
@@ -929,7 +936,7 @@ export default function ClientlessPage() {
               showPreferences={false}
               showExport={false}
               showRefresh={false}
-              noRowsOverlay={NoResultsOverlay}
+              noRowsOverlay={ArchivedEmptyOverlay}
             />
           </Card>
         </Box>
