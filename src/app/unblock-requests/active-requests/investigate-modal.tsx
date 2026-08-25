@@ -158,11 +158,20 @@ export function InvestigateModal({
         },
       }}
     >
-      {/* Header */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, p: 2 }}>
-        <Typography variant="cardTitle">Investigate Mode</Typography>
-        <Box sx={{ flex: 1 }} />
-        <IconButton size="small" aria-label="Close" onClick={onClose}>
+      {/* Header — the title centres on the dialog, with Close pinned right. */}
+      <Box sx={{ position: "relative", p: 2 }}>
+        <Typography
+          variant="cardTitle"
+          sx={{ display: "block", textAlign: "center" }}
+        >
+          Investigate Mode
+        </Typography>
+        <IconButton
+          size="small"
+          aria-label="Close"
+          onClick={onClose}
+          sx={{ position: "absolute", top: 12, right: 12 }}
+        >
           <MaterialSymbol name="close" size={20} />
         </IconButton>
       </Box>

@@ -2,6 +2,8 @@ import {
   Alert,
   Box,
   Button,
+  Card,
+  Dialog,
   Divider,
   FormLabel,
   IconButton,
@@ -14,13 +16,14 @@ import {
 } from "@mui/material";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import RestoreIcon from "@mui/icons-material/Restore";
-import type { GridColDef } from "@mui/x-data-grid";
+import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { getGridSingleSelectOperators } from "@mui/x-data-grid";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
+import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { TextField } from "@/components/text-field";
 import { Modal } from "@/components/modal";
@@ -691,22 +694,52 @@ export default function ClientlessPage() {
     ? inScope.filter((r) => r.status === tabStatus)
     : inScope;
 
+  // Rows ticked in the archive, and the bulk Restore that acts on them.
+  const [archivedSelection, setArchivedSelection] =
+    useState<GridRowSelectionModel>({ type: "include", ids: new Set() });
+  const clearArchivedSelection = () =>
+    setArchivedSelection({ type: "include", ids: new Set() });
+  const closeArchived = () => {
+    setArchivedOpen(false);
+    clearArchivedSelection();
+  };
+  const archivedSelectedCount =
+    archivedSelection.type === "exclude"
+      ? archived.length - archivedSelection.ids.size
+      : archivedSelection.ids.size;
+
+  const toDevice = (row: ArchivedRow) => ({
+    id: row.id,
+    name: row.name,
+    organization: row.organization,
+    policy: row.policy,
+    endpointId: row.endpointId,
+    devices: row.devices,
+    status: row.status,
+    created: row.created,
+    lastQuery: row.lastQuery,
+  });
+
+  const restoreSelected = () => {
+    const picked = archived.filter((r) =>
+      archivedSelection.type === "exclude"
+        ? !archivedSelection.ids.has(r.id)
+        : archivedSelection.ids.has(r.id),
+    );
+    if (picked.length === 0) return;
+    setRows((prev) => [...picked.map(toDevice), ...prev]);
+    setArchived((prev) => prev.filter((r) => !picked.includes(r)));
+    clearArchivedSelection();
+    setToast(
+      picked.length === 1
+        ? `"${picked[0].name}" restored.`
+        : `${picked.length} clientless devices restored.`,
+    );
+  };
+
   // A restored deployment joins the top of the grid and leaves the archive.
   const restore = (row: ArchivedRow) => {
-    setRows((prev) => [
-      {
-        id: row.id,
-        name: row.name,
-        organization: row.organization,
-        policy: row.policy,
-        endpointId: row.endpointId,
-        devices: row.devices,
-        status: row.status,
-        created: row.created,
-        lastQuery: row.lastQuery,
-      },
-      ...prev,
-    ]);
+    setRows((prev) => [toDevice(row), ...prev]);
     setArchived((prev) => prev.filter((r) => r.id !== row.id));
     setToast(`"${row.name}" restored.`);
   };
@@ -739,7 +772,7 @@ export default function ClientlessPage() {
             height: "100%",
           }}
         >
-          <ArrowTooltip title="Restore">
+          <ArrowTooltip title="Restore Clientless Device">
             <IconButton
               size="small"
               aria-label="Restore"
@@ -823,30 +856,97 @@ export default function ClientlessPage() {
         />
       </TabbedDataCard>
 
-      {/* Archived Endpoints — deleted deployments, restorable for 30 days. */}
-      <Modal
+      {/* Archived Endpoints — deleted deployments, restorable for 30 days.
+          Same shape as the Investigate Mode modal: centred title, a neutral
+          well inset 16px, and the actions row under it. */}
+      <Dialog
         open={archivedOpen}
-        onClose={() => setArchivedOpen(false)}
-        title="Archived Endpoints"
-        width={900}
-        secondaryAction={{
-          label: "Close",
-          onClick: () => setArchivedOpen(false),
+        onClose={closeArchived}
+        maxWidth={false}
+        slotProps={{
+          paper: {
+            elevation: 1,
+            sx: { width: 900, maxWidth: "95vw", borderRadius: 1 },
+          },
         }}
       >
-        <DataTable
-          rows={archived}
-          columns={archivedColumns}
-          checkboxSelection={false}
-          showSearch={false}
-          showFilters={false}
-          showDefaultView={false}
-          showPreferences={false}
-          showExport={false}
-          showRefresh={false}
-          noRowsOverlay={NoResultsOverlay}
-        />
-      </Modal>
+        {/* Header */}
+        <Box sx={{ position: "relative", p: 2 }}>
+          <Typography
+            variant="cardTitle"
+            sx={{ display: "block", textAlign: "center" }}
+          >
+            Archived Endpoints
+          </Typography>
+          <IconButton
+            size="small"
+            aria-label="Close"
+            onClick={closeArchived}
+            sx={{ position: "absolute", top: 12, right: 12 }}
+          >
+            <MaterialSymbol name="close" size={20} />
+          </IconButton>
+        </Box>
+
+        {/* Body — the grid as a card on the neutral pane. */}
+        <Box
+          sx={{
+            bgcolor: "background.neutral",
+            borderRadius: 1,
+            p: 2,
+            mx: 2,
+            mb: 2,
+          }}
+        >
+          <Card sx={{ overflow: "hidden" }}>
+            <DataTable
+              rows={archived}
+              columns={archivedColumns}
+              rowSelectionModel={archivedSelection}
+              onRowSelectionModelChange={setArchivedSelection}
+              bulkActions={
+                archivedSelectedCount > 0 && (
+                  <DataTableBulkActions
+                    count={archivedSelectedCount}
+                    noun="endpoint"
+                    onClose={clearArchivedSelection}
+                    actions={
+                      <Button
+                        variant="text"
+                        color="primary"
+                        startIcon={<RestoreIcon sx={{ fontSize: 18 }} />}
+                        onClick={restoreSelected}
+                      >
+                        Restore
+                      </Button>
+                    }
+                  />
+                )
+              }
+              showSearch={false}
+              showFilters={false}
+              showDefaultView={false}
+              showPreferences={false}
+              showExport={false}
+              showRefresh={false}
+              noRowsOverlay={NoResultsOverlay}
+            />
+          </Card>
+        </Box>
+
+        {/* Actions — secondary on the left, as the drawers have it. */}
+        <Box sx={{ p: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <Button
+            type="button"
+            size="small"
+            variant="outlined"
+            color="secondary"
+            onClick={closeArchived}
+          >
+            Close
+          </Button>
+        </Box>
+      </Dialog>
 
       <Snackbar
         open={Boolean(toast)}

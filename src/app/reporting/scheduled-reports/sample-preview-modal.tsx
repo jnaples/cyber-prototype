@@ -4,6 +4,7 @@
 // Library's preview card uses.
 
 import {
+  Alert,
   Box,
   Button,
   Chip,
@@ -19,7 +20,6 @@ import { MaterialSymbol } from "@/components/material-symbol";
 
 import { openBilling } from "./entitlements";
 import { ReportPreview } from "./report-preview";
-import { UpgradePill } from "./upgrade-badge";
 
 export function SamplePreviewModal({
   open,
@@ -90,28 +90,28 @@ export function SamplePreviewModal({
 
         {/* Why the footer offers an upgrade instead of running the report. */}
         {locked && (
-          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
-            <UpgradePill />
-            <Typography variant="body1" sx={{ color: "text.primary" }}>
-              This organization is not licensed for CyberSight. Upgrade your
-              plan to gain access to this feature.{" "}
-              <Link
-                component="button"
-                type="button"
-                underline="none"
-                onClick={openBilling}
-                sx={(theme) => ({
-                  fontWeight: 700,
-                  verticalAlign: "baseline",
-                  ...theme.applyStyles("dark", {
-                    color: theme.vars.palette.primary.light,
-                  }),
-                })}
-              >
-                Upgrade now
-              </Link>
-            </Typography>
-          </Box>
+          <Alert
+            severity="info"
+            variant="standard"
+            icon={<ArrowCircleUpOutlinedIcon fontSize="inherit" />}
+            sx={{ "& .MuiAlert-icon": { mr: 1 } }}
+          >
+            This organization is not licensed for CyberSight. Upgrade your plan
+            to gain access to this feature.{" "}
+            <Link
+              component="button"
+              type="button"
+              underline="hover"
+              onClick={openBilling}
+              sx={{
+                fontWeight: 700,
+                color: "inherit",
+                verticalAlign: "baseline",
+              }}
+            >
+              Upgrade now
+            </Link>
+          </Alert>
         )}
       </Box>
 
