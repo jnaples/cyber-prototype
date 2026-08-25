@@ -23,7 +23,6 @@ export type ScheduleEditState = {
 export const TAG_TO_REPORT_KEY: Record<string, string> = {
   "Activity Overview": "activity",
   "Protection Summary": "protection",
-  "Traffic Logs": "traffic",
   "Timeline Logs": "timeline-logs",
   "Activity Timeline": "timeline-overview",
   "AI Tool Usage": "ai-usage",

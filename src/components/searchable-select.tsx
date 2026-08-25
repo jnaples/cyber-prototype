@@ -8,6 +8,7 @@ import {
   FormControl,
   FormHelperText,
   FormLabel,
+  ListSubheader,
   MenuItem,
   Typography,
 } from "@mui/material";
@@ -15,7 +16,20 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 
 import { Select } from "@/components/select";
+import { GROUPED_ITEM_SX, GROUP_HEADING_SX } from "@/components/dropdown-group";
 import { DropdownSearch } from "@/components/dropdown-search";
+
+/** Options bucketed by `groupBy`, in the order the groups first appear. */
+function groupOptions(options: string[], groupBy: (option: string) => string) {
+  const groups = new Map<string, string[]>();
+  for (const option of options) {
+    const key = groupBy(option);
+    const bucket = groups.get(key);
+    if (bucket) bucket.push(option);
+    else groups.set(key, [option]);
+  }
+  return [...groups];
+}
 
 export function SearchableSelect({
   label,
@@ -26,6 +40,7 @@ export function SearchableSelect({
   required = false,
   disabled = false,
   helperText,
+  groupBy,
 }: {
   label: string;
   options: string[];
@@ -36,6 +51,8 @@ export function SearchableSelect({
   /** Marks the label with the app's required asterisk. */
   required?: boolean;
   disabled?: boolean;
+  /** Files each option under a heading — e.g. the product it belongs to. */
+  groupBy?: (option: string) => string;
   /** Rendered under the field — takes a node so it can hold a link. */
   helperText?: ReactNode;
 }) {
@@ -79,11 +96,22 @@ export function SearchableSelect({
         <DropdownSearch value={search} onChange={setSearch} />
         {/* Same breathing room the multi-select gives its search box. */}
         <Divider sx={{ my: 1 }} />
-        {visibleOptions.map((option) => (
-          <MenuItem key={option} value={option}>
-            {option}
-          </MenuItem>
-        ))}
+        {groupBy
+          ? groupOptions(visibleOptions, groupBy).flatMap(([group, opts]) => [
+              <ListSubheader key={`group-${group}`} sx={GROUP_HEADING_SX}>
+                {group}
+              </ListSubheader>,
+              ...opts.map((option) => (
+                <MenuItem key={option} value={option} sx={GROUPED_ITEM_SX}>
+                  {option}
+                </MenuItem>
+              )),
+            ])
+          : visibleOptions.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
       </Select>
       {helperText && (
         <FormHelperText sx={{ fontSize: 14 }}>{helperText}</FormHelperText>

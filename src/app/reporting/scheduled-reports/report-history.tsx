@@ -40,13 +40,13 @@ const STATUS_LABEL: Record<RunStatus, string> = {
   failed: "Failed",
 };
 
-// Runs from the last two weeks — the recurring daily query-log export plus a
-// few one-off runs from other users.
+// Runs from the last few weeks — recurring scheduled deliveries plus a few
+// one-off runs from other users.
 const HISTORY: HistoryRow[] = [
   {
     id: 1,
-    reportType: "DNS Query Logs",
-    reportName: "DNS Query Logs",
+    reportType: "Activity Logs",
+    reportName: "Daily Activity Export",
     customer: "Coastal Property Mgmt",
     period: "Aug 5",
     source: "Scheduled",
@@ -67,10 +67,10 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 3,
-    reportType: "DNS Query Logs",
-    reportName: "DNS Query Logs",
+    reportType: "Activity Overview",
+    reportName: "Coastal Weekly Digest",
     customer: "Coastal Property Mgmt",
-    period: "Aug 4",
+    period: "Jul 29–Aug 4",
     source: "Scheduled",
     runAt: "Aug 5, 2026 11:01 AM",
     status: "available",
@@ -89,8 +89,8 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 5,
-    reportType: "DNS Query Logs",
-    reportName: "DNS Query Logs",
+    reportType: "Activity Logs",
+    reportName: "Daily Activity Export",
     customer: "Coastal Property Mgmt",
     period: "Aug 3",
     source: "Scheduled",
@@ -111,10 +111,10 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 7,
-    reportType: "DNS Query Logs",
-    reportName: "DNS Query Logs",
+    reportType: "User Threat Activity",
+    reportName: "Coastal Threat Recap",
     customer: "Coastal Property Mgmt",
-    period: "Aug 2",
+    period: "Jul 27–Aug 2",
     source: "Scheduled",
     runAt: "Aug 3, 2026 11:01 AM",
     status: "available",
@@ -133,8 +133,8 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 9,
-    reportType: "DNS Query Logs",
-    reportName: "DNS Query Logs",
+    reportType: "Activity Logs",
+    reportName: "Daily Activity Export",
     customer: "Coastal Property Mgmt",
     period: "Aug 1",
     source: "Scheduled",
@@ -144,10 +144,10 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 10,
-    reportType: "DNS Query Logs",
-    reportName: "DNS Query Logs",
+    reportType: "Filter Protection Overview",
+    reportName: "Coastal Protection Recap",
     customer: "Coastal Property Mgmt",
-    period: "Jul 31",
+    period: "Jul 24–30",
     source: "Scheduled",
     runAt: "Aug 1, 2026 11:01 AM",
     status: "available",
@@ -156,7 +156,7 @@ const HISTORY: HistoryRow[] = [
   {
     id: 11,
     reportType: "Activity Overview",
-    reportName: "Acme Weekly Traffic Digest",
+    reportName: "Acme Weekly Activity Digest",
     customer: "Acme Retail Group",
     period: "Jul 24–30",
     source: "Scheduled",

@@ -94,8 +94,8 @@ const SCHEDULES: Schedule[] = [
   },
   {
     id: 2,
-    name: "Acme Weekly Traffic Digest",
-    tags: ["Traffic Logs"],
+    name: "Acme Weekly Activity Digest",
+    tags: ["Activity Overview"],
     organizations: "Acme Retail Group",
     recipients: 3,
     freqPrimary: "Weekly",

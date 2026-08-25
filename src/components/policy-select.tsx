@@ -11,12 +11,12 @@ import {
   ListSubheader,
   MenuItem,
 } from "@mui/material";
-import type { Theme } from "@mui/material/styles";
 import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DropdownSearch } from "@/components/dropdown-search";
+import { GROUPED_ITEM_SX, GROUP_HEADING_SX } from "@/components/dropdown-group";
 import { InfoChip } from "@/components/info-chip";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { Select } from "@/components/select";
@@ -36,17 +36,9 @@ const GLOBAL_POLICY_OPTIONS = [
   "Global Compliance",
 ];
 
-// Caption-style section header (slightly indented).
-const subheaderSx = (theme: Theme) => ({
-  ...theme.typography.caption,
-  pl: 2,
-  lineHeight: "32px",
-  textTransform: "uppercase" as const,
-  color: theme.vars.palette.text.secondary,
-});
-
-// Items sit more indented than their section header.
-const policyItemSx = { pl: 3.5 } as const;
+// Items sit more indented than their section header — GROUPED_ITEM_SX is the
+// app-wide rule, shared with the searchable selects.
+const policyItemSx = GROUPED_ITEM_SX;
 
 // The globe that marks a policy as global — sits right beside the name.
 function GlobalMark() {
@@ -119,11 +111,7 @@ export function PolicySelect({
   const visibleGlobal = GLOBAL_POLICY_OPTIONS.filter(matches);
 
   const item = (policy: string, global: boolean) => (
-    <MenuItem
-      key={policy}
-      value={policy}
-      sx={multiple ? { pl: 1.5 } : policyItemSx}
-    >
+    <MenuItem key={policy} value={policy} sx={policyItemSx}>
       {/* 18px glyph — the size the data grids paint their selection boxes at
           (see the MuiCheckbox rule in data-table). */}
       {multiple && (
@@ -223,11 +211,11 @@ export function PolicySelect({
       />
       <Divider sx={{ my: 1 }} />
       {visibleOrg.length > 0 && (
-        <ListSubheader sx={subheaderSx}>Organization</ListSubheader>
+        <ListSubheader sx={GROUP_HEADING_SX}>Organization</ListSubheader>
       )}
       {visibleOrg.map((policy) => item(policy, false))}
       {visibleGlobal.length > 0 && (
-        <ListSubheader sx={subheaderSx}>Global</ListSubheader>
+        <ListSubheader sx={GROUP_HEADING_SX}>Global</ListSubheader>
       )}
       {visibleGlobal.map((policy) => item(policy, true))}
     </Select>

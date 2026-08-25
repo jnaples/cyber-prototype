@@ -156,7 +156,26 @@ const ORGS = MSP_ORGANIZATIONS;
 
 // A custom report is built to order in the Custom Report builder, so there's
 // nothing here to put on a schedule.
-const SCHEDULABLE_REPORTS = REPORTS.filter((r) => r.key !== "custom");
+const SCHEDULABLE_REPORTS = REPORTS.filter(
+  (r) => r.key !== "custom" && r.key !== "traffic",
+);
+
+// The report list reads product by product — Filtering first, then CyberSight
+// — with the titles alphabetical inside each.
+const PRODUCT_ORDER = ["Filtering", "CyberSight"];
+
+const productOfReport = (title: string) =>
+  SCHEDULABLE_REPORTS.find((r) => r.title === title)?.products?.[0] ?? "Other";
+
+const REPORT_TITLES_BY_PRODUCT = SCHEDULABLE_REPORTS.map((r) => r.title).sort(
+  (a, b) => {
+    const rank = (title: string) => {
+      const index = PRODUCT_ORDER.indexOf(productOfReport(title));
+      return index === -1 ? PRODUCT_ORDER.length : index;
+    };
+    return rank(a) - rank(b) || a.localeCompare(b);
+  },
+);
 
 // v3 only: whether the report is scheduled or run once.
 type Delivery = "scheduled" | "one-time";
@@ -748,9 +767,8 @@ export function ScheduleReportView({
                 label="Report type"
                 required
                 placeholder="Select report type"
-                options={SCHEDULABLE_REPORTS.map((r) => r.title).sort((a, b) =>
-                  a.localeCompare(b),
-                )}
+                options={REPORT_TITLES_BY_PRODUCT}
+                groupBy={productOfReport}
                 value={selectedReportDefs[0]?.title ?? ""}
                 onChange={(title) =>
                   setSelectedReports(

@@ -19,6 +19,7 @@ import { useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { Select } from "@/components/select";
+import { GROUPED_ITEM_SX, GROUP_HEADING_SX } from "@/components/dropdown-group";
 import { DropdownSearch } from "@/components/dropdown-search";
 
 // Sentinel row value for the "Select all" item (same trick as Query Logs).
@@ -82,7 +83,11 @@ export function SearchableMultiSelect({
 }) {
   const [search, setSearch] = useState("");
   const renderOption = (option: string) => (
-    <MenuItem key={option} value={option}>
+    <MenuItem
+      key={option}
+      value={option}
+      sx={groupBy ? GROUPED_ITEM_SX : undefined}
+    >
       <Checkbox
         size="small"
         checked={selected.includes(option)}
@@ -224,18 +229,7 @@ export function SearchableMultiSelect({
         {searchable && <Divider sx={{ my: 1 }} />}
         {groupBy
           ? groupOptions(visibleOptions, groupBy).flatMap(([group, opts]) => [
-              <ListSubheader
-                key={`group-${group}`}
-                // Same heading treatment as the Query Logs Roaming Clients &
-                // Relays dropdown.
-                sx={{
-                  typography: "overline",
-                  lineHeight: 1.5,
-                  color: "text.secondary",
-                  pt: 1,
-                  position: "static",
-                }}
-              >
+              <ListSubheader key={`group-${group}`} sx={GROUP_HEADING_SX}>
                 {group}
               </ListSubheader>,
               ...opts.map(renderOption),
