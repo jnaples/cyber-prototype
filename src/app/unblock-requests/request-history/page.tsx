@@ -1,4 +1,13 @@
-import { Box, Chip, Link } from "@mui/material";
+import {
+  Box,
+  Chip,
+  IconButton,
+  Link,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+} from "@mui/material";
+import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import type { GridColDef } from "@mui/x-data-grid";
 import { format as fnsFormat } from "date-fns";
 import { useState } from "react";
@@ -8,6 +17,50 @@ import { MaterialSymbol } from "@/components/material-symbol";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { useOrgScope } from "@/hooks/use-org-scope";
 import { DomainCell } from "../domain-cell";
+
+/** Row overflow menu — one item here, the policy the request was judged by. */
+function HistoryActionsCell() {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100%",
+        width: "100%",
+      }}
+    >
+      <IconButton
+        size="small"
+        aria-label="More options"
+        onClick={(event) => setAnchorEl(event.currentTarget)}
+      >
+        <MoreHorizOutlinedIcon sx={{ fontSize: 20 }} />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
+            // A new tab so the history stays where it is.
+            window.open("/global-policies", "_blank", "noopener");
+          }}
+        >
+          <ListItemIcon>
+            <MaterialSymbol name="library_books" size={20} />
+          </ListItemIcon>
+          View Policy
+        </MenuItem>
+      </Menu>
+    </Box>
+  );
+}
 
 const columns: GridColDef[] = [
   {
@@ -137,6 +190,18 @@ const columns: GridColDef[] = [
         </Box>
       );
     },
+  },
+  {
+    field: "actions",
+    headerName: "Actions",
+    width: 90,
+    sortable: false,
+    filterable: false,
+    resizable: false,
+    align: "center",
+    headerAlign: "center",
+    disableColumnMenu: true,
+    renderCell: () => <HistoryActionsCell />,
   },
 ];
 
@@ -337,7 +402,7 @@ export default function RequestHistoryPage() {
         columns={columns}
         checkboxSelection={false}
         showDefaultView={false}
-        pinnedShadowFields={{ left: "domain" }}
+        pinnedShadowFields={{ left: "domain", right: "actions" }}
         columnVisibilityModel={columnVisibility}
         onColumnVisibilityModelChange={setColumnVisibility}
       />
