@@ -84,6 +84,9 @@ export function ReportCard({
   const menuOpen = Boolean(menuAnchor);
   const hasActions =
     !locked && Boolean(onPreview || onExpand || onRunNow || onSchedule);
+  // A locked report still shows on hover — the upgrade in place of the
+  // actions, with the corner expander so the sample can still be opened.
+  const hasLockedOverlay = locked && Boolean(onExpand || onUpgrade);
   return (
     <Card
       elevation={1}
@@ -189,10 +192,11 @@ export function ReportCard({
           }}
         />
 
-        {/* Not in this organization's plan: the same scrim, but it stays put
-            and offers the upgrade instead of the report's actions. */}
-        {locked && (
+        {/* Not in this organization's plan: the same hover scrim, offering the
+            upgrade in place of the report's actions. */}
+        {hasLockedOverlay && (
           <Box
+            className="report-card-actions"
             sx={{
               position: "absolute",
               inset: 0,
@@ -207,8 +211,28 @@ export function ReportCard({
               // it is a teaser, not something to read.
               bgcolor: "rgba(0, 0, 0, 0.72)",
               backdropFilter: "blur(3px)",
+              opacity: 0,
+              pointerEvents: "none",
+              transition: "opacity 120ms",
             }}
           >
+            {onExpand && (
+              <IconButton
+                aria-label="Open preview"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onExpand();
+                }}
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  color: "common.white",
+                }}
+              >
+                <OpenInFullIcon sx={{ fontSize: 24 }} />
+              </IconButton>
+            )}
             <Typography
               variant="body1"
               sx={{ fontWeight: 600, color: "common.white" }}

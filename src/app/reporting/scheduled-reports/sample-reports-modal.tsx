@@ -15,8 +15,13 @@ import { useState } from "react";
 
 import { MaterialSymbol } from "@/components/material-symbol";
 
+import { ArrowTooltip } from "@/components/arrow-tooltip";
+import { useOrgScope } from "@/hooks/use-org-scope";
+
+import { cyberSightLocked } from "./entitlements";
 import { ReportPreview } from "./report-preview";
 import { REPORTS } from "./reports";
+import { UpgradeBadge, UpgradeNotice } from "./upgrade-badge";
 
 // A custom report is built to order, so there's no sample of it to show.
 // Same two the Library hides: neither has a home yet.
@@ -40,15 +45,27 @@ export function SampleReportsModal({
   open,
   onClose,
   onChoose,
+  organization: organizationProp,
 }: {
   open: boolean;
   onClose: () => void;
+  /** The organization the caller is reporting on, when it knows one — a form's
+   *  own selection beats the header's drill-down. */
+  organization?: string | null;
   /** Fired with the report the user picked; the modal closes itself first. */
   onChoose?: (reportKey: string) => void;
 }) {
+  // Drilled into a Filtering-only organization? Its CyberSight samples can be
+  // read but not chosen.
+  const { organization: scopedOrg } = useOrgScope();
+  const organization = organizationProp || scopedOrg;
+  const lockedFor = (products?: string[]) =>
+    cyberSightLocked(organization, products);
+
   const [selectedKey, setSelectedKey] = useState(SAMPLE_REPORTS[0].key);
   const selected =
     SAMPLE_REPORTS.find((r) => r.key === selectedKey) ?? SAMPLE_REPORTS[0];
+  const selectedLocked = lockedFor(selected.products);
 
   return (
     <Dialog
@@ -125,6 +142,7 @@ export function SampleReportsModal({
               <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
                 {reports.map((report) => {
                   const on = report.key === selectedKey;
+                  const locked = lockedFor(report.products);
                   return (
                     <Box
                       key={report.key}
@@ -136,7 +154,11 @@ export function SampleReportsModal({
                         p: 1,
                         borderRadius: 1,
                         cursor: "pointer",
-                        color: on ? "text.primary" : "text.secondary",
+                        color: locked
+                          ? "text.disabled"
+                          : on
+                            ? "text.primary"
+                            : "text.secondary",
                         // Match the data-grid selected-row tint.
                         bgcolor: on
                           ? alpha(theme.palette.primary.main, 0.08)
@@ -152,7 +174,15 @@ export function SampleReportsModal({
                         component={report.Icon}
                         sx={{ fontSize: 20, flexShrink: 0 }}
                       />
-                      <Typography variant="body1">{report.title}</Typography>
+                      <Typography variant="body1" sx={{ minWidth: 0 }}>
+                        {report.title}
+                      </Typography>
+                      {locked && (
+                        <>
+                          <Box sx={{ flex: 1 }} />
+                          <UpgradeBadge />
+                        </>
+                      )}
                     </Box>
                   );
                 })}
@@ -193,17 +223,30 @@ export function SampleReportsModal({
           Close
         </Button>
         <Box sx={{ flex: 1 }} />
-        <Button
-          variant="contained"
-          color="primary"
-          size="small"
-          onClick={() => {
-            onClose();
-            onChoose?.(selected.key);
-          }}
-        >
-          Use this report
-        </Button>
+        {/* The sample is readable either way; only using it needs the
+            licence, and the disabled button says why. */}
+        <ArrowTooltip title={selectedLocked ? <UpgradeNotice /> : ""}>
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              cursor: selectedLocked ? "not-allowed" : undefined,
+            }}
+          >
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              disabled={selectedLocked}
+              onClick={() => {
+                onClose();
+                onChoose?.(selected.key);
+              }}
+            >
+              Use this report
+            </Button>
+          </Box>
+        </ArrowTooltip>
       </Box>
     </Dialog>
   );

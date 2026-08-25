@@ -4,7 +4,6 @@
 // preview on the right. Header carries the Cancel / Create schedule actions.
 
 import {
-  alpha,
   Autocomplete,
   Box,
   Divider,
@@ -26,7 +25,6 @@ import type { DateRange } from "@mui/x-date-pickers-pro/models";
 import { endOfDay, startOfDay, subDays } from "date-fns";
 import { useEffect, useRef, useState } from "react";
 
-import ArrowCircleUpOutlinedIcon from "@mui/icons-material/ArrowCircleUpOutlined";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CancelIcon from "@mui/icons-material/Cancel";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
@@ -46,6 +44,7 @@ import type { ScheduleEditState } from "./schedule-edit-state";
 import { REPORTS } from "./reports";
 import { SampleReportsModal } from "./sample-reports-modal";
 import { cyberSightLocked } from "./entitlements";
+import { UpgradeBadge } from "./upgrade-badge";
 import type { NewSchedule } from "./created-schedules";
 
 const PORTAL_USERS = [
@@ -404,6 +403,10 @@ export function ScheduleReportView({
       reportOrg,
       SCHEDULABLE_REPORTS.find((r) => r.title === title)?.products,
     );
+  // The same rule read the other way: once a CyberSight report is chosen, the
+  // organizations that aren't licensed for it can't be picked.
+  const orgLocked = (organization: string) =>
+    cyberSightLocked(organization, selectedReportDefs[0]?.products);
 
   const canSave = isComplete && (!isEdit || isDirty);
   const saveTooltip = !isComplete
@@ -570,6 +573,10 @@ export function ScheduleReportView({
         options={ORGS}
         value={selectedOrg}
         onChange={setSelectedOrg}
+        optionDisabled={orgLocked}
+        renderOptionEnd={(organization) =>
+          orgLocked(organization) ? <UpgradeBadge /> : null
+        }
       />
       {/* Narrowing below the organization only makes sense once one is set. */}
       <SearchableMultiSelect
@@ -783,58 +790,7 @@ export function ScheduleReportView({
                 groupBy={productOfReport}
                 optionDisabled={reportLocked}
                 renderOptionEnd={(title) =>
-                  reportLocked(title) ? (
-                    <ArrowTooltip
-                      title={
-                        <>
-                          This organization is not licensed for CyberSight.
-                          Upgrade your plan to gain access to this feature.{" "}
-                          <Link
-                            component="button"
-                            type="button"
-                            // Billing & Subscriptions, alongside the form the
-                            // user was filling in.
-                            onClick={() =>
-                              window.open(
-                                "/subscriptions/manage",
-                                "_blank",
-                                "noopener",
-                              )
-                            }
-                            underline="always"
-                            sx={{
-                              fontWeight: 700,
-                              color: "inherit",
-                              textDecoration: "underline",
-                              verticalAlign: "baseline",
-                            }}
-                          >
-                            Upgrade Now
-                          </Link>
-                        </>
-                      }
-                    >
-                      <Box
-                        // An icon-only info chip in the app's blue: a tinted
-                        // pill around the upgrade arrow.
-                        sx={(theme) => ({
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          p: 0.5,
-                          borderRadius: "999px",
-                          bgcolor: alpha(theme.palette.primary.main, 0.12),
-                          color: theme.vars.palette.primary.main,
-                          ...theme.applyStyles("dark", {
-                            bgcolor: alpha(theme.palette.primary.light, 0.16),
-                            color: theme.vars.palette.primary.light,
-                          }),
-                        })}
-                      >
-                        <ArrowCircleUpOutlinedIcon sx={{ fontSize: 18 }} />
-                      </Box>
-                    </ArrowTooltip>
-                  ) : null
+                  reportLocked(title) ? <UpgradeBadge /> : null
                 }
                 value={selectedReportDefs[0]?.title ?? ""}
                 onChange={(title) =>
@@ -873,6 +829,10 @@ export function ScheduleReportView({
             options={ORGS}
             value={selectedOrg}
             onChange={setSelectedOrg}
+            optionDisabled={orgLocked}
+            renderOptionEnd={(organization) =>
+              orgLocked(organization) ? <UpgradeBadge /> : null
+            }
           />
 
           {/* Narrowing below the organization is the exception, so the three
@@ -1210,6 +1170,7 @@ export function ScheduleReportView({
       {/* The Preview reports link needs its modal in this branch too. */}
       <SampleReportsModal
         open={samplesOpen}
+        organization={reportOrg}
         onClose={() => setSamplesOpen(false)}
         onChoose={(reportKey) => setSelectedReports([reportKey])}
       />

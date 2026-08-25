@@ -22,7 +22,7 @@ import { useOrgScope } from "@/hooks/use-org-scope";
 import { TextField } from "@/components/text-field";
 
 import { addCreatedSchedule } from "./created-schedules";
-import { cyberSightLocked } from "./entitlements";
+import { cyberSightLocked, openBilling } from "./entitlements";
 import { GenerateReportDrawer } from "./generate-report-drawer";
 import { ScheduleReportView } from "./schedule-report-view";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
@@ -209,17 +209,9 @@ export function ReportLibrary({
                       Icon={r.Icon}
                       products={r.products}
                       locked={locked}
-                      lockedTitle="CyberSight not enabled"
-                      lockedBody={`Add CyberSight to ${organization} to use this report.`}
-                      // Upgrading happens on Billing & Subscriptions, opened
-                      // alongside the report the user was looking at.
-                      onUpgrade={() =>
-                        window.open(
-                          "/subscriptions/manage",
-                          "_blank",
-                          "noopener",
-                        )
-                      }
+                      lockedTitle="CyberSight not licensed"
+                      lockedBody={`Upgrade your plan for ${organization} to gain access to this feature.`}
+                      onUpgrade={openBilling}
                       // Nothing to preview until the report is built.
                       previewLabel={
                         runNowOnCard ? "Generate Report" : undefined
@@ -232,9 +224,11 @@ export function ReportLibrary({
                             ? () => schedule([r.key], false, "one-time")
                             : () => setPreview(r)
                       }
-                      // v2 trial: a corner control on the pane itself.
+                      // v2 trial: a corner control on the pane itself. A
+                      // locked report keeps it, so the sample stays viewable.
                       onExpand={
-                        r.key === "custom" || scheduleDrawer !== "drawer"
+                        r.key === "custom" ||
+                        (scheduleDrawer !== "drawer" && !locked)
                           ? undefined
                           : () => setPreview(r)
                       }
@@ -280,6 +274,9 @@ export function ReportLibrary({
           reportKey={preview?.key}
           title={preview?.title}
           Icon={preview?.Icon}
+          // A report the plan doesn't include can only be upgraded to.
+          locked={Boolean(preview && lockedFor(preview))}
+          onUpgrade={openBilling}
           onRunNow={
             oneCreateAction
               ? undefined

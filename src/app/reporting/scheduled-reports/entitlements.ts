@@ -11,3 +11,7 @@ export function cyberSightLocked(
 ) {
   return organization === NO_CYBERSIGHT_ORG && products.includes("CyberSight");
 }
+
+/** Billing & Subscriptions, alongside whatever the user was looking at. */
+export const openBilling = () =>
+  window.open("/subscriptions/manage", "_blank", "noopener");

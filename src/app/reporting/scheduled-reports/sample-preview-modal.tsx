@@ -9,13 +9,17 @@ import {
   Chip,
   Dialog,
   IconButton,
+  Link,
   Typography,
 } from "@mui/material";
 import type { SvgIconComponent } from "@mui/icons-material";
+import ArrowCircleUpOutlinedIcon from "@mui/icons-material/ArrowCircleUpOutlined";
 
 import { MaterialSymbol } from "@/components/material-symbol";
 
+import { openBilling } from "./entitlements";
 import { ReportPreview } from "./report-preview";
+import { UpgradePill } from "./upgrade-badge";
 
 export function SamplePreviewModal({
   open,
@@ -25,6 +29,8 @@ export function SamplePreviewModal({
   Icon,
   onRunNow,
   onSchedule,
+  locked = false,
+  onUpgrade,
 }: {
   open: boolean;
   onClose: () => void;
@@ -33,6 +39,10 @@ export function SamplePreviewModal({
   /** Runs the report now. Omit where one action covers both. */
   onRunNow?: () => void;
   onSchedule?: () => void;
+  /** The organization's plan doesn't include this report — the footer offers
+   *  the upgrade instead of running or scheduling it. */
+  locked?: boolean;
+  onUpgrade?: () => void;
   /** Catalog key — picks the document rendered in the body. */
   reportKey?: string;
   title?: string;
@@ -58,23 +68,51 @@ export function SamplePreviewModal({
         },
       }}
     >
-      {/* Header */}
+      {/* Header — the licensing note belongs with the title, 8px under it. */}
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
+          flexDirection: "column",
           gap: 1,
           p: 2,
           bgcolor: "background.paper",
         }}
       >
-        {/* Matches the Report Library preview card's header. */}
-        <Typography variant="cardTitle">Preview</Typography>
-        <Chip label="Sample data" size="small" />
-        <Box sx={{ flex: 1 }} />
-        <IconButton size="small" aria-label="Close" onClick={onClose}>
-          <MaterialSymbol name="close" size={20} />
-        </IconButton>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {/* Matches the Report Library preview card's header. */}
+          <Typography variant="cardTitle">Preview Report</Typography>
+          <Chip label="Sample data" size="small" />
+          <Box sx={{ flex: 1 }} />
+          <IconButton size="small" aria-label="Close" onClick={onClose}>
+            <MaterialSymbol name="close" size={20} />
+          </IconButton>
+        </Box>
+
+        {/* Why the footer offers an upgrade instead of running the report. */}
+        {locked && (
+          <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+            <UpgradePill />
+            <Typography variant="body1" sx={{ color: "text.primary" }}>
+              This organization is not licensed for CyberSight. Upgrade your
+              plan to gain access to this feature.{" "}
+              <Link
+                component="button"
+                type="button"
+                underline="none"
+                onClick={openBilling}
+                sx={(theme) => ({
+                  fontWeight: 700,
+                  verticalAlign: "baseline",
+                  ...theme.applyStyles("dark", {
+                    color: theme.vars.palette.primary.light,
+                  }),
+                })}
+              >
+                Upgrade now
+              </Link>
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       {/* Body — the real report document, scaled to the dialog. Inset on the
@@ -98,7 +136,7 @@ export function SamplePreviewModal({
         />
       </Box>
 
-      {(onRunNow || onSchedule) && (
+      {(locked || onRunNow || onSchedule) && (
         <Box
           sx={{
             display: "flex",
@@ -117,9 +155,21 @@ export function SamplePreviewModal({
             Close
           </Button>
           <Box sx={{ flex: 1 }} />
+          {/* Locked: upgrading is the only thing left to do here. */}
+          {locked && (
+            <Button
+              variant="contained"
+              color="primary"
+              size="small"
+              startIcon={<ArrowCircleUpOutlinedIcon />}
+              onClick={onUpgrade}
+            >
+              Upgrade Now
+            </Button>
+          )}
           {/* Two actions where the surface separates running from scheduling;
               one where a single drawer covers both. */}
-          {onRunNow && (
+          {!locked && onRunNow && (
             <Button
               variant="outlined"
               color="secondary"
@@ -132,7 +182,7 @@ export function SamplePreviewModal({
               Run Now
             </Button>
           )}
-          {onSchedule && (
+          {!locked && onSchedule && (
             <Button
               variant="contained"
               color="primary"
