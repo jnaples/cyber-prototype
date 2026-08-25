@@ -30,7 +30,6 @@ import CustomReportsPage from "@/app/reporting/custom-reports/page";
 import ScheduledReportsPage from "@/app/reporting/scheduled-reports/page";
 import ReportsPage from "@/app/reporting/reports/page";
 import ReportsV3Page from "@/app/reporting/reports-v3/page";
-import ReportSchedulerPage from "@/app/reporting/report-scheduler/page";
 import ReportsLayout from "@/app/reports/layout";
 import CustomerActivityOverviewReport from "@/app/reports/customer-activity-overview/page";
 import ThreatTrendsReport from "@/app/reports/threat-trends/page";
@@ -73,7 +72,6 @@ function App() {
             path="scheduled-reports/:tab"
             element={<ScheduledReportsPage />}
           />
-          <Route path="report-scheduler" element={<ReportSchedulerPage />} />
           {/* v2 trial: same Report Manager, drawer-based scheduling. */}
           <Route path="reports" element={<ReportsPage />} />
           <Route path="reports/:tab" element={<ReportsPage />} />

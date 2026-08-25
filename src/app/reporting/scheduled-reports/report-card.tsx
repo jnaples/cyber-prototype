@@ -2,6 +2,7 @@
 // the real document with the actions behind a hover scrim. Rendered on an
 // elevated Card so it lifts off the Library's neutral well.
 
+import ArrowCircleUpOutlinedIcon from "@mui/icons-material/ArrowCircleUpOutlined";
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import {
@@ -34,6 +35,10 @@ export function ReportCard({
   previewLabel = "Preview",
   scheduleLabel = "Schedule Report",
   onSchedule,
+  locked = false,
+  lockedTitle,
+  lockedBody,
+  onUpgrade,
   height = 400,
 }: {
   /** Catalog key — decides which document the thumbnail renders. */
@@ -57,6 +62,12 @@ export function ReportCard({
   /** Label for the schedule action when it stands alone. */
   scheduleLabel?: string;
   onSchedule?: () => void;
+  /** The report isn't included in the scoped organization's plan — the card
+   *  shows an upgrade overlay instead of its actions. */
+  locked?: boolean;
+  lockedTitle?: string;
+  lockedBody?: string;
+  onUpgrade?: () => void;
   height?: number;
 }) {
   const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
@@ -71,11 +82,12 @@ export function ReportCard({
   // The menu's backdrop takes the pointer, so :hover stops matching — the
   // overlay stays put while the menu is open.
   const menuOpen = Boolean(menuAnchor);
-  const hasActions = Boolean(onPreview || onExpand || onRunNow || onSchedule);
+  const hasActions =
+    !locked && Boolean(onPreview || onExpand || onRunNow || onSchedule);
   return (
     <Card
       elevation={1}
-      onClick={onClick}
+      onClick={locked ? undefined : onClick}
       sx={(theme) => ({
         height,
         display: "flex",
@@ -85,7 +97,7 @@ export function ReportCard({
         p: 2,
         gap: 2,
         overflow: "hidden",
-        cursor: onClick ? "pointer" : "default",
+        cursor: onClick && !locked ? "pointer" : "default",
         transition: "background 120ms",
         "&:hover": {
           bgcolor: alpha(theme.palette.primary.main, 0.04),
@@ -160,6 +172,8 @@ export function ReportCard({
           flex: 1,
           minHeight: 0,
           overflow: "hidden",
+          // The app's shape, so the pane's corners match the card's.
+          borderRadius: 1,
           bgcolor: "background.neutral",
         }}
       >
@@ -174,6 +188,58 @@ export function ReportCard({
             pointerEvents: "none",
           }}
         />
+
+        {/* Not in this organization's plan: the same scrim, but it stays put
+            and offers the upgrade instead of the report's actions. */}
+        {locked && (
+          <Box
+            sx={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 1,
+              px: 3,
+              textAlign: "center",
+              // Heavier than the hover scrim, and blurred: the report behind
+              // it is a teaser, not something to read.
+              bgcolor: "rgba(0, 0, 0, 0.72)",
+              backdropFilter: "blur(3px)",
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{ fontWeight: 600, color: "common.white" }}
+            >
+              {lockedTitle ?? "Not included in this plan"}
+            </Typography>
+            {lockedBody && (
+              <Typography
+                variant="body2"
+                sx={{ color: "rgba(255, 255, 255, 0.8)" }}
+              >
+                {lockedBody}
+              </Typography>
+            )}
+            {onUpgrade && (
+              <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                startIcon={<ArrowCircleUpOutlinedIcon />}
+                sx={{ mt: 1 }}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onUpgrade();
+                }}
+              >
+                Upgrade
+              </Button>
+            )}
+          </Box>
+        )}
 
         {/* Hover actions over the same scrim the drawers dim the page with. */}
         {hasActions && (

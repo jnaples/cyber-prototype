@@ -81,8 +81,8 @@ type Schedule = {
 const SCHEDULES: Schedule[] = [
   {
     id: 1,
-    name: "Monthly Timeline",
-    tags: ["Activity Overview"],
+    name: "Monthly Protection Summary",
+    tags: ["Filter Protection Overview"],
     organizations: "Acme Retail Group",
     recipients: 7,
     freqPrimary: "Monthly",
@@ -94,8 +94,8 @@ const SCHEDULES: Schedule[] = [
   },
   {
     id: 2,
-    name: "Acme Weekly Activity Digest",
-    tags: ["Activity Overview"],
+    name: "Acme Weekly Protection Digest",
+    tags: ["Filter Protection Overview"],
     organizations: "Acme Retail Group",
     recipients: 3,
     freqPrimary: "Weekly",
@@ -266,14 +266,14 @@ function ActionsCell({
   onDelete,
   onResend,
   onEdit,
+  onClone,
 }: {
   row: Schedule;
   onDelete: () => void;
   onResend: (count: number) => void;
-  /** Set when the page edits in a drawer instead of the builder page. */
-  onEdit?: () => void;
+  onEdit: () => void;
+  onClone: () => void;
 }) {
-  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deliveryOpen, setDeliveryOpen] = useState(false);
@@ -295,15 +295,8 @@ function ActionsCell({
         <IconButton
           size="small"
           aria-label="Edit"
-          // Opens the scheduler seeded from this row — in a drawer where the
-          // page runs that flow, otherwise on the builder page.
-          onClick={() =>
-            onEdit
-              ? onEdit()
-              : navigate("/reporting/report-scheduler", {
-                  state: { edit: scheduleEditState(row) },
-                })
-          }
+          // Opens the scheduler drawer seeded from this row.
+          onClick={onEdit}
         >
           <EditOutlinedIcon sx={{ fontSize: 20 }} />
         </IconButton>
@@ -341,16 +334,9 @@ function ActionsCell({
         <MenuItem
           onClick={() => {
             closeMenu();
-            // Same settings, saved as a new schedule — the scheduler opens
-            // with the cursor in the name.
-            navigate("/reporting/report-scheduler", {
-              state: {
-                clone: {
-                  ...scheduleEditState(row),
-                  scheduleName: `${row.name} (copy)`,
-                },
-              },
-            });
+            // Same settings, saved as a new schedule — the drawer opens with
+            // the cursor in the name.
+            onClone();
           }}
         >
           <ListItemIcon>
@@ -426,7 +412,8 @@ const buildColumns = (
   onDelete: (row: Schedule) => void,
   onResend: (row: Schedule, count: number) => void,
   onToggleStatus: (row: Schedule, active: boolean) => void,
-  onEdit?: (row: Schedule) => void,
+  onEdit: (row: Schedule) => void,
+  onClone: (row: Schedule) => void,
 ): GridColDef<Schedule>[] => [
   {
     field: "name",
@@ -531,7 +518,8 @@ const buildColumns = (
         row={params.row}
         onDelete={() => onDelete(params.row)}
         onResend={(count) => onResend(params.row, count)}
-        onEdit={onEdit ? () => onEdit(params.row) : undefined}
+        onEdit={() => onEdit(params.row)}
+        onClone={() => onClone(params.row)}
       />
     ),
   },
@@ -573,11 +561,11 @@ const selectedTabSx = {
 
 export default function ScheduledReportsPage({
   basePath = REPORT_MANAGER_BASE,
-  scheduleDrawer,
+  scheduleDrawer = "drawer",
 }: {
   /** Route the tabs live under — each variation runs on its own path. */
   basePath?: string;
-  /** Which drawer Schedule Report opens, if any. Unset uses the builder page. */
+  /** Which drawer the scheduler opens in — the flows differ by variation. */
   scheduleDrawer?: "drawer" | "drawer-v3";
 } = {}) {
   const { pathname, state } = useLocation();
@@ -590,6 +578,17 @@ export default function ScheduledReportsPage({
     ...getCreatedSchedules().map(toScheduleRow),
     ...SCHEDULES,
   ]);
+
+  // v3 trial: the Schedules tab's own action opens the scheduler in a drawer,
+  // and a row's Edit opens the same drawer seeded from that row.
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [editing, setEditing] = useState<{
+    row: Schedule;
+    state: ScheduleEditState;
+  } | null>(null);
+  // Clone opens the same drawer on a copy of the row's settings, but saves as
+  // a new schedule with the cursor waiting in the name.
+  const [cloning, setCloning] = useState<ScheduleEditState | null>(null);
 
   const columns = useMemo(
     () =>
@@ -619,11 +618,14 @@ export default function ScheduledReportsPage({
           );
           setToast(`"${row.name}" ${active ? "resumed" : "paused"}.`);
         },
-        scheduleDrawer
-          ? (row) => setEditing({ row, state: scheduleEditState(row) })
-          : undefined,
+        (row) => setEditing({ row, state: scheduleEditState(row) }),
+        (row) =>
+          setCloning({
+            ...scheduleEditState(row),
+            scheduleName: `${row.name} (copy)`,
+          }),
       ),
-    [scheduleDrawer],
+    [setSchedules, setToast, setEditing, setCloning],
   );
   const activeTab = PAGE_TABS.findIndex(
     (t) => pathname === `${basePath}/${t.path}`,
@@ -633,13 +635,6 @@ export default function ScheduledReportsPage({
   const activePath =
     REPORT_MANAGER_TABS.find((t) => pathname === `${basePath}/${t.path}`)
       ?.path ?? PAGE_TABS[0].path;
-  // v3 trial: the Schedules tab's own action opens the scheduler in a drawer,
-  // and a row's Edit opens the same drawer seeded from that row.
-  const [scheduleOpen, setScheduleOpen] = useState(false);
-  const [editing, setEditing] = useState<{
-    row: Schedule;
-    state: ScheduleEditState;
-  } | null>(null);
   const [statusFilter, setStatusFilter] = useState<SummaryKey>("all");
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
@@ -785,11 +780,7 @@ export default function ScheduledReportsPage({
               color="primary"
               size="small"
               startIcon={<MaterialSymbol name="add" size={18} />}
-              onClick={() =>
-                scheduleDrawer
-                  ? setScheduleOpen(true)
-                  : navigate("/reporting/report-scheduler")
-              }
+              onClick={() => setScheduleOpen(true)}
             >
               Schedule Report
             </Button>
@@ -886,7 +877,7 @@ export default function ScheduledReportsPage({
         </>
       )}
 
-      {scheduleDrawer && editing && (
+      {editing && (
         <ScheduleReportView
           variant={scheduleDrawer}
           open
@@ -916,7 +907,31 @@ export default function ScheduledReportsPage({
         />
       )}
 
-      {scheduleDrawer && scheduleOpen && (
+      {cloning && (
+        <ScheduleReportView
+          variant={scheduleDrawer}
+          open
+          edit={cloning}
+          // A clone opens on a copy of the row's settings but saves as new.
+          isEdit={false}
+          autoFocusName
+          deliveryChoice={false}
+          showReportType
+          primaryLabel="Create Schedule"
+          onCancel={() => setCloning(null)}
+          onSave={(schedule) => {
+            addCreatedSchedule(schedule);
+            setSchedules((rows) => [
+              toScheduleRow(schedule, rows.length),
+              ...rows,
+            ]);
+            setCloning(null);
+            setToast(`"${schedule.name}" created.`);
+          }}
+        />
+      )}
+
+      {scheduleOpen && (
         <ScheduleReportView
           variant={scheduleDrawer}
           open

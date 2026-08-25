@@ -137,12 +137,19 @@ export default function CreateClientlessPage() {
   const saved = Boolean(edit.editToken);
   const savedName = edit.editName ?? "";
 
+  // Every field on the edit page is required, so none of them can be cleared
+  // and saved.
+  const complete =
+    name.trim() !== "" && site !== "" && policy !== "" && blockPage !== "";
+
   // Save (edit mode) is enabled only once something changes from the saved state.
   const dirty =
     name !== savedName ||
     site !== (edit.editSite ?? "") ||
     policy !== (initialSite?.policy ?? "") ||
     blockPage !== (initialSite?.blockPage ?? "");
+
+  const canSave = complete && dirty;
 
   const back = () => navigate("/deployments/clientless");
 
@@ -180,6 +187,38 @@ export default function CreateClientlessPage() {
     </Box>
   );
 
+  const siteField = (
+    <Box>
+      <FormLabel sx={{ display: "block", mb: 0.5 }}>
+        Site
+        <Box component="span" sx={{ ml: 0.25 }}>
+          *
+        </Box>
+      </FormLabel>
+      <Select
+        fullWidth
+        displayEmpty
+        value={site}
+        onChange={(e) => handleSiteChange(e.target.value)}
+        renderValue={(value) =>
+          value ? (
+            value
+          ) : (
+            <Box component="span" sx={{ color: "text.disabled" }}>
+              Select a Site
+            </Box>
+          )
+        }
+      >
+        {SITES.map((s) => (
+          <MenuItem key={s.name} value={s.name}>
+            {s.name}
+          </MenuItem>
+        ))}
+      </Select>
+    </Box>
+  );
+
   const policyAndBlockPageFields = (
     <Box
       sx={{
@@ -191,6 +230,9 @@ export default function CreateClientlessPage() {
       <Box>
         <FormLabel sx={{ display: "block", mb: 0.5 }}>
           Policy/Schedule
+          <Box component="span" sx={{ ml: 0.25 }}>
+            *
+          </Box>
         </FormLabel>
         <ArrowTooltip title={!site ? "Select a Site first." : ""}>
           <Box
@@ -210,7 +252,12 @@ export default function CreateClientlessPage() {
         </ArrowTooltip>
       </Box>
       <Box>
-        <FormLabel sx={{ display: "block", mb: 0.5 }}>Block Page</FormLabel>
+        <FormLabel sx={{ display: "block", mb: 0.5 }}>
+          Block Page
+          <Box component="span" sx={{ ml: 0.25 }}>
+            *
+          </Box>
+        </FormLabel>
         <ArrowTooltip title={!site ? "Select a Site first." : ""}>
           <Box
             component="span"
@@ -425,22 +472,30 @@ export default function CreateClientlessPage() {
                 <Button variant="outlined" color="secondary" onClick={back}>
                   Cancel
                 </Button>
-                <ArrowTooltip title={dirty ? "" : "No changes to save."}>
+                <ArrowTooltip
+                  title={
+                    !complete
+                      ? "Please fill out all required fields."
+                      : dirty
+                        ? ""
+                        : "No changes to save."
+                  }
+                >
                   <Box
                     component="span"
                     sx={{
                       display: "inline-flex",
-                      cursor: dirty ? undefined : "not-allowed",
+                      cursor: canSave ? undefined : "not-allowed",
                     }}
                   >
                     <Button
                       variant="contained"
                       color="primary"
-                      disabled={!dirty}
+                      disabled={!canSave}
                       onClick={handleSave}
                       sx={{
                         minWidth: 0,
-                        pointerEvents: dirty ? undefined : "none",
+                        pointerEvents: canSave ? undefined : "none",
                       }}
                     >
                       Save
@@ -524,27 +579,7 @@ export default function CreateClientlessPage() {
                 </Link>
               </Box>
 
-              {saved && (
-                <>
-                  <Box>
-                    <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                      Site
-                    </FormLabel>
-                    <Typography
-                      sx={{
-                        fontSize: 16,
-                        color: "text.primary",
-                        minHeight: 40,
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      {site}
-                    </Typography>
-                  </Box>
-                  {dohRow()}
-                </>
-              )}
+              {saved && dohRow()}
 
               {!saved && (
                 <>
@@ -562,38 +597,7 @@ export default function CreateClientlessPage() {
                       }}
                     >
                       {nameField}
-                      <Box>
-                        <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                          Site
-                          <Box component="span" sx={{ ml: 0.25 }}>
-                            *
-                          </Box>
-                        </FormLabel>
-                        <Select
-                          fullWidth
-                          displayEmpty
-                          value={site}
-                          onChange={(e) => handleSiteChange(e.target.value)}
-                          renderValue={(value) =>
-                            value ? (
-                              value
-                            ) : (
-                              <Box
-                                component="span"
-                                sx={{ color: "text.disabled" }}
-                              >
-                                Select a Site
-                              </Box>
-                            )
-                          }
-                        >
-                          {SITES.map((s) => (
-                            <MenuItem key={s.name} value={s.name}>
-                              {s.name}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </Box>
+                      {siteField}
                       {policyAndBlockPageFields}
                     </Box>
                   </Box>
@@ -696,6 +700,7 @@ export default function CreateClientlessPage() {
                 sx={{ pt: 2, display: "flex", flexDirection: "column", gap: 2 }}
               >
                 {nameField}
+                {siteField}
                 {policyAndBlockPageFields}
               </Box>
             </Collapse>

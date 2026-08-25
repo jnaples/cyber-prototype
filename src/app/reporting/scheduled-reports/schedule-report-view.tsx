@@ -3,13 +3,10 @@
 // organizations, recipients, schedule, branding) and a live Email / PDF-cover
 // preview on the right. Header carries the Cancel / Create schedule actions.
 
-import AttachmentOutlinedIcon from "@mui/icons-material/AttachmentOutlined";
 import {
+  alpha,
   Autocomplete,
   Box,
-  Button,
-  Card,
-  Container,
   Divider,
   FormControlLabel,
   FormLabel,
@@ -27,16 +24,17 @@ import { AdapterDateFns } from "@mui/x-date-pickers-pro/AdapterDateFns";
 import { DateRangePicker } from "@mui/x-date-pickers-pro/DateRangePicker";
 import type { DateRange } from "@mui/x-date-pickers-pro/models";
 import { endOfDay, startOfDay, subDays } from "date-fns";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import ArrowCircleUpOutlinedIcon from "@mui/icons-material/ArrowCircleUpOutlined";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CancelIcon from "@mui/icons-material/Cancel";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
+import { useOrgScope } from "@/hooks/use-org-scope";
 import { Drawer } from "@/components/drawer";
 import { MaterialSymbol } from "@/components/material-symbol";
-import { PageHeader } from "@/components/page-header";
 import { SearchableMultiSelect } from "@/components/searchable-multi-select";
 import { ROAMING_CLIENTS, SITES, USERS } from "./scope-options";
 import { SearchableSelect } from "@/components/searchable-select";
@@ -47,6 +45,7 @@ import { MSP_ORGANIZATIONS } from "@/data/organizations";
 import type { ScheduleEditState } from "./schedule-edit-state";
 import { REPORTS } from "./reports";
 import { SampleReportsModal } from "./sample-reports-modal";
+import { cyberSightLocked } from "./entitlements";
 import type { NewSchedule } from "./created-schedules";
 
 const PORTAL_USERS = [
@@ -252,7 +251,7 @@ export function ScheduleReportView({
   isEdit = Boolean(edit),
   autoFocusName = false,
   initialReports,
-  variant = "page",
+  variant = "drawer",
   open = true,
   deliveryChoice = true,
   showReportType,
@@ -273,10 +272,9 @@ export function ScheduleReportView({
   autoFocusName?: boolean;
   /** Report keys to preselect — set when opened from a Library preview. */
   initialReports?: string[];
-  /** "page" is the full builder with its live preview; the drawer variants are
-   *  the same form on its own. "drawer" is v2's simplified flow; "drawer-v3"
-   *  is a second variation, free to diverge from it. */
-  variant?: "page" | "drawer" | "drawer-v3";
+  /** "drawer" is v2's simplified flow; "drawer-v3" is a second variation,
+   *  free to diverge from it. */
+  variant?: "drawer" | "drawer-v3";
   /** Drawer variant only: whether the drawer is open. */
   open?: boolean;
   /** Show the Report type selector. Off in v3's card drawers, where the
@@ -298,8 +296,21 @@ export function ScheduleReportView({
   const [selectedReports, setSelectedReports] = useState<string[]>(
     edit?.reports ?? initialReports ?? [],
   );
+  // Drilled into one organization from the header? The report is for that one,
+  // so the form opens on it.
+  const { organization: scopedOrg } = useOrgScope();
+
   const [scheduleName, setScheduleName] = useState(edit?.scheduleName ?? "");
-  const [selectedOrg, setSelectedOrg] = useState(edit?.organization ?? "");
+  // Cloning opens on a copy that needs renaming, so the cursor waits there.
+  const nameRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (!autoFocusName) return;
+    const id = window.setTimeout(() => nameRef.current?.select(), 0);
+    return () => window.clearTimeout(id);
+  }, [autoFocusName]);
+  const [selectedOrg, setSelectedOrg] = useState(
+    edit?.organization ?? scopedOrg ?? "",
+  );
   const [portalUsers, setPortalUsers] = useState<string[]>(
     edit?.portalUsers ?? [],
   );
@@ -308,8 +319,6 @@ export function ScheduleReportView({
     edit?.externalEmails ?? [],
   );
   const [emailError, setEmailError] = useState("");
-  const [emailSubject, setEmailSubject] = useState(edit?.emailSubject ?? "");
-  const [emailMessage, setEmailMessage] = useState(edit?.emailMessage ?? "");
   // v3 only: a report is either put on a schedule or run once.
   // A one-off run is the common case, so the drawer opens on it.
   // A one-off run is the common case, so the drawer opens on it — unless the
@@ -326,7 +335,7 @@ export function ScheduleReportView({
   const [showRecipients, setShowRecipients] = useState(false);
   const [showScope, setShowScope] = useState(false);
   // v3's One-Time mode: run the report once instead of scheduling it.
-  const oneTime = variant !== "page" && delivery === "one-time";
+  const oneTime = delivery === "one-time";
   const [frequency, setFrequency] = useState<(typeof FREQUENCIES)[number] | "">(
     (FREQUENCIES as readonly string[]).includes(edit?.frequency ?? "")
       ? (edit?.frequency as (typeof FREQUENCIES)[number])
@@ -377,8 +386,6 @@ export function ScheduleReportView({
     selectedOrg,
     portalUsers: [...portalUsers].sort(),
     externalEmails: [...externalEmails].sort(),
-    emailSubject,
-    emailMessage,
     frequency,
     weekDay,
     monthDay,
@@ -388,6 +395,15 @@ export function ScheduleReportView({
   });
   const [openedWith] = useState(formState);
   const isDirty = formState !== openedWith;
+
+  // The report is for one organization; a Filtering-only client can't run the
+  // CyberSight reports, so those options explain themselves instead.
+  const reportOrg = selectedOrg || scopedOrg;
+  const reportLocked = (title: string) =>
+    cyberSightLocked(
+      reportOrg,
+      SCHEDULABLE_REPORTS.find((r) => r.title === title)?.products,
+    );
 
   const canSave = isComplete && (!isEdit || isDirty);
   const saveTooltip = !isComplete
@@ -404,13 +420,7 @@ export function ScheduleReportView({
     // The note belongs with the title, so they group rather than sitting a
     // full step apart.
     <Box>
-      {variant === "page" && (
-        <Typography variant="cardTitle">Schedule Details</Typography>
-      )}
-      <Typography
-        variant="body2"
-        sx={{ mt: variant === "page" ? 1 : 0, color: "text.primary" }}
-      >
+      <Typography variant="body2" sx={{ color: "text.primary" }}>
         Reports use branding from Branding settings.
       </Typography>
       <Typography variant="body2" component="div">
@@ -747,7 +757,9 @@ export function ScheduleReportView({
             <TextField
               fullWidth
               size="small"
-              autoFocus={autoFocusName}
+              // The drawer takes focus as it opens, so a clone puts the cursor
+              // in the name itself once that's done.
+              inputRef={nameRef}
               placeholder="e.g. Monthly Timeline"
               value={scheduleName}
               onChange={(e) => setScheduleName(e.target.value)}
@@ -761,7 +773,7 @@ export function ScheduleReportView({
           {/* One dropdown rather than a card per report — the list only
               grows, and the builder shouldn't scroll for it. v3 drops it:
               its drawer already names the report in the subheader. */}
-          {(showReportType ?? variant === "page") && (
+          {showReportType && (
             <Box>
               <SearchableSelect
                 label="Report type"
@@ -769,6 +781,61 @@ export function ScheduleReportView({
                 placeholder="Select report type"
                 options={REPORT_TITLES_BY_PRODUCT}
                 groupBy={productOfReport}
+                optionDisabled={reportLocked}
+                renderOptionEnd={(title) =>
+                  reportLocked(title) ? (
+                    <ArrowTooltip
+                      title={
+                        <>
+                          This organization is not licensed for CyberSight.
+                          Upgrade your plan to gain access to this feature.{" "}
+                          <Link
+                            component="button"
+                            type="button"
+                            // Billing & Subscriptions, alongside the form the
+                            // user was filling in.
+                            onClick={() =>
+                              window.open(
+                                "/subscriptions/manage",
+                                "_blank",
+                                "noopener",
+                              )
+                            }
+                            underline="always"
+                            sx={{
+                              fontWeight: 700,
+                              color: "inherit",
+                              textDecoration: "underline",
+                              verticalAlign: "baseline",
+                            }}
+                          >
+                            Upgrade Now
+                          </Link>
+                        </>
+                      }
+                    >
+                      <Box
+                        // An icon-only info chip in the app's blue: a tinted
+                        // pill around the upgrade arrow.
+                        sx={(theme) => ({
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          p: 0.5,
+                          borderRadius: "999px",
+                          bgcolor: alpha(theme.palette.primary.main, 0.12),
+                          color: theme.vars.palette.primary.main,
+                          ...theme.applyStyles("dark", {
+                            bgcolor: alpha(theme.palette.primary.light, 0.16),
+                            color: theme.vars.palette.primary.light,
+                          }),
+                        })}
+                      >
+                        <ArrowCircleUpOutlinedIcon sx={{ fontSize: 18 }} />
+                      </Box>
+                    </ArrowTooltip>
+                  ) : null
+                }
                 value={selectedReportDefs[0]?.title ?? ""}
                 onChange={(title) =>
                   setSelectedReports(
@@ -878,53 +945,6 @@ export function ScheduleReportView({
           <Step n={3} title="Add Recipients">
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {recipientFields}
-              {/* The simplified drawer flow leaves the email copy to defaults. */}
-              {variant === "page" && (
-                <>
-                  <Box>
-                    <FormLabel sx={{ display: "block", mb: 0.5 }}>
-                      Email subject
-                    </FormLabel>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      placeholder={`e.g. ${frequency || "Monthly"} Security Report`}
-                      value={emailSubject}
-                      onChange={(e) => setEmailSubject(e.target.value)}
-                    />
-                  </Box>
-
-                  <Box>
-                    <FormLabel
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 0.5,
-                        mb: 0.5,
-                      }}
-                    >
-                      Email message
-                      <Typography
-                        component="span"
-                        variant="body2"
-                        sx={{ color: "text.secondary", fontWeight: 400 }}
-                      >
-                        Optional
-                      </Typography>
-                    </FormLabel>
-                    <TextField
-                      fullWidth
-                      multiline
-                      minRows={4}
-                      size="small"
-                      placeholder="e.g. Your monthly security report is attached. Reach out with any questions."
-                      value={emailMessage}
-                      onChange={(e) => setEmailMessage(e.target.value)}
-                    />
-                  </Box>
-                </>
-              )}
             </Box>
           </Step>
           <Divider sx={{ mt: 1 }} />
@@ -1137,365 +1157,62 @@ export function ScheduleReportView({
     </>
   );
 
-  if (variant !== "page") {
-    return (
-      <>
-        <Drawer
-          open={open}
-          onClose={onCancel}
-          // A little more room under the last field than the drawer's default.
-          contentSx={{ pb: 3 }}
-          title={
-            drawerTitle ??
-            (isEdit
-              ? "Edit Schedule"
-              : variant === "drawer-v3" && deliveryChoice
-                ? "Generate Report"
-                : "Schedule Report")
-          }
-          subheader={selectedReportDefs[0]?.title}
-          secondaryAction={{ label: "Cancel", onClick: onCancel }}
-          primaryAction={{
-            label:
-              primaryLabel ??
-              // Editing always saves; v3's create drawers just say Done.
-              (isEdit
-                ? "Save"
-                : variant === "drawer-v3"
-                  ? "Done"
-                  : "Create schedule"),
-            disabled: !canSave,
-            tooltip: saveTooltip,
-            onClick: () =>
-              onSave(
-                {
-                  name: scheduleName,
-                  tags: selectedReportDefs.map((r) => r.title),
-                  organization: selectedOrg,
-                  recipients: recipientCount,
-                  frequency,
-                  frequencyDetail:
-                    frequency === "Weekly"
-                      ? weekDay
-                      : frequency === "Monthly"
-                        ? ordinal(monthDay)
-                        : "",
-                },
-                oneTime ? "one-time" : "scheduled",
-              ),
-          }}
-        >
-          {brandingBlock}
-          {oneTime ? oneTimeForm : form}
-        </Drawer>
-        {/* The Preview reports link needs its modal in this branch too. */}
-        <SampleReportsModal
-          open={samplesOpen}
-          onClose={() => setSamplesOpen(false)}
-          onChoose={(reportKey) => setSelectedReports([reportKey])}
-        />
-      </>
-    );
-  }
-
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        minHeight: 0,
-      }}
-    >
-      <PageHeader
-        title={isEdit ? "Edit Schedule" : "Schedule Report"}
-        onBack={onCancel}
-        actions={
-          <>
-            <Button variant="outlined" color="secondary" onClick={onCancel}>
-              Cancel
-            </Button>
-            <ArrowTooltip title={saveTooltip}>
-              <span
-                style={{
-                  display: "inline-flex",
-                  cursor: canSave ? undefined : "not-allowed",
-                }}
-              >
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() =>
-                    onSave(
-                      {
-                        name: scheduleName,
-                        tags: selectedReportDefs.map((r) => r.title),
-                        organization: selectedOrg,
-                        recipients: recipientCount,
-                        frequency,
-                        frequencyDetail:
-                          frequency === "Weekly"
-                            ? weekDay
-                            : frequency === "Monthly"
-                              ? ordinal(monthDay)
-                              : "",
-                      },
-                      "scheduled",
-                    )
-                  }
-                  disabled={!canSave}
-                >
-                  {isEdit ? "Save" : "Create schedule"}
-                </Button>
-              </span>
-            </ArrowTooltip>
-          </>
+    <>
+      <Drawer
+        open={open}
+        onClose={onCancel}
+        // A little more room under the last field than the drawer's default.
+        contentSx={{ pb: 3 }}
+        title={
+          drawerTitle ??
+          (isEdit
+            ? "Edit Schedule"
+            : variant === "drawer-v3" && deliveryChoice
+              ? "Generate Report"
+              : "Schedule Report")
         }
-      />
-
-      <Box sx={{ flex: 1, overflow: "auto", px: 2, pt: 2, pb: 8 }}>
-        <Container maxWidth="lg">
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: {
-                xs: "1fr",
-                md: "minmax(0, 1.15fr) minmax(0, 1fr)",
+        subheader={selectedReportDefs[0]?.title}
+        secondaryAction={{ label: "Cancel", onClick: onCancel }}
+        primaryAction={{
+          label:
+            primaryLabel ??
+            // Editing always saves; v3's create drawers just say Done.
+            (isEdit
+              ? "Save"
+              : variant === "drawer-v3"
+                ? "Done"
+                : "Create schedule"),
+          disabled: !canSave,
+          tooltip: saveTooltip,
+          onClick: () =>
+            onSave(
+              {
+                name: scheduleName,
+                tags: selectedReportDefs.map((r) => r.title),
+                organization: selectedOrg,
+                recipients: recipientCount,
+                frequency,
+                frequencyDetail:
+                  frequency === "Weekly"
+                    ? weekDay
+                    : frequency === "Monthly"
+                      ? ordinal(monthDay)
+                      : "",
               },
-              gap: 2,
-              alignItems: "start",
-            }}
-          >
-            {/* ---------------------------------------------------------------- */}
-            {/* LEFT — stepped form                                              */}
-            {/* ---------------------------------------------------------------- */}
-            <Card
-              sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}
-            >
-              {brandingBlock}
-              {form}
-            </Card>
-
-            {/* ---------------------------------------------------------------- */}
-            {/* RIGHT — live preview                                             */}
-            {/* ---------------------------------------------------------------- */}
-            <Card
-              sx={{
-                position: { md: "sticky" },
-                top: { md: 0 },
-                overflow: "hidden",
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  px: 2,
-                  py: 2,
-                }}
-              >
-                <Typography variant="cardTitle">Preview</Typography>
-              </Box>
-
-              <Box
-                sx={{
-                  bgcolor: "background.neutral",
-                  borderRadius: 1,
-                  mx: 2,
-                  mb: 2,
-                  p: 2,
-                }}
-              >
-                <>
-                  {/* Envelope */}
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: "auto 1fr",
-                      columnGap: 2,
-                      rowGap: 0.5,
-                      mb: 2,
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.primary", fontWeight: 700 }}
-                    >
-                      From:
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "text.primary" }}>
-                      {companyName} Reports &lt;{replyTo}&gt;
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.primary", fontWeight: 700 }}
-                    >
-                      To:
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "text.primary" }}>
-                      {recipientCount > 0 ? `Contacts (${recipientCount})` : ""}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.primary", fontWeight: 700 }}
-                    >
-                      Subject:
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: "text.primary" }}>
-                      {emailSubject.trim() ||
-                        `${frequency || "Monthly"} Security Report`}
-                    </Typography>
-                  </Box>
-
-                  {/* Email body */}
-                  <Box sx={{ borderRadius: 1 }}>
-                    {selectedReportDefs.length === 0 ? (
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontStyle: "italic",
-                          color: "text.secondary",
-                          textAlign: "center",
-                          py: 6,
-                        }}
-                      >
-                        Select a report to preview
-                      </Typography>
-                    ) : (
-                      <Card elevation={1} sx={{ overflow: "hidden" }}>
-                        <Box
-                          sx={{
-                            px: 3,
-                            py: 2.5,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1.5,
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              width: 32,
-                              height: 32,
-                              borderRadius: 1,
-                              bgcolor: "primary.main",
-                              color: "#fff",
-                              fontWeight: 700,
-                              fontSize: 13,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            BI
-                          </Box>
-                          <Typography sx={{ fontWeight: 700 }}>
-                            {companyName}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ px: 3, py: 2.5, pt: 0 }}>
-                          {emailMessage.trim() && (
-                            <Typography
-                              variant="body2"
-                              sx={{
-                                color: "text.primary",
-                                whiteSpace: "pre-line",
-                                mb: 2,
-                              }}
-                            >
-                              {emailMessage}
-                            </Typography>
-                          )}
-
-                          <Typography
-                            variant="overline"
-                            sx={{
-                              color: "text.secondary",
-                              display: "block",
-                              mb: 1,
-                            }}
-                          >
-                            Attachments ({selectedReportDefs.length})
-                          </Typography>
-
-                          {selectedReportDefs.length === 0 ? (
-                            <Box
-                              sx={{
-                                border: "1px dashed",
-                                borderColor: "divider",
-                                borderRadius: 1,
-                                p: 2,
-                                textAlign: "center",
-                                color: "text.secondary",
-                                mb: 2.5,
-                              }}
-                            >
-                              <Typography variant="body2">
-                                Select at least one report to preview
-                                attachments.
-                              </Typography>
-                            </Box>
-                          ) : (
-                            <Box
-                              sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                gap: 1,
-                                mb: 2.5,
-                              }}
-                            >
-                              {selectedReportDefs.map((r) => (
-                                <Box
-                                  key={r.key}
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 1,
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                    borderRadius: 1,
-                                    px: 1.5,
-                                    py: 1,
-                                  }}
-                                >
-                                  <AttachmentOutlinedIcon
-                                    sx={{
-                                      fontSize: 20,
-                                      color: "text.disabled",
-                                    }}
-                                  />
-                                  <Typography
-                                    variant="body2"
-                                    sx={{ flex: 1, fontWeight: 600 }}
-                                  >
-                                    {r.file}
-                                  </Typography>
-                                  <Typography
-                                    variant="body2"
-                                    sx={{ color: "text.secondary" }}
-                                  >
-                                    {r.size}
-                                  </Typography>
-                                </Box>
-                              ))}
-                            </Box>
-                          )}
-                        </Box>
-                      </Card>
-                    )}
-                  </Box>
-                </>
-              </Box>
-            </Card>
-          </Box>
-        </Container>
-      </Box>
-
+              oneTime ? "one-time" : "scheduled",
+            ),
+        }}
+      >
+        {brandingBlock}
+        {oneTime ? oneTimeForm : form}
+      </Drawer>
+      {/* The Preview reports link needs its modal in this branch too. */}
       <SampleReportsModal
         open={samplesOpen}
         onClose={() => setSamplesOpen(false)}
         onChoose={(reportKey) => setSelectedReports([reportKey])}
       />
-    </Box>
+    </>
   );
 }

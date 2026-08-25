@@ -18,9 +18,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { MaterialSymbol } from "@/components/material-symbol";
+import { useOrgScope } from "@/hooks/use-org-scope";
 import { TextField } from "@/components/text-field";
 
 import { addCreatedSchedule } from "./created-schedules";
+import { cyberSightLocked } from "./entitlements";
 import { GenerateReportDrawer } from "./generate-report-drawer";
 import { ScheduleReportView } from "./schedule-report-view";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
@@ -36,9 +38,8 @@ const PRODUCTS = ["Filtering", "CyberSight"];
 export function ReportLibrary({
   scheduleDrawer,
 }: {
-  /** Which drawer Schedule Report opens, if any. Unset takes the user to the
-   *  full builder page, as the shipping tab does. */
-  scheduleDrawer?: "drawer" | "drawer-v3";
+  /** Which drawer the scheduler opens in. */
+  scheduleDrawer: "drawer" | "drawer-v3";
 }) {
   const [search, setSearch] = useState("");
   const [productFilter, setProductFilter] = useState<string | null>(null);
@@ -58,6 +59,10 @@ export function ReportLibrary({
     delivery?: "scheduled" | "one-time";
   } | null>(null);
   const [scheduleToast, setScheduleToast] = useState<string | null>(null);
+  // Reports the organization in scope isn't licensed for.
+  const { organization } = useOrgScope();
+  const lockedFor = (report: ReportDef) =>
+    cyberSightLocked(organization, report.products);
   // Title or description — the description is what tells two threat reports
   // apart.
   // v2 splits the card's hover actions: Run Now on the left, Schedule on the
@@ -71,8 +76,7 @@ export function ReportLibrary({
     choice = false,
     delivery?: "scheduled" | "one-time",
   ) => {
-    if (scheduleDrawer) setScheduleFor({ reportKeys, choice, delivery });
-    else navigate("/reporting/report-scheduler", { state: { reportKeys } });
+    setScheduleFor({ reportKeys, choice, delivery });
   };
 
   const query = search.trim().toLowerCase();
@@ -194,60 +198,77 @@ export function ReportLibrary({
                   gap: 2,
                 }}
               >
-                {matches.map((r) => (
-                  <ReportCard
-                    key={r.key}
-                    reportKey={r.key}
-                    title={r.title}
-                    desc={r.desc}
-                    Icon={r.Icon}
-                    products={r.products}
-                    // Nothing to preview until the report is built.
-                    previewLabel={runNowOnCard ? "Generate Report" : undefined}
-                    scheduleLabel={runNowOnCard ? "Schedule" : undefined}
-                    onPreview={
-                      r.key === "custom"
-                        ? undefined
-                        : runNowOnCard
-                          ? () => schedule([r.key], false, "one-time")
-                          : () => setPreview(r)
-                    }
-                    // v2 trial: a corner control on the pane itself.
-                    onExpand={
-                      r.key === "custom" || scheduleDrawer !== "drawer"
-                        ? undefined
-                        : () => setPreview(r)
-                    }
-                    // v3 folds run-now and schedule into one Create Report
-                    // drawer, so the card needs no dropdown at all.
-                    runLabel={
-                      oneCreateAction
-                        ? "Generate Report"
-                        : r.key === "custom"
-                          ? "Create Report"
-                          : undefined
-                    }
-                    onRunNow={
-                      r.key === "custom"
-                        ? () =>
-                            navigate("/reporting/custom-reports", {
-                              state: { builder: true },
-                            })
-                        : oneCreateAction
-                          ? () => schedule([r.key], true)
+                {matches.map((r) => {
+                  const locked = lockedFor(r);
+                  return (
+                    <ReportCard
+                      key={r.key}
+                      reportKey={r.key}
+                      title={r.title}
+                      desc={r.desc}
+                      Icon={r.Icon}
+                      products={r.products}
+                      locked={locked}
+                      lockedTitle="CyberSight not enabled"
+                      lockedBody={`Add CyberSight to ${organization} to use this report.`}
+                      // Upgrading happens on Billing & Subscriptions, opened
+                      // alongside the report the user was looking at.
+                      onUpgrade={() =>
+                        window.open(
+                          "/subscriptions/manage",
+                          "_blank",
+                          "noopener",
+                        )
+                      }
+                      // Nothing to preview until the report is built.
+                      previewLabel={
+                        runNowOnCard ? "Generate Report" : undefined
+                      }
+                      scheduleLabel={runNowOnCard ? "Schedule" : undefined}
+                      onPreview={
+                        r.key === "custom"
+                          ? undefined
                           : runNowOnCard
-                            ? undefined
-                            : () => setGenerateFor(r)
-                    }
-                    // A custom report can't be put on a schedule from here,
-                    // and v3's single action already covers both.
-                    onSchedule={
-                      r.key === "custom" || oneCreateAction
-                        ? undefined
-                        : () => schedule([r.key])
-                    }
-                  />
-                ))}
+                            ? () => schedule([r.key], false, "one-time")
+                            : () => setPreview(r)
+                      }
+                      // v2 trial: a corner control on the pane itself.
+                      onExpand={
+                        r.key === "custom" || scheduleDrawer !== "drawer"
+                          ? undefined
+                          : () => setPreview(r)
+                      }
+                      // v3 folds run-now and schedule into one Create Report
+                      // drawer, so the card needs no dropdown at all.
+                      runLabel={
+                        oneCreateAction
+                          ? "Generate Report"
+                          : r.key === "custom"
+                            ? "Create Report"
+                            : undefined
+                      }
+                      onRunNow={
+                        r.key === "custom"
+                          ? () =>
+                              navigate("/reporting/custom-reports", {
+                                state: { builder: true },
+                              })
+                          : oneCreateAction
+                            ? () => schedule([r.key], true)
+                            : runNowOnCard
+                              ? undefined
+                              : () => setGenerateFor(r)
+                      }
+                      // A custom report can't be put on a schedule from here,
+                      // and v3's single action already covers both.
+                      onSchedule={
+                        r.key === "custom" || oneCreateAction
+                          ? undefined
+                          : () => schedule([r.key])
+                      }
+                    />
+                  );
+                })}
               </Box>
             </Box>
           </CardContent>

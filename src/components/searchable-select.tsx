@@ -41,6 +41,8 @@ export function SearchableSelect({
   disabled = false,
   helperText,
   groupBy,
+  optionDisabled,
+  renderOptionEnd,
 }: {
   label: string;
   options: string[];
@@ -53,9 +55,44 @@ export function SearchableSelect({
   disabled?: boolean;
   /** Files each option under a heading — e.g. the product it belongs to. */
   groupBy?: (option: string) => string;
+  /** Options the account can't pick — e.g. a report its plan doesn't include. */
+  optionDisabled?: (option: string) => boolean;
+  /** Trailing content for an option, pinned to the right of the row. */
+  renderOptionEnd?: (option: string) => ReactNode;
   /** Rendered under the field — takes a node so it can hold a link. */
   helperText?: ReactNode;
 }) {
+  const renderOption = (option: string, sx?: object) => (
+    <MenuItem
+      key={option}
+      value={option}
+      disabled={optionDisabled?.(option)}
+      sx={{
+        ...sx,
+        // A disabled row still needs to explain itself, so its trailing badge
+        // keeps its pointer events.
+        // MUI kills pointer events on a disabled row, which would take the
+        // badge's tooltip with it.
+        ...(optionDisabled?.(option) && {
+          "&.Mui-disabled": {
+            opacity: 1,
+            color: "text.disabled",
+            pointerEvents: "auto",
+            cursor: "not-allowed",
+          },
+        }),
+      }}
+    >
+      {option}
+      {renderOptionEnd && (
+        <>
+          <Box sx={{ flex: 1, minWidth: 8 }} />
+          {renderOptionEnd(option)}
+        </>
+      )}
+    </MenuItem>
+  );
+
   const [search, setSearch] = useState("");
   const query = search.trim().toLowerCase();
   const visibleOptions = query
@@ -101,17 +138,9 @@ export function SearchableSelect({
               <ListSubheader key={`group-${group}`} sx={GROUP_HEADING_SX}>
                 {group}
               </ListSubheader>,
-              ...opts.map((option) => (
-                <MenuItem key={option} value={option} sx={GROUPED_ITEM_SX}>
-                  {option}
-                </MenuItem>
-              )),
+              ...opts.map((option) => renderOption(option, GROUPED_ITEM_SX)),
             ])
-          : visibleOptions.map((option) => (
-              <MenuItem key={option} value={option}>
-                {option}
-              </MenuItem>
-            ))}
+          : visibleOptions.map((option) => renderOption(option))}
       </Select>
       {helperText && (
         <FormHelperText sx={{ fontSize: 14 }}>{helperText}</FormHelperText>

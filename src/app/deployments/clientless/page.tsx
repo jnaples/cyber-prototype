@@ -2,8 +2,8 @@ import {
   Alert,
   Box,
   Button,
-  Chip,
   Divider,
+  FormLabel,
   IconButton,
   Link,
   ListItemIcon,
@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
+import RestoreIcon from "@mui/icons-material/Restore";
 import type { GridColDef } from "@mui/x-data-grid";
 import { getGridSingleSelectOperators } from "@mui/x-data-grid";
 import { useState } from "react";
@@ -21,6 +22,7 @@ import { useLocation, useNavigate } from "react-router";
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { MaterialSymbol } from "@/components/material-symbol";
+import { TextField } from "@/components/text-field";
 import { Modal } from "@/components/modal";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
@@ -181,6 +183,72 @@ const EDIT_SITES = [
   "Lincoln Middle School",
 ];
 
+// Deleted deployments, kept for 30 days so they can be put back. Session-only:
+// restoring one adds it to the grid until the page reloads.
+type ArchivedRow = DohRow & { deleted: string };
+
+const ARCHIVED_ROWS: ArchivedRow[] = [
+  {
+    id: 101,
+    name: "Retired Lobby Kiosk",
+    organization: "Acme Retail Group",
+    policy: "Guest Wi-Fi Policy",
+    endpointId: "b71c02",
+    devices: 1,
+    status: "Inactive",
+    created: "Jul 28, 2026 9:14 AM",
+    lastQuery: "> 90 Days",
+    deleted: "Aug 18, 2026 4:32 PM",
+  },
+  {
+    id: 102,
+    name: "Old Warehouse Tablet",
+    organization: "Northwind Traders",
+    policy: "Standard Policy",
+    endpointId: "4e93a7",
+    devices: 2,
+    status: "Inactive",
+    created: "Aug 1, 2026 11:02 AM",
+    lastQuery: "> 90 Days",
+    deleted: "Aug 20, 2026 8:05 AM",
+  },
+  {
+    id: 103,
+    name: "Clinic Check-In iPad",
+    organization: "Bright Future Pediatrics",
+    policy: "HIPAA Strict",
+    endpointId: "c58d13",
+    devices: 1,
+    status: "Inactive",
+    created: "Aug 3, 2026 2:47 PM",
+    lastQuery: "< 30 Days",
+    deleted: "Aug 21, 2026 1:19 PM",
+  },
+  {
+    id: 104,
+    name: "Front Desk Phone",
+    organization: "Riverside Dental Group",
+    policy: "Default Policy",
+    endpointId: "9a2f61",
+    devices: 1,
+    status: "Inactive",
+    created: "Aug 5, 2026 10:30 AM",
+    lastQuery: "< 30 Days",
+    deleted: "Aug 22, 2026 9:58 AM",
+  },
+  {
+    id: 105,
+    name: "Training Room Display",
+    organization: "Summit Financial Advisors",
+    policy: "Restricted Policy",
+    endpointId: "d30bb8",
+    devices: 3,
+    status: "Inactive",
+    created: "Aug 8, 2026 3:11 PM",
+    lastQuery: "< 14 Days",
+    deleted: "Aug 23, 2026 5:44 PM",
+  },
+];
 // Router state the create page reads to open in edit mode instead of add mode.
 const editStateFor = (row: DohRow) => ({
   editName: row.name,
@@ -217,8 +285,14 @@ function DohActionsCell({
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Deleting is permanent, so it's typed out before the button unlocks.
+  const [confirmText, setConfirmText] = useState("");
   const [detailsOpen, setDetailsOpen] = useState(false);
   const closeMenu = () => setAnchorEl(null);
+  const closeConfirm = () => {
+    setConfirmOpen(false);
+    setConfirmText("");
+  };
 
   const openEdit = () =>
     navigate("/deployments/clientless/create", { state: editStateFor(row) });
@@ -319,12 +393,12 @@ function DohActionsCell({
 
       <Modal
         open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
+        onClose={closeConfirm}
         title="Delete Clientless Device"
         width={420}
         secondaryAction={{
           label: "Cancel",
-          onClick: () => setConfirmOpen(false),
+          onClick: closeConfirm,
         }}
         primaryAction={{
           label: (
@@ -338,15 +412,34 @@ function DohActionsCell({
           ),
           color: "error",
           sx: { color: "common.white" },
+          disabled: confirmText.trim().toUpperCase() !== "DELETE",
           onClick: () => {
             onDelete();
-            setConfirmOpen(false);
+            closeConfirm();
           },
         }}
       >
-        <Typography variant="body1" sx={{ color: "text.primary" }}>
-          This action cannot be undone.
-        </Typography>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <Typography variant="body1" sx={{ color: "text.primary" }}>
+            Deleting this Clientless Device disables its DoH address.
+          </Typography>
+          <Typography variant="body1" sx={{ color: "text.primary" }}>
+            A device still configured with that address will lose internet
+            access until the address is removed from the device.
+          </Typography>
+        </Box>
+        <Box sx={{ mt: 2 }}>
+          <FormLabel sx={{ display: "block", mb: 0.5 }}>
+            Type DELETE to confirm
+          </FormLabel>
+          <TextField
+            fullWidth
+            size="small"
+            placeholder="DELETE"
+            value={confirmText}
+            onChange={(e) => setConfirmText(e.target.value)}
+          />
+        </Box>
       </Modal>
     </Box>
   );
@@ -410,7 +503,6 @@ const POLICY_OPTIONS = [...new Set(ROWS.map((r) => r.policy).filter(Boolean))];
 const BLOCK_PAGE_OPTIONS = [
   ...new Set(ROWS.map((r) => blockPageFor(r.policy))),
 ];
-const DOH_OPTIONS = ROWS.map((r) => r.endpointId);
 const ORG_OPTIONS = [...new Set(ROWS.map((r) => r.organization))];
 const STATUS_OPTIONS: DohStatus[] = ["Active", "Inactive", "Pending"];
 
@@ -451,26 +543,6 @@ const baseColumns: GridColDef<DohRow>[] = [
     flex: 1,
     minWidth: 190,
     renderCell: (params) => params.row.lastQuery || "-",
-  },
-  {
-    field: "uniqueDoh",
-    headerName: "DoH ID",
-    width: 150,
-    sortable: false,
-    type: "singleSelect",
-    valueOptions: DOH_OPTIONS,
-    valueGetter: (_v, row) => row.endpointId,
-    filterOperators: IS_OP,
-    renderCell: (params) => (
-      <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-        <Chip
-          size="small"
-          variant="outlined"
-          label={params.row.endpointId}
-          sx={{ fontFamily: "monospace", fontSize: 13 }}
-        />
-      </Box>
-    ),
   },
   {
     field: "created",
@@ -526,7 +598,7 @@ const baseColumns: GridColDef<DohRow>[] = [
 ];
 
 // DoH ID and Created ship hidden; users can turn them on in Preferences.
-const DEFAULT_COLUMN_VISIBILITY = { uniqueDoh: false, created: false };
+const DEFAULT_COLUMN_VISIBILITY = { created: false };
 
 export default function ClientlessPage() {
   const navigate = useNavigate();
@@ -537,6 +609,10 @@ export default function ClientlessPage() {
     (location.state as { toast?: string } | null)?.toast ?? null,
   );
   const [cardTab, setCardTab] = useState(0);
+  // Archived Endpoints modal, and what's still in it — restoring is
+  // session-only, so a reload puts everything back.
+  const [archivedOpen, setArchivedOpen] = useState(false);
+  const [archived, setArchived] = useState<ArchivedRow[]>(ARCHIVED_ROWS);
   const [columnVisibility, setColumnVisibility] = useState<
     Record<string, boolean>
   >(DEFAULT_COLUMN_VISIBILITY);
@@ -615,6 +691,68 @@ export default function ClientlessPage() {
     ? inScope.filter((r) => r.status === tabStatus)
     : inScope;
 
+  // A restored deployment joins the top of the grid and leaves the archive.
+  const restore = (row: ArchivedRow) => {
+    setRows((prev) => [
+      {
+        id: row.id,
+        name: row.name,
+        organization: row.organization,
+        policy: row.policy,
+        endpointId: row.endpointId,
+        devices: row.devices,
+        status: row.status,
+        created: row.created,
+        lastQuery: row.lastQuery,
+      },
+      ...prev,
+    ]);
+    setArchived((prev) => prev.filter((r) => r.id !== row.id));
+    setToast(`"${row.name}" restored.`);
+  };
+
+  const archivedColumns: GridColDef<ArchivedRow>[] = [
+    {
+      field: "name",
+      headerName: "Clientless Device Name",
+      flex: 1,
+      minWidth: 200,
+    },
+    { field: "created", headerName: "Creation Date", flex: 1, minWidth: 180 },
+    { field: "deleted", headerName: "Deletion Date", flex: 1, minWidth: 180 },
+    {
+      field: "actions",
+      headerName: "Action",
+      width: 90,
+      sortable: false,
+      filterable: false,
+      resizable: false,
+      align: "center",
+      headerAlign: "center",
+      disableColumnMenu: true,
+      renderCell: (params) => (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+          }}
+        >
+          <ArrowTooltip title="Restore">
+            <IconButton
+              size="small"
+              aria-label="Restore"
+              onClick={() => restore(params.row)}
+            >
+              <RestoreIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+          </ArrowTooltip>
+        </Box>
+      ),
+    },
+  ];
+
   const columns: GridColDef<DohRow>[] = [
     ...baseColumns,
     {
@@ -630,9 +768,10 @@ export default function ClientlessPage() {
       renderCell: (params) => (
         <DohActionsCell
           row={params.row}
-          onDelete={() =>
-            setRows((prev) => prev.filter((r) => r.id !== params.row.id))
-          }
+          onDelete={() => {
+            setRows((prev) => prev.filter((r) => r.id !== params.row.id));
+            setToast(`"${params.row.name}" deleted.`);
+          }}
         />
       ),
     },
@@ -640,7 +779,15 @@ export default function ClientlessPage() {
 
   return (
     <Box>
-      <Box sx={{ display: "flex", justifyContent: "flex-start", mb: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 1.5,
+          mb: 2,
+        }}
+      >
         <Button
           variant="contained"
           color="primary"
@@ -648,6 +795,13 @@ export default function ClientlessPage() {
           onClick={() => navigate("/deployments/clientless/create")}
         >
           Add Clientless Device
+        </Button>
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={() => setArchivedOpen(true)}
+        >
+          Archived Endpoints
         </Button>
       </Box>
 
@@ -668,6 +822,31 @@ export default function ClientlessPage() {
           pinnedShadowFields={{ left: "name", right: "actions" }}
         />
       </TabbedDataCard>
+
+      {/* Archived Endpoints — deleted deployments, restorable for 30 days. */}
+      <Modal
+        open={archivedOpen}
+        onClose={() => setArchivedOpen(false)}
+        title="Archived Endpoints"
+        width={900}
+        secondaryAction={{
+          label: "Close",
+          onClick: () => setArchivedOpen(false),
+        }}
+      >
+        <DataTable
+          rows={archived}
+          columns={archivedColumns}
+          checkboxSelection={false}
+          showSearch={false}
+          showFilters={false}
+          showDefaultView={false}
+          showPreferences={false}
+          showExport={false}
+          showRefresh={false}
+          noRowsOverlay={NoResultsOverlay}
+        />
+      </Modal>
 
       <Snackbar
         open={Boolean(toast)}

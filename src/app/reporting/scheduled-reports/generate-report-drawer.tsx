@@ -29,6 +29,7 @@ import { Drawer } from "@/components/drawer";
 import { SearchableMultiSelect } from "@/components/searchable-multi-select";
 import { Select } from "@/components/select";
 import { MSP_ORGANIZATIONS } from "@/data/organizations";
+import { useOrgScope } from "@/hooks/use-org-scope";
 
 import { ROAMING_CLIENTS, SITES, USERS } from "./scope-options";
 
@@ -89,7 +90,10 @@ export function GenerateReportDrawer({
    *  its deployment. */
   reportTitle?: string;
 }) {
-  const [organization, setOrganization] = useState("");
+  // Drilled into one organization from the header? The run is for that one.
+  const { organization: scopedOrg } = useOrgScope();
+
+  const [organization, setOrganization] = useState(scopedOrg ?? "");
   const [sites, setSites] = useState<string[]>([]);
   const [clients, setClients] = useState<string[]>([]);
   const [users, setUsers] = useState<string[]>([]);
@@ -103,7 +107,7 @@ export function GenerateReportDrawer({
   if (open !== wasOpen) {
     setWasOpen(open);
     if (open) {
-      setOrganization("");
+      setOrganization(scopedOrg ?? "");
       setSites([]);
       setClients([]);
       setUsers([]);
