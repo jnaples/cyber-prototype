@@ -2,7 +2,6 @@
 // the real document with the actions behind a hover scrim. Rendered on an
 // elevated Card so it lifts off the Library's neutral well.
 
-import AddIcon from "@mui/icons-material/Add";
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import {
@@ -243,13 +242,6 @@ export function ReportCard({
                 endIcon={
                   templateActions.length > 1 ? (
                     <ArrowDropDownOutlinedIcon sx={{ opacity: 0.6 }} />
-                  ) : undefined
-                }
-                // A lone schedule action reads as an add, like the scheduler's
-                // own button.
-                startIcon={
-                  templateActions.length === 1 && onSchedule ? (
-                    <AddIcon sx={{ fontSize: 18 }} />
                   ) : undefined
                 }
               >

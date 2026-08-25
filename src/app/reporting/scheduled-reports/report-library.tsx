@@ -109,7 +109,7 @@ export function ReportLibrary({
                   variant="body1"
                   sx={{ mt: 0.5, color: "text.primary" }}
                 >
-                  Preview any report, run it on demand, or schedule it for
+                  Preview any report, generate it on demand, or schedule it for
                   delivery.
                 </Typography>
               </Box>
@@ -203,7 +203,7 @@ export function ReportLibrary({
                     Icon={r.Icon}
                     products={r.products}
                     // Nothing to preview until the report is built.
-                    previewLabel={runNowOnCard ? "Run Now" : undefined}
+                    previewLabel={runNowOnCard ? "Generate Report" : undefined}
                     scheduleLabel={runNowOnCard ? "Schedule" : undefined}
                     onPreview={
                       r.key === "custom"
@@ -282,7 +282,7 @@ export function ReportLibrary({
             deliveryChoice={scheduleFor.choice}
             initialDelivery={scheduleFor.delivery}
             {...(scheduleFor.delivery === "one-time"
-              ? { drawerTitle: "Run Report", primaryLabel: "Run now" }
+              ? { drawerTitle: "Generate Report", primaryLabel: "Generate" }
               : {})}
             onCancel={() => setScheduleFor(null)}
             onSave={(schedule, mode) => {
