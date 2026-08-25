@@ -1404,7 +1404,7 @@ export function DataTable({
           { minWidth: 0, width: "100%", overflowX: "auto" },
           // Filling means the grid — not the page — owns the scrolling.
           fillHeight && {
-            flex: 1,
+            flex: "0 1 auto",
             minHeight: 0,
             display: "flex",
             overflowX: "visible",
@@ -1471,7 +1471,9 @@ export function DataTable({
             }}
             sx={{
               width: "100%",
-              ...(fillHeight ? { height: "100%", minHeight: 0 } : {}),
+              // Hug the rows, but never outgrow the space on offer — the
+              // rows scroll inside once they would.
+              ...(fillHeight ? { maxHeight: "100%", minHeight: 0 } : {}),
               border: "none",
               backgroundColor: "transparent",
               "--DataGrid-overlayHeight": "320px",

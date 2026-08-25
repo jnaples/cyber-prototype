@@ -1040,6 +1040,8 @@ export default function QueryLogsPage() {
       }}
     >
       <PageShell
+        // The grid fills the page and scrolls its own rows.
+        fill
         header={
           <PageHeader title="DNS Query Logs">
             <Box
@@ -1462,12 +1464,15 @@ export default function QueryLogsPage() {
           />
         )}
         <TabbedDataCard
+          fill
           tabs={tabsConfig}
           activeTab={cardTab}
           onTabChange={(_, newValue) => setCardTab(newValue)}
         >
           <DataTable
             apiRef={gridApiRef}
+            // Rows scroll under the column headers; the pager stays put.
+            fillHeight
             hiddenFilterIds={
               investigation ? [INVESTIGATE_FILTER_ID] : undefined
             }

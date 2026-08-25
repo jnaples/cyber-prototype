@@ -189,6 +189,8 @@ export default function ManageDashboardsPage() {
 
   return (
     <PageShell
+      // The grid fills the page and scrolls its own rows.
+      fill
       header={
         <PageHeader
           title="Manage Dashboards"
@@ -210,11 +212,14 @@ export default function ManageDashboardsPage() {
       </Box>
 
       <TabbedDataCard
+        fill
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={(_event, value) => setActiveTab(value)}
       >
         <DataTable
+          // Rows scroll under the column headers; the pager stays put.
+          fillHeight
           rows={visibleRows}
           columns={columns}
           checkboxSelection={false}

@@ -362,11 +362,14 @@ export function FilteringTab() {
       </Box>
 
       <TabbedDataCard
+        fill
         tabs={tabs}
         activeTab={cardTab}
         onTabChange={(_event, value) => setCardTab(value)}
       >
         <DataTable
+          // Rows scroll under the column headers; the pager stays put.
+          fillHeight
           rows={visibleRows}
           columns={columns}
           checkboxSelection={false}

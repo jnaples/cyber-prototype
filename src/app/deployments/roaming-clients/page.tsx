@@ -304,6 +304,7 @@ export default function RoamingClientsPage() {
         </Button>
       </Box>
       <TabbedDataCard
+        fill
         tabs={buildTabsConfig(visibleRows.length)}
         activeTab={cardTab}
         onTabChange={(_, newValue) => setCardTab(newValue)}
@@ -312,6 +313,8 @@ export default function RoamingClientsPage() {
           <DataTable
             rows={visibleRows}
             columns={columns}
+            // Rows scroll under the column headers; the pager stays put.
+            fillHeight
             pinnedShadowFields={{ left: "hostname", right: "actions" }}
           />
         )}

@@ -329,8 +329,10 @@ export default function RequestHistoryPage() {
     : rows;
 
   return (
-    <TabbedDataCard>
+    <TabbedDataCard fill>
       <DataTable
+        // Rows scroll under the column headers; the pager stays put.
+        fillHeight
         rows={visibleRows}
         columns={columns}
         checkboxSelection={false}

@@ -59,6 +59,8 @@ export default function GlobalPoliciesPage() {
 
   return (
     <PageShell
+      // The Filtering tab's grid fills the page; the others scroll.
+      fill={tab === 0}
       header={
         <PageHeader title={isOrganization ? "Policies" : "Global Policies"}>
           <Box

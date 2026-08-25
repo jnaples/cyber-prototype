@@ -60,6 +60,8 @@ export default function DeploymentsLayout() {
 
   return (
     <PageShell
+      // The grids on these tabs fill the page and scroll their own rows.
+      fill
       header={
         <PageHeader title="Deployments" leftSlot={<OrgScopeSlot />}>
           <Box

@@ -76,7 +76,7 @@ export function SamplePreviewModal({
           </Alert>
         )
       }
-      bodySx={{ display: "flex", pb: 2 }}
+      bodySx={{ display: "flex" }}
       actions={
         <>
           <Button

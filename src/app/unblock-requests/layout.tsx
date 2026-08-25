@@ -59,6 +59,8 @@ export default function UnblockRequestsLayout() {
 
   return (
     <PageShell
+      // Both tabs are grids that fill the page and scroll their rows.
+      fill
       header={
         <PageHeader title="Unblock Requests" leftSlot={<OrgScopeSlot />}>
           <Box

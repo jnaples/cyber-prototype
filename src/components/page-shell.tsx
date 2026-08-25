@@ -11,17 +11,29 @@ interface PageShellProps {
    */
   maxWidth?: ContainerProps["maxWidth"];
   children: React.ReactNode;
+  /**
+   * Hand the height to the page instead of scrolling the body: the content
+   * area becomes a bounded flex column, so a grid inside it can fill and
+   * scroll its own rows.
+   */
+  fill?: boolean;
 }
 
 /**
  * Standard page scaffold for the main content area.
  *
  * Provides a height-constrained flex column (so the content area can actually
- * scroll) with a pinned header slot and a scrollable body that always carries
- * the standard 16px side / top padding and 64px bottom padding. Use this for
- * every page so scroll behavior and spacing stay consistent.
+ * scroll) with a pinned header slot and a body that always carries the
+ * standard 16px side / top padding and 64px bottom padding — the same whether
+ * the body scrolls or the page fills. Use this for every page so scroll
+ * behavior and spacing stay consistent.
  */
-export function PageShell({ header, maxWidth, children }: PageShellProps) {
+export function PageShell({
+  header,
+  maxWidth,
+  fill = false,
+  children,
+}: PageShellProps) {
   return (
     <Box
       sx={{
@@ -45,7 +57,9 @@ export function PageShell({ header, maxWidth, children }: PageShellProps) {
           minHeight: 0,
           flex: 1,
           maxWidth: "100%",
-          overflow: "auto",
+          overflow: fill ? "hidden" : "auto",
+          // Filling or scrolling, the 64px below the content is the same.
+          ...(fill ? { display: "flex", flexDirection: "column" } : {}),
           color: (
             theme: Theme & {
               vars?: { palette?: { text?: { primary?: string } } };

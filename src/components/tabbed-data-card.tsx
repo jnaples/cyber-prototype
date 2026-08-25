@@ -24,12 +24,16 @@ export interface TabbedDataCardProps {
   activeTab?: number;
   onTabChange?: (event: React.SyntheticEvent, newValue: number) => void;
   children: React.ReactNode;
+  /** Fill the parent's height so the content — a grid, normally — scrolls
+   *  itself under the tabs. */
+  fill?: boolean;
 }
 
 export function TabbedDataCard({
   tabs,
   activeTab = 0,
   onTabChange,
+  fill = false,
   children,
 }: TabbedDataCardProps) {
   return (
@@ -40,13 +44,31 @@ export function TabbedDataCard({
         maxWidth: "100%",
         p: 0,
         overflow: "hidden",
+        // Filling gives the card the space; the grid inside hugs its rows
+        // until it runs out of it.
+        ...(fill
+          ? {
+              minHeight: 0,
+              maxHeight: "100%",
+              display: "flex",
+              flexDirection: "column",
+            }
+          : {}),
       }}
     >
       <CardContent
         sx={{
           p: "0 !important",
           "&:last-child": { pb: "0 !important" },
-          overflow: "auto",
+          overflow: fill ? "hidden" : "auto",
+          ...(fill
+            ? {
+                minHeight: 0,
+                maxHeight: "100%",
+                display: "flex",
+                flexDirection: "column",
+              }
+            : {}),
         }}
       >
         {tabs && tabs.length > 0 && (

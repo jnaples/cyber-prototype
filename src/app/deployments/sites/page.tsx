@@ -314,7 +314,10 @@ export default function SitesPage() {
   });
 
   return (
-    <Box>
+    // Bounded column: the action row sits on top, the card takes the rest.
+    <Box
+      sx={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}
+    >
       <Box
         sx={{
           display: "flex",
@@ -340,6 +343,7 @@ export default function SitesPage() {
       </Box>
 
       <TabbedDataCard
+        fill
         tabs={tabs}
         activeTab={tab}
         onTabChange={(_, value) => setTab(value)}
@@ -351,6 +355,7 @@ export default function SitesPage() {
             gap: 2,
             px: 2,
             py: 1.5,
+            flexShrink: 0,
             borderTop: "1px solid",
             borderBottom: "1px solid",
             borderColor: "divider",
@@ -384,6 +389,8 @@ export default function SitesPage() {
         <DataTable
           rows={visibleRows}
           columns={columns}
+          // Rows scroll under the column headers; the pager stays put.
+          fillHeight
           showSearch={false}
           defaultViewOptions={[{ label: "Default", value: "default" }]}
           noRowsOverlay={NoResultsOverlay}

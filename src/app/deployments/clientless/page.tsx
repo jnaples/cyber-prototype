@@ -908,7 +908,10 @@ export default function ClientlessPage() {
   ];
 
   return (
-    <Box>
+    // Bounded column: the action row sits on top, the card takes the rest.
+    <Box
+      sx={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}
+    >
       <Box
         sx={{
           display: "flex",
@@ -936,6 +939,7 @@ export default function ClientlessPage() {
       </Box>
 
       <TabbedDataCard
+        fill
         tabs={tabsConfig}
         activeTab={cardTab}
         onTabChange={(_, newValue) => setCardTab(newValue)}
@@ -943,6 +947,8 @@ export default function ClientlessPage() {
         <DataTable
           rows={visibleRows}
           columns={columns}
+          // Rows scroll under the column headers; the pager stays put.
+          fillHeight
           checkboxSelection={false}
           showDefaultView={false}
           deferFilterApply
@@ -960,9 +966,8 @@ export default function ClientlessPage() {
         onClose={closeArchived}
         title="Archived Endpoints"
         width={900}
-        // The grid does its own scrolling, so the panel takes the full height.
-        fullHeight
-        bodySx={{ display: "flex", overflowY: "hidden", pb: 2 }}
+        // The grid does its own scrolling; the panel hugs it until the cap.
+        bodySx={{ display: "flex", overflowY: "hidden" }}
         actions={
           <Button
             type="button"
@@ -977,14 +982,19 @@ export default function ClientlessPage() {
       >
         {/* The grid as a card on a neutral pane, scrolling inside the body. */}
         <Box
-          sx={{
+          sx={(theme) => ({
             flex: 1,
             minWidth: 0,
             display: "flex",
             bgcolor: "background.neutral",
             borderRadius: 1,
             p: 2,
-          }}
+            // Neutral is too close to the card on dark; the page ground reads
+            // as a recess instead — as the Report Library's well does.
+            ...theme.applyStyles("dark", {
+              bgcolor: theme.vars.palette.background.default,
+            }),
+          })}
         >
           <Card
             sx={{

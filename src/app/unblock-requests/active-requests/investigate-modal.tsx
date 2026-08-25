@@ -162,6 +162,8 @@ export function InvestigateModal({
           >
             Close
           </Button>
+          {/* The primary sits opposite, as it does in the drawers. */}
+          <Box sx={{ flex: 1 }} />
           <Button
             type="button"
             size="small"
@@ -178,14 +180,18 @@ export function InvestigateModal({
       {/* Body — a neutral pane framed in white, matching how the Report
           Library frames a preview. */}
       <Box
-        sx={{
+        sx={(theme) => ({
           display: "flex",
           flexDirection: "column",
           gap: 2,
           bgcolor: "background.neutral",
           borderRadius: 1,
           p: 2,
-        }}
+          // Same recess the Report Library's well uses on dark.
+          ...theme.applyStyles("dark", {
+            bgcolor: theme.vars.palette.background.default,
+          }),
+        })}
       >
         {/* Anchor summary — the banner from the Query Logs investigation. */}
         <Paper
