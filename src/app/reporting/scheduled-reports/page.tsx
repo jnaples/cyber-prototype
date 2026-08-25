@@ -40,7 +40,6 @@ import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { TextField } from "@/components/text-field";
 
-import { DeliveryDetailsDrawer } from "./delivery-details-drawer";
 import { ReportHistory } from "./report-history";
 import {
   addCreatedSchedule,
@@ -50,12 +49,10 @@ import {
 import { ScheduleReportView } from "./schedule-report-view";
 import {
   scheduleEditState,
-  TAG_TO_REPORT_KEY,
   type ScheduleEditState,
 } from "./schedule-edit-state";
 import { REPORT_MANAGER_BASE, REPORT_MANAGER_TABS } from "./routes";
 import { ReportLibrary } from "./report-library";
-import { REPORTS } from "./reports";
 
 // ---------------------------------------------------------------------------
 // Types + data
@@ -234,51 +231,18 @@ function StatusCell({
   );
 }
 
-function deliveryFor(row: Schedule) {
-  const { portalUsers, externalEmails } = scheduleEditState(row);
-  const emails = [...portalUsers, ...externalEmails];
-  return emails.map((email, i) => ({
-    email,
-    // The last address is the one that bounced.
-    status: (i === emails.length - 1 ? "bounced" : "delivered") as
-      "bounced" | "delivered",
-    detail:
-      i === emails.length - 1
-        ? "Bounced — mailbox full"
-        : `Delivered ${row.lastDate}`,
-  }));
-}
-
-function attachmentsFor(row: Schedule) {
-  return row.tags.map((tag) => {
-    // Grid tags are short labels ("AI Tool Usage"), so they resolve through the same
-    // map the edit prefill uses rather than matching catalog titles directly.
-    const def = REPORTS.find((r) => r.key === TAG_TO_REPORT_KEY[tag]);
-    return {
-      file: def?.file ?? `${tag.replace(/\s+/g, "-")}.pdf`,
-      size: def?.size ?? "—",
-    };
-  });
-}
-
 function ActionsCell({
-  row,
   onDelete,
-  onResend,
   onEdit,
   onClone,
 }: {
-  row: Schedule;
   onDelete: () => void;
-  onResend: (count: number) => void;
   onEdit: () => void;
   onClone: () => void;
 }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [deliveryOpen, setDeliveryOpen] = useState(false);
   const closeMenu = () => setAnchorEl(null);
-  const failedDelivery = row.lastStatus === "failed";
 
   return (
     <Box
@@ -316,21 +280,6 @@ function ActionsCell({
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        {/* Only meaningful when the last run didn't reach everyone. */}
-        {failedDelivery && (
-          <MenuItem
-            onClick={() => {
-              closeMenu();
-              setDeliveryOpen(true);
-            }}
-          >
-            <ListItemIcon>
-              <MaterialSymbol name="mark_email_unread" size={20} />
-            </ListItemIcon>
-            View delivery details
-          </MenuItem>
-        )}
-        {failedDelivery && <Divider />}
         <MenuItem
           onClick={() => {
             closeMenu();
@@ -390,27 +339,12 @@ function ActionsCell({
           This action cannot be undone.
         </Typography>
       </Modal>
-
-      {failedDelivery && (
-        <DeliveryDetailsDrawer
-          open={deliveryOpen}
-          onClose={() => setDeliveryOpen(false)}
-          scheduleName={row.name}
-          organization={row.organizations}
-          period=""
-          generatedAt={row.lastDate}
-          recipients={deliveryFor(row)}
-          attachments={attachmentsFor(row)}
-          onResend={onResend}
-        />
-      )}
     </Box>
   );
 }
 
 const buildColumns = (
   onDelete: (row: Schedule) => void,
-  onResend: (row: Schedule, count: number) => void,
   onToggleStatus: (row: Schedule, active: boolean) => void,
   onEdit: (row: Schedule) => void,
   onClone: (row: Schedule) => void,
@@ -515,9 +449,7 @@ const buildColumns = (
     headerAlign: "center",
     renderCell: (params) => (
       <ActionsCell
-        row={params.row}
         onDelete={() => onDelete(params.row)}
-        onResend={(count) => onResend(params.row, count)}
         onEdit={() => onEdit(params.row)}
         onClone={() => onClone(params.row)}
       />
@@ -597,10 +529,6 @@ export default function ScheduledReportsPage({
           setSchedules((rows) => rows.filter((r) => r.id !== row.id));
           setToast(`"${row.name}" deleted.`);
         },
-        (row, count) =>
-          setToast(
-            `Resent "${row.name}" to ${count} recipient${count === 1 ? "" : "s"}.`,
-          ),
         (row, active) => {
           setSchedules((rows) =>
             rows.map((r) =>
