@@ -3,22 +3,15 @@
 // neutral backdrop, under the same "Preview / Sample data" header the Report
 // Library's preview card uses.
 
-import {
-  Alert,
-  Box,
-  Button,
-  Chip,
-  Dialog,
-  IconButton,
-  Link,
-  Typography,
-} from "@mui/material";
+import { Alert, Box, Button, Chip, Link } from "@mui/material";
 import type { SvgIconComponent } from "@mui/icons-material";
 import ArrowCircleUpOutlinedIcon from "@mui/icons-material/ArrowCircleUpOutlined";
 
 import { MaterialSymbol } from "@/components/material-symbol";
 
 import { openBilling } from "./entitlements";
+import { PanelModal } from "@/components/panel-modal";
+
 import { ReportPreview } from "./report-preview";
 
 export function SamplePreviewModal({
@@ -49,47 +42,16 @@ export function SamplePreviewModal({
   Icon?: SvgIconComponent;
 }) {
   return (
-    <Dialog
+    <PanelModal
       open={open}
       onClose={onClose}
-      maxWidth={false}
-      slotProps={{
-        paper: {
-          elevation: 1,
-          sx: {
-            width: 1080,
-            maxWidth: "95vw",
-            height: "min(880px, 92vh)",
-            borderRadius: 1,
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-          },
-        },
-      }}
-    >
-      {/* Header — the licensing note belongs with the title, 8px under it. */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 1,
-          p: 2,
-          bgcolor: "background.paper",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          {/* Matches the Report Library preview card's header. */}
-          <Typography variant="cardTitle">Preview Report</Typography>
-          <Chip label="Sample data" size="small" />
-          <Box sx={{ flex: 1 }} />
-          <IconButton size="small" aria-label="Close" onClick={onClose}>
-            <MaterialSymbol name="close" size={20} />
-          </IconButton>
-        </Box>
-
-        {/* Why the footer offers an upgrade instead of running the report. */}
-        {locked && (
+      title="Preview Report"
+      titleAlign="left"
+      titleAdornment={<Chip label="Sample data" size="small" />}
+      width={1080}
+      // Why the footer offers an upgrade instead of running the report.
+      headerContent={
+        locked && (
           <Alert
             severity="info"
             variant="standard"
@@ -112,40 +74,20 @@ export function SamplePreviewModal({
               Upgrade now
             </Link>
           </Alert>
-        )}
-      </Box>
-
-      {/* Body — the real report document, scaled to the dialog. Inset on the
-          paper background so the neutral pane is framed in white, the way the
-          Report Library's preview card frames it. */}
-      <Box
-        sx={{
-          flex: 1,
-          minHeight: 0,
-          display: "flex",
-          p: 2,
-          pt: 0,
-          bgcolor: "background.paper",
-        }}
-      >
-        <ReportPreview
-          reportKey={reportKey ?? ""}
-          title={title ?? ""}
-          Icon={Icon}
-          sx={{ flex: 1, minHeight: 0 }}
-        />
-      </Box>
-
-      {(locked || onRunNow || onSchedule) && (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-            p: 2,
-            bgcolor: "background.paper",
-          }}
-        >
+        )
+      }
+      bodySx={{ display: "flex", pb: 2 }}
+      actions={
+        <>
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="small"
+            onClick={onClose}
+          >
+            Close
+          </Button>
+          <Box sx={{ flex: 1 }} />
           <Button
             variant="outlined"
             color="secondary"
@@ -198,8 +140,15 @@ export function SamplePreviewModal({
               {onRunNow ? "Schedule Report" : "Generate report"}
             </Button>
           )}
-        </Box>
-      )}
-    </Dialog>
+        </>
+      }
+    >
+      <ReportPreview
+        reportKey={reportKey ?? ""}
+        title={title ?? ""}
+        Icon={Icon}
+        sx={{ flex: 1, minHeight: 0 }}
+      />
+    </PanelModal>
   );
 }

@@ -8,8 +8,6 @@ import {
   Box,
   Button,
   Chip,
-  Dialog,
-  IconButton,
   Paper,
   Table,
   TableBody,
@@ -25,6 +23,7 @@ import { format } from "date-fns";
 import { useState } from "react";
 
 import { InfoChip } from "@/components/info-chip";
+import { PanelModal } from "@/components/panel-modal";
 import { MaterialSymbol } from "@/components/material-symbol";
 
 const TIME_FORMAT = "MMM d, yyyy h:mm:ss a";
@@ -147,35 +146,35 @@ export function InvestigateModal({
   ].sort((a, b) => a.offset - b.offset);
 
   return (
-    <Dialog
+    <PanelModal
       open={open}
       onClose={onClose}
-      maxWidth={false}
-      slotProps={{
-        paper: {
-          elevation: 1,
-          sx: { width: 860, maxWidth: "95vw", borderRadius: 1 },
-        },
-      }}
+      title="Investigate Mode"
+      width={900}
+      actions={
+        <>
+          <Button
+            type="button"
+            size="small"
+            variant="outlined"
+            color="secondary"
+            onClick={onClose}
+          >
+            Close
+          </Button>
+          <Button
+            type="button"
+            size="small"
+            variant="contained"
+            color="primary"
+            // A new tab so the request queue stays where it is.
+            onClick={() => window.open("/query-logs", "_blank", "noopener")}
+          >
+            View Full Log
+          </Button>
+        </>
+      }
     >
-      {/* Header — the title centres on the dialog, with Close pinned right. */}
-      <Box sx={{ position: "relative", p: 2 }}>
-        <Typography
-          variant="cardTitle"
-          sx={{ display: "block", textAlign: "center" }}
-        >
-          Investigate Mode
-        </Typography>
-        <IconButton
-          size="small"
-          aria-label="Close"
-          onClick={onClose}
-          sx={{ position: "absolute", top: 12, right: 12 }}
-        >
-          <MaterialSymbol name="close" size={20} />
-        </IconButton>
-      </Box>
-
       {/* Body — a neutral pane framed in white, matching how the Report
           Library frames a preview. */}
       <Box
@@ -186,7 +185,6 @@ export function InvestigateModal({
           bgcolor: "background.neutral",
           borderRadius: 1,
           p: 2,
-          mx: 2,
         }}
       >
         {/* Anchor summary — the banner from the Query Logs investigation. */}
@@ -322,37 +320,6 @@ export function InvestigateModal({
           </Table>
         </Paper>
       </Box>
-
-      {/* Actions — same shape as the drawers': secondary left, primary right. */}
-      <Box
-        sx={{
-          p: 2,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 1,
-        }}
-      >
-        <Button
-          type="button"
-          size="small"
-          variant="outlined"
-          color="secondary"
-          onClick={onClose}
-        >
-          Close
-        </Button>
-        <Button
-          type="button"
-          size="small"
-          variant="contained"
-          color="primary"
-          // A new tab so the request queue stays where it is.
-          onClick={() => window.open("/query-logs", "_blank", "noopener")}
-        >
-          View Full Log
-        </Button>
-      </Box>
-    </Dialog>
+    </PanelModal>
   );
 }

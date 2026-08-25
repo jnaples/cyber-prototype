@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Card,
-  Dialog,
   Divider,
   FormLabel,
   IconButton,
@@ -28,8 +27,10 @@ import { MaterialSymbol } from "@/components/material-symbol";
 import { TextField } from "@/components/text-field";
 import { Modal } from "@/components/modal";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
+import { PanelModal } from "@/components/panel-modal";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+import { MSP_ORGANIZATIONS } from "@/data/organizations";
 import { useOrgScope } from "@/hooks/use-org-scope";
 
 import { ConnectionDetailsDrawer } from "./connection-details-drawer";
@@ -190,7 +191,7 @@ const EDIT_SITES = [
 // restoring one adds it to the grid until the page reloads.
 type ArchivedRow = DohRow & { deleted: string };
 
-const ARCHIVED_ROWS: ArchivedRow[] = [
+const ARCHIVED_SEED: ArchivedRow[] = [
   {
     id: 101,
     name: "Retired Lobby Kiosk",
@@ -251,6 +252,94 @@ const ARCHIVED_ROWS: ArchivedRow[] = [
     lastQuery: "< 14 Days",
     deleted: "Aug 23, 2026 5:44 PM",
   },
+];
+
+// The rest of the archive — 46 in total, enough to page through. Composed
+// rather than typed out, and dated inside the 30-day restore window.
+const ARCHIVE_PLACES = [
+  "Lobby",
+  "Warehouse",
+  "Clinic",
+  "Front Desk",
+  "Training Room",
+  "Break Room",
+  "Guest Wi-Fi",
+  "Reception",
+  "Loading Dock",
+  "Conference A",
+  "Conference B",
+  "Server Room",
+];
+const ARCHIVE_KINDS = [
+  "Kiosk",
+  "Tablet",
+  "iPad",
+  "Phone",
+  "Display",
+  "Scanner",
+  "Smart TV",
+  "Laptop",
+  "Thermostat",
+  "Camera",
+  "Printer",
+  "Terminal",
+];
+const ARCHIVE_POLICIES = [
+  "Default Policy",
+  "Standard Policy",
+  "Restricted Policy",
+  "Guest Wi-Fi Policy",
+  "HIPAA Strict",
+  "Lincoln Middle School — CIPA Policy",
+];
+const ARCHIVE_CREATED_DAYS = [
+  "Jul 26",
+  "Jul 28",
+  "Jul 30",
+  "Aug 1",
+  "Aug 3",
+  "Aug 5",
+  "Aug 7",
+  "Aug 9",
+  "Aug 11",
+  "Aug 13",
+];
+const ARCHIVE_DELETED_DAYS = [
+  "Aug 14",
+  "Aug 16",
+  "Aug 18",
+  "Aug 19",
+  "Aug 20",
+  "Aug 21",
+  "Aug 22",
+  "Aug 23",
+  "Aug 24",
+];
+const ARCHIVE_TIMES = ["8:05 AM", "9:14 AM", "11:02 AM", "1:47 PM", "3:11 PM"];
+
+const ARCHIVED_ROWS: ArchivedRow[] = [
+  ...ARCHIVED_SEED,
+  ...Array.from({ length: 41 }, (_, i) => ({
+    id: 106 + i,
+    name: `${ARCHIVE_PLACES[i % ARCHIVE_PLACES.length]} ${
+      ARCHIVE_KINDS[
+        Math.floor(i / ARCHIVE_PLACES.length) % ARCHIVE_KINDS.length
+      ]
+    }`,
+    organization: MSP_ORGANIZATIONS[i % MSP_ORGANIZATIONS.length],
+    policy: ARCHIVE_POLICIES[i % ARCHIVE_POLICIES.length],
+    // Stable six-hex id, the shape a real endpoint token has.
+    endpointId: (0x1f0a3b + i * 0x2b7d).toString(16).slice(-6),
+    devices: (i % 3) + 1,
+    status: "Inactive" as DohStatus,
+    created: `${ARCHIVE_CREATED_DAYS[i % ARCHIVE_CREATED_DAYS.length]}, 2026 ${
+      ARCHIVE_TIMES[i % ARCHIVE_TIMES.length]
+    }`,
+    lastQuery: "> 90 Days" as LastQuery,
+    deleted: `${ARCHIVE_DELETED_DAYS[i % ARCHIVE_DELETED_DAYS.length]}, 2026 ${
+      ARCHIVE_TIMES[(i + 2) % ARCHIVE_TIMES.length]
+    }`,
+  })),
 ];
 /** Empty archive — nothing has been deleted, so there's nothing to restore. */
 function ArchivedEmptyOverlay() {
@@ -865,50 +954,31 @@ export default function ClientlessPage() {
       </TabbedDataCard>
 
       {/* Archived Endpoints — deleted deployments, restorable for 30 days.
-          Same shape as the Investigate Mode modal: centred title, a neutral
-          well inset 16px, and the actions row under it. */}
-      <Dialog
+          Panel modal, so its height matches the other panels. */}
+      <PanelModal
         open={archivedOpen}
         onClose={closeArchived}
-        maxWidth={false}
-        slotProps={{
-          paper: {
-            elevation: 1,
-            sx: { width: 900, maxWidth: "95vw", borderRadius: 1 },
-          },
-        }}
-      >
-        {/* Header */}
-        <Box sx={{ position: "relative", p: 2 }}>
-          <Typography
-            variant="cardTitle"
-            sx={{ display: "block", textAlign: "center" }}
-          >
-            Archived Endpoints
-          </Typography>
-          <IconButton
+        title="Archived Endpoints"
+        width={900}
+        actions={
+          <Button
+            type="button"
             size="small"
-            aria-label="Close"
+            variant="outlined"
+            color="secondary"
             onClick={closeArchived}
-            sx={{ position: "absolute", top: 12, right: 12 }}
           >
-            <MaterialSymbol name="close" size={20} />
-          </IconButton>
-        </Box>
-
-        {/* Body — the grid as a card on the neutral pane. */}
-        <Box
-          sx={{
-            bgcolor: "background.neutral",
-            borderRadius: 1,
-            p: 2,
-            mx: 2,
-          }}
-        >
+            Close
+          </Button>
+        }
+      >
+        {/* The grid as a card on a neutral pane, scrolling inside the body. */}
+        <Box sx={{ bgcolor: "background.neutral", borderRadius: 1, p: 2 }}>
           <Card sx={{ overflow: "hidden" }}>
             <DataTable
               rows={archived}
               columns={archivedColumns}
+              initialPageSize={25}
               rowSelectionModel={archivedSelection}
               onRowSelectionModelChange={setArchivedSelection}
               bulkActions={
@@ -940,20 +1010,7 @@ export default function ClientlessPage() {
             />
           </Card>
         </Box>
-
-        {/* Actions — secondary on the left, as the drawers have it. */}
-        <Box sx={{ p: 2, display: "flex", alignItems: "center", gap: 1 }}>
-          <Button
-            type="button"
-            size="small"
-            variant="outlined"
-            color="secondary"
-            onClick={closeArchived}
-          >
-            Close
-          </Button>
-        </Box>
-      </Dialog>
+      </PanelModal>
 
       <Snackbar
         open={Boolean(toast)}
