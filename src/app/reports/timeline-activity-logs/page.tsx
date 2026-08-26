@@ -6,6 +6,8 @@
 import { Box } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 
+import { ReportLogo } from "../report-logo";
+
 const TEXT = "#031625";
 const TEXT2 = "rgba(3,22,37,.62)";
 const TEXT3 = "rgba(3,22,37,.45)";
@@ -440,24 +442,7 @@ export default function TimelineActivityLogsReport() {
             </Box>
           </Box>
         </Box>
-        <Box
-          sx={{
-            width: 240,
-            height: 80,
-            borderRadius: "6px",
-            border: `2px dashed ${TEXT3}`,
-            color: TEXT3,
-            fontFamily: montserrat,
-            fontWeight: 700,
-            fontSize: 12,
-            letterSpacing: "1px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          LOGO
-        </Box>
+        <ReportLogo />
       </Box>
       <Box sx={{ height: "2px", bgcolor: TEXT, mb: "40px" }} />
 

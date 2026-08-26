@@ -26,6 +26,7 @@ import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 import { TextField } from "@/components/text-field";
+import { useBranding } from "@/hooks/use-branding";
 
 const EMAIL_TEMPLATES: {
   value: string;
@@ -260,9 +261,10 @@ export default function BrandingPage() {
   const [dashboardName, setDashboardName] = useState("");
   const [dashboardUrl, setDashboardUrl] = useState("");
   const [contactEmail, setContactEmail] = useState("");
-  const [logo, setLogo] = useState<string | null>(null);
-  const [darkLogo, setDarkLogo] = useState<string | null>(null);
-  const [favicon, setFavicon] = useState<string | null>(null);
+  // The logos live in app state, not here: the report documents render the
+  // uploaded logo too, and they sit outside this page's tree.
+  const { logo, setLogo, darkLogo, setDarkLogo, favicon, setFavicon } =
+    useBranding();
   // What the form looked like when it was last saved.
   const [saved, setSaved] = useState({
     dashboardName: "",

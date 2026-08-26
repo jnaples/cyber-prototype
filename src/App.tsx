@@ -1,3 +1,6 @@
+import { useMemo, useState } from "react";
+
+import { BrandingContext } from "@/hooks/use-branding";
 import { Navigate, Route, Routes } from "react-router";
 
 import RootLayout from "@/app/layout";
@@ -53,110 +56,134 @@ import OldBillingPage from "@/app/subscriptions/old-billing/page";
 import PlansLicensesPage from "@/app/subscriptions/plans-licenses/page";
 
 function App() {
+  // Branding lives above the routes: MSP → Branding writes it, and the report
+  // documents (a sibling route tree, not nested under RootLayout) read it.
+  const [logo, setLogo] = useState<string | null>(null);
+  const [darkLogo, setDarkLogo] = useState<string | null>(null);
+  const [favicon, setFavicon] = useState<string | null>(null);
+  const branding = useMemo(
+    () => ({ logo, darkLogo, favicon, setLogo, setDarkLogo, setFavicon }),
+    [logo, darkLogo, favicon],
+  );
+
   return (
-    <Routes>
-      <Route index element={<HomePage />} />
-      <Route element={<RootLayout />}>
-        <Route path="overview" element={<OverviewPage />} />
-        <Route path="global-policies" element={<GlobalPoliciesPage />} />
-        <Route path="global-policies/create" element={<CreatePolicyPage />} />
-        {/* Each policy tab is linkable, e.g. /global-policies/create/appaware */}
-        <Route
-          path="global-policies/create/:tab"
-          element={<CreatePolicyPage />}
-        />
-        <Route path="global-policies/filter" element={<GlobalPoliciesPage />} />
-        <Route path="dashboards" element={<DashboardsPage />} />
-        <Route path="dashboards/manage" element={<ManageDashboardsPage />} />
-        <Route path="cybersight" element={<CybersightPage />} />
-        <Route path="secureshield" element={<SecureShieldPage />} />
-        <Route path="query-logs" element={<QueryLogsPage />} />
-        <Route path="reporting">
-          <Route path="custom-reports" element={<CustomReportsPage />} />
-          <Route path="scheduled-reports" element={<ScheduledReportsPage />} />
+    <BrandingContext.Provider value={branding}>
+      <Routes>
+        <Route index element={<HomePage />} />
+        <Route element={<RootLayout />}>
+          <Route path="overview" element={<OverviewPage />} />
+          <Route path="global-policies" element={<GlobalPoliciesPage />} />
+          <Route path="global-policies/create" element={<CreatePolicyPage />} />
+          {/* Each policy tab is linkable, e.g. /global-policies/create/appaware */}
           <Route
-            path="scheduled-reports/:tab"
-            element={<ScheduledReportsPage />}
+            path="global-policies/create/:tab"
+            element={<CreatePolicyPage />}
           />
-          {/* v2 trial: same Report Manager, drawer-based scheduling. */}
-          <Route path="reports" element={<ReportsPage />} />
-          <Route path="reports/:tab" element={<ReportsPage />} />
-          <Route path="reports-v3" element={<ReportsV3Page />} />
-          <Route path="reports-v3/:tab" element={<ReportsV3Page />} />
-        </Route>
-        <Route path="settings" element={<SettingsPage />} />
-        <Route path="msp/branding" element={<BrandingPage />} />
-        <Route path="msp/settings" element={<OrganizationSettingsPage />} />
+          <Route
+            path="global-policies/filter"
+            element={<GlobalPoliciesPage />}
+          />
+          <Route path="dashboards" element={<DashboardsPage />} />
+          <Route path="dashboards/manage" element={<ManageDashboardsPage />} />
+          <Route path="cybersight" element={<CybersightPage />} />
+          <Route path="secureshield" element={<SecureShieldPage />} />
+          <Route path="query-logs" element={<QueryLogsPage />} />
+          <Route path="reporting">
+            <Route path="custom-reports" element={<CustomReportsPage />} />
+            <Route
+              path="scheduled-reports"
+              element={<ScheduledReportsPage />}
+            />
+            <Route
+              path="scheduled-reports/:tab"
+              element={<ScheduledReportsPage />}
+            />
+            {/* v2 trial: same Report Manager, drawer-based scheduling. */}
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="reports/:tab" element={<ReportsPage />} />
+            <Route path="reports-v3" element={<ReportsV3Page />} />
+            <Route path="reports-v3/:tab" element={<ReportsV3Page />} />
+          </Route>
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="msp/branding" element={<BrandingPage />} />
+          <Route path="msp/settings" element={<OrganizationSettingsPage />} />
 
-        <Route path="subscriptions" element={<SubscriptionsLayout />}>
-          <Route index element={<SubscriptionsIndexPage />} />
-          <Route path="manage" element={<SubscriptionsManagePage />} />
-          <Route path="billing" element={<BillingPage />} />
-          <Route path="plans-licenses" element={<PlansLicensesPage />} />
-        </Route>
-        <Route path="subscriptions/old-billing" element={<OldBillingPage />} />
+          <Route path="subscriptions" element={<SubscriptionsLayout />}>
+            <Route index element={<SubscriptionsIndexPage />} />
+            <Route path="manage" element={<SubscriptionsManagePage />} />
+            <Route path="billing" element={<BillingPage />} />
+            <Route path="plans-licenses" element={<PlansLicensesPage />} />
+          </Route>
+          <Route
+            path="subscriptions/old-billing"
+            element={<OldBillingPage />}
+          />
 
-        <Route path="deployments" element={<DeploymentsLayout />}>
-          <Route index element={<DeploymentsIndexPage />} />
-          <Route path="sites" element={<SitesPage />} />
-          <Route path="roaming-clients" element={<RoamingClientsPage />} />
-          <Route path="relays" element={<RelaysPage />} />
-          <Route path="clientless" element={<ClientlessPage />} />
-        </Route>
-        <Route
-          path="deployments/clientless/create"
-          element={<CreateClientlessPage />}
-        />
+          <Route path="deployments" element={<DeploymentsLayout />}>
+            <Route index element={<DeploymentsIndexPage />} />
+            <Route path="sites" element={<SitesPage />} />
+            <Route path="roaming-clients" element={<RoamingClientsPage />} />
+            <Route path="relays" element={<RelaysPage />} />
+            <Route path="clientless" element={<ClientlessPage />} />
+          </Route>
+          <Route
+            path="deployments/clientless/create"
+            element={<CreateClientlessPage />}
+          />
 
-        <Route path="unblock-requests" element={<UnblockRequestsLayout />}>
-          <Route index element={<UnblockRequestsIndexPage />} />
-          <Route path="active" element={<ActiveRequestsPage />} />
-          <Route path="history" element={<RequestHistoryPage />} />
+          <Route path="unblock-requests" element={<UnblockRequestsLayout />}>
+            <Route index element={<UnblockRequestsIndexPage />} />
+            <Route path="active" element={<ActiveRequestsPage />} />
+            <Route path="history" element={<RequestHistoryPage />} />
+          </Route>
+
+          <Route path="design-system" element={<DesignSystemLayout />}>
+            <Route index element={<Navigate to="buttons" replace />} />
+            <Route path="alerts" element={<AlertsDocsPage />} />
+            <Route path="buttons" element={<ButtonsDocsPage />} />
+            <Route path="cards" element={<CardsDocsPage />} />
+            <Route path="chips" element={<ChipsDocsPage />} />
+            <Route path="forms" element={<FormsDocsPage />} />
+            <Route path="page-header" element={<PageHeaderDocsPage />} />
+            <Route path="typography" element={<TypographyDocsPage />} />
+          </Route>
         </Route>
 
-        <Route path="design-system" element={<DesignSystemLayout />}>
-          <Route index element={<Navigate to="buttons" replace />} />
-          <Route path="alerts" element={<AlertsDocsPage />} />
-          <Route path="buttons" element={<ButtonsDocsPage />} />
-          <Route path="cards" element={<CardsDocsPage />} />
-          <Route path="chips" element={<ChipsDocsPage />} />
-          <Route path="forms" element={<FormsDocsPage />} />
-          <Route path="page-header" element={<PageHeaderDocsPage />} />
-          <Route path="typography" element={<TypographyDocsPage />} />
-        </Route>
-      </Route>
-
-      {/* Reports has its own sidebar — rendered outside the app shell so the
+        {/* Reports has its own sidebar — rendered outside the app shell so the
           main side nav isn't also shown. */}
-      <Route path="reports" element={<ReportsLayout />}>
-        <Route
-          index
-          element={<Navigate to="customer-activity-overview" replace />}
-        />
-        <Route
-          path="customer-activity-overview"
-          element={<CustomerActivityOverviewReport />}
-        />
-        <Route path="endpoint-traffic-logs" element={<ReportPlaceholder />} />
-        <Route
-          path="filter-protection-summary"
-          element={<FilterProtectionSummaryReport />}
-        />
-        <Route
-          path="timeline-activity-logs"
-          element={<TimelineActivityLogsReport />}
-        />
-        <Route path="timeline-overview" element={<TimelineOverviewReport />} />
-        <Route
-          path="cybersight-ai-usage"
-          element={<CyberSightAiUsageReport />}
-        />
-        <Route path="threat-trends" element={<ThreatTrendsReport />} />
-      </Route>
+        <Route path="reports" element={<ReportsLayout />}>
+          <Route
+            index
+            element={<Navigate to="customer-activity-overview" replace />}
+          />
+          <Route
+            path="customer-activity-overview"
+            element={<CustomerActivityOverviewReport />}
+          />
+          <Route path="endpoint-traffic-logs" element={<ReportPlaceholder />} />
+          <Route
+            path="filter-protection-summary"
+            element={<FilterProtectionSummaryReport />}
+          />
+          <Route
+            path="timeline-activity-logs"
+            element={<TimelineActivityLogsReport />}
+          />
+          <Route
+            path="timeline-overview"
+            element={<TimelineOverviewReport />}
+          />
+          <Route
+            path="cybersight-ai-usage"
+            element={<CyberSightAiUsageReport />}
+          />
+          <Route path="threat-trends" element={<ThreatTrendsReport />} />
+        </Route>
 
-      {/* Standalone end-user block page — no app shell, direct URL only. */}
-      <Route path="end-user-blocked-page" element={<EndUserBlockedPage />} />
-    </Routes>
+        {/* Standalone end-user block page — no app shell, direct URL only. */}
+        <Route path="end-user-blocked-page" element={<EndUserBlockedPage />} />
+      </Routes>
+    </BrandingContext.Provider>
   );
 }
 
