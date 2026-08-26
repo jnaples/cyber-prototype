@@ -60,6 +60,11 @@ function App() {
         <Route path="overview" element={<OverviewPage />} />
         <Route path="global-policies" element={<GlobalPoliciesPage />} />
         <Route path="global-policies/create" element={<CreatePolicyPage />} />
+        {/* Each policy tab is linkable, e.g. /global-policies/create/appaware */}
+        <Route
+          path="global-policies/create/:tab"
+          element={<CreatePolicyPage />}
+        />
         <Route path="global-policies/filter" element={<GlobalPoliciesPage />} />
         <Route path="dashboards" element={<DashboardsPage />} />
         <Route path="dashboards/manage" element={<ManageDashboardsPage />} />

@@ -22,15 +22,19 @@ import {
 } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 
 import { AppAwareControls } from "./appaware-controls";
+import type { AppAwareState } from "./appaware-state";
+import { DEFAULT_APPAWARE_STATE, isAppAwareDirty } from "./appaware-state";
 
 type PolicyTab = {
   label: string;
+  /** URL segment, so a tab can be linked and shared. */
+  path: string;
   Icon: SvgIconComponent;
   /** Placeholder copy until the tab is built. */
   blurb: string;
@@ -39,41 +43,49 @@ type PolicyTab = {
 const TABS: PolicyTab[] = [
   {
     label: "Settings",
+    path: "settings",
     Icon: SettingsOutlinedIcon,
     blurb: "Policy name, description, and the organizations it applies to.",
   },
   {
     label: "Categories",
+    path: "categories",
     Icon: LibraryBooksOutlinedIcon,
     blurb: "Which content categories this policy blocks.",
   },
   {
     label: "Threats",
+    path: "threats",
     Icon: ShieldOutlinedIcon,
     blurb: "Threat types to block — malware, phishing, botnets and the rest.",
   },
   {
     label: "AppAware",
+    path: "appaware",
     Icon: AppsOutlinedIcon,
     blurb: "Applications this policy allows or blocks.",
   },
   {
     label: "Privacy",
+    path: "privacy",
     Icon: PrivacyTipOutlinedIcon,
     blurb: "What the policy logs, and for how long.",
   },
   {
     label: "Allow List",
+    path: "allow-list",
     Icon: CheckCircleOutlinedIcon,
     blurb: "Domains that always resolve, whatever else the policy says.",
   },
   {
     label: "Block List",
+    path: "block-list",
     Icon: BlockOutlinedIcon,
     blurb: "Domains that never resolve under this policy.",
   },
   {
     label: "Labs",
+    path: "labs",
     Icon: ScienceOutlinedIcon,
     blurb: "Experimental protections, off by default.",
   },
@@ -91,11 +103,46 @@ const selectedTabSx = {
   },
 };
 
+/** Marks a tab whose settings have been changed but not saved. */
+function DirtyDot() {
+  return (
+    <Box
+      sx={(theme) => ({
+        width: 8,
+        height: 8,
+        ml: "6px",
+        borderRadius: "999px",
+        flexShrink: 0,
+        bgcolor: theme.vars.palette.primary.main,
+        ...theme.applyStyles("dark", {
+          bgcolor: theme.vars.palette.primary.light,
+        }),
+      })}
+    />
+  );
+}
+
 export default function CreatePolicyPage() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState(0);
-  const active = TABS[tab];
+  // The tab lives in the URL so a tab can be linked to directly; an unknown
+  // or missing segment falls back to the first one.
+  const { tab: tabPath } = useParams();
+  const tabIndex = Math.max(
+    0,
+    TABS.findIndex((t) => t.path === tabPath),
+  );
+  const active = TABS[tabIndex];
   const back = () => navigate("/global-policies");
+
+  // Each tab's edits live here rather than in the tab, so switching tabs keeps
+  // them — and so the tab strip can mark which tabs have unsaved changes.
+  const [appAware, setAppAware] = useState<AppAwareState>(
+    DEFAULT_APPAWARE_STATE,
+  );
+  const dirtyTabs: Record<string, boolean> = {
+    appaware: isAppAwareDirty(appAware),
+  };
+  const dirty = Object.values(dirtyTabs).some(Boolean);
 
   return (
     <PageShell
@@ -111,8 +158,7 @@ export default function CreatePolicyPage() {
               <Button variant="outlined" color="secondary" onClick={back}>
                 Cancel
               </Button>
-              {/* Nothing to save until the tabs are built. */}
-              <Button variant="contained" color="primary" disabled>
+              <Button variant="contained" color="primary" disabled={!dirty}>
                 Save Policy
               </Button>
             </>
@@ -129,17 +175,24 @@ export default function CreatePolicyPage() {
             }}
           >
             <Tabs
-              value={tab}
-              onChange={(_event, next: number) => setTab(next)}
+              value={tabIndex}
+              onChange={(_event, next: number) =>
+                navigate(`/global-policies/create/${TABS[next].path}`)
+              }
               variant="scrollable"
               scrollButtons="auto"
               aria-label="policy tabs"
               sx={{ px: 3 }}
             >
-              {TABS.map(({ label, Icon }) => (
+              {TABS.map(({ label, path, Icon }) => (
                 <Tab
                   key={label}
-                  label={label}
+                  label={
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      {label}
+                      {dirtyTabs[path] && <DirtyDot />}
+                    </Box>
+                  }
                   icon={<Icon sx={{ fontSize: 20 }} />}
                   sx={selectedTabSx}
                 />
@@ -150,7 +203,7 @@ export default function CreatePolicyPage() {
       }
     >
       {active.label === "AppAware" ? (
-        <AppAwareControls />
+        <AppAwareControls state={appAware} onChange={setAppAware} />
       ) : (
         <Card>
           <CardContent sx={{ p: 2 }}>

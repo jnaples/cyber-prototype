@@ -106,7 +106,8 @@ function CustomPagination({
         </Select>
       </Box>
       <Typography variant="body2" sx={{ color: "text.secondary" }}>
-        {startRow}–{endRow} of {rowCount}
+        {startRow.toLocaleString()}–{endRow.toLocaleString()} of{" "}
+        {rowCount.toLocaleString()}
       </Typography>
       <Pagination
         color="primary"

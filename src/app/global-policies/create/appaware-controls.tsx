@@ -23,6 +23,7 @@ import { alpha } from "@mui/material/styles";
 import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SearchIcon from "@mui/icons-material/Search";
+import type { Dispatch, SetStateAction } from "react";
 import { useLayoutEffect, useRef, useState } from "react";
 
 import { DataTable } from "@/components/data-table";
@@ -31,30 +32,10 @@ import { MaterialSymbol } from "@/components/material-symbol";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
 import { TextField } from "@/components/text-field";
 import type { AppCategory } from "@/data/appaware-apps";
-import { APP_CATEGORIES, TOTAL_APPS } from "@/data/appaware-apps";
+import { TOTAL_APPS } from "@/data/appaware-apps";
 
-type Policy = "allow" | "block";
-
-/**
- * The catalog lives in src/data/appaware-apps.ts — 2,400 apps across the 14
- * categories. Add or move apps there; the rail, search, and grid all follow.
- */
-const CATEGORIES = APP_CATEGORIES;
-
-// Everything is allowed by default except the categories a policy usually
-// clamps down on; those also auto-block newly detected apps.
-const BLOCKED_BY_DEFAULT = ["genai", "remote", "vpn"];
-
-const DEFAULT_POLICIES: Record<string, Policy> = Object.fromEntries(
-  CATEGORIES.map((c) => [
-    c.id,
-    BLOCKED_BY_DEFAULT.includes(c.id) ? "block" : "allow",
-  ]),
-);
-
-const DEFAULT_AUTO_BLOCK: Record<string, boolean> = Object.fromEntries(
-  BLOCKED_BY_DEFAULT.map((id) => [id, true]),
-);
+import type { AppAwareState, Policy } from "./appaware-state";
+import { CATEGORIES } from "./appaware-state";
 
 /** The rail's first entry: every app in the catalog, whatever its category. */
 const ALL = "all";
@@ -91,19 +72,6 @@ const tileSx = (active: boolean) => (theme: Theme) => ({
 const CATEGORY_OF: Record<string, AppCategory> = Object.fromEntries(
   CATEGORIES.flatMap((c) => c.apps.map((a) => [a, c] as const)),
 );
-
-// The app rules that already override their category, as the design ships it.
-const DEFAULT_RULES: Record<string, Policy> = {
-  ChatGPT: "allow",
-  "GitHub Copilot": "allow",
-  "Microsoft Copilot": "allow",
-  TeamViewer: "allow",
-  "Chrome Remote Desktop": "allow",
-  MEGA: "block",
-  Snapchat: "block",
-  Telegram: "block",
-  BitTorrent: "block",
-};
 
 /** The state a category reads as, in one chip. */
 type State = "allow" | "block" | "mixed";
@@ -235,7 +203,14 @@ function useContentHeight() {
   return { cardRef, height };
 }
 
-export function AppAwareControls() {
+export function AppAwareControls({
+  state,
+  onChange,
+}: {
+  state: AppAwareState;
+  /** Takes an updater, so two edits in one handler don't clobber each other. */
+  onChange: Dispatch<SetStateAction<AppAwareState>>;
+}) {
   const [selectedCat, setSelectedCat] = useState(CATEGORIES[0].id);
   const [railQuery, setRailQuery] = useState("");
   const [appQuery, setAppQuery] = useState("");
@@ -244,11 +219,18 @@ export function AppAwareControls() {
     type: "include",
     ids: new Set(),
   });
-  const [policies, setPolicies] =
-    useState<Record<string, Policy>>(DEFAULT_POLICIES);
-  const [autoBlock, setAutoBlock] =
-    useState<Record<string, boolean>>(DEFAULT_AUTO_BLOCK);
-  const [rules, setRules] = useState<Record<string, Policy>>(DEFAULT_RULES);
+  const { policies, autoBlock, rules } = state;
+
+  // Updater-shaped setters, so the call sites below read as they did when this
+  // state was local. Each resolves against the latest state rather than the
+  // render's copy, so calling two of them in one handler is safe.
+  const setPolicies = (fn: (prev: Record<string, Policy>) => typeof policies) =>
+    onChange((prev) => ({ ...prev, policies: fn(prev.policies) }));
+  const setAutoBlock = (
+    fn: (prev: Record<string, boolean>) => typeof autoBlock,
+  ) => onChange((prev) => ({ ...prev, autoBlock: fn(prev.autoBlock) }));
+  const setRules = (fn: (prev: Record<string, Policy>) => typeof rules) =>
+    onChange((prev) => ({ ...prev, rules: fn(prev.rules) }));
 
   // All Apps has no category policy of its own — it's a flat view of the
   // catalog, so the per-category controls sit this one out.
@@ -256,7 +238,28 @@ export function AppAwareControls() {
   const category =
     CATEGORIES.find((c) => c.id === selectedCat) ?? CATEGORIES[0];
   const policy = policies[category.id];
-  const summary = summarize(category, policy, rules);
+  // All Apps reads the same line as a category, just totalled across them.
+  const summary = showingAll
+    ? CATEGORIES.reduce(
+        (acc, c) => {
+          const s = summarize(c, policies[c.id], rules);
+          return {
+            state: acc.state,
+            allowExceptions: acc.allowExceptions + s.allowExceptions,
+            appBlocks: acc.appBlocks + s.appBlocks,
+            blocked: acc.blocked + s.blocked,
+            total: acc.total + s.total,
+          };
+        },
+        {
+          state: "allow" as State,
+          allowExceptions: 0,
+          appBlocks: 0,
+          blocked: 0,
+          total: 0,
+        },
+      )
+    : summarize(category, policy, rules);
 
   const railMatches = CATEGORIES.filter((c) =>
     c.name.toLowerCase().includes(railQuery.trim().toLowerCase()),
@@ -298,15 +301,25 @@ export function AppAwareControls() {
       return next;
     });
 
-  // Setting a category policy is a fresh start: the app rules under it go.
-  // Only reachable from a category — All Apps hides these controls.
-  const setCategoryPolicy = (value: Policy) => {
+  // Every category in scope is already blocked? Then the button offers the
+  // way back out.
+  const allBlocked = showingAll
+    ? CATEGORIES.every((c) => policies[c.id] === "block")
+    : policy === "block";
+
+  // Setting a policy is a fresh start: the app rules underneath it go. The
+  // scope is the selected category, or all of them under All Apps.
+  const setScopePolicy = (value: Policy) => {
+    const scope = showingAll ? CATEGORIES : [category];
     setRules((prev) => {
       const next = { ...prev };
-      for (const app of category.apps) delete next[app];
+      for (const c of scope) for (const app of c.apps) delete next[app];
       return next;
     });
-    setPolicies((prev) => ({ ...prev, [category.id]: value }));
+    setPolicies((prev) => ({
+      ...prev,
+      ...Object.fromEntries(scope.map((c) => [c.id, value])),
+    }));
     clearSelection();
   };
 
@@ -405,11 +418,15 @@ export function AppAwareControls() {
           overflow: "hidden",
         }}
       >
+        <Box sx={{ px: 2, pt: 2 }}>
+          <Typography variant="cardTitle">Categories</Typography>
+        </Box>
+
         <Box sx={{ p: 2, borderBottom: "1px solid", borderColor: "divider" }}>
           <TextField
             fullWidth
             size="small"
-            placeholder="Filter categories…"
+            placeholder="Search..."
             value={railQuery}
             onChange={(e) => setRailQuery(e.target.value)}
             slotProps={{
@@ -556,63 +573,45 @@ export function AppAwareControls() {
                 </Tooltip>
               )}
             </Box>
-            <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
-              {showingAll
-                ? `${TOTAL_APPS.toLocaleString()} apps · ${CATEGORIES.length} categories`
-                : [
-                    summary.allowExceptions > 0 &&
-                      `${summary.allowExceptions} allow override${summary.allowExceptions > 1 ? "s" : ""}`,
-                    // Always states the ratio, so a category with nothing
-                    // blocked reads 0 / N rather than going silent.
-                    `${summary.blocked.toLocaleString()} / ${summary.total.toLocaleString()} blocked`,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              {`${summary.blocked.toLocaleString()} / ${summary.total.toLocaleString()} blocked`}
             </Typography>
-            {/* Block all sets a *category* policy, so it only belongs to a
-                category. */}
-            {!showingAll && (
-              <Box
-                sx={{
-                  ml: "auto",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.75,
-                }}
-              >
-                <Switch
-                  size="small"
-                  checked={policy === "block"}
-                  onChange={(e) =>
-                    setCategoryPolicy(e.target.checked ? "block" : "allow")
-                  }
-                />
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  Block all
-                </Typography>
-              </Box>
-            )}
+            <Button
+              size="small"
+              variant="outlined"
+              color="secondary"
+              sx={{ ml: "auto" }}
+              onClick={() => setScopePolicy(allBlocked ? "allow" : "block")}
+            >
+              {allBlocked ? "Unblock all" : "Block all"}
+            </Button>
           </Box>
 
-          {!showingAll && (
-            <Box
-              sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}
-            >
-              <Switch
-                size="small"
-                checked={Boolean(autoBlock[category.id])}
-                onChange={(e) =>
-                  setAutoBlock((prev) => ({
-                    ...prev,
-                    [category.id]: e.target.checked,
-                  }))
-                }
-              />
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                Block new apps as they&apos;re added to this category
-              </Typography>
-            </Box>
-          )}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
+            <Switch
+              size="small"
+              // Across All Apps the switch reads as on only once every
+              // category has it, and sets them all in one go.
+              checked={
+                showingAll
+                  ? CATEGORIES.every((c) => autoBlock[c.id])
+                  : Boolean(autoBlock[category.id])
+              }
+              onChange={(e) =>
+                setAutoBlock((prev) =>
+                  showingAll
+                    ? Object.fromEntries(
+                        CATEGORIES.map((c) => [c.id, e.target.checked]),
+                      )
+                    : { ...prev, [category.id]: e.target.checked },
+                )
+              }
+            />
+            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              Block new apps as they&apos;re added
+              {showingAll ? "" : " to this category"}
+            </Typography>
+          </Box>
         </Box>
 
         {/* The app list is a standard grid: search above the header, the
@@ -624,7 +623,7 @@ export function AppAwareControls() {
           fillHeight
           stretchGrid
           initialPageSize={25}
-          pageSizeOptions={[10, 25, 50]}
+          pageSizeOptions={[10, 25, 50, 100]}
           showFilters={false}
           showDefaultView={false}
           showPreferences={false}
@@ -656,16 +655,18 @@ export function AppAwareControls() {
                   <Stack direction="row" spacing={1}>
                     <Button
                       size="small"
-                      variant="outlined"
+                      variant="text"
                       color="error"
+                      startIcon={<MaterialSymbol name="block" size={20} />}
                       onClick={() => bulk("block")}
                     >
                       Block
                     </Button>
                     <Button
                       size="small"
-                      variant="outlined"
-                      color="success"
+                      variant="text"
+                      color="primary"
+                      startIcon={<MaterialSymbol name="check" size={20} />}
                       onClick={() => bulk("allow")}
                     >
                       Unblock
