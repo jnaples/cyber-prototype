@@ -495,56 +495,47 @@ export default function FilterProtectionSummaryReport() {
           pb: "24px",
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-start",
-            gap: "16px",
-          }}
-        >
-          <Box
-            sx={{
-              width: 240,
-              height: 80,
-              borderRadius: "6px",
-              border: `2px dashed ${TEXT3}`,
-              color: TEXT3,
-              fontFamily: montserrat,
-              fontWeight: 700,
-              fontSize: 12,
-              letterSpacing: "1px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            LOGO
+        <Box>
+          <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>
+            Brightwave IT
           </Box>
-          <Box>
-            <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>
-              Brightwave IT
+          <Box sx={{ mt: "16px" }}>
+            <Box
+              sx={{
+                fontSize: 16,
+                letterSpacing: "1.5px",
+                textTransform: "uppercase",
+                color: TEXT2,
+                fontWeight: 600,
+              }}
+            >
+              Monthly report
+            </Box>
+            <Box sx={{ fontSize: 20, fontWeight: 600, mt: "4px" }}>
+              Jul 1 – Jul 31, 2026
             </Box>
           </Box>
         </Box>
-        <Box sx={{ textAlign: "right" }}>
-          <Box
-            sx={{
-              fontSize: 16,
-              letterSpacing: "1.5px",
-              textTransform: "uppercase",
-              color: TEXT2,
-              fontWeight: 600,
-            }}
-          >
-            Monthly report
-          </Box>
-          <Box sx={{ fontSize: 20, fontWeight: 600, mt: "4px" }}>
-            Jul 1 – Jul 31, 2026
-          </Box>
+        <Box
+          sx={{
+            width: 240,
+            height: 80,
+            borderRadius: "6px",
+            border: `2px dashed ${TEXT3}`,
+            color: TEXT3,
+            fontFamily: montserrat,
+            fontWeight: 700,
+            fontSize: 12,
+            letterSpacing: "1px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          LOGO
         </Box>
       </Box>
-      <Box sx={{ height: "3px", bgcolor: TEXT, mb: "40px" }} />
+      <Box sx={{ height: "2px", bgcolor: TEXT, mb: "40px" }} />
 
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>

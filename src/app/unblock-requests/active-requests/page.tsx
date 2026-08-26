@@ -339,6 +339,8 @@ const columns: GridColDef[] = [
     headerName: "Category",
     flex: 1,
     minWidth: 160,
+    // An array of categories — ordering by its first value means nothing.
+    sortable: false,
     renderCell: (params) => {
       const threat = THREAT_CATEGORIES.includes(params.row.category);
       if (!threat) return params.row.category;
@@ -432,6 +434,8 @@ const columns: GridColDef[] = [
     headerName: "Request Reason",
     flex: 1.5,
     minWidth: 260,
+    // Free text.
+    sortable: false,
   },
   {
     field: "actions",

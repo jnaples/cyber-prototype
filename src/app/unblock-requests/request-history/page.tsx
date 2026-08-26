@@ -69,7 +69,14 @@ const columns: GridColDef[] = [
     width: 240,
     renderCell: (params) => <DomainCell domain={params.row.domain} />,
   },
-  { field: "category", headerName: "Category", flex: 1, minWidth: 160 },
+  {
+    field: "category",
+    headerName: "Category",
+    flex: 1,
+    minWidth: 160,
+    // An array of categories — ordering by its first value means nothing.
+    sortable: false,
+  },
   { field: "organization", headerName: "Organization", flex: 1, minWidth: 160 },
   {
     field: "site",
@@ -141,8 +148,16 @@ const columns: GridColDef[] = [
     headerName: "Request Reason",
     flex: 1.5,
     minWidth: 260,
+    // Free text.
+    sortable: false,
   },
-  { field: "actionedBy", headerName: "Actioned by", flex: 1, minWidth: 150 },
+  {
+    field: "actionedBy",
+    headerName: "Actioned by",
+    flex: 1,
+    minWidth: 150,
+    sortable: false,
+  },
   {
     field: "timeOfAttempt",
     headerName: "Time of Submission",
@@ -160,6 +175,8 @@ const columns: GridColDef[] = [
     headerName: "Internal Notes",
     flex: 1.5,
     minWidth: 240,
+    // Free text.
+    sortable: false,
   },
   {
     field: "action",
