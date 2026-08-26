@@ -99,6 +99,9 @@ export default function CreatePolicyPage() {
 
   return (
     <PageShell
+      // AppAware's cards cap at the content area's height, so the shell has to
+      // bound it rather than letting the body scroll.
+      fill={active.label === "AppAware"}
       header={
         <PageHeader
           title="Create New Policy"

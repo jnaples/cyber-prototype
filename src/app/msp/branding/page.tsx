@@ -156,24 +156,17 @@ function SectionCard({
  * Upload well. Picking a file previews it in place via an object URL, which
  * lives only for the session — a refresh clears it, since nothing is uploaded.
  */
-// The dark scheme's own neutral surface, pinned so the dark-mode well shows a
-// logo against the background it will actually sit on, in either scheme.
-const DARK_SURFACE = "#29323D";
-
 function ImageDrop({
   previewHeight,
   alt,
   src,
   onChange,
-  dark,
 }: {
   /** How tall the preview may render inside the well. */
   previewHeight: number;
   alt: string;
   src: string | null;
   onChange: (src: string | null) => void;
-  /** Preview the image on the dark surface rather than the page's own. */
-  dark?: boolean;
 }) {
   const pick = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -202,14 +195,14 @@ function ImageDrop({
           border: "1px dashed",
           borderColor: "divider",
           borderRadius: 1,
-          bgcolor: dark ? DARK_SURFACE : "background.neutral",
+          bgcolor: "background.neutral",
           minHeight: previewHeight + 32,
           p: 2,
           textAlign: "center",
           cursor: "pointer",
-          color: dark ? theme.vars.palette.common.white : "text.primary",
+          color: "text.primary",
           "&:hover": { borderColor: "primary.main" },
-          // Full-strength primary is too dark against the dark surface.
+          // Full-strength primary is too dark against the dark scheme.
           ...theme.applyStyles("dark", {
             "&:hover": { borderColor: theme.vars.palette.primary.light },
           }),
@@ -460,7 +453,6 @@ export default function BrandingPage() {
               help="Used on the side navigation and in dark mode. Helpful when a logo needs more contrast to stay visible, such as one with dark or low-contrast colors."
             />
             <ImageDrop
-              dark
               previewHeight={72}
               alt="Dark mode logo preview"
               src={darkLogo}
