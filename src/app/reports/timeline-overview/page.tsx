@@ -341,15 +341,22 @@ export default function TimelineOverviewReport() {
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "flex-end",
+          alignItems: "flex-start",
           pb: "24px",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            gap: "16px",
+          }}
+        >
           <Box
             sx={{
-              width: 56,
-              height: 56,
+              width: 240,
+              height: 80,
               borderRadius: "6px",
               border: `2px dashed ${TEXT3}`,
               color: TEXT3,
