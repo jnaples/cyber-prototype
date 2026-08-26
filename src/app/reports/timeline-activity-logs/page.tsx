@@ -282,7 +282,7 @@ function DeviceTable({ device }: { device: Device }) {
           mb: "12px",
         }}
       >
-        <Box sx={{ fontFamily: montserrat, fontSize: 21, fontWeight: 600 }}>
+        <Box sx={{ fontFamily: montserrat, fontSize: 20, fontWeight: 600 }}>
           {device.name}
         </Box>
         <Box
@@ -308,7 +308,7 @@ function DeviceTable({ device }: { device: Device }) {
                 component="th"
                 sx={{
                   width: c.width,
-                  fontSize: 15,
+                  fontSize: 16,
                   fontWeight: 700,
                   letterSpacing: "1.2px",
                   textTransform: "uppercase",
@@ -422,7 +422,7 @@ export default function TimelineActivityLogsReport() {
         }}
       >
         <Box>
-          <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>
+          <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 30 }}>
             Brightwave IT
           </Box>
           <Box sx={{ mt: "16px" }}>
@@ -453,14 +453,14 @@ export default function TimelineActivityLogsReport() {
           sx={{
             fontFamily: montserrat,
             fontWeight: 600,
-            fontSize: 44,
+            fontSize: 48,
             lineHeight: 1.2,
             m: "8px 0",
           }}
         >
           Activity Logs
         </Box>
-        <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
+        <Box sx={{ fontSize: 24, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>
 
       {/* KPI band */}

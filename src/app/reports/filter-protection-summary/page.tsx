@@ -295,7 +295,7 @@ function SectionHead({
           my: "16px",
           fontFamily: montserrat,
           fontWeight: 600,
-          fontSize: 23,
+          fontSize: 24,
         }}
       >
         {title}
@@ -398,7 +398,7 @@ function BarRows({ rows, color }: { rows: BarRow[]; color: string }) {
 
 function DomainTable({ rows }: { rows: DomainRow[] }) {
   const th = {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: 600,
     color: TEXT2,
     textAlign: "left" as const,
@@ -453,7 +453,7 @@ function DomainTable({ rows }: { rows: DomainRow[] }) {
                 {r.domain}
               </Box>
             </Box>
-            <Box component="td" sx={{ ...td, color: TEXT2, fontSize: 17 }}>
+            <Box component="td" sx={{ ...td, color: TEXT2, fontSize: 18 }}>
               {r.cat}
             </Box>
             <Box component="td" sx={{ ...td, ...num }}>
@@ -497,7 +497,7 @@ export default function FilterProtectionSummaryReport() {
         }}
       >
         <Box>
-          <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>
+          <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 30 }}>
             Brightwave IT
           </Box>
           <Box sx={{ mt: "16px" }}>
@@ -528,14 +528,14 @@ export default function FilterProtectionSummaryReport() {
           sx={{
             fontFamily: montserrat,
             fontWeight: 600,
-            fontSize: 44,
+            fontSize: 48,
             lineHeight: 1.2,
             m: "8px 0",
           }}
         >
           Filter Protection Overview
         </Box>
-        <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
+        <Box sx={{ fontSize: 24, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>
 
       {/* KPI band */}
@@ -744,7 +744,7 @@ export default function FilterProtectionSummaryReport() {
         }}
       >
         <Box>
-          <Box sx={{ fontSize: 17, fontWeight: 600 }}>Brightwave IT</Box>
+          <Box sx={{ fontSize: 16, fontWeight: 600 }}>Brightwave IT</Box>
         </Box>
       </Box>
     </Box>

@@ -393,7 +393,7 @@ export default function CustomerActivityOverviewReport() {
         }}
       >
         <Box>
-          <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>
+          <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 30 }}>
             Brightwave IT
           </Box>
           <Box sx={{ mt: "16px" }}>
@@ -424,14 +424,14 @@ export default function CustomerActivityOverviewReport() {
           sx={{
             fontFamily: montserrat,
             fontWeight: 600,
-            fontSize: 44,
+            fontSize: 48,
             lineHeight: 1.2,
             m: "8px 0",
           }}
         >
           Activity Overview
         </Box>
-        <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
+        <Box sx={{ fontSize: 24, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>
 
       {/* KPI band */}
@@ -698,7 +698,7 @@ export default function CustomerActivityOverviewReport() {
         }}
       >
         <Box>
-          <Box sx={{ fontSize: 17, fontWeight: 600 }}>Brightwave IT</Box>
+          <Box sx={{ fontSize: 16, fontWeight: 600 }}>Brightwave IT</Box>
         </Box>
       </Box>
     </Box>

@@ -347,7 +347,7 @@ export default function TimelineOverviewReport() {
         }}
       >
         <Box>
-          <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 26 }}>
+          <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 30 }}>
             Brightwave IT
           </Box>
           <Box sx={{ mt: "16px" }}>
@@ -378,14 +378,14 @@ export default function TimelineOverviewReport() {
           sx={{
             fontFamily: montserrat,
             fontWeight: 600,
-            fontSize: 44,
+            fontSize: 48,
             lineHeight: 1.2,
             m: "8px 0",
           }}
         >
           Activity Timeline
         </Box>
-        <Box sx={{ fontSize: 21, color: TEXT2 }}>Acme Manufacturing</Box>
+        <Box sx={{ fontSize: 24, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>
 
       {/* KPI band */}
@@ -627,7 +627,7 @@ export default function TimelineOverviewReport() {
                   </Box>
                   <Box
                     sx={{
-                      fontSize: 17,
+                      fontSize: 18,
                       fontWeight: 600,
                       whiteSpace: "nowrap",
                       fontVariantNumeric: "tabular-nums",
@@ -732,7 +732,7 @@ export default function TimelineOverviewReport() {
                   display: "flex",
                   justifyContent: "space-between",
                   mt: "6px",
-                  fontSize: 13,
+                  fontSize: 14,
                   color: TEXT2,
                   fontVariantNumeric: "tabular-nums",
                 }}
@@ -785,7 +785,7 @@ export default function TimelineOverviewReport() {
         }}
       >
         <Box>
-          <Box sx={{ fontSize: 17, fontWeight: 600 }}>Brightwave IT</Box>
+          <Box sx={{ fontSize: 16, fontWeight: 600 }}>Brightwave IT</Box>
         </Box>
       </Box>
     </Box>
