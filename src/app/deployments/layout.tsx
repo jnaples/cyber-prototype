@@ -21,6 +21,11 @@ const TABS = [
     path: "/deployments/roaming-clients",
   },
   {
+    label: "Relays",
+    icon: "device_hub",
+    path: "/deployments/relays",
+  },
+  {
     label: "Clientless",
     icon: "dns",
     path: "/deployments/clientless",

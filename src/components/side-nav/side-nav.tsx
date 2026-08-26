@@ -501,7 +501,10 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                 </Box>
                 <Box
                   sx={getSubItemStyles("deployments-relays")}
-                  onClick={() => handleItemClick("deployments-relays")}
+                  onClick={() => {
+                    handleItemClick("deployments-relays");
+                    navigate("/deployments/relays");
+                  }}
                 >
                   <span style={{ margin: "4px 0" }}>Relays</span>
                 </Box>

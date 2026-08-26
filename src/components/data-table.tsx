@@ -1040,6 +1040,14 @@ export interface DataTableProps {
    * parent has to be a flex column with a bounded height.
    */
   fillHeight?: boolean;
+  /**
+   * With `fillHeight`, stretch the grid into all the space on offer rather than
+   * hugging its rows, so the pagination footer sits at the parent's bottom edge
+   * and any slack shows below the last row. Use it when the parent is a card
+   * whose own height is fixed — hugging would otherwise leave dead space under
+   * the footer at small page sizes, and the footer is clipped at large ones.
+   */
+  stretchGrid?: boolean;
 }
 
 export function DataTable({
@@ -1085,6 +1093,7 @@ export function DataTable({
   hiddenFilterIds,
   sx: sxOverrides,
   fillHeight = false,
+  stretchGrid = false,
 }: DataTableProps) {
   const internalApiRef = useGridApiRef();
   const apiRef = apiRefProp ?? internalApiRef;
@@ -1404,7 +1413,7 @@ export function DataTable({
           { minWidth: 0, width: "100%", overflowX: "auto" },
           // Filling means the grid — not the page — owns the scrolling.
           fillHeight && {
-            flex: "0 1 auto",
+            flex: stretchGrid ? "1 1 auto" : "0 1 auto",
             minHeight: 0,
             display: "flex",
             overflowX: "visible",

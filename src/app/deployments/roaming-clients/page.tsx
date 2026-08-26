@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import Box from "@mui/material/Box";
-import type { GridColDef } from "@mui/x-data-grid";
+import type { DataGridProps, GridColDef } from "@mui/x-data-grid";
 import React, { useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
@@ -23,6 +23,68 @@ import { useOrgScope } from "@/hooks/use-org-scope";
 // ---------------------------------------------------------------------------
 // Column definitions
 // ---------------------------------------------------------------------------
+
+/**
+ * Per-client feature state, grouped under one "Features" header. A client that
+ * has never checked in reports nothing, so its cells read as a dash rather
+ * than claiming the feature is off.
+ */
+const FEATURE_FIELDS = [
+  { field: "secureTransit", headerName: "SecureTransit" },
+  { field: "cyberSight", headerName: "CyberSight" },
+  { field: "browserExt", headerName: "Browser Ext." },
+] as const;
+
+const FEATURE_STATES = {
+  on: { icon: "check", color: "success.main", label: "Enabled" },
+  error: { icon: "warning", color: "warning.main", label: "Error" },
+  off: { icon: "block", color: "text.disabled", label: "Disabled" },
+} as const;
+
+/** The icon alone doesn't say which feature it is, so the tooltip names it. */
+function FeatureCell({
+  feature,
+  value,
+}: {
+  feature: string;
+  value?: keyof typeof FEATURE_STATES;
+}) {
+  const state = value ? FEATURE_STATES[value] : undefined;
+  if (!state) return <Box sx={{ color: "text.secondary" }}>–</Box>;
+  return (
+    <ArrowTooltip title={`${feature}: ${state.label}`}>
+      <MaterialSymbol
+        name={state.icon}
+        size={20}
+        sx={{ color: state.color, verticalAlign: "middle" }}
+      />
+    </ArrowTooltip>
+  );
+}
+
+const FEATURE_COLUMNS: GridColDef[] = FEATURE_FIELDS.map(
+  ({ field, headerName }) => ({
+    field,
+    headerName,
+    width: 130,
+    minWidth: 110,
+    headerAlign: "center",
+    align: "center",
+    sortable: false,
+    renderCell: (params) => (
+      <FeatureCell feature={headerName} value={params.value} />
+    ),
+  }),
+);
+
+const FEATURE_GROUP: DataGridProps["columnGroupingModel"] = [
+  {
+    groupId: "features",
+    headerName: "Features",
+    headerAlign: "center",
+    children: FEATURE_FIELDS.map(({ field }) => ({ field })),
+  },
+];
 
 const columns: GridColDef[] = [
   { field: "hostname", headerName: "Hostname", flex: 1, minWidth: 150 },
@@ -81,6 +143,7 @@ const columns: GridColDef[] = [
     },
   },
   { field: "version", headerName: "Version", flex: 0.7, minWidth: 90 },
+  ...FEATURE_COLUMNS,
   { field: "lastSeen", headerName: "Last Seen", flex: 1, minWidth: 120 },
   {
     field: "policySchedule",
@@ -313,6 +376,18 @@ export default function RoamingClientsPage() {
           <DataTable
             rows={visibleRows}
             columns={columns}
+            columnGroupingModel={FEATURE_GROUP}
+            // The group header takes the default surface so it reads as its
+            // own band above the column headers. MUI X marks it with
+            // `columnHeader--filledGroup` (there is no columnGroupHeader
+            // class), and the shared grid-header rule it overrides is
+            // !important.
+            sx={{
+              "& .MuiDataGrid-columnHeader--filledGroup": {
+                backgroundColor:
+                  "var(--dnsf-palette-background-default) !important",
+              },
+            }}
             // Rows scroll under the column headers; the pager stays put.
             fillHeight
             pinnedShadowFields={{ left: "hostname", right: "actions" }}
