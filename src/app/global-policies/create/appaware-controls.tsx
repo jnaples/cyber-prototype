@@ -33,6 +33,7 @@ import { NoResultsOverlay } from "@/components/no-results-overlay";
 import { TextField } from "@/components/text-field";
 import type { AppCategory } from "@/data/appaware-apps";
 import { TOTAL_APPS } from "@/data/appaware-apps";
+import { logoUrl } from "@/data/appaware-logos";
 
 import type { AppAwareState, Policy } from "./appaware-state";
 import { CATEGORIES } from "./appaware-state";
@@ -145,6 +146,31 @@ function StateChip({ state }: { state: State }) {
           "& .MuiChip-icon, & .MuiChip-label": { color: "inherit" },
         };
       }}
+    />
+  );
+}
+
+/**
+ * An app's logo at 16px, fetched by domain at runtime. Anything without a
+ * known domain — or whose icon fails to load — falls back to a gray square, so
+ * a missing logo never leaves a ragged gap or borrows the wrong brand.
+ */
+function AppLogo({ app }: { app: string }) {
+  const [failed, setFailed] = useState(false);
+  const src = logoUrl(app);
+  const box = { width: 16, height: 16, borderRadius: "3px", flexShrink: 0 };
+
+  if (!src || failed) {
+    return <Box sx={{ ...box, bgcolor: "action.disabledBackground" }} />;
+  }
+  return (
+    <Box
+      component="img"
+      src={src}
+      alt=""
+      loading="lazy"
+      onError={() => setFailed(true)}
+      sx={{ ...box, objectFit: "contain" }}
     />
   );
 }
@@ -346,6 +372,21 @@ export function AppAwareControls({
       headerName: "Application",
       flex: 1,
       minWidth: 220,
+      renderCell: (params) => (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            height: "100%",
+          }}
+        >
+          <AppLogo app={params.value as string} />
+          <Typography noWrap variant="body2">
+            {params.value as string}
+          </Typography>
+        </Box>
+      ),
     },
     ...(showingAll
       ? [
@@ -461,11 +502,7 @@ export function AppAwareControls({
             }}
             sx={tileSx(showingAll)}
           >
-            <Typography
-              noWrap
-              variant="body1"
-              sx={{ fontWeight: showingAll ? 600 : 500 }}
-            >
+            <Typography noWrap variant="body1" sx={{ fontWeight: 600 }}>
               All Apps
             </Typography>
           </Box>
@@ -493,7 +530,7 @@ export function AppAwareControls({
                       <Typography
                         noWrap
                         variant="body1"
-                        sx={{ fontWeight: active ? 600 : 500 }}
+                        sx={{ fontWeight: 600 }}
                       >
                         {c.name}
                       </Typography>
@@ -656,20 +693,20 @@ export function AppAwareControls({
                     <Button
                       size="small"
                       variant="text"
-                      color="error"
-                      startIcon={<MaterialSymbol name="block" size={20} />}
-                      onClick={() => bulk("block")}
-                    >
-                      Block
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="text"
                       color="primary"
                       startIcon={<MaterialSymbol name="check" size={20} />}
                       onClick={() => bulk("allow")}
                     >
                       Unblock
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="text"
+                      color="error"
+                      startIcon={<MaterialSymbol name="block" size={20} />}
+                      onClick={() => bulk("block")}
+                    >
+                      Block
                     </Button>
                   </Stack>
                 }
