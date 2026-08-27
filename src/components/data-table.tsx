@@ -979,6 +979,10 @@ export interface DataTableProps {
   searchPlaceholder?: string;
   /** Styles for the search field. Defaults to a fixed 250px width. */
   searchSx?: SxProps<Theme>;
+  /** Ref to the search input, so a page can focus it (e.g. from ⌘K). */
+  searchInputRef?: React.Ref<HTMLInputElement>;
+  /** Rendered at the end of the search field (e.g. a ⌘K hint). */
+  searchHint?: React.ReactNode;
   showFilters?: boolean;
   /**
    * When set, the filter panel edits a draft model and the grid does not
@@ -1066,6 +1070,8 @@ export function DataTable({
   showSearch = true,
   searchPlaceholder = "Search...",
   searchSx = { width: 250 },
+  searchInputRef,
+  searchHint,
   showFilters = true,
   deferFilterApply = false,
   filterFields,
@@ -1228,6 +1234,7 @@ export function DataTable({
           <TextField
             size="small"
             placeholder={searchPlaceholder}
+            inputRef={searchInputRef}
             value={searchQuery}
             onChange={handleSearchChange}
             slotProps={{
@@ -1241,6 +1248,9 @@ export function DataTable({
                     />
                   </InputAdornment>
                 ),
+                endAdornment: searchHint ? (
+                  <InputAdornment position="end">{searchHint}</InputAdornment>
+                ) : undefined,
               },
             }}
             sx={searchSx}

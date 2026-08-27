@@ -24,7 +24,7 @@ import { alpha } from "@mui/material/styles";
 import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import type { Dispatch, SetStateAction } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { DataTable } from "@/components/data-table";
 import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
@@ -36,6 +36,9 @@ import { logoUrl } from "@/data/appaware-logos";
 
 import type { AppAwareState, Policy } from "./appaware-state";
 import { CATEGORIES } from "./appaware-state";
+import { useGridCardHeight } from "./use-grid-card-height";
+import { SearchShortcutHint } from "./search-shortcut-hint";
+import { useSearchShortcut } from "./use-search-shortcut";
 
 /** The rail's first entry: every app in the catalog, whatever its category. */
 const ALL = "all";
@@ -192,6 +195,9 @@ export function AppAwareControls({
 }) {
   const [selectedCat, setSelectedCat] = useState(CATEGORIES[0].id);
   const [appQuery, setAppQuery] = useState("");
+  // ⌘K / Ctrl+K jumps to the search field.
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  useSearchShortcut(searchInputRef);
   const [rowSelection, setRowSelection] = useState<GridRowSelectionModel>({
     type: "include",
     ids: new Set(),
@@ -257,6 +263,9 @@ export function AppAwareControls({
     application: app,
     category: CATEGORY_OF[app].name,
   }));
+
+  // Sizes the grid card to its rows, capped at the space on offer.
+  const { cardRef, height: cardHeight } = useGridCardHeight(rows.length);
 
   // "Exclude" is the header checkbox's select-all, so it reads against the
   // rows the search left visible rather than the whole category.
@@ -522,13 +531,11 @@ export function AppAwareControls({
 
       {/* DETAIL PANE */}
       <Card
+        ref={cardRef}
         sx={{
           gridColumn: { md: "span 2" },
-          // A definite height is the only thing the grid can size against:
-          // it pins the column headers and the pager and scrolls the rows
-          // between them. Sizing the card to its rows instead needs JS
-          // measurement, which proved too fragile to keep.
-          height: "100%",
+          // Measured: hugs the rows, capped at the space on offer.
+          height: cardHeight ?? "100%",
           minHeight: 0,
           overflow: "hidden",
           display: "flex",
@@ -622,6 +629,8 @@ export function AppAwareControls({
           showExport={false}
           showRefresh={false}
           onSearchChange={setAppQuery}
+          searchInputRef={searchInputRef}
+          searchHint={<SearchShortcutHint />}
           searchPlaceholder={
             showingAll
               ? "Search all apps..."

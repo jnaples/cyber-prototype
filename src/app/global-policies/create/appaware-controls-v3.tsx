@@ -28,6 +28,7 @@ import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import type { Dispatch, SetStateAction } from "react";
+import type { KeyboardEvent } from "react";
 import { useEffect, useRef, useState } from "react";
 
 import { DataTable } from "@/components/data-table";
@@ -41,6 +42,9 @@ import { logoUrl } from "@/data/appaware-logos";
 
 import type { AppAwareState, Policy } from "./appaware-state";
 import { CATEGORIES } from "./appaware-state";
+import { useGridCardHeight } from "./use-grid-card-height";
+import { SearchShortcutHint } from "./search-shortcut-hint";
+import { useSearchShortcut } from "./use-search-shortcut";
 
 /** How many live search results to list before summarising the remainder. */
 const RESULT_LIMIT = 8;
@@ -200,9 +204,15 @@ export function AppAwareControlsV3({
 }) {
   const [selectedCat, setSelectedCat] = useState(CATEGORIES[0].id);
   const [appQuery, setAppQuery] = useState("");
+  // ⌘K / Ctrl+K jumps to the search field.
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  useSearchShortcut(searchInputRef);
   // Live results for the search card. Matches run across the whole catalog,
   // not just the selected pane, so the field works as a finder.
   const [showResults, setShowResults] = useState(false);
+  // Which result the arrow keys are on; -1 is the field itself.
+  const [activeResult, setActiveResult] = useState(-1);
+  const activeResultRef = useRef<HTMLDivElement | null>(null);
   // Picking a result clears the search field, so the app it narrowed the grid
   // to has to be held separately from the search text.
   const [pickedApp, setPickedApp] = useState<string | null>(null);
@@ -288,6 +298,10 @@ export function AppAwareControlsV3({
     activeTileRef.current?.scrollIntoView({ block: "nearest" });
   }, [selectedCat]);
 
+  useEffect(() => {
+    activeResultRef.current?.scrollIntoView({ block: "nearest" });
+  }, [activeResult]);
+
   /** Jump to the app's category and narrow the grid to just that app. */
   const pickResult = (app: string, categoryId: string) => {
     setSelectedCat(categoryId);
@@ -295,7 +309,36 @@ export function AppAwareControlsV3({
     // The field resets; the pick lives on in `pickedApp`.
     setAppQuery("");
     setShowResults(false);
+    setActiveResult(-1);
     clearSelection();
+  };
+
+  /** Arrow keys walk the results; Enter picks; Escape dismisses them. */
+  const onSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Escape") {
+      setShowResults(false);
+      setActiveResult(-1);
+      return;
+    }
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      if (trimmed === "" || matches.length === 0) return;
+      event.preventDefault();
+      // A first ArrowDown re-opens results dismissed with Escape.
+      setShowResults(true);
+      setActiveResult((i) =>
+        event.key === "ArrowDown"
+          ? Math.min(i + 1, matches.length - 1)
+          : Math.max(i - 1, -1),
+      );
+      return;
+    }
+    if (event.key === "Enter" && activeResult >= 0) {
+      const hit = matches[activeResult];
+      if (hit) {
+        event.preventDefault();
+        pickResult(hit.app, hit.category.id);
+      }
+    }
   };
 
   /** Back to the whole category. */
@@ -310,6 +353,9 @@ export function AppAwareControlsV3({
     application: app,
     category: CATEGORY_OF[app].name,
   }));
+
+  // Sizes the grid card to its rows, capped at the space on offer.
+  const { cardRef, height: cardHeight } = useGridCardHeight(rows.length);
 
   // "Exclude" is the header checkbox's select-all, so it reads against the
   // rows the search left visible rather than the whole category.
@@ -470,18 +516,26 @@ export function AppAwareControlsV3({
           fullWidth
           size="small"
           placeholder="Search all apps..."
+          inputRef={searchInputRef}
+          onKeyDown={onSearchKeyDown}
           value={appQuery}
           onChange={(e) => {
             // Typing only drives the results box. The panes below change on a
             // pick, never on a keystroke.
             setAppQuery(e.target.value);
             setShowResults(true);
+            setActiveResult(-1);
           }}
           slotProps={{
             input: {
               startAdornment: (
                 <InputAdornment position="start">
                   <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <SearchShortcutHint />
                 </InputAdornment>
               ),
             },
@@ -531,9 +585,11 @@ export function AppAwareControlsV3({
               </Typography>
             ) : (
               <>
-                {matches.map(({ app, category: c }) => (
+                {matches.map(({ app, category: c }, i) => (
                   <Box
                     key={`${c.id}-${app}`}
+                    ref={i === activeResult ? activeResultRef : undefined}
+                    onMouseEnter={() => setActiveResult(i)}
                     onClick={() => pickResult(app, c.id)}
                     sx={{
                       display: "flex",
@@ -545,7 +601,8 @@ export function AppAwareControlsV3({
                       borderBottom: "1px solid",
                       borderColor: "divider",
                       "&:last-of-type": { borderBottom: "none" },
-                      "&:hover": { bgcolor: "action.hover" },
+                      bgcolor:
+                        i === activeResult ? "action.hover" : "transparent",
                     }}
                   >
                     <AppLogo app={app} />
@@ -733,14 +790,13 @@ export function AppAwareControlsV3({
             })}
           >
             <Card
+              ref={cardRef}
               sx={{
-                // A definite height is the only thing the grid can size
-                // against: it pins the column headers and the pager and
-                // scrolls the rows between them.
                 flex: 1,
                 minWidth: 0,
                 minHeight: 0,
-                height: "100%",
+                // Measured: hugs the rows, capped at the space on offer.
+                height: cardHeight ?? "100%",
                 overflow: "hidden",
                 display: "flex",
                 flexDirection: "column",
