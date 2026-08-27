@@ -29,6 +29,7 @@ import { PageShell } from "@/components/page-shell";
 
 import { AppAwareControls } from "./appaware-controls";
 import { AppAwareControlsV2 } from "./appaware-controls-v2";
+import { AppAwareControlsV3 } from "./appaware-controls-v3";
 import type { AppAwareState } from "./appaware-state";
 import { DEFAULT_APPAWARE_STATE, isAppAwareDirty } from "./appaware-state";
 
@@ -69,6 +70,12 @@ const TABS: PolicyTab[] = [
   {
     label: "AppAware v2",
     path: "appaware-v2",
+    Icon: AppsOutlinedIcon,
+    blurb: "Applications this policy allows or blocks.",
+  },
+  {
+    label: "AppAware v3",
+    path: "appaware-v3",
     Icon: AppsOutlinedIcon,
     blurb: "Applications this policy allows or blocks.",
   },
@@ -150,6 +157,7 @@ export default function CreatePolicyPage() {
   const dirtyTabs: Record<string, boolean> = {
     appaware: appAwareDirty,
     "appaware-v2": appAwareDirty,
+    "appaware-v3": appAwareDirty,
   };
   const dirty = Object.values(dirtyTabs).some(Boolean);
 
@@ -215,6 +223,8 @@ export default function CreatePolicyPage() {
         <AppAwareControls state={appAware} onChange={setAppAware} />
       ) : active.path === "appaware-v2" ? (
         <AppAwareControlsV2 state={appAware} onChange={setAppAware} />
+      ) : active.path === "appaware-v3" ? (
+        <AppAwareControlsV3 state={appAware} onChange={setAppAware} />
       ) : (
         <Card>
           <CardContent sx={{ p: 2 }}>

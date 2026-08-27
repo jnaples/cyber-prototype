@@ -73,7 +73,7 @@ const tileSx = (active: boolean) => (theme: Theme) => ({
  * useful next step is widening the search rather than adjusting filters.
  */
 function CategoryNoResults() {
-  return <NoResultsOverlay description="Try searching in all apps." />;
+  return <NoResultsOverlay description="Try searching in all apps instead." />;
 }
 
 /** Which category an app belongs to — the All Apps grid needs it per row. */
@@ -422,98 +422,100 @@ export function AppAwareControls({
           <Typography variant="cardTitle">Categories</Typography>
         </Box>
 
-        <Box
-          sx={{
-            flex: 1,
-            minHeight: 0,
-            overflow: "auto",
-            // No top padding: the title block above already spaces the list.
-            px: 2,
-            pb: 2,
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {/* All Apps sits above the categories, separated by a rule — it's a
-              flat view of the catalog rather than one of the categories. */}
+        {/* The list sits in a rounded panel, inset from the card edge —
+            the same treatment as the grid's well. */}
+        <Box sx={{ flex: 1, minHeight: 0, px: 2, pb: 2, display: "flex" }}>
           <Box
-            onClick={() => {
-              setSelectedCat(ALL);
-              clearSelection();
-              setAppQuery("");
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              minHeight: 0,
+              overflow: "auto",
+              display: "flex",
+              flexDirection: "column",
             }}
-            sx={tileSx(showingAll)}
           >
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography noWrap variant="body1" sx={{ fontWeight: 600 }}>
-                All Apps
-              </Typography>
-              <Typography
-                noWrap
-                variant="body2"
-                sx={{ mt: 0.5, color: "text.secondary" }}
-              >
-                {TOTAL_APPS.toLocaleString()} apps
-              </Typography>
-            </Box>
-          </Box>
-
-          <Divider sx={{ my: 2 }} />
-
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {CATEGORIES.map((c) => {
-              const active = !showingAll && c.id === category.id;
-              const sum = summarize(c, policies[c.id], rules);
-              return (
-                <Box
-                  key={c.id}
-                  onClick={() => {
-                    setSelectedCat(c.id);
-                    clearSelection();
-                    setAppQuery("");
-                  }}
-                  sx={tileSx(active)}
+            {/* All Apps sits above the categories, separated by a rule — it's a
+                  flat view of the catalog rather than one of the categories. */}
+            <Box
+              onClick={() => {
+                setSelectedCat(ALL);
+                clearSelection();
+                setAppQuery("");
+              }}
+              sx={tileSx(showingAll)}
+            >
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography noWrap variant="body1" sx={{ fontWeight: 600 }}>
+                  All Apps
+                </Typography>
+                <Typography
+                  noWrap
+                  variant="body2"
+                  sx={{ mt: 0.5, color: "text.secondary" }}
                 >
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.75,
-                      }}
-                    >
+                  {TOTAL_APPS.toLocaleString()} apps
+                </Typography>
+              </Box>
+            </Box>
+
+            <Divider sx={{ my: 2 }} />
+
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              {CATEGORIES.map((c) => {
+                const active = !showingAll && c.id === category.id;
+                const sum = summarize(c, policies[c.id], rules);
+                return (
+                  <Box
+                    key={c.id}
+                    onClick={() => {
+                      setSelectedCat(c.id);
+                      clearSelection();
+                      setAppQuery("");
+                    }}
+                    sx={tileSx(active)}
+                  >
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 0.75,
+                        }}
+                      >
+                        <Typography
+                          noWrap
+                          variant="body1"
+                          sx={{ fontWeight: 600 }}
+                        >
+                          {c.name}
+                        </Typography>
+                        {c.note && (
+                          <Tooltip title={c.note} placement="top">
+                            <InfoOutlinedIcon
+                              sx={{
+                                fontSize: 20,
+                                flexShrink: 0,
+                                color: "primary.main",
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          </Tooltip>
+                        )}
+                      </Box>
                       <Typography
                         noWrap
-                        variant="body1"
-                        sx={{ fontWeight: 600 }}
+                        variant="body2"
+                        sx={{ mt: 0.5, color: "text.secondary" }}
                       >
-                        {c.name}
+                        {c.apps.length.toLocaleString()} apps
                       </Typography>
-                      {c.note && (
-                        <Tooltip title={c.note} placement="top">
-                          <InfoOutlinedIcon
-                            sx={{
-                              fontSize: 20,
-                              flexShrink: 0,
-                              color: "primary.main",
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </Tooltip>
-                      )}
                     </Box>
-                    <Typography
-                      noWrap
-                      variant="body2"
-                      sx={{ mt: 0.5, color: "text.secondary" }}
-                    >
-                      {c.apps.length.toLocaleString()} apps
-                    </Typography>
+                    <StateChip state={sum.state} />
                   </Box>
-                  <StateChip state={sum.state} />
-                </Box>
-              );
-            })}
+                );
+              })}
+            </Box>
           </Box>
         </Box>
       </Card>
@@ -654,16 +656,14 @@ export function AppAwareControls({
                       size="small"
                       variant="text"
                       color="primary"
-                      startIcon={<MaterialSymbol name="check" size={20} />}
                       onClick={() => bulk("allow")}
                     >
-                      Unblock
+                      Allow
                     </Button>
                     <Button
                       size="small"
                       variant="text"
                       color="error"
-                      startIcon={<MaterialSymbol name="block" size={20} />}
                       onClick={() => bulk("block")}
                     >
                       Block

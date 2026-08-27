@@ -1,6 +1,6 @@
-// AppAware controls, v2 — same master–detail split as the original tab, but
-// the search is a global finder in its own card above the panes: it matches
-// across the whole catalog and only navigates when a result is picked.
+// AppAware controls, v3 — same global finder as v2, but the whole tab lives in
+// one card: title, search, category rail and app grid are sections of a single
+// surface, divided by rules instead of split across three cards.
 // ("AppAware Controls Explorations", the turn-2 prototype of 1c).
 //
 // Categories are the spine: the rail carries each category's policy and how
@@ -190,7 +190,7 @@ function AppLogo({ app }: { app: string }) {
   );
 }
 
-export function AppAwareControlsV2({
+export function AppAwareControlsV3({
   state,
   onChange,
 }: {
@@ -254,6 +254,12 @@ export function AppAwareControlsV2({
         },
       )
     : summarize(category, policy, rules);
+
+  // The header count is catalog-wide, so it doesn't follow the rail selection.
+  const catalogBlocked = CATEGORIES.reduce(
+    (n, c) => n + summarize(c, policies[c.id], rules).blocked,
+    0,
+  );
 
   const scopedApps = showingAll
     ? CATEGORIES.flatMap((c) => c.apps)
@@ -441,17 +447,25 @@ export function AppAwareControlsV2({
   ];
 
   return (
-    <Box
+    <Card
       sx={{
         display: "flex",
         flexDirection: "column",
         flex: 1,
         minHeight: 0,
-        gap: 2,
+        overflow: "hidden",
       }}
     >
-      {/* One search for the tab, in its own card above the two panes. */}
-      <Card sx={{ flexShrink: 0, p: 2 }}>
+      {/* Search and the catalog-wide count, on the same three columns as the
+          panes below so they line up. */}
+      <Box
+        sx={{
+          flexShrink: 0,
+          py: 2,
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
+        }}
+      >
         <TextField
           fullWidth
           size="small"
@@ -472,13 +486,34 @@ export function AppAwareControlsV2({
               ),
             },
           }}
+          sx={{ px: 2 }}
         />
+
+        {/* Spacer — the count sits over the grid pane, not beside the field. */}
+        <Box />
+
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            // Matches the grid pane's right inset below, so the count lines up
+            // with the card edge rather than touching the card's border.
+            pr: 2,
+          }}
+        >
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            {catalogBlocked.toLocaleString()} / {TOTAL_APPS.toLocaleString()}{" "}
+            blocked
+          </Typography>
+        </Box>
 
         {/* Results sit in the card under the field rather than floating over
             the panes, so they push the layout instead of covering it. */}
         {showResults && trimmed !== "" && (
           <Box
             sx={{
+              gridColumn: "1 / -1",
               mt: 2,
               border: "1px solid",
               borderColor: "divider",
@@ -541,7 +576,7 @@ export function AppAwareControlsV2({
             )}
           </Box>
         )}
-      </Card>
+      </Box>
 
       <Box
         sx={{
@@ -550,30 +585,28 @@ export function AppAwareControlsV2({
           // The row is pinned to the container's height so the cards have
           // something definite to size against.
           gridTemplateRows: "minmax(0, 1fr)",
-          alignItems: "start",
+          gap: 2,
           flex: 1,
           minHeight: 0,
-          gap: 2,
         }}
       >
         {/* CATEGORY RAIL — each category's policy and how many apps override it. */}
-        <Card
+        <Box
           sx={{
             display: "flex",
             flexDirection: "column",
-            height: "fit-content",
-            maxHeight: "100%",
+            height: "100%",
             minHeight: 0,
             overflow: "hidden",
           }}
         >
-          <Box sx={{ p: 2 }}>
+          <Box sx={{ px: 2, pb: 2 }}>
             <Typography variant="cardTitle">Categories</Typography>
           </Box>
 
           {/* The list sits in a rounded panel, inset from the card edge —
               the same treatment as the grid's well. */}
-          <Box sx={{ flex: 1, minHeight: 0, px: 2, pb: 2, display: "flex" }}>
+          <Box sx={{ flex: 1, minHeight: 0, pl: 2, pb: 2, display: "flex" }}>
             <Box
               sx={{
                 flex: 1,
@@ -670,168 +703,203 @@ export function AppAwareControlsV2({
               </Box>
             </Box>
           </Box>
-        </Card>
+        </Box>
 
         {/* DETAIL PANE */}
-        <Card
+        {/* The grid is a card on a tinted well, inset from the outer card's
+            edge so the well reads as its own rounded panel. */}
+        <Box
           sx={{
             gridColumn: { md: "span 2" },
-            // A definite height is the only thing the grid can size against:
-            // it pins the column headers and the pager and scrolls the rows
-            // between them. Sizing the card to its rows instead needs JS
-            // measurement, which proved too fragile to keep.
-            height: "100%",
-            minHeight: 0,
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
             minWidth: 0,
+            minHeight: 0,
+            pr: 2,
+            pb: 2,
+            display: "flex",
           }}
         >
-          {/* The policy header sits above the grid; the rows scroll inside it. */}
           <Box
-            sx={{
-              flexShrink: 0,
-              px: 2,
-              py: 1.5,
-            }}
+            sx={(theme) => ({
+              flex: 1,
+              minWidth: 0,
+              minHeight: 0,
+              p: 2,
+              display: "flex",
+              borderRadius: 1,
+              bgcolor: "var(--dnsf-palette-background-neutral)",
+              ...theme.applyStyles("dark", {
+                bgcolor: "var(--dnsf-palette-background-default)",
+              }),
+            })}
           >
-            <Box
+            <Card
               sx={{
+                // A definite height is the only thing the grid can size
+                // against: it pins the column headers and the pager and
+                // scrolls the rows between them.
+                flex: 1,
+                minWidth: 0,
+                minHeight: 0,
+                height: "100%",
+                overflow: "hidden",
                 display: "flex",
-                alignItems: "center",
-                gap: 1.25,
-                flexWrap: "wrap",
+                flexDirection: "column",
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                <Typography variant="cardTitle">
-                  {showingAll ? "All Apps" : category.name}
-                </Typography>
-                {!showingAll && category.note && (
-                  <Tooltip title={category.note} placement="top">
-                    <InfoOutlinedIcon
-                      sx={{ fontSize: 20, color: "primary.main" }}
-                    />
-                  </Tooltip>
-                )}
-              </Box>
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                {`${summary.blocked.toLocaleString()} / ${summary.total.toLocaleString()} blocked`}
-              </Typography>
-              {/* The search field resets on pick, so the narrowing shows here
-                  instead — otherwise the grid holds a single row for no
-                  visible reason, with no way back to the whole category. */}
-              {pickedApp && (
-                <Chip
-                  size="small"
-                  label={pickedApp}
-                  onDelete={clearPick}
-                  sx={{ borderRadius: "6px" }}
-                />
-              )}
-              <Button
-                size="small"
-                variant="contained"
-                color="secondary"
-                sx={{ ml: "auto" }}
-                onClick={() => setScopePolicy(allBlocked ? "allow" : "block")}
+              {/* The policy header sits above the grid; the rows scroll inside it. */}
+              <Box
+                sx={{
+                  flexShrink: 0,
+                  px: 2,
+                  py: 1.5,
+                }}
               >
-                {allBlocked ? "Unblock all" : "Block all"}
-              </Button>
-            </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1.25,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
+                  >
+                    <Typography variant="cardTitle">
+                      {showingAll ? "All Apps" : category.name}
+                    </Typography>
+                    {!showingAll && category.note && (
+                      <Tooltip title={category.note} placement="top">
+                        <InfoOutlinedIcon
+                          sx={{ fontSize: 20, color: "primary.main" }}
+                        />
+                      </Tooltip>
+                    )}
+                  </Box>
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                    {`${summary.blocked.toLocaleString()} / ${summary.total.toLocaleString()} blocked`}
+                  </Typography>
+                  {/* The search field resets on pick, so the narrowing shows here
+                      instead — otherwise the grid holds a single row for no
+                      visible reason, with no way back to the whole category. */}
+                  {pickedApp && (
+                    <Chip
+                      size="small"
+                      label={pickedApp}
+                      onDelete={clearPick}
+                      sx={{ borderRadius: "6px" }}
+                    />
+                  )}
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="secondary"
+                    sx={{ ml: "auto" }}
+                    onClick={() =>
+                      setScopePolicy(allBlocked ? "allow" : "block")
+                    }
+                  >
+                    {allBlocked ? "Unblock all" : "Block all"}
+                  </Button>
+                </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
-              <Switch
-                size="small"
-                // Across All Apps the switch reads as on only once every
-                // category has it, and sets them all in one go.
-                checked={
-                  showingAll
-                    ? CATEGORIES.every((c) => autoBlock[c.id])
-                    : Boolean(autoBlock[category.id])
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}
+                >
+                  <Switch
+                    size="small"
+                    // Across All Apps the switch reads as on only once every
+                    // category has it, and sets them all in one go.
+                    checked={
+                      showingAll
+                        ? CATEGORIES.every((c) => autoBlock[c.id])
+                        : Boolean(autoBlock[category.id])
+                    }
+                    onChange={(e) =>
+                      setAutoBlock((prev) =>
+                        showingAll
+                          ? Object.fromEntries(
+                              CATEGORIES.map((c) => [c.id, e.target.checked]),
+                            )
+                          : { ...prev, [category.id]: e.target.checked },
+                      )
+                    }
+                  />
+                  <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                    Block new apps as they&apos;re added
+                    {showingAll ? "" : " to this category"}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* The app list is a standard grid: search above the header, the
+                application and its actions as columns — plus the category it falls
+                under in the All Apps view — and the pager below. */}
+              <DataTable
+                rows={rows}
+                columns={columns}
+                fillHeight
+                stretchGrid
+                density="standard"
+                initialPageSize={25}
+                pageSizeOptions={[10, 25, 50, 100]}
+                showFilters={false}
+                showDefaultView={false}
+                showPreferences={false}
+                showExport={false}
+                showRefresh={false}
+                showSearch={false}
+                noRowsOverlay={
+                  showingAll ? NoResultsOverlay : CategoryNoResults
                 }
-                onChange={(e) =>
-                  setAutoBlock((prev) =>
-                    showingAll
-                      ? Object.fromEntries(
-                          CATEGORIES.map((c) => [c.id, e.target.checked]),
-                        )
-                      : { ...prev, [category.id]: e.target.checked },
+                rowSelectionModel={rowSelection}
+                onRowSelectionModelChange={setRowSelection}
+                // Allowed despite a category block is the case worth spotting.
+                getRowClassName={(params) => {
+                  const app = params.id as string;
+                  return rules[app] === "allow" && policyOf(app) === "block"
+                    ? "row--exception"
+                    : "";
+                }}
+                sx={(theme) => ({
+                  "& .row--exception": {
+                    bgcolor: alpha(theme.palette.success.main, 0.08),
+                  },
+                })}
+                bulkActions={
+                  selectedApps.length > 0 && (
+                    <DataTableBulkActions
+                      count={selectedApps.length}
+                      noun="app"
+                      onClose={clearSelection}
+                      actions={
+                        <Stack direction="row" spacing={1}>
+                          <Button
+                            size="small"
+                            variant="text"
+                            color="primary"
+                            onClick={() => bulk("allow")}
+                          >
+                            Allow
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="text"
+                            color="error"
+                            onClick={() => bulk("block")}
+                          >
+                            Block
+                          </Button>
+                        </Stack>
+                      }
+                    />
                   )
                 }
               />
-              <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                Block new apps as they&apos;re added
-                {showingAll ? "" : " to this category"}
-              </Typography>
-            </Box>
+            </Card>
           </Box>
-
-          {/* The app list is a standard grid: search above the header, the
-            application and its actions as columns — plus the category it falls
-            under in the All Apps view — and the pager below. */}
-          <DataTable
-            rows={rows}
-            columns={columns}
-            fillHeight
-            stretchGrid
-            density="standard"
-            initialPageSize={25}
-            pageSizeOptions={[10, 25, 50, 100]}
-            showFilters={false}
-            showDefaultView={false}
-            showPreferences={false}
-            showExport={false}
-            showRefresh={false}
-            showSearch={false}
-            noRowsOverlay={showingAll ? NoResultsOverlay : CategoryNoResults}
-            rowSelectionModel={rowSelection}
-            onRowSelectionModelChange={setRowSelection}
-            // Allowed despite a category block is the case worth spotting.
-            getRowClassName={(params) => {
-              const app = params.id as string;
-              return rules[app] === "allow" && policyOf(app) === "block"
-                ? "row--exception"
-                : "";
-            }}
-            sx={(theme) => ({
-              "& .row--exception": {
-                bgcolor: alpha(theme.palette.success.main, 0.08),
-              },
-            })}
-            bulkActions={
-              selectedApps.length > 0 && (
-                <DataTableBulkActions
-                  count={selectedApps.length}
-                  noun="app"
-                  onClose={clearSelection}
-                  actions={
-                    <Stack direction="row" spacing={1}>
-                      <Button
-                        size="small"
-                        variant="text"
-                        color="primary"
-                        onClick={() => bulk("allow")}
-                      >
-                        Allow
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="text"
-                        color="error"
-                        onClick={() => bulk("block")}
-                      >
-                        Block
-                      </Button>
-                    </Stack>
-                  }
-                />
-              )
-            }
-          />
-        </Card>
+        </Box>
       </Box>
-    </Box>
+    </Card>
   );
 }

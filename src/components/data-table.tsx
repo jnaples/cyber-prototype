@@ -1155,6 +1155,11 @@ export function DataTable({
         // menu only offers "Manage columns" — suppress the menu entirely.
         disableColumnMenu:
           col.field === "actions" ? true : col.disableColumnMenu,
+        // Buttons in an action cell centre themselves under a centred header;
+        // an explicit alignment on the column still wins.
+        headerAlign:
+          col.headerAlign ?? (col.field === "actions" ? "center" : undefined),
+        align: col.align ?? (col.field === "actions" ? "center" : undefined),
         renderHeader:
           col.renderHeader ??
           (() => <span style={{ fontWeight: 600 }}>{col.headerName}</span>),
