@@ -19,6 +19,7 @@ import { AndroidIcon } from "@/components/icons/os-icons";
 import { MaterialSymbol } from "@/components/material-symbol";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
+import type { RoamingClientRow } from "@/data/roaming-clients";
 import { roamingClientRows } from "@/data/roaming-clients";
 import { useOrgScope } from "@/hooks/use-org-scope";
 
@@ -79,11 +80,37 @@ const FEATURE_COLUMNS: GridColDef[] = FEATURE_FIELDS.map(
   }),
 );
 
-/** Saved filter shortcuts offered beside the Filters button. */
+/**
+ * Saved filter shortcuts offered beside the Filters button. Each one is a
+ * predicate over the rows already in scope, so a preset composes with the
+ * header's organization scope rather than replacing it.
+ */
 const FILTER_PRESETS = [
-  "Devices recommended for clean up",
-  "Duplicate Roaming Clients",
+  {
+    id: "cleanup",
+    label: "Devices recommended for clean up",
+    // Stale or not running: the fleet the Clean Up Tool exists for.
+    rows: (rows: RoamingClientRow[]) =>
+      rows.filter(
+        (row) => row.status !== "Active" || row.lastSeen === "> 90 days",
+      ),
+  },
+  {
+    id: "duplicates",
+    label: "Duplicate Roaming Clients",
+    // Every row whose hostname is enrolled more than once, both sides of the
+    // pair, so they can be compared before one is removed.
+    rows: (rows: RoamingClientRow[]) => {
+      const seen = new Map<string, number>();
+      for (const row of rows) {
+        seen.set(row.hostname, (seen.get(row.hostname) ?? 0) + 1);
+      }
+      return rows.filter((row) => (seen.get(row.hostname) ?? 0) > 1);
+    },
+  },
 ] as const;
+
+type PresetId = (typeof FILTER_PRESETS)[number]["id"];
 
 const FEATURE_GROUP: DataGridProps["columnGroupingModel"] = [
   {
@@ -359,11 +386,14 @@ export default function RoamingClientsPage() {
   const [cardTab, setCardTab] = useState(0);
   // Filter Presets menu, anchored to its button beside Filters.
   const [presetAnchor, setPresetAnchor] = useState<null | HTMLElement>(null);
+  const [preset, setPreset] = useState<PresetId | null>(null);
   // The header's scope chip narrows the fleet to one organization.
   const { organization } = useOrgScope();
-  const visibleRows = organization
+  const scopedRows = organization
     ? roamingClientRows.filter((row) => row.organization === organization)
     : roamingClientRows;
+  const activePreset = FILTER_PRESETS.find((p) => p.id === preset);
+  const visibleRows = activePreset ? activePreset.rows(scopedRows) : scopedRows;
 
   return (
     <>
@@ -396,7 +426,7 @@ export default function RoamingClientsPage() {
                   startIcon={<MaterialSymbol name="tune" size={20} />}
                   sx={{ color: "text.primary" }}
                 >
-                  Filter Presets
+                  {activePreset ? activePreset.label : "Filter Presets"}
                 </Button>
                 <Menu
                   anchorEl={presetAnchor}
@@ -405,14 +435,29 @@ export default function RoamingClientsPage() {
                   anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
                   transformOrigin={{ vertical: "top", horizontal: "left" }}
                 >
-                  {FILTER_PRESETS.map((preset) => (
+                  {FILTER_PRESETS.map((option) => (
                     <MenuItem
-                      key={preset}
-                      onClick={() => setPresetAnchor(null)}
+                      key={option.id}
+                      selected={option.id === preset}
+                      onClick={() => {
+                        // Picking the active preset again clears it.
+                        setPreset(option.id === preset ? null : option.id);
+                        setPresetAnchor(null);
+                      }}
                     >
-                      {preset}
+                      {option.label}
                     </MenuItem>
                   ))}
+                  {activePreset && (
+                    <MenuItem
+                      onClick={() => {
+                        setPreset(null);
+                        setPresetAnchor(null);
+                      }}
+                    >
+                      Show all Roaming Clients
+                    </MenuItem>
+                  )}
                 </Menu>
               </>
             }

@@ -716,16 +716,23 @@ export function AppAwareControlsV3({
                   }}
                   sx={tileSx(showingAll)}
                 >
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                  <Box
+                    sx={{
+                      flex: 1,
+                      minWidth: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
                     <Typography noWrap variant="body1" sx={{ fontWeight: 600 }}>
                       All Apps
                     </Typography>
                     <Typography
-                      noWrap
                       variant="body2"
-                      sx={{ mt: 0.5, color: "text.secondary" }}
+                      sx={{ flexShrink: 0, color: "text.secondary" }}
                     >
-                      {TOTAL_APPS.toLocaleString()} apps
+                      ({TOTAL_APPS.toLocaleString()})
                     </Typography>
                   </Box>
                 </Box>
@@ -748,40 +755,39 @@ export function AppAwareControlsV3({
                         }}
                         sx={tileSx(active)}
                       >
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 0.75,
-                            }}
-                          >
-                            <Typography
-                              noWrap
-                              variant="body1"
-                              sx={{ fontWeight: 600 }}
-                            >
-                              {c.name}
-                            </Typography>
-                            {c.note && (
-                              <Tooltip title={c.note} placement="top">
-                                <InfoOutlinedIcon
-                                  sx={{
-                                    fontSize: 20,
-                                    flexShrink: 0,
-                                    color: "primary.main",
-                                  }}
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                              </Tooltip>
-                            )}
-                          </Box>
+                        <Box
+                          sx={{
+                            flex: 1,
+                            minWidth: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
                           <Typography
                             noWrap
-                            variant="body2"
-                            sx={{ mt: 0.5, color: "text.secondary" }}
+                            variant="body1"
+                            sx={{ fontWeight: 600 }}
                           >
-                            {c.apps.length.toLocaleString()} apps
+                            {c.name}
+                          </Typography>
+                          {c.note && (
+                            <Tooltip title={c.note} placement="top">
+                              <InfoOutlinedIcon
+                                sx={{
+                                  fontSize: 20,
+                                  flexShrink: 0,
+                                  color: "primary.main",
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </Tooltip>
+                          )}
+                          <Typography
+                            variant="body2"
+                            sx={{ flexShrink: 0, color: "text.secondary" }}
+                          >
+                            ({c.apps.length.toLocaleString()})
                           </Typography>
                         </Box>
                         <StateChip state={sum.state} />
@@ -884,17 +890,6 @@ export function AppAwareControlsV3({
                   <Typography variant="body2" sx={{ color: "text.secondary" }}>
                     {`${summary.blocked.toLocaleString()} / ${summary.total.toLocaleString()} blocked`}
                   </Typography>
-                  {/* The search field resets on pick, so the narrowing shows here
-                      instead — otherwise the grid holds a single row for no
-                      visible reason, with no way back to the whole category. */}
-                  {pickedApp && (
-                    <Chip
-                      size="small"
-                      label={pickedApp}
-                      onDelete={clearPick}
-                      sx={{ borderRadius: "6px" }}
-                    />
-                  )}
                   <Button
                     size="small"
                     variant="contained"
