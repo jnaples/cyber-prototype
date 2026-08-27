@@ -28,6 +28,7 @@ import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 
 import { AppAwareControls } from "./appaware-controls";
+import { AppAwareControlsV2 } from "./appaware-controls-v2";
 import type { AppAwareState } from "./appaware-state";
 import { DEFAULT_APPAWARE_STATE, isAppAwareDirty } from "./appaware-state";
 
@@ -62,6 +63,12 @@ const TABS: PolicyTab[] = [
   {
     label: "AppAware",
     path: "appaware",
+    Icon: AppsOutlinedIcon,
+    blurb: "Applications this policy allows or blocks.",
+  },
+  {
+    label: "AppAware v2",
+    path: "appaware-v2",
     Icon: AppsOutlinedIcon,
     blurb: "Applications this policy allows or blocks.",
   },
@@ -139,8 +146,10 @@ export default function CreatePolicyPage() {
   const [appAware, setAppAware] = useState<AppAwareState>(
     DEFAULT_APPAWARE_STATE,
   );
+  const appAwareDirty = isAppAwareDirty(appAware);
   const dirtyTabs: Record<string, boolean> = {
-    appaware: isAppAwareDirty(appAware),
+    appaware: appAwareDirty,
+    "appaware-v2": appAwareDirty,
   };
   const dirty = Object.values(dirtyTabs).some(Boolean);
 
@@ -148,7 +157,7 @@ export default function CreatePolicyPage() {
     <PageShell
       // AppAware's cards cap at the content area's height, so the shell has to
       // bound it rather than letting the body scroll.
-      fill={active.label === "AppAware"}
+      fill={active.path.startsWith("appaware")}
       header={
         <PageHeader
           title="Create New Policy"
@@ -202,8 +211,10 @@ export default function CreatePolicyPage() {
         </PageHeader>
       }
     >
-      {active.label === "AppAware" ? (
+      {active.path === "appaware" ? (
         <AppAwareControls state={appAware} onChange={setAppAware} />
+      ) : active.path === "appaware-v2" ? (
+        <AppAwareControlsV2 state={appAware} onChange={setAppAware} />
       ) : (
         <Card>
           <CardContent sx={{ p: 2 }}>

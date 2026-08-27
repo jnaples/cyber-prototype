@@ -12,9 +12,10 @@ import {
   Card,
   Chip,
   Divider,
-  InputAdornment,
   Stack,
   Switch,
+  ToggleButton,
+  ToggleButtonGroup,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -22,15 +23,13 @@ import type { Theme } from "@mui/material/styles";
 import { alpha } from "@mui/material/styles";
 import type { GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import SearchIcon from "@mui/icons-material/Search";
 import type { Dispatch, SetStateAction } from "react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import { DataTable } from "@/components/data-table";
 import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
-import { TextField } from "@/components/text-field";
 import type { AppCategory } from "@/data/appaware-apps";
 import { TOTAL_APPS } from "@/data/appaware-apps";
 import { logoUrl } from "@/data/appaware-logos";
@@ -68,6 +67,14 @@ const tileSx = (active: boolean) => (theme: Theme) => ({
       : theme.vars.palette.divider,
   }),
 });
+
+/**
+ * Empty state inside a category. The rows are scoped to that category, so the
+ * useful next step is widening the search rather than adjusting filters.
+ */
+function CategoryNoResults() {
+  return <NoResultsOverlay description="Try searching in all apps." />;
+}
 
 /** Which category an app belongs to — the All Apps grid needs it per row. */
 const CATEGORY_OF: Record<string, AppCategory> = Object.fromEntries(
@@ -175,60 +182,6 @@ function AppLogo({ app }: { app: string }) {
   );
 }
 
-/**
- * Sizes the grid card to its content, but never past the space on offer.
- *
- * CSS alone can't do this here. The card has to hug when the rows are short and
- * be a *definite* height when they aren't — the grid measures itself against
- * its parent, and without a definite height it grows past the card and its own
- * pagination footer gets clipped. `fit-content`, `max-height`, and
- * `min(100%, max-content)` all collapse to the content height in both cases.
- *
- * So measure instead: everything but the scrolling rows is fixed chrome (policy
- * header, search, column headers, pager), and the grid publishes its full rows
- * height on the virtual scroller's content node. Their sum is what the card
- * wants; the container's height is the ceiling.
- */
-function useContentHeight() {
-  const cardRef = useRef<HTMLDivElement | null>(null);
-  const [height, setHeight] = useState<number>();
-
-  useLayoutEffect(() => {
-    const card = cardRef.current;
-    const container = card?.parentElement;
-    if (!card || !container) return;
-
-    let watched: Element | null = null;
-
-    const measure = () => {
-      const scroller = card.querySelector<HTMLElement>(
-        ".MuiDataGrid-virtualScroller",
-      );
-      const rows = card.querySelector<HTMLElement>(
-        ".MuiDataGrid-virtualScrollerContent",
-      );
-      if (!scroller || !rows) return;
-      // Re-point the observer if the grid swapped the node out.
-      if (watched !== rows) {
-        if (watched) observer.unobserve(watched);
-        observer.observe(rows);
-        watched = rows;
-      }
-      // Invariant of the card's own height, so this can't oscillate.
-      const chrome = card.clientHeight - scroller.clientHeight;
-      setHeight(Math.min(container.clientHeight, chrome + rows.offsetHeight));
-    };
-
-    const observer = new ResizeObserver(measure);
-    observer.observe(container);
-    observer.observe(card);
-    measure();
-    return () => observer.disconnect();
-  }, []);
-
-  return { cardRef, height };
-}
-
 export function AppAwareControls({
   state,
   onChange,
@@ -238,9 +191,7 @@ export function AppAwareControls({
   onChange: Dispatch<SetStateAction<AppAwareState>>;
 }) {
   const [selectedCat, setSelectedCat] = useState(CATEGORIES[0].id);
-  const [railQuery, setRailQuery] = useState("");
   const [appQuery, setAppQuery] = useState("");
-  const { cardRef, height: cardHeight } = useContentHeight();
   const [rowSelection, setRowSelection] = useState<GridRowSelectionModel>({
     type: "include",
     ids: new Set(),
@@ -287,12 +238,10 @@ export function AppAwareControls({
       )
     : summarize(category, policy, rules);
 
-  const railMatches = CATEGORIES.filter((c) =>
-    c.name.toLowerCase().includes(railQuery.trim().toLowerCase()),
-  );
   const scopedApps = showingAll
     ? CATEGORIES.flatMap((c) => c.apps)
     : category.apps;
+  // The grid's own search filters within whatever the rail has selected.
   const visibleApps = scopedApps.filter((a) =>
     a.toLowerCase().includes(appQuery.trim().toLowerCase()),
   );
@@ -401,34 +350,44 @@ export function AppAwareControls({
     {
       field: "actions",
       headerName: "Actions",
-      width: 160,
+      width: 200,
       sortable: false,
       filterable: false,
       resizable: false,
       disableColumnMenu: true,
       renderCell: (params) => {
         const app = params.id as string;
-        // The switch reads the app's effective state: its own rule if it has
-        // one, otherwise whatever its category says.
-        const blocked = (rules[app] ?? policyOf(app)) === "block";
+        // Reads the app's effective state: its own rule if it has one,
+        // otherwise whatever its category says.
+        const effective: Policy = rules[app] ?? policyOf(app);
         return (
-          <Stack
-            direction="row"
-            spacing={0.75}
-            sx={{ alignItems: "center", height: "100%" }}
-          >
-            <Switch
+          <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+            <ToggleButtonGroup
+              exclusive
               size="small"
-              checked={blocked}
-              onChange={(e) => {
-                const next: Policy = e.target.checked ? "block" : "allow";
+              value={effective}
+              // Same sizing as the schedule drawer's day-of-week picker.
+              sx={{
+                "& .MuiToggleButton-root": {
+                  minWidth: 44,
+                  py: "4px",
+                  px: "12px",
+                  textTransform: "uppercase",
+                },
+              }}
+              onChange={(_event, next: Policy | null) => {
+                // A group with `exclusive` fires null when you click the
+                // already-selected side; there's nothing to change then.
+                if (!next) return;
                 // Landing back on the category's own policy drops the app
                 // rule rather than pinning a redundant one.
                 setRule([app], next === policyOf(app) ? null : next);
               }}
-            />
-            <Typography variant="body2">Block</Typography>
-          </Stack>
+            >
+              <ToggleButton value="allow">Allow</ToggleButton>
+              <ToggleButton value="block">Block</ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
         );
       },
     },
@@ -459,27 +418,8 @@ export function AppAwareControls({
           overflow: "hidden",
         }}
       >
-        <Box sx={{ px: 2, pt: 2 }}>
+        <Box sx={{ p: 2 }}>
           <Typography variant="cardTitle">Categories</Typography>
-        </Box>
-
-        <Box sx={{ p: 2, borderBottom: "1px solid", borderColor: "divider" }}>
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="Search..."
-            value={railQuery}
-            onChange={(e) => setRailQuery(e.target.value)}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
         </Box>
 
         <Box
@@ -487,7 +427,9 @@ export function AppAwareControls({
             flex: 1,
             minHeight: 0,
             overflow: "auto",
-            p: 2,
+            // No top padding: the title block above already spaces the list.
+            px: 2,
+            pb: 2,
             display: "flex",
             flexDirection: "column",
           }}
@@ -502,15 +444,24 @@ export function AppAwareControls({
             }}
             sx={tileSx(showingAll)}
           >
-            <Typography noWrap variant="body1" sx={{ fontWeight: 600 }}>
-              All Apps
-            </Typography>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography noWrap variant="body1" sx={{ fontWeight: 600 }}>
+                All Apps
+              </Typography>
+              <Typography
+                noWrap
+                variant="body2"
+                sx={{ mt: 0.5, color: "text.secondary" }}
+              >
+                {TOTAL_APPS.toLocaleString()} apps
+              </Typography>
+            </Box>
           </Box>
 
           <Divider sx={{ my: 2 }} />
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {railMatches.map((c) => {
+            {CATEGORIES.map((c) => {
               const active = !showingAll && c.id === category.id;
               const sum = summarize(c, policies[c.id], rules);
               return (
@@ -525,7 +476,11 @@ export function AppAwareControls({
                 >
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.75,
+                      }}
                     >
                       <Typography
                         noWrap
@@ -547,6 +502,13 @@ export function AppAwareControls({
                         </Tooltip>
                       )}
                     </Box>
+                    <Typography
+                      noWrap
+                      variant="body2"
+                      sx={{ mt: 0.5, color: "text.secondary" }}
+                    >
+                      {c.apps.length.toLocaleString()} apps
+                    </Typography>
                   </Box>
                   <StateChip state={sum.state} />
                 </Box>
@@ -554,27 +516,17 @@ export function AppAwareControls({
             })}
           </Box>
         </Box>
-
-        <Typography
-          variant="body2"
-          sx={{
-            px: 2,
-            py: 1.5,
-            borderTop: "1px solid",
-            borderColor: "divider",
-            color: "text.secondary",
-          }}
-        >
-          {railMatches.length} categories · {TOTAL_APPS.toLocaleString()} apps
-        </Typography>
       </Card>
 
       {/* DETAIL PANE */}
       <Card
-        ref={cardRef}
         sx={{
           gridColumn: { md: "span 2" },
-          height: cardHeight ?? "100%",
+          // A definite height is the only thing the grid can size against:
+          // it pins the column headers and the pager and scrolls the rows
+          // between them. Sizing the card to its rows instead needs JS
+          // measurement, which proved too fragile to keep.
+          height: "100%",
           minHeight: 0,
           overflow: "hidden",
           display: "flex",
@@ -615,7 +567,7 @@ export function AppAwareControls({
             </Typography>
             <Button
               size="small"
-              variant="outlined"
+              variant="contained"
               color="secondary"
               sx={{ ml: "auto" }}
               onClick={() => setScopePolicy(allBlocked ? "allow" : "block")}
@@ -659,6 +611,7 @@ export function AppAwareControls({
           columns={columns}
           fillHeight
           stretchGrid
+          density="standard"
           initialPageSize={25}
           pageSizeOptions={[10, 25, 50, 100]}
           showFilters={false}
@@ -667,7 +620,14 @@ export function AppAwareControls({
           showExport={false}
           showRefresh={false}
           onSearchChange={setAppQuery}
-          noRowsOverlay={NoResultsOverlay}
+          searchPlaceholder={
+            showingAll
+              ? "Search all apps..."
+              : `Search ${category.name} apps...`
+          }
+          // Full width up to lg (1200px), half from xl up.
+          searchSx={{ width: "100%", maxWidth: { xs: "100%", xl: "50%" } }}
+          noRowsOverlay={showingAll ? NoResultsOverlay : CategoryNoResults}
           rowSelectionModel={rowSelection}
           onRowSelectionModelChange={setRowSelection}
           // Allowed despite a category block is the case worth spotting.

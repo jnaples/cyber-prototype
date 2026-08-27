@@ -20,6 +20,7 @@ import {
   Typography,
 } from "@mui/material";
 import Box from "@mui/material/Box";
+import type { SxProps, Theme } from "@mui/material/styles";
 import { createTheme, ThemeProvider, useTheme } from "@mui/material/styles";
 import {
   DataGrid,
@@ -974,6 +975,10 @@ export interface DataTableProps {
   pageSizeOptions?: number[];
   density?: "compact" | "standard" | "comfortable";
   showSearch?: boolean;
+  /** Placeholder for the search field. Defaults to "Search...". */
+  searchPlaceholder?: string;
+  /** Styles for the search field. Defaults to a fixed 250px width. */
+  searchSx?: SxProps<Theme>;
   showFilters?: boolean;
   /**
    * When set, the filter panel edits a draft model and the grid does not
@@ -1059,6 +1064,8 @@ export function DataTable({
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
   density = "compact",
   showSearch = true,
+  searchPlaceholder = "Search...",
+  searchSx = { width: 250 },
   showFilters = true,
   deferFilterApply = false,
   filterFields,
@@ -1215,7 +1222,7 @@ export function DataTable({
         >
           <TextField
             size="small"
-            placeholder="Search..."
+            placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={handleSearchChange}
             slotProps={{
@@ -1231,7 +1238,7 @@ export function DataTable({
                 ),
               },
             }}
-            sx={{ width: 250 }}
+            sx={searchSx}
           />
         </Box>
       )}
@@ -1491,6 +1498,12 @@ export function DataTable({
                 overflowX: "auto",
               },
               "& .MuiDataGrid-main": {
+                backgroundColor: "transparent",
+              },
+              // The space under the last row inherits the header tint from
+              // --DataGrid-containerBackground, which reads as the grid having
+              // a background of its own. It sits on the card like the rows do.
+              "& .MuiDataGrid-filler, & .MuiDataGrid-scrollbarFiller": {
                 backgroundColor: "transparent",
               },
               "& .MuiDataGrid-overlay": {

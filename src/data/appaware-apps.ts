@@ -656,7 +656,7 @@ export const APP_CATEGORIES: AppCategory[] = [
   },
   {
     id: "ecosystem",
-    name: "Ecosystem Applications",
+    name: "Ecosystem",
     note: "Platform services other apps depend on. Blocking these can break device functionality.",
     // 65 apps
     apps: [
@@ -2207,7 +2207,7 @@ export const APP_CATEGORIES: AppCategory[] = [
   },
   {
     id: "voip",
-    name: "VoIP/Conferencing",
+    name: "VoIP & Conferencing",
     // 130 apps
     apps: [
       "100ms",
@@ -2344,7 +2344,7 @@ export const APP_CATEGORIES: AppCategory[] = [
   },
   {
     id: "vpn",
-    name: "VPN And Proxy",
+    name: "VPN & Proxy",
     // 165 apps
     apps: [
       "1.1.1.1 with WARP",
