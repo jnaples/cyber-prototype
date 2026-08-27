@@ -983,6 +983,8 @@ export interface DataTableProps {
   searchInputRef?: React.Ref<HTMLInputElement>;
   /** Rendered at the end of the search field (e.g. a ⌘K hint). */
   searchHint?: React.ReactNode;
+  /** Rendered immediately right of the Filters button, 8px apart. */
+  afterFilters?: React.ReactNode;
   showFilters?: boolean;
   /**
    * When set, the filter panel edits a draft model and the grid does not
@@ -1072,6 +1074,7 @@ export function DataTable({
   searchSx = { width: 250 },
   searchInputRef,
   searchHint,
+  afterFilters,
   showFilters = true,
   deferFilterApply = false,
   filterFields,
@@ -1268,28 +1271,31 @@ export function DataTable({
             py: 1,
           }}
         >
-          {showFilters ? (
-            <Button
-              ref={setFiltersButtonEl}
-              variant="text"
-              color="secondary"
-              size="small"
-              onClick={() => {
-                if (onFiltersClick) {
-                  onFiltersClick();
-                } else {
-                  setPanelTarget(filtersButtonEl);
-                  apiRef.current?.showFilterPanel();
-                }
-              }}
-              startIcon={<MaterialSymbol name="filter_alt" size={20} />}
-              sx={{ color: "text.primary" }}
-            >
-              Filters
-            </Button>
-          ) : (
-            <Box />
-          )}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            {showFilters ? (
+              <Button
+                ref={setFiltersButtonEl}
+                variant="text"
+                color="secondary"
+                size="small"
+                onClick={() => {
+                  if (onFiltersClick) {
+                    onFiltersClick();
+                  } else {
+                    setPanelTarget(filtersButtonEl);
+                    apiRef.current?.showFilterPanel();
+                  }
+                }}
+                startIcon={<MaterialSymbol name="filter_alt" size={20} />}
+                sx={{ color: "text.primary" }}
+              >
+                Filters
+              </Button>
+            ) : (
+              <Box />
+            )}
+            {afterFilters}
+          </Box>
 
           <Box sx={{ display: "flex", alignItems: "center" }}>
             {showDefaultView && (

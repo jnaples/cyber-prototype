@@ -363,6 +363,9 @@ export function AppAwareControlsV3({
     id: app,
     application: app,
     category: CATEGORY_OF[app].name,
+    // The Actions column sorts on this: its own rule if it has one, otherwise
+    // whatever its category says.
+    state: rules[app] ?? policyOf(app),
   }));
 
   // Sizes the grid card to its rows, capped at the space on offer.
@@ -461,7 +464,9 @@ export function AppAwareControlsV3({
       field: "actions",
       headerName: "Actions",
       width: 200,
-      sortable: false,
+      // Sorts allowed before blocked; the field itself isn't on the row, so
+      // the value comes from the state computed above.
+      valueGetter: (_value, row: { state: Policy }) => row.state,
       filterable: false,
       resizable: false,
       disableColumnMenu: true,
@@ -514,13 +519,15 @@ export function AppAwareControlsV3({
       }}
     >
       {/* Search and the catalog-wide count, on the same three columns as the
-          panes below so they line up. */}
+          panes below so they line up, ruled off from the panes. */}
       <Box
         sx={{
           flexShrink: 0,
           py: 2,
           display: "grid",
           gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
+          borderBottom: "1px solid",
+          borderColor: "divider",
         }}
       >
         <TextField
@@ -567,7 +574,7 @@ export function AppAwareControlsV3({
             pr: 2,
           }}
         >
-          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          <Typography variant="body1" sx={{ color: "text.primary" }}>
             {catalogBlocked.toLocaleString()} / {TOTAL_APPS.toLocaleString()}{" "}
             blocked
           </Typography>
@@ -654,6 +661,7 @@ export function AppAwareControlsV3({
           // something definite to size against.
           gridTemplateRows: "minmax(0, 1fr)",
           gap: 2,
+          pt: 2,
           flex: 1,
           minHeight: 0,
         }}

@@ -273,6 +273,9 @@ export function AppAwareControls({
     id: app,
     application: app,
     category: CATEGORY_OF[app].name,
+    // The Actions column sorts on this: its own rule if it has one, otherwise
+    // whatever its category says.
+    state: rules[app] ?? policyOf(app),
   }));
 
   // Sizes the grid card to its rows, capped at the space on offer.
@@ -371,7 +374,9 @@ export function AppAwareControls({
       field: "actions",
       headerName: "Actions",
       width: 200,
-      sortable: false,
+      // Sorts allowed before blocked; the field itself isn't on the row, so
+      // the value comes from the state computed above.
+      valueGetter: (_value, row: { state: Policy }) => row.state,
       filterable: false,
       resizable: false,
       disableColumnMenu: true,

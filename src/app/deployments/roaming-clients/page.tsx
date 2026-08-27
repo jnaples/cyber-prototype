@@ -3,6 +3,8 @@ import {
   FormControl,
   FormLabel,
   IconButton,
+  Menu,
+  MenuItem,
   OutlinedInput,
   Typography,
 } from "@mui/material";
@@ -76,6 +78,12 @@ const FEATURE_COLUMNS: GridColDef[] = FEATURE_FIELDS.map(
     ),
   }),
 );
+
+/** Saved filter shortcuts offered beside the Filters button. */
+const FILTER_PRESETS = [
+  "Devices recommended for clean up",
+  "Duplicate Roaming Clients",
+] as const;
 
 const FEATURE_GROUP: DataGridProps["columnGroupingModel"] = [
   {
@@ -349,6 +357,8 @@ const buildTabsConfig = (total: number): StatusTabConfig[] => [
 
 export default function RoamingClientsPage() {
   const [cardTab, setCardTab] = useState(0);
+  // Filter Presets menu, anchored to its button beside Filters.
+  const [presetAnchor, setPresetAnchor] = useState<null | HTMLElement>(null);
   // The header's scope chip narrows the fleet to one organization.
   const { organization } = useOrgScope();
   const visibleRows = organization
@@ -376,6 +386,36 @@ export default function RoamingClientsPage() {
           <DataTable
             rows={visibleRows}
             columns={columns}
+            afterFilters={
+              <>
+                <Button
+                  variant="text"
+                  color="secondary"
+                  size="small"
+                  onClick={(event) => setPresetAnchor(event.currentTarget)}
+                  startIcon={<MaterialSymbol name="tune" size={20} />}
+                  sx={{ color: "text.primary" }}
+                >
+                  Filter Presets
+                </Button>
+                <Menu
+                  anchorEl={presetAnchor}
+                  open={Boolean(presetAnchor)}
+                  onClose={() => setPresetAnchor(null)}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                  transformOrigin={{ vertical: "top", horizontal: "left" }}
+                >
+                  {FILTER_PRESETS.map((preset) => (
+                    <MenuItem
+                      key={preset}
+                      onClick={() => setPresetAnchor(null)}
+                    >
+                      {preset}
+                    </MenuItem>
+                  ))}
+                </Menu>
+              </>
+            }
             columnGroupingModel={FEATURE_GROUP}
             // The group header takes the default surface so it reads as its
             // own band above the column headers. MUI X marks it with
