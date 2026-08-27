@@ -45,6 +45,11 @@ import { CATEGORIES } from "./appaware-state";
 import { useGridCardHeight } from "./use-grid-card-height";
 import { SearchShortcutHint } from "./search-shortcut-hint";
 import { useSearchShortcut } from "./use-search-shortcut";
+import {
+  OVERFLOW_SHADOW_BOTTOM,
+  OVERFLOW_SHADOW_TOP,
+  useOverflowShadows,
+} from "./use-overflow-shadows";
 
 /** How many live search results to list before summarising the remainder. */
 const RESULT_LIMIT = 8;
@@ -207,6 +212,12 @@ export function AppAwareControlsV3({
   // ⌘K / Ctrl+K jumps to the search field.
   const searchInputRef = useRef<HTMLInputElement>(null);
   useSearchShortcut(searchInputRef);
+  // Edge shadows on the category list when it has more to scroll to.
+  const {
+    scrollRef,
+    top: overflowTop,
+    bottom: overflowBottom,
+  } = useOverflowShadows<HTMLDivElement>();
   // Live results for the search card. Matches run across the whole catalog,
   // not just the selected pane, so the field works as a finder.
   const [showResults, setShowResults] = useState(false);
@@ -664,100 +675,130 @@ export function AppAwareControlsV3({
           {/* The list sits in a rounded panel, inset from the card edge —
               the same treatment as the grid's well. */}
           <Box sx={{ flex: 1, minHeight: 0, pl: 2, pb: 2, display: "flex" }}>
+            {/* Relative to the scroll box alone, so the edge shadows sit on
+                its edges rather than the padded wrapper's. */}
             <Box
               sx={{
+                position: "relative",
                 flex: 1,
                 minWidth: 0,
                 minHeight: 0,
-                overflow: "auto",
                 display: "flex",
-                flexDirection: "column",
               }}
             >
-              {/* All Apps sits above the categories, separated by a rule — it's a
-                  flat view of the catalog rather than one of the categories. */}
               <Box
-                onClick={() => {
-                  setSelectedCat(ALL);
-                  clearSelection();
-                  setAppQuery("");
-                  clearPick();
+                ref={scrollRef}
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  minHeight: 0,
+                  overflow: "auto",
+                  display: "flex",
+                  flexDirection: "column",
                 }}
-                sx={tileSx(showingAll)}
               >
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography noWrap variant="body1" sx={{ fontWeight: 600 }}>
-                    All Apps
-                  </Typography>
-                  <Typography
-                    noWrap
-                    variant="body2"
-                    sx={{ mt: 0.5, color: "text.secondary" }}
-                  >
-                    {TOTAL_APPS.toLocaleString()} apps
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Divider sx={{ my: 2 }} />
-
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                {CATEGORIES.map((c) => {
-                  const active = !showingAll && c.id === category.id;
-                  const sum = summarize(c, policies[c.id], rules);
-                  return (
-                    <Box
-                      key={c.id}
-                      ref={active ? activeTileRef : undefined}
-                      onClick={() => {
-                        setSelectedCat(c.id);
-                        clearSelection();
-                        setAppQuery("");
-                        clearPick();
-                      }}
-                      sx={tileSx(active)}
+                {/* All Apps sits above the categories, separated by a rule — it's a
+                    flat view of the catalog rather than one of the categories. */}
+                <Box
+                  onClick={() => {
+                    setSelectedCat(ALL);
+                    clearSelection();
+                    setAppQuery("");
+                    clearPick();
+                  }}
+                  sx={tileSx(showingAll)}
+                >
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography noWrap variant="body1" sx={{ fontWeight: 600 }}>
+                      All Apps
+                    </Typography>
+                    <Typography
+                      noWrap
+                      variant="body2"
+                      sx={{ mt: 0.5, color: "text.secondary" }}
                     >
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 0.75,
-                          }}
-                        >
+                      {TOTAL_APPS.toLocaleString()} apps
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Divider sx={{ my: 2 }} />
+
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  {CATEGORIES.map((c) => {
+                    const active = !showingAll && c.id === category.id;
+                    const sum = summarize(c, policies[c.id], rules);
+                    return (
+                      <Box
+                        key={c.id}
+                        ref={active ? activeTileRef : undefined}
+                        onClick={() => {
+                          setSelectedCat(c.id);
+                          clearSelection();
+                          setAppQuery("");
+                          clearPick();
+                        }}
+                        sx={tileSx(active)}
+                      >
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 0.75,
+                            }}
+                          >
+                            <Typography
+                              noWrap
+                              variant="body1"
+                              sx={{ fontWeight: 600 }}
+                            >
+                              {c.name}
+                            </Typography>
+                            {c.note && (
+                              <Tooltip title={c.note} placement="top">
+                                <InfoOutlinedIcon
+                                  sx={{
+                                    fontSize: 20,
+                                    flexShrink: 0,
+                                    color: "primary.main",
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              </Tooltip>
+                            )}
+                          </Box>
                           <Typography
                             noWrap
-                            variant="body1"
-                            sx={{ fontWeight: 600 }}
+                            variant="body2"
+                            sx={{ mt: 0.5, color: "text.secondary" }}
                           >
-                            {c.name}
+                            {c.apps.length.toLocaleString()} apps
                           </Typography>
-                          {c.note && (
-                            <Tooltip title={c.note} placement="top">
-                              <InfoOutlinedIcon
-                                sx={{
-                                  fontSize: 20,
-                                  flexShrink: 0,
-                                  color: "primary.main",
-                                }}
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </Tooltip>
-                          )}
                         </Box>
-                        <Typography
-                          noWrap
-                          variant="body2"
-                          sx={{ mt: 0.5, color: "text.secondary" }}
-                        >
-                          {c.apps.length.toLocaleString()} apps
-                        </Typography>
+                        <StateChip state={sum.state} />
                       </Box>
-                      <StateChip state={sum.state} />
-                    </Box>
-                  );
-                })}
+                    );
+                  })}
+                </Box>
               </Box>
+              {/* One overlay carrying whichever edges have more to scroll to,
+                  using the same shadow the grid puts on its pinned columns. */}
+              {(overflowTop || overflowBottom) && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    pointerEvents: "none",
+                    boxShadow: [
+                      overflowTop && OVERFLOW_SHADOW_TOP,
+                      overflowBottom && OVERFLOW_SHADOW_BOTTOM,
+                    ]
+                      .filter(Boolean)
+                      .join(", "),
+                  }}
+                />
+              )}
             </Box>
           </Box>
         </Box>
