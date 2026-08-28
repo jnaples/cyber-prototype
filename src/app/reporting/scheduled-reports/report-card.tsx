@@ -249,7 +249,7 @@ export function ReportCard({
                     color: "common.white",
                   }}
                 >
-                  <OpenInFullIcon sx={{ fontSize: 20 }} />
+                  <OpenInFullIcon sx={{ fontSize: 24 }} />
                 </IconButton>
               </ArrowTooltip>
             )}
@@ -336,7 +336,7 @@ export function ReportCard({
                     color: "common.white",
                   }}
                 >
-                  <OpenInFullIcon sx={{ fontSize: 20 }} />
+                  <OpenInFullIcon sx={{ fontSize: 24 }} />
                 </IconButton>
               </ArrowTooltip>
             )}
