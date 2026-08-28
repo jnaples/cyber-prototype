@@ -3,12 +3,14 @@
 // elevated Card so it lifts off the Library's neutral well.
 
 import ArrowCircleUpOutlinedIcon from "@mui/icons-material/ArrowCircleUpOutlined";
+import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
 import {
   Box,
   Button,
   Card,
   Chip,
+  IconButton,
   Menu,
   MenuItem,
   Typography,
@@ -16,6 +18,8 @@ import {
 import type { SvgIconComponent } from "@mui/icons-material";
 import { alpha } from "@mui/material/styles";
 import { useState } from "react";
+
+import { ArrowTooltip } from "@/components/arrow-tooltip";
 
 import { ReportPreview } from "./report-preview";
 
@@ -212,9 +216,9 @@ export function ReportCard({
               opacity: 0,
               pointerEvents: "none",
               transition: "opacity 120ms",
-              // The whole scrim opens the preview now that the corner icon
-              // is gone, so it reads as a zoomable surface. The buttons on top
-              // of it keep the normal pointer.
+              // The whole scrim opens the preview, not just the corner
+              // expander, so it reads as a zoomable surface. The buttons on
+              // top of it keep the normal pointer.
               cursor: onExpand ? "zoom-in" : "default",
               "& .MuiButtonBase-root": { cursor: "pointer" },
             }}
@@ -227,6 +231,28 @@ export function ReportCard({
                 : undefined
             }
           >
+            {onExpand && (
+              <ArrowTooltip title="Expand">
+                <IconButton
+                  aria-label="Expand"
+                  size="small"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onExpand();
+                  }}
+                  sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    // White reads against the scrim; no border or fill, so the
+                    // report shows through behind it.
+                    color: "common.white",
+                  }}
+                >
+                  <OpenInFullIcon sx={{ fontSize: 20 }} />
+                </IconButton>
+              </ArrowTooltip>
+            )}
             <Typography
               variant="body1"
               sx={{ fontWeight: 600, color: "common.white" }}
@@ -277,9 +303,9 @@ export function ReportCard({
               opacity: menuOpen ? 1 : 0,
               transition: "opacity 120ms",
               pointerEvents: menuOpen ? "auto" : "none",
-              // The whole scrim opens the preview now that the corner icon
-              // is gone, so it reads as a zoomable surface. The buttons on top
-              // of it keep the normal pointer.
+              // The whole scrim opens the preview, not just the corner
+              // expander, so it reads as a zoomable surface. The buttons on
+              // top of it keep the normal pointer.
               cursor: onExpand ? "zoom-in" : "default",
               "& .MuiButtonBase-root": { cursor: "pointer" },
             }}
@@ -292,6 +318,28 @@ export function ReportCard({
                 : undefined
             }
           >
+            {onExpand && (
+              <ArrowTooltip title="Expand">
+                <IconButton
+                  aria-label="Expand"
+                  size="small"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onExpand();
+                  }}
+                  sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    // White reads against the scrim; no border or fill, so the
+                    // report shows through behind it.
+                    color: "common.white",
+                  }}
+                >
+                  <OpenInFullIcon sx={{ fontSize: 20 }} />
+                </IconButton>
+              </ArrowTooltip>
+            )}
             {onPreview && (
               <Button
                 variant="contained"
