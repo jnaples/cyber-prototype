@@ -13,6 +13,7 @@ import {
   FormControlLabel,
   FormLabel,
   IconButton,
+  InputAdornment,
   Link,
   Radio,
   RadioGroup,
@@ -422,9 +423,24 @@ export default function BrandingPage() {
           />
           <TextField
             fullWidth
-            placeholder="yourcompanyname.app.dnsfilter.com"
+            placeholder="yourcompanyname"
             value={dashboardUrl}
             onChange={(e) => setDashboardUrl(e.target.value)}
+            slotProps={{
+              input: {
+                // The domain is fixed, so it's shown rather than typed.
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary" }}
+                    >
+                      .app.dnsfilter.com
+                    </Typography>
+                  </InputAdornment>
+                ),
+              },
+            }}
           />
         </Box>
 

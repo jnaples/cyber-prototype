@@ -88,15 +88,6 @@ export function SamplePreviewModal({
             Close
           </Button>
           <Box sx={{ flex: 1 }} />
-          <Button
-            variant="outlined"
-            color="secondary"
-            size="small"
-            onClick={onClose}
-          >
-            Close
-          </Button>
-          <Box sx={{ flex: 1 }} />
           {/* Locked: upgrading is the only thing left to do here. */}
           {locked && (
             <Button

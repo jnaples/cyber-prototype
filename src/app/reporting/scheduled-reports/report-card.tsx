@@ -4,13 +4,11 @@
 
 import ArrowCircleUpOutlinedIcon from "@mui/icons-material/ArrowCircleUpOutlined";
 import ArrowDropDownOutlinedIcon from "@mui/icons-material/ArrowDropDownOutlined";
-import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 import {
   Box,
   Button,
   Card,
   Chip,
-  IconButton,
   Menu,
   MenuItem,
   Typography,
@@ -214,25 +212,21 @@ export function ReportCard({
               opacity: 0,
               pointerEvents: "none",
               transition: "opacity 120ms",
+              // The whole scrim opens the preview now that the corner icon
+              // is gone, so it reads as a zoomable surface. The buttons on top
+              // of it keep the normal pointer.
+              cursor: onExpand ? "zoom-in" : "default",
+              "& .MuiButtonBase-root": { cursor: "pointer" },
             }}
+            onClick={
+              onExpand
+                ? (event) => {
+                    event.stopPropagation();
+                    onExpand();
+                  }
+                : undefined
+            }
           >
-            {onExpand && (
-              <IconButton
-                aria-label="Open preview"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onExpand();
-                }}
-                sx={{
-                  position: "absolute",
-                  top: 8,
-                  right: 8,
-                  color: "common.white",
-                }}
-              >
-                <OpenInFullIcon sx={{ fontSize: 24 }} />
-              </IconButton>
-            )}
             <Typography
               variant="body1"
               sx={{ fontWeight: 600, color: "common.white" }}
@@ -283,25 +277,21 @@ export function ReportCard({
               opacity: menuOpen ? 1 : 0,
               transition: "opacity 120ms",
               pointerEvents: menuOpen ? "auto" : "none",
+              // The whole scrim opens the preview now that the corner icon
+              // is gone, so it reads as a zoomable surface. The buttons on top
+              // of it keep the normal pointer.
+              cursor: onExpand ? "zoom-in" : "default",
+              "& .MuiButtonBase-root": { cursor: "pointer" },
             }}
+            onClick={
+              onExpand
+                ? (event) => {
+                    event.stopPropagation();
+                    onExpand();
+                  }
+                : undefined
+            }
           >
-            {onExpand && (
-              <IconButton
-                aria-label="Open preview"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onExpand();
-                }}
-                sx={{
-                  position: "absolute",
-                  top: 8,
-                  right: 8,
-                  color: "common.white",
-                }}
-              >
-                <OpenInFullIcon sx={{ fontSize: 24 }} />
-              </IconButton>
-            )}
             {onPreview && (
               <Button
                 variant="contained"
