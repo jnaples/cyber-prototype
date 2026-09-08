@@ -155,18 +155,18 @@ function SectionCard({
   );
 }
 
+/** Every upload well is the same height, whatever it holds. */
+const WELL_HEIGHT = 88;
+
 /**
  * Upload well. Picking a file previews it in place via an object URL, which
  * lives only for the session — a refresh clears it, since nothing is uploaded.
  */
 function ImageDrop({
-  previewHeight,
   alt,
   src,
   onChange,
 }: {
-  /** How tall the preview may render inside the well. */
-  previewHeight: number;
   alt: string;
   src: string | null;
   onChange: (src: string | null) => void;
@@ -199,7 +199,7 @@ function ImageDrop({
           borderColor: "divider",
           borderRadius: 1,
           bgcolor: "background.neutral",
-          minHeight: previewHeight + 32,
+          height: WELL_HEIGHT,
           p: 2,
           textAlign: "center",
           cursor: "pointer",
@@ -223,7 +223,7 @@ function ImageDrop({
             src={src}
             alt={alt}
             sx={{
-              maxHeight: previewHeight,
+              maxHeight: "100%",
               maxWidth: "100%",
               objectFit: "contain",
             }}
@@ -381,70 +381,80 @@ export default function BrandingPage() {
       }
     >
       <SectionCard title="Dashboard Customization">
-        <Box>
-          <FieldLabel
-            label="Dashboard Name"
-            help='Sets the browser tab title and login screen text "Service provided by {Dashboard Name}".'
-          />
-          <TextField
-            fullWidth
-            placeholder="e.g., Security Portal"
-            value={dashboardName}
-            onChange={(e) => setDashboardName(e.target.value)}
-            error={nameTooLong}
-            // MUI indents contained helper text on both sides; dropping the
-            // right inset puts the count flush with the field's edge.
-            sx={{ "& .MuiFormHelperText-root": { mr: 0 } }}
-            // Typing past the limit isn't blocked — the field goes red and the
-            // count says by how much.
-            helperText={
-              <Box
-                component="span"
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: 1,
-                }}
-              >
-                <span>{`${NAME_LIMIT} character limit`}</span>
-                <span>{`${dashboardName.length}/${NAME_LIMIT}`}</span>
-              </Box>
-            }
-          />
-        </Box>
-
-        <Box>
-          <FieldLabel
-            label="Custom Dashboard URL"
-            help="Brands the dashboard and login page with a custom domain."
-          />
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        {/* Name and URL read as one pair, so they share a row. */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
+            gap: 2,
+            alignItems: "start",
+          }}
+        >
+          <Box>
+            <FieldLabel
+              label="Dashboard Name"
+              help='Sets the browser tab title and login screen text "Service provided by {Dashboard Name}".'
+            />
             <TextField
               fullWidth
-              placeholder="yourcompanyname"
-              value={dashboardUrl}
-              onChange={(e) => setDashboardUrl(e.target.value)}
-              slotProps={{
-                input: {
-                  // The domain is fixed, so it's shown rather than typed.
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <Typography
-                        variant="body2"
-                        sx={{ color: "text.secondary" }}
-                      >
-                        .app.dnsfilter.com
-                      </Typography>
-                    </InputAdornment>
-                  ),
-                },
-              }}
+              placeholder="e.g., Security Portal"
+              value={dashboardName}
+              onChange={(e) => setDashboardName(e.target.value)}
+              error={nameTooLong}
+              // MUI indents contained helper text on both sides; dropping the
+              // right inset puts the count flush with the field's edge.
+              sx={{ "& .MuiFormHelperText-root": { mr: 0 } }}
+              // Typing past the limit isn't blocked — the field goes red and the
+              // count says by how much.
+              helperText={
+                <Box
+                  component="span"
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 1,
+                  }}
+                >
+                  <span>{`${NAME_LIMIT} character limit`}</span>
+                  <span>{`${dashboardName.length}/${NAME_LIMIT}`}</span>
+                </Box>
+              }
             />
-            {/* Copies the whole address, not just the subdomain that's typed. */}
-            <CopyButton
-              value={`https://${dashboardUrl}.app.dnsfilter.com`}
-              disabled={!dashboardUrl.trim()}
+          </Box>
+
+          <Box>
+            <FieldLabel
+              label="Custom Dashboard URL"
+              help="Brands the dashboard and login page with a custom domain."
             />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <TextField
+                fullWidth
+                placeholder="yourcompanyname"
+                value={dashboardUrl}
+                onChange={(e) => setDashboardUrl(e.target.value)}
+                slotProps={{
+                  input: {
+                    // The domain is fixed, so it's shown rather than typed.
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          .app.dnsfilter.com
+                        </Typography>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+              {/* Copies the whole address, not just the subdomain that's typed. */}
+              <CopyButton
+                value={`https://${dashboardUrl}.app.dnsfilter.com`}
+                disabled={!dashboardUrl.trim()}
+              />
+            </Box>
           </Box>
         </Box>
 
@@ -462,7 +472,6 @@ export default function BrandingPage() {
               help="Displayed across the dashboard, emails, and block pages. Organizations can set a different logo on block pages."
             />
             <ImageDrop
-              previewHeight={72}
               alt="Default logo preview"
               src={logo}
               onChange={setLogo}
@@ -475,7 +484,6 @@ export default function BrandingPage() {
               help="Used on the side navigation and in dark mode. Helpful when a logo needs more contrast to stay visible, such as one with dark or low-contrast colors."
             />
             <ImageDrop
-              previewHeight={72}
               alt="Dark mode logo preview"
               src={darkLogo}
               onChange={setDarkLogo}
@@ -497,7 +505,6 @@ export default function BrandingPage() {
               help="Shown in the browser tab on the dashboard and other branded pages."
             />
             <ImageDrop
-              previewHeight={32}
               alt="Custom favicon preview"
               src={favicon}
               onChange={setFavicon}
