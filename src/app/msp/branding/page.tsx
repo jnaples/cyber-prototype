@@ -11,9 +11,9 @@ import {
   CardContent,
   Collapse,
   FormControlLabel,
+  FormHelperText,
   FormLabel,
   IconButton,
-  InputAdornment,
   Link,
   Radio,
   RadioGroup,
@@ -307,9 +307,16 @@ export default function BrandingPage() {
 
   const nameTooLong = dashboardName.length > NAME_LIMIT;
 
+  // A subdomain label: letters, numbers, and hyphens only.
+  const urlError =
+    dashboardUrl !== "" && !/^[A-Za-z0-9-]+$/.test(dashboardUrl)
+      ? "Use letters, numbers, and hyphens only."
+      : "";
+
   // Nothing here is required — but what is filled in has to be valid: the name
-  // within its limit, and the contact email a real address if one is given.
-  const invalid = nameTooLong || Boolean(emailError);
+  // within its limit, the URL a usable subdomain, and the contact email a real
+  // address if one is given.
+  const invalid = nameTooLong || Boolean(urlError) || Boolean(emailError);
 
   // Save only lights up once something differs from the saved state.
   const dirty =
@@ -429,32 +436,39 @@ export default function BrandingPage() {
             />
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <TextField
-                fullWidth
                 placeholder="yourcompanyname"
                 value={dashboardUrl}
                 onChange={(e) => setDashboardUrl(e.target.value)}
-                slotProps={{
-                  input: {
-                    // The domain is fixed, so it's shown rather than typed.
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "text.secondary" }}
-                        >
-                          .app.dnsfilter.com
-                        </Typography>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
+                error={Boolean(urlError)}
+                sx={{ flex: 1 }}
               />
-              {/* Copies the whole address, not just the subdomain that's typed. */}
+              {/* The domain is fixed, so it sits outside the field entirely —
+                  only the subdomain is typed. */}
+              <Typography
+                variant="body1"
+                sx={{ color: "text.primary", flexShrink: 0 }}
+              >
+                .app.dnsfilter.com
+              </Typography>
+              {/* Copies the whole address, not just the subdomain that's
+                  typed — and only once it's saved, so the copied URL is one
+                  that actually resolves. */}
               <CopyButton
-                value={`https://${dashboardUrl}.app.dnsfilter.com`}
-                disabled={!dashboardUrl.trim()}
+                value={`https://${saved.dashboardUrl}.app.dnsfilter.com`}
+                disabled={
+                  !saved.dashboardUrl.trim() ||
+                  dashboardUrl !== saved.dashboardUrl
+                }
               />
             </Box>
+            {/* Below the row rather than on the field: helper text inside a
+                centered flex row would shove the domain and copy button down
+                as soon as it appeared. */}
+            {urlError && (
+              <FormHelperText error sx={{ ml: "4px", mr: 0, mt: "3px" }}>
+                {urlError}
+              </FormHelperText>
+            )}
           </Box>
         </Box>
 

@@ -112,8 +112,8 @@ export function PolicySelect({
 
   const item = (policy: string, global: boolean) => (
     <MenuItem key={policy} value={policy} sx={policyItemSx}>
-      {/* 18px glyph — the size the data grids paint their selection boxes at
-          (see the MuiCheckbox rule in data-table). */}
+      {/* 20px glyph — the size the data grids paint their selection boxes at
+          (see the MuiDataGrid checkbox rule in the theme). */}
       {multiple && (
         <Checkbox
           checked={isChecked(policy)}

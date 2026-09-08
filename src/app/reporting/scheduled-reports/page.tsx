@@ -396,19 +396,14 @@ const buildColumns = (
     flex: 1,
     minWidth: 170,
     sortable: false,
-    renderCell: (params) => {
-      const paused = params.row.nextDelivery === "Paused";
-      return (
-        <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-          <Typography
-            variant="body2"
-            sx={{ color: paused ? "text.secondary" : "text.primary" }}
-          >
-            {params.row.nextDelivery}
-          </Typography>
-        </Box>
-      );
-    },
+    // "Paused" reads at full strength like any other value in the column.
+    renderCell: (params) => (
+      <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
+        <Typography variant="body2" sx={{ color: "text.primary" }}>
+          {params.row.nextDelivery}
+        </Typography>
+      </Box>
+    ),
   },
   {
     field: "lastDelivery",
@@ -572,6 +567,8 @@ export default function ScheduledReportsPage({
   });
   const clearSelection = () =>
     setRowSelection({ type: "include", ids: new Set() });
+  // Pause/Resume affect every selected schedule at once, so they confirm first.
+  const [bulkAction, setBulkAction] = useState<"pause" | "resume" | null>(null);
 
   const { organization: scopedOrg } = useOrgScope();
 
@@ -611,6 +608,54 @@ export default function ScheduledReportsPage({
     rowSelection.type === "exclude"
       ? rows.length - rowSelection.ids.size
       : rowSelection.ids.size;
+
+  // "Exclude" is the header checkbox's select-all, so it reads against the
+  // rows the filters left visible rather than every schedule.
+  const selectedRows = useMemo(
+    () =>
+      rowSelection.type === "exclude"
+        ? rows.filter((r) => !rowSelection.ids.has(r.id))
+        : rows.filter((r) => rowSelection.ids.has(r.id)),
+    [rows, rowSelection],
+  );
+
+  // Each action only moves the rows not already in its target state; when
+  // that's none of them, the button is disabled rather than opening a no-op.
+  const pausableCount = selectedRows.filter(
+    (r) => r.status !== "paused",
+  ).length;
+  const resumableCount = selectedRows.filter(
+    (r) => r.status === "paused",
+  ).length;
+  const bulkChanging = selectedRows.filter((r) =>
+    bulkAction === "resume" ? r.status === "paused" : r.status !== "paused",
+  );
+
+  const applyBulkAction = () => {
+    const resuming = bulkAction === "resume";
+    const ids = new Set(bulkChanging.map((r) => r.id));
+    setSchedules((prev) =>
+      prev.map((r) =>
+        ids.has(r.id)
+          ? {
+              ...r,
+              status: resuming ? "active" : "paused",
+              // A row with no stored date was paused to begin with.
+              nextDelivery: resuming
+                ? (NEXT_DELIVERY[r.id] ?? "Today")
+                : "Paused",
+            }
+          : r,
+      ),
+    );
+    setToast(
+      `${ids.size} schedule${ids.size === 1 ? "" : "s"} ${
+        resuming ? "resumed" : "paused"
+      }.`,
+    );
+    clearSelection();
+    setBulkAction(null);
+  };
 
   const tabsConfig: StatusTabConfig[] = [
     {
@@ -774,22 +819,50 @@ export default function ScheduledReportsPage({
                     onClose={clearSelection}
                     actions={
                       <>
-                        <Button
-                          variant="text"
-                          color="primary"
-                          startIcon={<MaterialSymbol name="pause" size={18} />}
-                        >
-                          Pause
-                        </Button>
-                        <Button
-                          variant="text"
-                          color="primary"
-                          startIcon={
-                            <MaterialSymbol name="play_arrow" size={18} />
+                        {/* A disabled MUI button swallows pointer events, so
+                            the tooltip needs its own hoverable wrapper. */}
+                        <ArrowTooltip
+                          title={
+                            pausableCount === 0
+                              ? "All selected scheduled reports are already paused."
+                              : ""
                           }
                         >
-                          Resume
-                        </Button>
+                          <Box component="span" sx={{ display: "inline-flex" }}>
+                            <Button
+                              variant="text"
+                              color="primary"
+                              startIcon={
+                                <MaterialSymbol name="pause" size={18} />
+                              }
+                              disabled={pausableCount === 0}
+                              onClick={() => setBulkAction("pause")}
+                            >
+                              Pause
+                            </Button>
+                          </Box>
+                        </ArrowTooltip>
+                        <ArrowTooltip
+                          title={
+                            resumableCount === 0
+                              ? "All selected scheduled reports are already sending."
+                              : ""
+                          }
+                        >
+                          <Box component="span" sx={{ display: "inline-flex" }}>
+                            <Button
+                              variant="text"
+                              color="primary"
+                              startIcon={
+                                <MaterialSymbol name="play_arrow" size={18} />
+                              }
+                              disabled={resumableCount === 0}
+                              onClick={() => setBulkAction("resume")}
+                            >
+                              Resume
+                            </Button>
+                          </Box>
+                        </ArrowTooltip>
                       </>
                     }
                   />
@@ -880,6 +953,44 @@ export default function ScheduledReportsPage({
           }}
         />
       )}
+
+      {/* Pause/Resume from the bulk bar hits every selected schedule at once,
+          so it says what will change before it does it. */}
+      <Modal
+        open={bulkAction !== null}
+        onClose={() => setBulkAction(null)}
+        title={
+          bulkAction === "resume"
+            ? "Resume scheduled reports"
+            : "Pause scheduled reports"
+        }
+        width={440}
+        secondaryAction={{
+          label: "Cancel",
+          onClick: () => setBulkAction(null),
+        }}
+        primaryAction={{
+          label: (
+            <Box
+              component="span"
+              sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}
+            >
+              <MaterialSymbol
+                name={bulkAction === "resume" ? "play_arrow" : "pause"}
+                size={18}
+              />
+              {bulkAction === "resume" ? "Resume" : "Pause"}
+            </Box>
+          ),
+          onClick: applyBulkAction,
+        }}
+      >
+        <Typography variant="body1" sx={{ color: "text.primary" }}>
+          {bulkAction === "resume"
+            ? "Scheduled reports will resume on each schedule's next send date."
+            : "Scheduled reports will stop sending until they are resumed."}
+        </Typography>
+      </Modal>
 
       <Snackbar
         open={Boolean(toast)}

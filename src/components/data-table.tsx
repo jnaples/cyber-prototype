@@ -1556,10 +1556,6 @@ export function DataTable({
                 {
                   visibility: "visible",
                 },
-              "& .MuiCheckbox-root .MuiSvgIcon-root": {
-                width: 18,
-                height: 18,
-              },
               "& .MuiDataGrid-footerContainer": {
                 borderTop: "1px solid #E0E0E0 !important",
               },

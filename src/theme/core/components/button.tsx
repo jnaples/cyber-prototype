@@ -39,7 +39,10 @@ const MuiButton: Components<Theme>["MuiButton"] = {
     text: ({ theme }) => ({
       paddingLeft: "10px",
       paddingRight: "10px",
-      "&.MuiButton-colorPrimary": {
+      // Exclude the disabled state, or this would beat MUI's own disabled
+      // color (it is emitted later at equal specificity) and a disabled text
+      // button would still read as blue.
+      "&.MuiButton-colorPrimary:not(.Mui-disabled)": {
         color: theme.vars.palette.primary.light,
       },
     }),
