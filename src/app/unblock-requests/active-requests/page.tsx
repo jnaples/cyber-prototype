@@ -417,8 +417,14 @@ const columns: GridColDef[] = [
     minWidth: 150,
   },
   {
+    field: "blockedBy",
+    headerName: "Blocked by",
+    flex: 1,
+    minWidth: 190,
+  },
+  {
     field: "timeOfAttempt",
-    headerName: "Time of Submission",
+    headerName: "Time of Attempt",
     flex: 1,
     minWidth: 180,
   },
@@ -470,6 +476,7 @@ type ActiveRequest = {
   site: string;
   policy: string;
   category: string;
+  blockedBy: string;
   loggedInUser: string;
   email: string;
   requestReason: string;
@@ -484,6 +491,7 @@ const REQUESTS: ActiveRequest[] = [
     site: "Seattle HQ",
     policy: "Standard Policy",
     category: "Social Networking",
+    blockedBy: "Blocked - Social Networking",
     loggedInUser: "Sarah Chen",
     email: "sarah.chen@northwind.com",
     requestReason: "Need LinkedIn for recruiting and sales outreach",
@@ -494,6 +502,7 @@ const REQUESTS: ActiveRequest[] = [
     site: "Detroit Plant",
     policy: "Default Filtering",
     category: "Streaming Media",
+    blockedBy: "Blocked - Streaming Media",
     loggedInUser: "Marcus Thompson",
     email: "marcus.thompson@globex.com",
     requestReason: "Vendor posted required machine-training videos",
@@ -504,6 +513,7 @@ const REQUESTS: ActiveRequest[] = [
     site: "Austin Clinic",
     policy: "HIPAA Strict",
     category: "File Sharing",
+    blockedBy: "Blocked - File Sharing",
     loggedInUser: "Priya Patel",
     email: "priya.patel@contosohealth.com",
     requestReason: "Referring clinic shared patient records here",
@@ -514,6 +524,7 @@ const REQUESTS: ActiveRequest[] = [
     site: "Chicago Office",
     policy: "Standard Policy",
     category: "Proxy, Anonymizer",
+    blockedBy: "Blocked - Block List",
     loggedInUser: "David Park",
     email: "david.park@initechlegal.com",
     requestReason: "Miscategorized — needed for internal dev tooling",
@@ -524,6 +535,7 @@ const REQUESTS: ActiveRequest[] = [
     site: "Phoenix HQ",
     policy: "Marketing Policy",
     category: "Personal Storage",
+    blockedBy: "Blocked - Personal Storage",
     loggedInUser: "Lisa Wang",
     email: "lisa.wang@umbrellaretail.com",
     requestReason: "Designing this quarter's promo graphics",
@@ -534,6 +546,7 @@ const REQUESTS: ActiveRequest[] = [
     site: "Portland DC",
     policy: "Support Policy",
     category: "Phishing",
+    blockedBy: "Blocked - Phishing",
     loggedInUser: "Diego Silva",
     email: "diego.silva@northwind.com",
     requestReason: "Got an email asking me to verify my account here",
@@ -544,6 +557,7 @@ const REQUESTS: ActiveRequest[] = [
     site: "Dallas Hospital",
     policy: "Finance Policy",
     category: "File Sharing",
+    blockedBy: "Blocked - File Sharing",
     loggedInUser: "Nina Volkov",
     email: "nina.volkov@contosohealth.com",
     requestReason: "Auditor is sending large year-end documents",
@@ -554,6 +568,7 @@ const REQUESTS: ActiveRequest[] = [
     site: "Cincinnati HQ",
     policy: "Engineering Policy",
     category: "AI Tools",
+    blockedBy: "Blocked - Block List",
     loggedInUser: "Kevin O'Brien",
     email: "kevin.obrien@globex.com",
     requestReason: "Approved for debugging production code",
@@ -564,6 +579,7 @@ const REQUESTS: ActiveRequest[] = [
     site: "Tucson Store",
     policy: "Marketing Policy",
     category: "Streaming Media",
+    blockedBy: "Blocked - Streaming Media",
     loggedInUser: "Hannah Lee",
     email: "hannah.lee@umbrellaretail.com",
     requestReason: "Embedded product demo for the landing page",
@@ -574,6 +590,7 @@ const REQUESTS: ActiveRequest[] = [
     site: "NYC Office",
     policy: "Standard Policy",
     category: "News",
+    blockedBy: "Blocked - News",
     loggedInUser: "Tom Bradley",
     email: "tom.bradley@initechlegal.com",
     requestReason: "Industry research for an active client matter",
@@ -584,6 +601,7 @@ const REQUESTS: ActiveRequest[] = [
     site: "Tampa Office",
     policy: "Standard Policy",
     category: "File Sharing",
+    blockedBy: "Blocked - File Sharing",
     loggedInUser: "Renee Alvarez",
     email: "r.alvarez@coastalpm.com",
     requestReason: "Client sends lease packets through Dropbox",
@@ -595,6 +613,7 @@ const REQUESTS: ActiveRequest[] = [
     site: "Detroit Plant",
     policy: "Default Filtering",
     category: "Social Networking",
+    blockedBy: "Blocked - Block List",
     loggedInUser: "Derek Salas",
     email: "d.salas@vanguardauto.com",
     requestReason:

@@ -159,8 +159,14 @@ const columns: GridColDef[] = [
     sortable: false,
   },
   {
+    field: "blockedBy",
+    headerName: "Blocked by",
+    flex: 1,
+    minWidth: 190,
+  },
+  {
     field: "timeOfAttempt",
-    headerName: "Time of Submission",
+    headerName: "Time of Attempt",
     flex: 1,
     minWidth: 180,
   },
@@ -232,6 +238,7 @@ type HistoryRequest = {
   site: string;
   policy: string;
   category: string;
+  blockedBy: string;
   loggedInUser: string;
   email: string;
   requestReason: string;
@@ -248,6 +255,7 @@ const HISTORY: HistoryRequest[] = [
     site: "Seattle HQ",
     policy: "Standard Policy",
     category: "Social Networking",
+    blockedBy: "Blocked - Social Networking",
     loggedInUser: "Sarah Chen",
     email: "sarah.chen@northwind.com",
     requestReason: "Need LinkedIn for recruiting and sales outreach",
@@ -262,6 +270,7 @@ const HISTORY: HistoryRequest[] = [
     site: "Detroit Plant",
     policy: "Default Filtering",
     category: "Streaming Media",
+    blockedBy: "Blocked - Streaming Media",
     loggedInUser: "Marcus Thompson",
     email: "marcus.thompson@globex.com",
     requestReason: "Vendor posted required machine-training videos",
@@ -275,6 +284,7 @@ const HISTORY: HistoryRequest[] = [
     site: "Austin Clinic",
     policy: "HIPAA Strict",
     category: "File Sharing",
+    blockedBy: "Blocked - File Sharing",
     loggedInUser: "Priya Patel",
     email: "priya.patel@contosohealth.com",
     requestReason: "Referring clinic shared patient records here",
@@ -288,6 +298,7 @@ const HISTORY: HistoryRequest[] = [
     site: "Chicago Office",
     policy: "Standard Policy",
     category: "Proxy, Anonymizer",
+    blockedBy: "Blocked - Block List",
     loggedInUser: "David Park",
     email: "david.park@initechlegal.com",
     requestReason: "Miscategorized — needed for internal dev tooling",
@@ -302,6 +313,7 @@ const HISTORY: HistoryRequest[] = [
     site: "Phoenix HQ",
     policy: "Marketing Policy",
     category: "Personal Storage",
+    blockedBy: "Blocked - Personal Storage",
     loggedInUser: "Lisa Wang",
     email: "lisa.wang@umbrellaretail.com",
     requestReason: "Designing this quarter's promo graphics",
@@ -315,6 +327,7 @@ const HISTORY: HistoryRequest[] = [
     site: "Portland DC",
     policy: "Support Policy",
     category: "Forums",
+    blockedBy: "Blocked - Forums",
     loggedInUser: "Diego Silva",
     email: "diego.silva@northwind.com",
     requestReason: "Customer reported a bug discussed in a thread",
@@ -328,6 +341,7 @@ const HISTORY: HistoryRequest[] = [
     site: "Dallas Hospital",
     policy: "Finance Policy",
     category: "File Sharing",
+    blockedBy: "Blocked - File Sharing",
     loggedInUser: "Nina Volkov",
     email: "nina.volkov@contosohealth.com",
     requestReason: "Auditor is sending large year-end documents",
@@ -341,6 +355,7 @@ const HISTORY: HistoryRequest[] = [
     site: "Cincinnati HQ",
     policy: "Engineering Policy",
     category: "AI Tools",
+    blockedBy: "Blocked - Block List",
     loggedInUser: "Kevin O'Brien",
     email: "kevin.obrien@globex.com",
     requestReason: "Approved for debugging production code",
@@ -354,6 +369,7 @@ const HISTORY: HistoryRequest[] = [
     site: "Tucson Store",
     policy: "Marketing Policy",
     category: "Streaming Media",
+    blockedBy: "Blocked - Streaming Media",
     loggedInUser: "Hannah Lee",
     email: "hannah.lee@umbrellaretail.com",
     requestReason: "Embedded product demo for the landing page",
@@ -367,6 +383,7 @@ const HISTORY: HistoryRequest[] = [
     site: "NYC Office",
     policy: "Standard Policy",
     category: "News",
+    blockedBy: "Blocked - News",
     loggedInUser: "Tom Bradley",
     email: "tom.bradley@initechlegal.com",
     requestReason: "Industry research for an active client matter",
