@@ -23,6 +23,7 @@ import {
 import { useState } from "react";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
+import { CopyButton } from "@/components/copy-button";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
@@ -306,10 +307,9 @@ export default function BrandingPage() {
 
   const nameTooLong = dashboardName.length > NAME_LIMIT;
 
-  // The contact email is optional, but it still has to be a valid address if
-  // one is given.
-  const missingRequired =
-    dashboardName.trim() === "" || nameTooLong || Boolean(emailError);
+  // Nothing here is required — but what is filled in has to be valid: the name
+  // within its limit, and the contact email a real address if one is given.
+  const invalid = nameTooLong || Boolean(emailError);
 
   // Save only lights up once something differs from the saved state.
   const dirty =
@@ -321,7 +321,7 @@ export default function BrandingPage() {
     darkLogo !== saved.darkLogo ||
     favicon !== saved.favicon;
 
-  const canSave = dirty && !missingRequired;
+  const canSave = dirty && !invalid;
 
   return (
     <PageShell
@@ -352,11 +352,9 @@ export default function BrandingPage() {
                     ? `Dashboard Name is limited to ${NAME_LIMIT} characters.`
                     : emailError
                       ? emailError
-                      : missingRequired
-                        ? "Fill in the required fields first."
-                        : dirty
-                          ? ""
-                          : "No changes to save."
+                      : dirty
+                        ? ""
+                        : "No changes to save."
                 }
               >
                 <Box
@@ -387,7 +385,6 @@ export default function BrandingPage() {
           <FieldLabel
             label="Dashboard Name"
             help='Sets the browser tab title and login screen text "Service provided by {Dashboard Name}".'
-            required
           />
           <TextField
             fullWidth
@@ -421,27 +418,34 @@ export default function BrandingPage() {
             label="Custom Dashboard URL"
             help="Brands the dashboard and login page with a custom domain."
           />
-          <TextField
-            fullWidth
-            placeholder="yourcompanyname"
-            value={dashboardUrl}
-            onChange={(e) => setDashboardUrl(e.target.value)}
-            slotProps={{
-              input: {
-                // The domain is fixed, so it's shown rather than typed.
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "text.secondary" }}
-                    >
-                      .app.dnsfilter.com
-                    </Typography>
-                  </InputAdornment>
-                ),
-              },
-            }}
-          />
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <TextField
+              fullWidth
+              placeholder="yourcompanyname"
+              value={dashboardUrl}
+              onChange={(e) => setDashboardUrl(e.target.value)}
+              slotProps={{
+                input: {
+                  // The domain is fixed, so it's shown rather than typed.
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "text.secondary" }}
+                      >
+                        .app.dnsfilter.com
+                      </Typography>
+                    </InputAdornment>
+                  ),
+                },
+              }}
+            />
+            {/* Copies the whole address, not just the subdomain that's typed. */}
+            <CopyButton
+              value={`https://${dashboardUrl}.app.dnsfilter.com`}
+              disabled={!dashboardUrl.trim()}
+            />
+          </Box>
         </Box>
 
         {/* The two logos side by side, so light and dark read as one choice. */}
