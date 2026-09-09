@@ -13,7 +13,6 @@ import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { useOrgScope } from "@/hooks/use-org-scope";
 
 import { downloadQueryLogsCsv } from "./query-logs-csv";
-import { downloadTimelineLogsCsv } from "./timeline-logs-csv";
 import { ReportPrintDocument } from "./report-print";
 import { REPORTS } from "./reports";
 
@@ -45,8 +44,8 @@ const STATUS_LABEL: Record<RunStatus, string> = {
 const HISTORY: HistoryRow[] = [
   {
     id: 1,
-    reportType: "Activity Logs",
-    reportName: "Daily Activity Export",
+    reportType: "Activity Overview",
+    reportName: "Daily Activity Recap",
     customer: "Coastal Property Mgmt",
     period: "Aug 5",
     source: "Scheduled",
@@ -89,8 +88,8 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 5,
-    reportType: "Activity Logs",
-    reportName: "Daily Activity Export",
+    reportType: "Activity Overview",
+    reportName: "Daily Activity Recap",
     customer: "Coastal Property Mgmt",
     period: "Aug 3",
     source: "Scheduled",
@@ -133,8 +132,8 @@ const HISTORY: HistoryRow[] = [
   },
   {
     id: 9,
-    reportType: "Activity Logs",
-    reportName: "Daily Activity Export",
+    reportType: "Activity Overview",
+    reportName: "Daily Activity Recap",
     customer: "Coastal Property Mgmt",
     period: "Aug 1",
     source: "Scheduled",
@@ -270,7 +269,6 @@ const REPORT_KEY_BY_TYPE: Record<string, string> = Object.fromEntries(
 // those download as a real CSV instead of going through the PDF capture.
 const CSV_DOWNLOADS: Record<string, (fileName: string) => void> = {
   traffic: downloadQueryLogsCsv,
-  "timeline-logs": downloadTimelineLogsCsv,
 };
 
 function ActionsCell({ row }: { row: HistoryRow }) {

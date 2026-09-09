@@ -8,7 +8,6 @@ import EqualizerOutlinedIcon from "@mui/icons-material/EqualizerOutlined";
 import FormatListBulletedOutlinedIcon from "@mui/icons-material/FormatListBulletedOutlined";
 import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
 import StackedLineChartOutlinedIcon from "@mui/icons-material/StackedLineChartOutlined";
-import ViewListOutlinedIcon from "@mui/icons-material/ViewListOutlined";
 import ViewTimelineOutlinedIcon from "@mui/icons-material/ViewTimelineOutlined";
 
 export type ReportDef = {
@@ -70,16 +69,6 @@ export const REPORTS: ReportDef[] = [
     file: "AI-Usage-Jul-2026.pdf",
     products: ["CyberSight"],
     size: "760 KB",
-    cybersight: true,
-  },
-  {
-    key: "timeline-logs",
-    title: "Activity Logs",
-    desc: "Raw per-event forensic records to drive custom analysis and reporting.",
-    Icon: ViewListOutlinedIcon,
-    file: "Timeline-Logs-Jul-2026.csv",
-    products: ["CyberSight"],
-    size: "1.4 MB",
     cybersight: true,
   },
   {

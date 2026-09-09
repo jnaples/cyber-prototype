@@ -331,7 +331,6 @@ export function ScheduleReportView({
   const [scopeSites, setScopeSites] = useState<string[]>([]);
   const [scopeClients, setScopeClients] = useState<string[]>([]);
   const [scopeUsers, setScopeUsers] = useState<string[]>([]);
-  const [showRecipients, setShowRecipients] = useState(false);
   const [showScope, setShowScope] = useState(false);
   // v3's One-Time mode: run the report once instead of scheduling it.
   const oneTime = delivery === "one-time";
@@ -564,186 +563,116 @@ export function ScheduleReportView({
     </>
   );
 
-  const oneTimeForm = (
-    <>
-      <SearchableSelect
-        label="Organization"
-        required
-        placeholder="Select organization"
-        options={ORGS}
-        value={selectedOrg}
-        onChange={setSelectedOrg}
-        optionDisabled={orgLocked}
-        renderOptionEnd={(organization) =>
-          orgLocked(organization) ? <UpgradeBadge /> : null
-        }
-      />
-      {/* Narrowing below the organization only makes sense once one is set. */}
-      <SearchableMultiSelect
-        label="Sites"
-        optional
-        summarize
-        options={SITES}
-        selected={scopeSites}
-        onChange={setScopeSites}
-        disabled={selectedOrg === ""}
-        disabledTooltip="Select an Organization for specific Sites."
-      />
-      <SearchableMultiSelect
-        label="Roaming Clients"
-        optional
-        summarize
-        options={ROAMING_CLIENTS}
-        selected={scopeClients}
-        onChange={setScopeClients}
-        disabled={selectedOrg === ""}
-        disabledTooltip="Select an Organization for specific Roaming Clients."
-      />
-      <SearchableMultiSelect
-        label="Users"
-        optional
-        summarize
-        options={USERS}
-        selected={scopeUsers}
-        onChange={setScopeUsers}
-        disabled={selectedOrg === ""}
-        disabledTooltip="Select an Organization for specific Users."
-      />
-      <Box>
-        <FormLabel sx={{ display: "block", mb: 0.5 }}>
-          Reporting Period
-          <Box component="span" sx={{ ml: 0.25 }}>
-            *
-          </Box>
-        </FormLabel>
-        {reportingPeriod === "Custom" ? (
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DateRangePicker
-              value={dateRange}
-              onChange={(value) => setDateRange(value)}
-              open={pickerOpen}
-              onOpen={() => setPickerOpen(true)}
-              onClose={() => {
-                setPickerOpen(false);
-                // An incomplete range is no range — fall back to the
-                // placeholder rather than leaving half a window set.
-                if (!dateRange[0] || !dateRange[1]) {
-                  setDateRange([null, null]);
-                  setReportingPeriod("");
-                }
-              }}
-              calendars={2}
-              minDate={startOfDay(subDays(new Date(), 90))}
-              maxDate={endOfDay(new Date())}
-              closeOnSelect={false}
-              disableOpenPicker
-              slotProps={{
-                field: { readOnly: true },
-                textField: {
-                  size: "small",
-                  fullWidth: true,
-                  onClick: () => setPickerOpen(true),
-                  // The picker suppresses its own `clearable` on a read-only
-                  // field, so the ✕ is hand-rolled to match the app's Select:
-                  // hidden until the field is hovered or focused.
-                  slotProps: {
-                    input: {
-                      endAdornment:
-                        dateRange[0] && dateRange[1] ? (
-                          <InputAdornment
-                            position="end"
-                            className="range-clear"
-                            sx={{ visibility: "hidden", ml: 0 }}
+  // A one-off run has no frequency to derive its window from, so it picks
+  // the reporting period itself.
+  const periodField = (
+    <Box>
+      <FormLabel sx={{ display: "block", mb: 0.5 }}>
+        Reporting Period
+        <Box component="span" sx={{ ml: 0.25 }}>
+          *
+        </Box>
+      </FormLabel>
+      {reportingPeriod === "Custom" ? (
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <DateRangePicker
+            value={dateRange}
+            onChange={(value) => setDateRange(value)}
+            open={pickerOpen}
+            onOpen={() => setPickerOpen(true)}
+            onClose={() => {
+              setPickerOpen(false);
+              // An incomplete range is no range — fall back to the
+              // placeholder rather than leaving half a window set.
+              if (!dateRange[0] || !dateRange[1]) {
+                setDateRange([null, null]);
+                setReportingPeriod("");
+              }
+            }}
+            calendars={2}
+            minDate={startOfDay(subDays(new Date(), 90))}
+            maxDate={endOfDay(new Date())}
+            closeOnSelect={false}
+            disableOpenPicker
+            slotProps={{
+              field: { readOnly: true },
+              textField: {
+                size: "small",
+                fullWidth: true,
+                onClick: () => setPickerOpen(true),
+                // The picker suppresses its own `clearable` on a read-only
+                // field, so the ✕ is hand-rolled to match the app's Select:
+                // hidden until the field is hovered or focused.
+                slotProps: {
+                  input: {
+                    endAdornment:
+                      dateRange[0] && dateRange[1] ? (
+                        <InputAdornment
+                          position="end"
+                          className="range-clear"
+                          sx={{ visibility: "hidden", ml: 0 }}
+                        >
+                          <IconButton
+                            size="small"
+                            aria-label="Clear"
+                            onMouseDown={(event) => event.stopPropagation()}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setDateRange([null, null]);
+                              setReportingPeriod("");
+                            }}
+                            sx={{ color: "text.disabled", p: 0.25 }}
                           >
-                            <IconButton
-                              size="small"
-                              aria-label="Clear"
-                              onMouseDown={(event) => event.stopPropagation()}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                setDateRange([null, null]);
-                                setReportingPeriod("");
-                              }}
-                              sx={{ color: "text.disabled", p: 0.25 }}
-                            >
-                              <CancelIcon fontSize="small" />
-                            </IconButton>
-                          </InputAdornment>
-                        ) : undefined,
-                    },
-                  },
-                  sx: {
-                    cursor: "pointer",
-                    "&:hover .range-clear, &:focus-within .range-clear": {
-                      visibility: "visible",
-                    },
+                            <CancelIcon fontSize="small" />
+                          </IconButton>
+                        </InputAdornment>
+                      ) : undefined,
                   },
                 },
-              }}
-            />
-          </LocalizationProvider>
-        ) : (
-          <Select
-            fullWidth
-            displayEmpty
-            size="small"
-            value={reportingPeriod}
-            onChange={(e) => {
-              const next = e.target.value;
-              if (next === "Custom") setPickerOpen(true);
-              setReportingPeriod(next);
+                sx: {
+                  cursor: "pointer",
+                  "&:hover .range-clear, &:focus-within .range-clear": {
+                    visibility: "visible",
+                  },
+                },
+              },
             }}
-            renderValue={(value) =>
-              value ? (
-                (value as string)
-              ) : (
-                <Box component="span" sx={{ color: "text.disabled" }}>
-                  Select reporting period
-                </Box>
-              )
-            }
-          >
-            {REPORTING_PERIOD_GROUPS.flatMap((group, i) => [
-              ...(i > 0 ? [<Divider key={`period-rule-${i}`} />] : []),
-              ...group.map((period) => (
-                <MenuItem key={period} value={period}>
-                  {period}
-                </MenuItem>
-              )),
-            ])}
-            <Divider />
-            <MenuItem value="Custom">Custom</MenuItem>
-          </Select>
-        )}
-      </Box>
-
-      {/* Mailing a one-off run is optional, so the fields stay folded away
-          until someone asks for them. */}
-      {showRecipients ? (
-        <>
-          {/* A rule sets the recipients apart from the run's own scope. */}
-          <Divider sx={{ mt: 1 }} />
-          {recipientFields}
-        </>
+          />
+        </LocalizationProvider>
       ) : (
-        <Link
-          component="button"
-          type="button"
-          underline="hover"
-          onClick={() => setShowRecipients(true)}
-          sx={{
-            alignSelf: "flex-start",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 0.25,
-            fontSize: 14,
+        <Select
+          fullWidth
+          displayEmpty
+          size="small"
+          value={reportingPeriod}
+          onChange={(e) => {
+            const next = e.target.value;
+            if (next === "Custom") setPickerOpen(true);
+            setReportingPeriod(next);
           }}
+          renderValue={(value) =>
+            value ? (
+              (value as string)
+            ) : (
+              <Box component="span" sx={{ color: "text.disabled" }}>
+                Select reporting period
+              </Box>
+            )
+          }
         >
-          Share via email
-          <ArrowDropDownIcon sx={{ fontSize: 20 }} />
-        </Link>
+          {REPORTING_PERIOD_GROUPS.flatMap((group, i) => [
+            ...(i > 0 ? [<Divider key={`period-rule-${i}`} />] : []),
+            ...group.map((period) => (
+              <MenuItem key={period} value={period}>
+                {period}
+              </MenuItem>
+            )),
+          ])}
+          <Divider />
+          <MenuItem value="Custom">Custom</MenuItem>
+        </Select>
       )}
-    </>
+    </Box>
   );
 
   // The stepped form itself. The page wraps it in a card beside the live
@@ -813,6 +742,9 @@ export function ScheduleReportView({
               </Link>
             </Box>
           )}
+          {/* Step 4 sets the window from the frequency; a one-off run has to
+              be told. */}
+          {oneTime && periodField}
         </Box>
       </Step>
 
@@ -895,18 +827,19 @@ export function ScheduleReportView({
         </Box>
       </Step>
 
-      {/* A one-time run has nobody to mail and nothing to repeat, so the
-          delivery and frequency steps drop away. */}
+      <Divider sx={{ mt: 1 }} />
+
+      {/* STEP 3 — Delivery. A one-off run can be mailed too; the fields are
+          just optional there. */}
+      <Step n={3} title="Add Recipients">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {recipientFields}
+        </Box>
+      </Step>
+
+      {/* A one-time run has nothing to repeat, so the frequency step goes. */}
       {!oneTime && (
         <>
-          <Divider sx={{ mt: 1 }} />
-
-          {/* STEP 3 — Delivery */}
-          <Step n={3} title="Add Recipients">
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {recipientFields}
-            </Box>
-          </Step>
           <Divider sx={{ mt: 1 }} />
 
           {/* STEP 4 — Schedule */}
@@ -1165,7 +1098,7 @@ export function ScheduleReportView({
         }}
       >
         {brandingBlock}
-        {oneTime ? oneTimeForm : form}
+        {form}
       </Drawer>
       {/* The Preview reports link needs its modal in this branch too. */}
       <SampleReportsModal

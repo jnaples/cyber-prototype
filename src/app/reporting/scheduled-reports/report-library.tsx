@@ -320,7 +320,7 @@ export function ReportLibrary({
         <GenerateReportDrawer
           open={Boolean(generateFor)}
           onClose={() => setGenerateFor(null)}
-          reportTitle={generateFor?.title}
+          reportKey={generateFor?.key}
           onGenerate={() => setGenerateToast(true)}
         />
 

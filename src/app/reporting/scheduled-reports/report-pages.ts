@@ -14,13 +14,11 @@ import TimelineOverviewReport from "@/app/reports/timeline-overview/page";
 
 import { CustomReportSheet } from "./custom-report-sheet";
 import { QueryLogsCsvSheet } from "./query-logs-csv-sheet";
-import { TimelineLogsCsvSheet } from "./timeline-logs-csv-sheet";
 
 export const REPORT_PAGES: Record<string, ComponentType> = {
   activity: CustomerActivityOverviewReport,
   traffic: QueryLogsCsvSheet,
   protection: FilterProtectionSummaryReport,
-  "timeline-logs": TimelineLogsCsvSheet,
   "timeline-overview": TimelineOverviewReport,
   "threat-trends": ThreatTrendsReport,
   "ai-usage": CyberSightAiUsageReport,

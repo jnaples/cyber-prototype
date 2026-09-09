@@ -130,8 +130,8 @@ const SCHEDULES: Schedule[] = [
   },
   {
     id: 5,
-    name: "Riverside Dental Group Timeline Logs",
-    tags: ["Timeline Logs"],
+    name: "Riverside Dental Group Activity Timeline",
+    tags: ["Activity Timeline"],
     organizations: "Riverside Dental Group",
     recipients: 1,
     freqPrimary: "Daily",
@@ -815,7 +815,7 @@ export default function ScheduledReportsPage({
                 selectedCount > 0 && (
                   <DataTableBulkActions
                     count={selectedCount}
-                    noun="schedule"
+                    noun="scheduled report"
                     onClose={clearSelection}
                     actions={
                       <>
