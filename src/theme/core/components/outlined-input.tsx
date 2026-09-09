@@ -30,11 +30,14 @@ const MuiOutlinedInput: Components<Theme>["MuiOutlinedInput"] = {
           color: theme.vars.palette.text.disabled,
           opacity: 1,
         },
-      // Neutralize the browser autofill highlight (the blue/gray fill) so
-      // autofilled inputs keep the normal paper background.
+      // Neutralize the browser autofill highlight (the blue/gray fill).
+      // Clipping the fill to the glyphs hides it without naming a color —
+      // masking it with background.paper instead left a visibly wrong patch
+      // on any field sitting on a neutral or default surface in dark mode.
       "& input:-webkit-autofill, & input:-webkit-autofill:hover, & input:-webkit-autofill:focus, & input:-webkit-autofill:active":
         {
-          WebkitBoxShadow: `0 0 0 1000px ${theme.vars.palette.background.paper} inset`,
+          WebkitBackgroundClip: "text",
+          WebkitBoxShadow: "none",
           WebkitTextFillColor: theme.vars.palette.text.primary,
           caretColor: theme.vars.palette.text.primary,
           transition: "background-color 9999s ease-in-out 0s",

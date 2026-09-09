@@ -58,6 +58,8 @@ const EMAIL_TEMPLATES: {
 const DEFAULT_EMAIL_TEMPLATE = EMAIL_TEMPLATES[0].value;
 
 /** How long a dashboard name may be before the field errors. */
+const URL_SUFFIX = ".app.dnsfilter.app";
+
 const NAME_LIMIT = 40;
 
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -403,6 +405,7 @@ export default function BrandingPage() {
             />
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <TextField
+                fullWidth
                 placeholder="yourcompanyname"
                 value={dashboardUrl}
                 onChange={(e) => setDashboardUrl(e.target.value)}
@@ -415,13 +418,13 @@ export default function BrandingPage() {
                 variant="body1"
                 sx={{ color: "text.primary", flexShrink: 0 }}
               >
-                .app.dnsfilter.com
+                {URL_SUFFIX}
               </Typography>
               {/* Copies the whole address, not just the subdomain that's
                   typed — and only once it's saved, so the copied URL is one
                   that actually resolves. */}
               <CopyButton
-                value={`https://${saved.dashboardUrl}.app.dnsfilter.com`}
+                value={`https://${saved.dashboardUrl}${URL_SUFFIX}`}
                 disabled={
                   !saved.dashboardUrl.trim() ||
                   dashboardUrl !== saved.dashboardUrl
