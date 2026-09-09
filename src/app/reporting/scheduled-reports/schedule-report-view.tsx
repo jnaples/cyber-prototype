@@ -368,13 +368,14 @@ export function ScheduleReportView({
 
   // Required to save: a name, a report, an organization and a recipient. An
   // empty subject falls back to the generated one.
-  const isComplete = oneTime
-    ? selectedReports.length > 0 && selectedOrg !== "" && reportingPeriod !== ""
-    : scheduleName.trim() !== "" &&
-      selectedReports.length > 0 &&
-      selectedOrg !== "" &&
-      recipientCount > 0 &&
-      frequency !== "";
+  const isComplete =
+    selectedReports.length > 0 &&
+    selectedOrg !== "" &&
+    // Internal or external — either one satisfies it.
+    recipientCount > 0 &&
+    (oneTime
+      ? reportingPeriod !== ""
+      : scheduleName.trim() !== "" && frequency !== "");
 
   // Editing an existing schedule saves only what changed, so the form's
   // current shape is compared against the one it opened with.
@@ -457,19 +458,16 @@ export function ScheduleReportView({
     </Box>
   );
 
-  // Who the report goes to. Step 2 shows these outright; One-Time keeps
-  // them behind an Add recipients link, since both are optional there.
+  // Who the report goes to. A report with no recipients has nowhere to go, so
+  // at least one of the two is required — neither is labeled Optional, since
+  // filling in either one is enough.
   const recipientFields = (
     <>
       <SearchableMultiSelect
         label="Internal recipients"
-        optional={oneTime}
         options={scopedRecipients}
         selected={portalUsers}
         onChange={setPortalUsers}
-        // Emailing every portal user isn't a shortcut worth
-        // offering — recipients are picked deliberately.
-        selectAll={false}
         groupBy={orgOfRecipient}
         allLabel="Select internal recipients"
         chips
