@@ -368,14 +368,17 @@ export function ScheduleReportView({
 
   // Required to save: a name, a report, an organization and a recipient. An
   // empty subject falls back to the generated one.
-  const isComplete =
+  // Internal or external — either one satisfies it. Tracked on its own so the
+  // disabled tooltip can name it: it's the one requirement met by a choice
+  // between two fields, so "all required fields" doesn't point anywhere.
+  const hasRecipient = recipientCount > 0;
+  const restComplete =
     selectedReports.length > 0 &&
     selectedOrg !== "" &&
-    // Internal or external — either one satisfies it.
-    recipientCount > 0 &&
     (oneTime
       ? reportingPeriod !== ""
       : scheduleName.trim() !== "" && frequency !== "");
+  const isComplete = restComplete && hasRecipient;
 
   // Editing an existing schedule saves only what changed, so the form's
   // current shape is compared against the one it opened with.
@@ -409,11 +412,13 @@ export function ScheduleReportView({
     cyberSightLocked(organization, selectedReportDefs[0]?.products);
 
   const canSave = isComplete && (!isEdit || isDirty);
-  const saveTooltip = !isComplete
+  const saveTooltip = !restComplete
     ? "Please fill out all required fields."
-    : isEdit && !isDirty
-      ? "No changes to save."
-      : "";
+    : !hasRecipient
+      ? "Add at least one internal or external recipient."
+      : isEdit && !isDirty
+        ? "No changes to save."
+        : "";
 
   // One-Time mirrors the Run Report drawer: pick a scope and a window, no
   // steps and nothing to name, since the run isn't saved.
