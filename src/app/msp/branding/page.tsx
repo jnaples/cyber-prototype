@@ -387,8 +387,7 @@ export default function BrandingPage() {
         />
       }
     >
-      <SectionCard title="Dashboard Customization">
-        {/* Name and URL read as one pair, so they share a row. */}
+      <SectionCard title="Dashboard Access">
         <Box
           sx={{
             display: "grid",
@@ -397,38 +396,6 @@ export default function BrandingPage() {
             alignItems: "start",
           }}
         >
-          <Box>
-            <FieldLabel
-              label="Dashboard Name"
-              help='Sets the browser tab title and login screen text "Service provided by {Dashboard Name}".'
-            />
-            <TextField
-              fullWidth
-              placeholder="e.g., Security Portal"
-              value={dashboardName}
-              onChange={(e) => setDashboardName(e.target.value)}
-              error={nameTooLong}
-              // MUI indents contained helper text on both sides; dropping the
-              // right inset puts the count flush with the field's edge.
-              sx={{ "& .MuiFormHelperText-root": { mr: 0 } }}
-              // Typing past the limit isn't blocked — the field goes red and the
-              // count says by how much.
-              helperText={
-                <Box
-                  component="span"
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 1,
-                  }}
-                >
-                  <span>{`${NAME_LIMIT} character limit`}</span>
-                  <span>{`${dashboardName.length}/${NAME_LIMIT}`}</span>
-                </Box>
-              }
-            />
-          </Box>
-
           <Box>
             <FieldLabel
               label="Custom Dashboard URL"
@@ -470,6 +437,42 @@ export default function BrandingPage() {
               </FormHelperText>
             )}
           </Box>
+          {/* Holds the second column until the next access setting lands. */}
+          <Box />
+        </Box>
+      </SectionCard>
+
+      <SectionCard title="Dashboard Appearance" sx={{ mt: 2 }}>
+        <Box>
+          <FieldLabel
+            label="Dashboard Name"
+            help='Sets the browser tab title and login screen text "Service provided by {Dashboard Name}".'
+          />
+          <TextField
+            fullWidth
+            placeholder="e.g., Security Portal"
+            value={dashboardName}
+            onChange={(e) => setDashboardName(e.target.value)}
+            error={nameTooLong}
+            // MUI indents contained helper text on both sides; dropping the
+            // right inset puts the count flush with the field's edge.
+            sx={{ "& .MuiFormHelperText-root": { mr: 0 } }}
+            // Typing past the limit isn't blocked — the field goes red and the
+            // count says by how much.
+            helperText={
+              <Box
+                component="span"
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: 1,
+                }}
+              >
+                <span>{`${NAME_LIMIT} character limit`}</span>
+                <span>{`${dashboardName.length}/${NAME_LIMIT}`}</span>
+              </Box>
+            }
+          />
         </Box>
 
         {/* The two logos side by side, so light and dark read as one choice. */}
