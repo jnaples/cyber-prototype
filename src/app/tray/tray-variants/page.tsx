@@ -12,10 +12,14 @@ function Variation({
   label,
   state,
   permissions,
+  features,
+  toggles,
 }: {
   label: string;
   state?: TrayState;
   permissions?: boolean;
+  features?: boolean;
+  toggles?: string[];
 }) {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
@@ -25,7 +29,12 @@ function Variation({
       >
         {label}
       </Typography>
-      <TrayPopup state={state} permissions={permissions} />
+      <TrayPopup
+        state={state}
+        permissions={permissions}
+        features={features}
+        toggles={toggles}
+      />
     </Box>
   );
 }
@@ -113,6 +122,26 @@ export default function TrayVariantsPage() {
               label="Permissions enabled - Not protected"
               state="incident"
               permissions
+            />
+          </VariationRow>
+        </Section>
+
+        <Divider />
+
+        {/* Every feature the client ships, not just DNS filtering. */}
+        <Section title="Permissions enabled - All features">
+          <VariationRow>
+            <Variation
+              label="Permissions enabled - Online"
+              permissions
+              features
+            />
+            {/* The same popup, where SecureTransit is the only thing the user
+                is allowed to turn off. */}
+            <Variation
+              label="SecureTransit permissions enabled - Online"
+              features
+              toggles={["SecureTransit"]}
             />
           </VariationRow>
         </Section>

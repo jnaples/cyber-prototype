@@ -15,7 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 // The only values that aren't theme tokens: the tray popup's own ground,
 // which is OS chrome rather than an app surface.
@@ -193,6 +193,75 @@ function Banner({
   );
 }
 
+// The rest of the client's features, for the popup that lists them all, in
+// the order they're shown under DNS Filtering.
+const FEATURES = ["CyberSight", "SecureTransit", "AgentShield"];
+
+/** One row of the popup's status list: dot, name, what it's doing, switch. */
+function FeatureRow({
+  label,
+  status,
+  tone,
+  on,
+  showSwitch,
+  onChange,
+}: {
+  label: string;
+  status: string;
+  tone?: DotTone;
+  on: boolean;
+  showSwitch: boolean;
+  /** Makes the switch controlled; without it the row just shows its state. */
+  onChange?: (on: boolean) => void;
+}) {
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
+      {tone ? <StatusDot tone={tone} /> : <Box sx={{ width: 7 }} />}
+      <Typography sx={{ fontSize: 14, fontWeight: 600, color: "text.primary" }}>
+        {label}
+      </Typography>
+      <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+        {status}
+      </Typography>
+      {showSwitch &&
+        (onChange ? (
+          <IosSwitch
+            checked={on}
+            onChange={(event) => onChange(event.target.checked)}
+            disableRipple
+            sx={{ ml: "auto" }}
+          />
+        ) : (
+          // Uncontrolled: the row only has to show the affordance, and it
+          // still flips when clicked.
+          <IosSwitch defaultChecked={on} disableRipple sx={{ ml: "auto" }} />
+        ))}
+    </Box>
+  );
+}
+
+// A feature the user can actually turn off here: the dot and the word follow
+// the switch.
+function ToggleFeature({
+  label,
+  showSwitch,
+}: {
+  label: string;
+  showSwitch: boolean;
+}) {
+  const [on, setOn] = useState(true);
+  return (
+    <FeatureRow
+      label={label}
+      status={on ? "Active" : "Off"}
+      tone={on ? "success" : "idle"}
+      on={on}
+      showSwitch={showSwitch}
+      onChange={setOn}
+    />
+  );
+}
+
 function StatusDot({ tone }: { tone: DotTone }) {
   return (
     <Box
@@ -234,15 +303,24 @@ function TrayAction({ children }: { children: ReactNode }) {
 export function TrayPopup({
   state = "online",
   permissions = false,
+  features = false,
+  toggles,
 }: {
   /** Which state the popup is showing. */
   state?: TrayState;
   /** Whether the user is allowed to turn filtering off — adds the switch at
    *  the end of the filtering row. */
   permissions?: boolean;
+  /** List the client's other features under DNS Filtering. */
+  features?: boolean;
+  /** Which rows get a switch, by name. Defaults to every row when
+   *  `permissions` is set — pass it to let the user toggle only some. */
+  toggles?: string[];
 }) {
   const { status, statusTone, filtering, filteringTone, banner, switchOff } =
     STATES[state];
+  const toggleable =
+    toggles ?? (permissions ? ["DNS Filtering", ...FEATURES] : []);
 
   return (
     <Box
@@ -314,27 +392,24 @@ export function TrayPopup({
 
       {banner && <Banner text={banner.text} severity={banner.severity} />}
 
-      <Box sx={{ display: "flex", alignItems: "center", gap: "6px" }}>
-        <StatusDot tone={filteringTone} />
-        <Typography
-          sx={{ fontSize: 14, fontWeight: 600, color: "text.primary" }}
-        >
-          DNS Filtering
-        </Typography>
-        {/* What filtering is actually doing while the client is out of touch
-            with the service. */}
-        <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
-          {filtering}
-        </Typography>
-        {permissions && (
-          // Uncontrolled: the popup only has to show the affordance, and it
-          // still flips when clicked.
-          <IosSwitch
-            defaultChecked={!switchOff}
-            disableRipple
-            sx={{ ml: "auto" }}
-          />
-        )}
+      <Box sx={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        {/* `filtering` is what filtering is actually doing — it changes with
+            the connection, not just with the switch. */}
+        <FeatureRow
+          label="DNS Filtering"
+          status={filtering}
+          tone={filteringTone}
+          on={!switchOff}
+          showSwitch={toggleable.includes("DNS Filtering")}
+        />
+        {features &&
+          FEATURES.map((feature) => (
+            <ToggleFeature
+              key={feature}
+              label={feature}
+              showSwitch={toggleable.includes(feature)}
+            />
+          ))}
       </Box>
 
       <Divider />
