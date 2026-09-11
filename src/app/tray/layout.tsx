@@ -6,7 +6,7 @@ import { SidebarShell, type SidebarGroup } from "@/components/sidebar-shell";
 const BASE = "/tray";
 
 const TRAY_GROUPS: SidebarGroup[] = [
-  { items: [{ label: "Tray Variants", path: `${BASE}/enduser` }] },
+  { items: [{ label: "Tray Variants", path: `${BASE}/tray-variants` }] },
 ];
 
 export default function TrayLayout() {

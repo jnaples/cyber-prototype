@@ -1,4 +1,4 @@
-// Enduser Tray — the popup's states, grouped by whether the user is allowed
+// Tray Variants — the popup's states, grouped by whether the user is allowed
 // to turn filtering off.
 
 import { Box, Container, Divider, Typography } from "@mui/material";
@@ -49,7 +49,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-export default function EnduserTrayPage() {
+export default function TrayVariantsPage() {
   return (
     <Container maxWidth="lg">
       <Box sx={{ display: "flex", flexDirection: "column", gap: "40px" }}>

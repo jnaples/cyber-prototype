@@ -37,7 +37,7 @@ import ReportsV3Page from "@/app/reporting/reports-v3/page";
 import ReportsLayout from "@/app/reports/layout";
 import TrayLayout from "@/app/tray/layout";
 import AdminTrayPage from "@/app/tray/admin/page";
-import EnduserTrayPage from "@/app/tray/enduser/page";
+import TrayVariantsPage from "@/app/tray/tray-variants/page";
 import CustomerActivityOverviewReport from "@/app/reports/customer-activity-overview/page";
 import ThreatTrendsReport from "@/app/reports/threat-trends/page";
 import CyberSightAiUsageReport from "@/app/reports/cybersight-ai-usage/page";
@@ -186,8 +186,8 @@ function App() {
         {/* Tray uses the same standalone sidebar as Reports, and is reachable
           by direct URL only — it's deliberately not in the side nav. */}
         <Route path="tray" element={<TrayLayout />}>
-          <Route index element={<Navigate to="enduser" replace />} />
-          <Route path="enduser" element={<EnduserTrayPage />} />
+          <Route index element={<Navigate to="tray-variants" replace />} />
+          <Route path="tray-variants" element={<TrayVariantsPage />} />
           <Route path="admin" element={<AdminTrayPage />} />
         </Route>
 
