@@ -2,7 +2,7 @@
 // PRIMITIVES — raw color ramps
 // ============================================================================
 // Source colors organized in 50→900 ramps. Do NOT reference these directly
-// in components. Use the semantic palette below instead.
+// in components. Use semantic palette below instead.
 
 const detectBlue = {
   50: "#DDDEFF",
