@@ -1,6 +1,6 @@
 // A tall modal: one fixed height for every panel-style dialog, a header that
 // stays put, a body that scrolls, and an actions row pinned to the bottom.
-// Preview Report, Investigate Mode and Archived Endpoints all render through
+// Preview Report, Investigate Mode and Recently Deleted all render through
 // this so their paper is always the same size.
 
 import { Box, Dialog, IconButton, Typography } from "@mui/material";

@@ -708,7 +708,7 @@ export default function ClientlessPage() {
     (location.state as { toast?: string } | null)?.toast ?? null,
   );
   const [cardTab, setCardTab] = useState(0);
-  // Archived Endpoints modal, and what's still in it — restoring is
+  // Recently Deleted modal, and what's still in it — restoring is
   // session-only, so a reload puts everything back.
   const [archivedOpen, setArchivedOpen] = useState(false);
   const [archived, setArchived] = useState<ArchivedRow[]>(ARCHIVED_ROWS);
@@ -934,7 +934,7 @@ export default function ClientlessPage() {
           color="secondary"
           onClick={() => setArchivedOpen(true)}
         >
-          Archived Endpoints
+          Recently Deleted
         </Button>
       </Box>
 
@@ -959,12 +959,12 @@ export default function ClientlessPage() {
         />
       </TabbedDataCard>
 
-      {/* Archived Endpoints — deleted deployments, restorable for 30 days.
+      {/* Recently Deleted — deleted deployments, restorable for 30 days.
           Panel modal, so its height matches the other panels. */}
       <PanelModal
         open={archivedOpen}
         onClose={closeArchived}
-        title="Archived Endpoints"
+        title="Recently Deleted"
         width={900}
         // The grid does its own scrolling; the panel hugs it until the cap.
         bodySx={{ display: "flex", overflowY: "hidden" }}
