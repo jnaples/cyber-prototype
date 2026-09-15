@@ -504,7 +504,7 @@ export default function DnsfilterOneAppPage() {
         {/* The resolvers in use, on a band of their own at the foot. */}
         <Box
           sx={(theme) => ({
-            p: "20px",
+            padding: "8px 20px",
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "center",
