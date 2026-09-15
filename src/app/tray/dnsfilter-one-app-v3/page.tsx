@@ -31,14 +31,18 @@ import { RoamingClientScreen } from "./roaming-client";
 import {
   ACCENT_RING,
   ACCENT_RULE,
-  ACTIVE_DARK,
-  ACTIVE_LIGHT,
   BADGE_FILL_DARK,
   BADGE_FILL_LIGHT,
   HEADER_BG_LIGHT,
 } from "./tokens";
 import { ClientButton } from "./client-button";
-import { ClientCard, IconTile, StatusChip } from "./ui";
+import {
+  ClientCard,
+  CopyValue,
+  IconTile,
+  SectionLabel,
+  StatusChip,
+} from "./ui";
 
 const FEATURES = [
   {
@@ -67,15 +71,14 @@ const FEATURES = [
   },
 ];
 
-// What the service itself is reporting, as the banner states it.
-const SERVICE_STATUS = "Operational";
-
-// The resolvers the client is actually using, as the window reports them.
+// The resolvers the client is actually using. Two pairs — one per protocol —
+// so each row says which, rather than leaving two "Primary" rows to explain
+// themselves.
 const RESOLVERS = [
-  { label: "Primary", value: "103.247.36.36" },
-  { label: "Secondary", value: "103.247.37.37" },
-  { label: "Primary", value: "2402:5c40:5c40::3636" },
-  { label: "Secondary", value: "2402:5c40:5c41::3737" },
+  { label: "Primary IPv4", value: "103.247.36.36" },
+  { label: "Secondary IPv4", value: "103.247.37.37" },
+  { label: "Primary IPv6", value: "2402:5c40:5c40::3636" },
+  { label: "Secondary IPv6", value: "2402:5c40:5c41::3737" },
   { label: "ASN", value: "AS64089" },
 ];
 
@@ -145,50 +148,216 @@ function FeatureRow({
   );
 }
 
+// v3 puts the window's sections in a rail of their own. The selected one sits
+// on its own ground, a step off the rail's.
+const NAV_SELECTED_LIGHT = "#E2E5E9";
+const NAV_SELECTED_DARK = "#171B1E";
+// v3 puts the window's sections in a rail of their own.
+const NAV = [
+  { key: "dashboard", label: "Dashboard", icon: "dashboard" },
+  { key: "help", label: "Help", icon: "support" },
+] as const;
+
+type NavKey = (typeof NAV)[number]["key"];
+
+function NavRail({
+  active,
+  onChange,
+}: {
+  active: NavKey;
+  onChange: (key: NavKey) => void;
+}) {
+  return (
+    <Box
+      component="nav"
+      sx={(theme) => ({
+        width: 180,
+        flexShrink: 0,
+        p: "24px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "8px",
+        borderRight: "1px solid",
+        borderColor: "divider",
+        // The rail bookends the masthead, so it takes the same ground.
+        backgroundColor: HEADER_BG_LIGHT,
+        ...theme.applyStyles("dark", { backgroundColor: APP_SURFACE_DARK }),
+      })}
+    >
+      {NAV.map((item) => {
+        const selected = item.key === active;
+        return (
+          <Box
+            key={item.key}
+            role="button"
+            onClick={() => onChange(item.key)}
+            sx={(theme) => ({
+              px: "12px",
+              py: "8px",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontSize: 14,
+              fontWeight: 600,
+              color: selected ? "text.primary" : "text.secondary",
+              backgroundColor: selected ? NAV_SELECTED_LIGHT : "transparent",
+              "&:hover": {
+                backgroundColor: selected
+                  ? NAV_SELECTED_LIGHT
+                  : theme.vars.palette.action.hover,
+              },
+              ...theme.applyStyles("dark", {
+                backgroundColor: selected ? NAV_SELECTED_DARK : "transparent",
+                "&:hover": {
+                  backgroundColor: selected
+                    ? NAV_SELECTED_DARK
+                    : theme.vars.palette.action.hover,
+                },
+              }),
+            })}
+          >
+            <MaterialSymbol name={item.icon} size={20} />
+            {item.label}
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}
+
+// The ways to get a problem looked at. They share the support tint, so the
+// list reads as one group.
+const SUPPORT_TINT = "linear-gradient(160deg, #9B7BFF 0%, #432C96 100%)";
+
+const SUPPORT = [
+  {
+    name: "DNSFilter Diagnostic Tool (DDT)",
+    icon: "stethoscope",
+    description:
+      "Run the DNSFilter diagnostic checks — built in, runs right here.",
+    action: "Run Diagnostics",
+  },
+  {
+    name: "Report a problem",
+    icon: "support",
+    description:
+      "Send this device's diagnostics and a note to DNSFilter support.",
+    action: "Send report",
+  },
+  {
+    name: "Status page",
+    icon: "monitor_heart",
+    description: "Check whether DNSFilter itself is having trouble.",
+    action: "View status page",
+    href: "https://status.dnsfilter.com/",
+  },
+];
+
+/** Everything under Help, as one list. */
+function HelpScreen() {
+  return (
+    <Box
+      sx={{ p: "24px", display: "flex", flexDirection: "column", gap: "24px" }}
+    >
+      <ClientCard padding={0}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {SUPPORT.map((item, i) => (
+            <Fragment key={item.name}>
+              {i > 0 && <Divider />}
+              <Box
+                sx={{
+                  p: "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
+                <IconTile icon={item.icon} tint={SUPPORT_TINT} />
+                <Box sx={{ minWidth: 0, flex: 1 }}>
+                  <Typography
+                    sx={{
+                      fontSize: 16,
+                      fontWeight: 700,
+                      color: "text.primary",
+                    }}
+                  >
+                    {item.name}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ mt: "4px", color: "text.secondary" }}
+                  >
+                    {item.description}
+                  </Typography>
+                </Box>
+                <ClientButton
+                  variant="contained"
+                  disableElevation
+                  {...(item.href
+                    ? { href: item.href, target: "_blank", rel: "noopener" }
+                    : {})}
+                  sx={{ flexShrink: 0 }}
+                >
+                  {item.action}
+                </ClientButton>
+              </Box>
+            </Fragment>
+          ))}
+        </Box>
+      </ClientCard>
+
+      {/* The resolvers themselves, apart from the things you can act on. */}
+      <Box>
+        <SectionLabel>DNS resolvers</SectionLabel>
+        <ClientCard padding={0}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            {RESOLVERS.map((resolver, i) => (
+              <Fragment key={resolver.value}>
+                {i > 0 && <Divider />}
+                <Box
+                  sx={{
+                    px: "16px",
+                    py: "12px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 2,
+                  }}
+                >
+                  <Typography sx={{ fontSize: 14, color: "text.primary" }}>
+                    {resolver.label}
+                  </Typography>
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", gap: "4px" }}
+                  >
+                    <Typography
+                      sx={{
+                        fontFamily: "monospace",
+                        fontSize: 14,
+                        color: "text.secondary",
+                      }}
+                    >
+                      {resolver.value}
+                    </Typography>
+                    <CopyValue value={resolver.value} />
+                  </Box>
+                </Box>
+              </Fragment>
+            ))}
+          </Box>
+        </ClientCard>
+      </Box>
+    </Box>
+  );
+}
+
 function HomeScreen({ onOpen }: { onOpen: (name: string) => void }) {
   return (
     <Box
       sx={{ p: "24px", display: "flex", flexDirection: "column", gap: "24px" }}
     >
-      {/* Everything the client knows about its own health, in one line. */}
-      <ClientCard tone="success" padding="16px">
-        <Box
-          sx={{
-            width: 10,
-            height: 10,
-            flexShrink: 0,
-            borderRadius: "50%",
-            backgroundColor: "success.main",
-          }}
-        />
-        {/* The banner's own green carries the line. */}
-        <Typography
-          sx={(theme) => ({
-            minWidth: 0,
-            flex: 1,
-            fontSize: 14,
-            color: ACTIVE_LIGHT.fg,
-            ...theme.applyStyles("dark", { color: ACTIVE_DARK.fg }),
-          })}
-        >
-          <Box component="span" sx={{ fontWeight: 700 }}>
-            Service status:
-          </Box>{" "}
-          {SERVICE_STATUS}
-        </Typography>
-        <ClientButton
-          variant="contained"
-          disableElevation
-          href="https://status.dnsfilter.com/"
-          target="_blank"
-          rel="noopener"
-          endIcon={<MaterialSymbol name="launch" size={16} />}
-          sx={{ flexShrink: 0 }}
-        >
-          Status page
-        </ClientButton>
-      </ClientCard>
-
       {/* v2: the three products share one card, divided by rules rather than
           sitting in cards of their own. */}
       <ClientCard padding={0}>
@@ -208,33 +377,6 @@ function HomeScreen({ onOpen }: { onOpen: (name: string) => void }) {
           ))}
         </Box>
       </ClientCard>
-
-      <ClientCard>
-        <IconTile
-          icon="stethoscope"
-          tint="linear-gradient(160deg, #9B7BFF 0%, #432C96 100%)"
-        />
-        <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography
-            sx={{ fontSize: 14, fontWeight: 700, color: "text.primary" }}
-          >
-            DNSFilter Diagnostic Tool (DDT)
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{ mt: "4px", color: "text.secondary" }}
-          >
-            Run the DNSFilter diagnostic checks — built in, runs right here.
-          </Typography>
-        </Box>
-        <ClientButton
-          variant="contained"
-          disableElevation
-          sx={{ flexShrink: 0 }}
-        >
-          Run Diagnostics
-        </ClientButton>
-      </ClientCard>
     </Box>
   );
 }
@@ -242,15 +384,22 @@ function HomeScreen({ onOpen }: { onOpen: (name: string) => void }) {
 export default function DnsfilterOneAppV3Page() {
   // Which feature's screen is open, if any.
   const [screen, setScreen] = useState<string | null>(null);
+  const [nav, setNav] = useState<NavKey>("dashboard");
   const feature = FEATURES.find((f) => f.name === screen);
 
   return (
     <Container maxWidth="lg">
       <Box
         sx={(theme) => ({
-          // The client window's own size, not the page's.
+          // The client window's own size, not the page's. It's a fixed pane:
+          // the masthead and the band at its foot stay put, and the screen
+          // between them scrolls beside the nav.
           width: 1000,
           maxWidth: "100%",
+          // A fixed pane, not a hugging one: the window is always this tall.
+          height: 600,
+          display: "flex",
+          flexDirection: "column",
           overflow: "hidden",
           borderRadius: "16px",
           border: `1px solid ${APP_BORDER_LIGHT}`,
@@ -263,6 +412,7 @@ export default function DnsfilterOneAppV3Page() {
       >
         <Box
           sx={(theme) => ({
+            flexShrink: 0,
             p: "24px",
             display: "flex",
             alignItems: "center",
@@ -346,71 +496,69 @@ export default function DnsfilterOneAppV3Page() {
             </Box>
           )}
 
-          {/* Its own control, so it answers to the pointer. */}
-          <IconButton
-            aria-label="Refresh"
-            size="small"
+          <Box
             sx={{
               flexShrink: 0,
-              color: "text.secondary",
-              "&:hover": { color: "text.primary" },
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
             }}
           >
-            <MaterialSymbol name="refresh" size={20} />
-          </IconButton>
+            {/* Its own control, so it answers to the pointer. */}
+            <IconButton
+              aria-label="Refresh"
+              size="small"
+              sx={{
+                color: "text.secondary",
+                "&:hover": { color: "text.primary" },
+              }}
+            >
+              <MaterialSymbol name="refresh" size={20} />
+            </IconButton>
+            {/* v3 carries the service's own state up here, so the screen
+                below doesn't need a banner for it. */}
+            <StatusChip on dot label="Online" />
+          </Box>
         </Box>
 
         {/* The brand colors, as a hairline under the masthead. */}
-        <Box sx={{ height: "1px", background: ACCENT_RULE }} />
+        <Box sx={{ flexShrink: 0, height: "1px", background: ACCENT_RULE }} />
 
-        {feature ? <RoamingClientScreen /> : <HomeScreen onOpen={setScreen} />}
-
-        {/* The way to flag trouble, whichever screen you're on. */}
-        <Box sx={{ pb: "20px", textAlign: "center" }}>
-          <Link
-            component="button"
-            type="button"
-            underline="hover"
-            sx={{ fontSize: 14, fontWeight: 600 }}
+        <Box sx={{ flex: 1, minHeight: 0, display: "flex" }}>
+          <NavRail
+            active={nav}
+            onChange={(next) => {
+              setNav(next);
+              setScreen(null);
+            }}
+          />
+          {/* `scroll` rather than `auto`, plus an explicit width, so macOS
+              shows a classic bar instead of the overlay one that fades out. */}
+          <Box
+            sx={(theme) => ({
+              flex: 1,
+              minWidth: 0,
+              overflowY: "scroll",
+              scrollbarGutter: "stable",
+              scrollbarColor: `${theme.vars.palette.action.disabled} transparent`,
+              "&::-webkit-scrollbar": { width: 12, WebkitAppearance: "none" },
+              "&::-webkit-scrollbar-track": { backgroundColor: "transparent" },
+              "&::-webkit-scrollbar-thumb": {
+                borderRadius: 8,
+                border: "3px solid transparent",
+                backgroundClip: "content-box",
+                backgroundColor: theme.vars.palette.action.disabled,
+              },
+            })}
           >
-            Report a problem
-          </Link>
-        </Box>
-
-        {/* The resolvers in use, on a band of their own at the foot. */}
-        <Box
-          sx={(theme) => ({
-            padding: "16px 24px",
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            gap: 3,
-            borderTop: `1px solid ${APP_BORDER_LIGHT}`,
-            // The band bookends the masthead, so it takes the same ground.
-            backgroundColor: HEADER_BG_LIGHT,
-            ...theme.applyStyles("dark", {
-              borderTopColor: APP_BORDER_DARK,
-              backgroundColor: APP_SURFACE_DARK,
-            }),
-          })}
-        >
-          {RESOLVERS.map((resolver) => (
-            <Box key={resolver.value} sx={{ textAlign: "center" }}>
-              <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
-                {resolver.label}
-              </Typography>
-              <Typography
-                sx={{
-                  fontFamily: "monospace",
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "text.secondary",
-                }}
-              >
-                {resolver.value}
-              </Typography>
-            </Box>
-          ))}
+            {feature ? (
+              <RoamingClientScreen />
+            ) : nav === "help" ? (
+              <HelpScreen />
+            ) : (
+              <HomeScreen onOpen={setScreen} />
+            )}
+          </Box>
         </Box>
       </Box>
     </Container>
