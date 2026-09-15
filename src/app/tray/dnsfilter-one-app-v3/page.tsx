@@ -178,10 +178,13 @@ function NavRail({
         flexDirection: "column",
         gap: "8px",
         borderRight: "1px solid",
-        borderColor: "divider",
+        borderColor: APP_BORDER_LIGHT,
         // The rail bookends the masthead, so it takes the same ground.
         backgroundColor: HEADER_BG_LIGHT,
-        ...theme.applyStyles("dark", { backgroundColor: APP_SURFACE_DARK }),
+        ...theme.applyStyles("dark", {
+          borderColor: APP_BORDER_DARK,
+          backgroundColor: APP_SURFACE_DARK,
+        }),
       })}
     >
       {NAV.map((item) => {
@@ -405,7 +408,9 @@ export default function DnsfilterOneAppV3Page() {
           border: `1px solid ${APP_BORDER_LIGHT}`,
           backgroundColor: APP_BG_LIGHT,
           ...theme.applyStyles("dark", {
-            borderColor: APP_BORDER_DARK,
+            // The window's own edge, a step brighter than the hairlines
+            // inside it.
+            borderColor: "#29292D",
             backgroundColor: APP_BG_DARK,
           }),
         })}
