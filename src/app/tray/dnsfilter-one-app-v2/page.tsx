@@ -1,4 +1,5 @@
-// DNSFilter One — the desktop client's main window.
+// DNSFilter One v2 — a fork of the client window to try a second
+// direction. It carries its own ui/tokens, so it can diverge freely.
 //
 // Two screens live in the same chrome: the home list, and a feature's own
 // screen behind it. The masthead changes with the screen; the brand hairline
@@ -8,11 +9,12 @@ import {
   Box,
   Button,
   Container,
+  Divider,
   IconButton,
   Link,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 import { Logo } from "@/components/logo/logo";
 import { MaterialSymbol } from "@/components/material-symbol";
@@ -95,7 +97,14 @@ function FeatureRow({
   const [on, setOn] = useState(defaultOn);
 
   return (
-    <ClientCard onClick={onOpen}>
+    <Box
+      sx={{
+        p: 2,
+        display: "flex",
+        alignItems: "center",
+        gap: 2,
+      }}
+    >
       <IconTile icon={icon} tint={tint} />
       <Box sx={{ minWidth: 0, flex: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -109,6 +118,16 @@ function FeatureRow({
         <Typography variant="body2" sx={{ mt: "4px", color: "text.secondary" }}>
           {description}
         </Typography>
+        {/* v2 asks for the feature's screen by name instead of a chevron. */}
+        <Link
+          component="button"
+          type="button"
+          underline="hover"
+          onClick={onOpen}
+          sx={{ mt: "4px", fontSize: 14, fontWeight: 600 }}
+        >
+          Configure
+        </Link>
       </Box>
       {/* The switch acts on the feature, not on the row it sits in. */}
       <Box
@@ -122,12 +141,7 @@ function FeatureRow({
           disableRipple
         />
       </Box>
-      <MaterialSymbol
-        name="chevron_right"
-        size={20}
-        sx={{ color: "text.secondary" }}
-      />
-    </ClientCard>
+    </Box>
   );
 }
 
@@ -175,17 +189,25 @@ function HomeScreen({ onOpen }: { onOpen: (name: string) => void }) {
         </ClientButton>
       </ClientCard>
 
-      {FEATURES.map((feature) => (
-        <FeatureRow
-          key={feature.name}
-          name={feature.name}
-          icon={feature.icon}
-          tint={feature.tint}
-          description={feature.description}
-          defaultOn={feature.on}
-          onOpen={feature.screen ? () => onOpen(feature.name) : undefined}
-        />
-      ))}
+      {/* v2: the three products share one card, divided by rules rather than
+          sitting in cards of their own. */}
+      <ClientCard padding={0}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          {FEATURES.map((feature, i) => (
+            <Fragment key={feature.name}>
+              {i > 0 && <Divider />}
+              <FeatureRow
+                name={feature.name}
+                icon={feature.icon}
+                tint={feature.tint}
+                description={feature.description}
+                defaultOn={feature.on}
+                onOpen={feature.screen ? () => onOpen(feature.name) : undefined}
+              />
+            </Fragment>
+          ))}
+        </Box>
+      </ClientCard>
 
       <Box>
         <Typography
@@ -225,7 +247,7 @@ function HomeScreen({ onOpen }: { onOpen: (name: string) => void }) {
   );
 }
 
-export default function DnsfilterOneAppPage() {
+export default function DnsfilterOneAppV2Page() {
   // Which feature's screen is open, if any.
   const [screen, setScreen] = useState<string | null>(null);
   const feature = FEATURES.find((f) => f.name === screen);

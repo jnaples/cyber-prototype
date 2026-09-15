@@ -27,7 +27,14 @@ export function SidebarShell({ groups }: { groups: SidebarGroup[] }) {
   const navigate = useNavigate();
 
   const links = groups.flatMap((g) => g.items);
-  const active = links.find((r) => pathname.startsWith(r.path)) ?? links[0];
+  // Longest path first, so a link whose path is a prefix of another's — /x
+  // against /x-v2 — doesn't claim its sibling's pages.
+  const active =
+    links.find((r) => pathname === r.path) ??
+    [...links]
+      .sort((a, b) => b.path.length - a.path.length)
+      .find((r) => pathname.startsWith(r.path)) ??
+    links[0];
 
   return (
     <Box sx={{ display: "flex", height: "100vh", minHeight: 0 }}>
