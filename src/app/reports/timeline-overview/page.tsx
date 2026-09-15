@@ -6,7 +6,7 @@
 import ComputerOutlinedIcon from "@mui/icons-material/ComputerOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutlined";
 import { Box } from "@mui/material";
-import type { Theme } from "@mui/material/styles";
+import type { SxProps, Theme } from "@mui/material/styles";
 
 import { ReportLogo } from "../report-logo";
 
@@ -73,57 +73,68 @@ const EVENTS: [number, [number, number], [number, number], [number, number]][] =
   ];
 
 // Arc lengths for a radius-112 donut (circumference 703.72).
+// Slice colors, one per brand ramp: secureBlue 600, purple 400, teal 700,
+// orange 700, threatMagenta 700, then the neutral for "Other".
+const SLICE = [
+  "#289FE6",
+  "#9435EC",
+  "#059692",
+  "#F57C00",
+  "#CE008E",
+  "#C3CAD8",
+];
+
 const DONUT_ARCS = [
-  { stroke: "#3527fd", dash: "201.96 703.72", offset: -0.0 },
-  { stroke: "#7b3ff2", dash: "147.78 703.72", offset: -201.96 },
-  { stroke: "#0f8a80", dash: "135.82 703.72", offset: -349.74 },
-  { stroke: "#238cd2", dash: "73.90 703.72", offset: -485.56 },
-  { stroke: "#ce008e", dash: "59.82 703.72", offset: -559.46 },
-  { stroke: "#c3cad8", dash: "84.45 703.72", offset: -619.28 },
+  { stroke: SLICE[0], dash: "201.96 703.72", offset: -0.0 },
+  { stroke: SLICE[1], dash: "147.78 703.72", offset: -201.96 },
+  { stroke: SLICE[2], dash: "135.82 703.72", offset: -349.74 },
+  { stroke: SLICE[3], dash: "73.90 703.72", offset: -485.56 },
+  { stroke: SLICE[4], dash: "59.82 703.72", offset: -559.46 },
+  { stroke: SLICE[5], dash: "84.45 703.72", offset: -619.28 },
 ];
 
 const DONUT_LEGEND = [
   {
-    c: "#3527fd",
-    nm: "portal.zorustech.com",
+    c: SLICE[0],
+    nm: "portal[.]zorustech[.]com",
     typ: "Website",
     val: "72h 59m",
-    sub: "(28.7%)",
+    sub: "28.7%",
   },
   {
-    c: "#7b3ff2",
+    c: SLICE[1],
     nm: "Slack",
     typ: "Application",
     val: "53h 30m",
-    sub: "(21.0%)",
+    sub: "21.0%",
   },
   {
-    c: "#0f8a80",
+    c: SLICE[2],
     nm: "Google Chrome",
     typ: "Streaming",
     val: "49h 10m",
-    sub: "(19.3%)",
+    sub: "19.3%",
   },
   {
-    c: "#238cd2",
+    c: SLICE[3],
     nm: "Google Chrome",
     typ: "Application",
     val: "26h 45m",
-    sub: "(10.5%)",
+    sub: "10.5%",
   },
   {
-    c: "#ce008e",
-    nm: "dnsfilter.atlassian.net",
+    c: SLICE[4],
+    nm: "dnsfilter[.]atlassian[.]net",
     typ: "Website",
     val: "21h 33m",
-    sub: "(8.5%)",
+    sub: "8.5%",
   },
   {
-    c: "#c3cad8",
+    c: SLICE[5],
     nm: "Other",
     typ: "163 activities",
     val: "30h 33m",
-    sub: "(12.0%)",
+    sub: "12.0%",
   },
 ];
 
@@ -304,19 +315,23 @@ function LegendSquare({ color, label }: { color: string; label: string }) {
   );
 }
 
-function Dot({ color }: { color: string }) {
+function Dot({ color, sx }: { color: string; sx?: SxProps<Theme> }) {
   return (
     <Box
       component="i"
-      sx={{
-        display: "inline-block",
-        width: 10,
-        height: 10,
-        borderRadius: "999px",
-        mr: "7px",
-        verticalAlign: "1px",
-        bgcolor: color,
-      }}
+      sx={[
+        {
+          display: "inline-block",
+          width: 10,
+          height: 10,
+          flexShrink: 0,
+          borderRadius: "999px",
+          mr: "7px",
+          verticalAlign: "1px",
+          bgcolor: color,
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     />
   );
 }
@@ -596,55 +611,40 @@ export default function TimelineOverviewReport() {
                   key={i}
                   sx={{
                     display: "flex",
-                    alignItems: "baseline",
+                    alignItems: "flex-start",
                     gap: "8px",
-                    py: "9px",
+                    py: "12px",
                     borderBottom:
                       i < DONUT_LEGEND.length - 1
                         ? `1px solid ${DIVIDER}`
                         : "none",
                   }}
                 >
-                  <Dot color={d.c} />
-                  <Box
-                    sx={{
-                      flex: 1,
-                      fontSize: 18,
-                      fontWeight: 500,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      minWidth: 0,
-                    }}
-                  >
-                    {d.nm}{" "}
+                  {/* Sits on the first line, not centered on the pair. */}
+                  <Dot color={d.c} sx={{ mt: "7px" }} />
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Box
-                      component="span"
-                      sx={{ fontSize: 16, color: TEXT2, fontWeight: 400 }}
+                      sx={{
+                        fontSize: 18,
+                        fontWeight: 600,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
                     >
-                      · {d.typ}
+                      {d.nm}
                     </Box>
+                    <Box sx={{ fontSize: 16, color: TEXT2 }}>{d.typ}</Box>
                   </Box>
                   <Box
                     sx={{
-                      fontSize: 18,
-                      fontWeight: 600,
+                      textAlign: "right",
                       whiteSpace: "nowrap",
                       fontVariantNumeric: "tabular-nums",
                     }}
                   >
-                    {d.val}{" "}
-                    <Box
-                      component="em"
-                      sx={{
-                        fontStyle: "normal",
-                        fontWeight: 400,
-                        color: TEXT2,
-                        fontSize: 16,
-                      }}
-                    >
-                      {d.sub}
-                    </Box>
+                    <Box sx={{ fontSize: 18, fontWeight: 600 }}>{d.val}</Box>
+                    <Box sx={{ fontSize: 16, color: TEXT2 }}>{d.sub}</Box>
                   </Box>
                 </Box>
               ))}

@@ -11,16 +11,12 @@ import {
   ButtonBase,
   Divider,
   Link,
-  Switch,
   Typography,
 } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import { useState, type ReactNode } from "react";
 
-// The only values that aren't theme tokens: the tray popup's own ground,
-// which is OS chrome rather than an app surface.
-const POPUP_BG_LIGHT = "#dadae1";
-const POPUP_BG_DARK = "#121212";
+import { CLIENT_BG_DARK, CLIENT_BG_LIGHT } from "./client-surface";
+import { IosSwitch } from "./ios-switch";
 
 /** Green when healthy, amber when degraded, otherwise the gray a default Chip
  *  gives its icon. */
@@ -124,44 +120,6 @@ const STATES: Record<
     },
   },
 };
-
-const IosSwitch = styled(Switch)(({ theme }) => ({
-  width: 42,
-  height: 26,
-  padding: 0,
-  "&& .MuiSwitch-switchBase": {
-    padding: 0,
-    margin: 2,
-    transitionDuration: "300ms",
-    "&.Mui-checked": {
-      transform: "translateX(16px)",
-      color: theme.vars.palette.common.white,
-      "& + .MuiSwitch-track": {
-        opacity: 1,
-        border: 0,
-        backgroundColor: theme.vars.palette.primary.main,
-      },
-    },
-  },
-  "&& .MuiSwitch-thumb": {
-    boxSizing: "border-box",
-    width: 22,
-    height: 22,
-  },
-  "&& .MuiSwitch-track": {
-    opacity: 1,
-    borderRadius: 13,
-    backgroundColor: theme.vars.palette.action.disabled,
-  },
-  ...theme.applyStyles("dark", {
-    "&& .MuiSwitch-switchBase.Mui-checked": {
-      color: theme.vars.palette.common.white,
-      "& + .MuiSwitch-track": {
-        backgroundColor: theme.vars.palette.primary.light,
-      },
-    },
-  }),
-}));
 
 function Banner({
   text,
@@ -336,9 +294,9 @@ export function TrayPopup({
         borderRadius: "14px",
         border: 1,
         borderColor: "divider",
-        backgroundColor: POPUP_BG_LIGHT,
+        backgroundColor: CLIENT_BG_LIGHT,
         boxShadow: "0px 8px 24px 0px rgba(0, 0, 0, 0.1)",
-        ...theme.applyStyles("dark", { backgroundColor: POPUP_BG_DARK }),
+        ...theme.applyStyles("dark", { backgroundColor: CLIENT_BG_DARK }),
       })}
     >
       <Box
