@@ -140,7 +140,7 @@ const ClientButton = styled(Button)<ClientButtonProps>(({ theme }) => {
 });
 
 // The badge's own fill, a shade off the window's ground.
-const BADGE_FILL_LIGHT = "linear-gradient(45deg, #1C1E2A 0%, #0C0C12 100%)";
+const BADGE_FILL_LIGHT = "linear-gradient(45deg, #ECEEF3 0%, #FFFFFF 100%)";
 const BADGE_CLIENT_PRIMARY_DARK =
   "linear-gradient(0deg, #040406 0%, #1C1E2A 100%)";
 
@@ -198,7 +198,7 @@ function ClientCard({
         borderRadius: "16px",
         border: "1px solid",
         borderColor: success ? BANNER_LIGHT.border : APP_BORDER_LIGHT,
-        backgroundColor: success ? BANNER_LIGHT.bg : "background.paper",
+        backgroundColor: success ? BANNER_LIGHT.bg : CARD_BG_LIGHT,
         // The window paints its own surfaces — no elevation overlay.
         backgroundImage: "none",
         ...theme.applyStyles("dark", {
@@ -246,6 +246,8 @@ const ACTIVE_DARK = { bg: "rgba(40, 212, 145, 0.16)", fg: "#28D491" };
 
 // The all-clear banner: the same green, thinner, since it carries a whole
 // card rather than a chip.
+const CARD_BG_LIGHT = "#FCFCFD";
+
 const BANNER_LIGHT = { bg: "#ECFCF5", border: "#A3F0D2" };
 const BANNER_DARK = {
   bg: "rgba(40, 212, 145, 0.08)",
@@ -257,11 +259,16 @@ function StatusChip({ on }: { on: boolean }) {
   return (
     <Box
       sx={(theme) => ({
-        px: 0.75,
-        py: "1px",
-        borderRadius: "6px",
+        padding: "4px 8px",
+        borderRadius: "999px",
+        // The outline takes the label's own color at a quarter strength,
+        // whatever the state — color-mix keeps it tied to `color` rather than
+        // restating each state's hex.
+        border: "1px solid",
+        borderColor: "color-mix(in srgb, currentColor 25%, transparent)",
         fontSize: 12,
         fontWeight: 600,
+        lineHeight: 1,
         whiteSpace: "nowrap",
         ...(on
           ? {
@@ -310,7 +317,7 @@ function FeatureRow({
           </Typography>
           <StatusChip on={on} />
         </Box>
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+        <Typography variant="body2" sx={{ mt: "4px", color: "text.secondary" }}>
           {description}
         </Typography>
       </Box>
@@ -377,9 +384,10 @@ export default function DnsfilterOneAppPage() {
                     fontWeight: 700,
                     letterSpacing: "0.08em",
                     background: BADGE_FILL_LIGHT,
-                    color: "#ffffff",
+                    color: "text.primary",
                     ...theme.applyStyles("dark", {
                       background: BADGE_CLIENT_PRIMARY_DARK,
+                      color: theme.vars.palette.common.white,
                     }),
                   })}
                 >
@@ -425,7 +433,10 @@ export default function DnsfilterOneAppPage() {
               >
                 All systems operational
               </Typography>
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              <Typography
+                variant="body2"
+                sx={{ mt: "4px", color: "text.secondary" }}
+              >
                 DNS is filtering through DNSFilter over encrypted DNS.
               </Typography>
             </Box>
@@ -471,7 +482,10 @@ export default function DnsfilterOneAppPage() {
                 >
                   DNSFilter Diagnostic Tool (DDT)
                 </Typography>
-                <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                <Typography
+                  variant="body2"
+                  sx={{ mt: "4px", color: "text.secondary" }}
+                >
                   Run the DNSFilter diagnostic checks — built in, runs right
                   here.
                 </Typography>
