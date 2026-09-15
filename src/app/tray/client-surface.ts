@@ -14,9 +14,12 @@ export const APP_BG_DARK = "#040406";
 export const APP_SURFACE_DARK = "#0c0c12";
 
 /** The hairline around everything drawn on the window — the window itself,
- *  its cards, and the band at its foot. */
-export const APP_BORDER_LIGHT = "#dcdde5";
-export const APP_BORDER_DARK = "#171c2a";
+ *  its cards, and the band at its foot — and the stronger one a card takes
+ *  under the pointer. */
+export const APP_BORDER_LIGHT = "rgba(30, 41, 74, 0.13)";
+export const APP_BORDER_DARK = "rgba(120, 138, 190, 0.14)";
+export const APP_BORDER_LIGHT_HOVER = "rgba(30, 41, 74, 0.34)";
+export const APP_BORDER_DARK_HOVER = "rgba(120, 138, 190, 0.40)";
 
 /** Dark-mode primary, from the palette these screens were specced against —
  *  secureBlue 600 over 900. The palette in this repo still points dark
