@@ -1,5 +1,5 @@
-// DNSFilter One v2 — a fork of the client window to try a second
-// direction. It carries its own ui/tokens, so it can diverge freely.
+// DNSFilter One v3 — a fork of v2 to try a third direction. It carries its
+// own ui/tokens, so it can diverge freely.
 //
 // Two screens live in the same chrome: the home list, and a feature's own
 // screen behind it. The masthead changes with the screen; the brand hairline
@@ -69,27 +69,6 @@ const FEATURES = [
 
 // What the service itself is reporting, as the banner states it.
 const SERVICE_STATUS = "Operational";
-
-// The two ways to get help, side by side under the products. They share the
-// support tint, so they read as a pair.
-const SUPPORT_TINT = "linear-gradient(160deg, #9B7BFF 0%, #432C96 100%)";
-
-const SUPPORT = [
-  {
-    name: "DNSFilter Diagnostic Tool (DDT)",
-    icon: "stethoscope",
-    description:
-      "Run the DNSFilter diagnostic checks — built in, runs right here.",
-    action: "Run Diagnostics",
-  },
-  {
-    name: "Report a problem",
-    icon: "support",
-    description:
-      "Send this device's diagnostics and a note to DNSFilter support.",
-    action: "Send report",
-  },
-];
 
 // The resolvers the client is actually using, as the window reports them.
 const RESOLVERS = [
@@ -230,46 +209,37 @@ function HomeScreen({ onOpen }: { onOpen: (name: string) => void }) {
         </Box>
       </ClientCard>
 
-      {/* v2: the two support cards share a row. */}
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
-          gap: "24px",
-          alignItems: "stretch",
-        }}
-      >
-        {SUPPORT.map((card) => (
-          <ClientCard key={card.name}>
-            <IconTile icon={card.icon} tint={SUPPORT_TINT} />
-            <Box sx={{ minWidth: 0, flex: 1 }}>
-              <Typography
-                sx={{ fontSize: 14, fontWeight: 700, color: "text.primary" }}
-              >
-                {card.name}
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ mt: "4px", color: "text.secondary" }}
-              >
-                {card.description}
-              </Typography>
-              <ClientButton
-                variant="contained"
-                disableElevation
-                sx={{ mt: 1.5 }}
-              >
-                {card.action}
-              </ClientButton>
-            </Box>
-          </ClientCard>
-        ))}
-      </Box>
+      <ClientCard>
+        <IconTile
+          icon="stethoscope"
+          tint="linear-gradient(160deg, #9B7BFF 0%, #432C96 100%)"
+        />
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography
+            sx={{ fontSize: 14, fontWeight: 700, color: "text.primary" }}
+          >
+            DNSFilter Diagnostic Tool (DDT)
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ mt: "4px", color: "text.secondary" }}
+          >
+            Run the DNSFilter diagnostic checks — built in, runs right here.
+          </Typography>
+        </Box>
+        <ClientButton
+          variant="contained"
+          disableElevation
+          sx={{ flexShrink: 0 }}
+        >
+          Run Diagnostics
+        </ClientButton>
+      </ClientCard>
     </Box>
   );
 }
 
-export default function DnsfilterOneAppV2Page() {
+export default function DnsfilterOneAppV3Page() {
   // Which feature's screen is open, if any.
   const [screen, setScreen] = useState<string | null>(null);
   const feature = FEATURES.find((f) => f.name === screen);
@@ -278,14 +248,9 @@ export default function DnsfilterOneAppV2Page() {
     <Container maxWidth="lg">
       <Box
         sx={(theme) => ({
-          // The client window's own size, not the page's. It's a fixed pane:
-          // the masthead and the bands at its foot stay put, and the screen
-          // between them scrolls.
+          // The client window's own size, not the page's.
           width: 1000,
           maxWidth: "100%",
-          maxHeight: 600,
-          display: "flex",
-          flexDirection: "column",
           overflow: "hidden",
           borderRadius: "16px",
           border: `1px solid ${APP_BORDER_LIGHT}`,
@@ -298,7 +263,6 @@ export default function DnsfilterOneAppV2Page() {
       >
         <Box
           sx={(theme) => ({
-            flexShrink: 0,
             p: "24px",
             display: "flex",
             alignItems: "center",
@@ -397,41 +361,25 @@ export default function DnsfilterOneAppV2Page() {
         </Box>
 
         {/* The brand colors, as a hairline under the masthead. */}
-        <Box sx={{ flexShrink: 0, height: "1px", background: ACCENT_RULE }} />
+        <Box sx={{ height: "1px", background: ACCENT_RULE }} />
 
-        {/* `scroll` rather than `auto`, plus an explicit width, so macOS shows
-            a classic bar instead of the overlay one that fades out. */}
-        <Box
-          sx={(theme) => ({
-            flex: 1,
-            minHeight: 0,
-            overflowY: "scroll",
-            scrollbarGutter: "stable",
-            scrollbarColor: `${theme.vars.palette.action.disabled} transparent`,
-            "&::-webkit-scrollbar": {
-              width: 12,
-              WebkitAppearance: "none",
-            },
-            "&::-webkit-scrollbar-track": { backgroundColor: "transparent" },
-            "&::-webkit-scrollbar-thumb": {
-              borderRadius: 8,
-              border: "3px solid transparent",
-              backgroundClip: "content-box",
-              backgroundColor: theme.vars.palette.action.disabled,
-            },
-          })}
-        >
-          {feature ? (
-            <RoamingClientScreen />
-          ) : (
-            <HomeScreen onOpen={setScreen} />
-          )}
+        {feature ? <RoamingClientScreen /> : <HomeScreen onOpen={setScreen} />}
+
+        {/* The way to flag trouble, whichever screen you're on. */}
+        <Box sx={{ pb: "20px", textAlign: "center" }}>
+          <Link
+            component="button"
+            type="button"
+            underline="hover"
+            sx={{ fontSize: 14, fontWeight: 600 }}
+          >
+            Report a problem
+          </Link>
         </Box>
 
         {/* The resolvers in use, on a band of their own at the foot. */}
         <Box
           sx={(theme) => ({
-            flexShrink: 0,
             padding: "16px 24px",
             display: "flex",
             flexWrap: "wrap",

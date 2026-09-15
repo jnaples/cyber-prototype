@@ -40,6 +40,7 @@ import AdminTrayPage from "@/app/tray/admin/page";
 import TrayVariantsPage from "@/app/tray/tray-variants/page";
 import DnsfilterOneAppPage from "@/app/tray/dnsfilter-one-app/page";
 import DnsfilterOneAppV2Page from "@/app/tray/dnsfilter-one-app-v2/page";
+import DnsfilterOneAppV3Page from "@/app/tray/dnsfilter-one-app-v3/page";
 import CustomerActivityOverviewReport from "@/app/reports/customer-activity-overview/page";
 import ThreatTrendsReport from "@/app/reports/threat-trends/page";
 import CyberSightAiUsageReport from "@/app/reports/cybersight-ai-usage/page";
@@ -193,6 +194,10 @@ function App() {
           <Route
             path="dnsfilter-one-app-v2"
             element={<DnsfilterOneAppV2Page />}
+          />
+          <Route
+            path="dnsfilter-one-app-v3"
+            element={<DnsfilterOneAppV3Page />}
           />
           <Route path="tray-variants" element={<TrayVariantsPage />} />
           <Route path="admin" element={<AdminTrayPage />} />
