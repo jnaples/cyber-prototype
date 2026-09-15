@@ -10,7 +10,9 @@ const accentGradient = (angle: string) =>
   `linear-gradient(${angle}, #F306AE 0%, #00C8FD 50%, #3427FD 100%)`;
 
 export const ACCENT_RULE = accentGradient("90deg");
-export const ACCENT_RING = accentGradient("-45deg");
+// Pink at the left, deep blue at the right — the wash read left to right,
+// same as the hairline.
+export const ACCENT_RING = accentGradient("90deg");
 
 // The masthead's own ground — background.default from the palette these
 // screens were specced against.
@@ -19,9 +21,9 @@ export const CARD_BG_LIGHT = "#FCFCFD";
 
 // The ONE badge's fill, a shade off the window's ground.
 export const BADGE_FILL_LIGHT =
-  "linear-gradient(45deg, #ECEEF3 0%, #FFFFFF 100%)";
+  "linear-gradient(45deg, #FFFFFF 0%, #ECEEF3 100%)";
 export const BADGE_FILL_DARK =
-  "linear-gradient(0deg, #040406 0%, #1C1E2A 100%)";
+  "linear-gradient(0deg, #1C1E2A 0%, #040406 100%)";
 
 // Success greens from the palette these screens were specced against. Each
 // scheme takes its own anchor for the text — 700 on light, 500 on dark — over

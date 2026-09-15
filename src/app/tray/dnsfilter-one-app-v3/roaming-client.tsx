@@ -72,7 +72,7 @@ function MapPin({
         <Typography
           sx={{
             fontSize: 12,
-            fontWeight: 700,
+            fontWeight: 600,
             letterSpacing: "0.08em",
             color: accent,
           }}
@@ -80,7 +80,7 @@ function MapPin({
           {title}
         </Typography>
         <Typography
-          sx={{ fontSize: 14, fontWeight: 700, color: "text.primary" }}
+          sx={{ fontSize: 14, fontWeight: 600, color: "text.primary" }}
         >
           {place}
         </Typography>
@@ -105,7 +105,7 @@ function MapTag({ children, accent }: { children: string; accent?: string }) {
         backgroundColor: theme.vars.palette.background.paper,
         fontFamily: "monospace",
         fontSize: 12,
-        fontWeight: 700,
+        fontWeight: 600,
         letterSpacing: "0.06em",
         whiteSpace: "nowrap",
         color: accent ?? theme.vars.palette.text.secondary,
@@ -158,7 +158,7 @@ export function RoamingClientScreen() {
         </Box>
         <Box sx={{ minWidth: 0, flex: 1 }}>
           <Typography
-            sx={{ fontSize: 18, fontWeight: 700, color: "text.primary" }}
+            sx={{ fontSize: 18, fontWeight: 600, color: "text.primary" }}
           >
             {on ? "On" : "Off"}
           </Typography>
@@ -268,7 +268,7 @@ export function RoamingClientScreen() {
               sx={{
                 fontFamily: "monospace",
                 fontSize: 12,
-                fontWeight: 700,
+                fontWeight: 600,
                 color: "text.primary",
               }}
             >
@@ -301,7 +301,7 @@ export function RoamingClientScreen() {
                 <MaterialSymbol name="verified_user" size={18} />
               </Box>
               <Typography
-                sx={{ fontSize: 14, fontWeight: 700, color: "text.primary" }}
+                sx={{ fontSize: 14, fontWeight: 600, color: "text.primary" }}
               >
                 Active — per-device
               </Typography>

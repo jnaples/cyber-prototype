@@ -112,7 +112,7 @@ function FeatureRow({
       <Box sx={{ minWidth: 0, flex: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Typography
-            sx={{ fontSize: 16, fontWeight: 700, color: "text.primary" }}
+            sx={{ fontSize: 16, fontWeight: 600, color: "text.primary" }}
           >
             {name}
           </Typography>
@@ -282,7 +282,7 @@ function HelpScreen() {
                   <Typography
                     sx={{
                       fontSize: 16,
-                      fontWeight: 700,
+                      fontWeight: 600,
                       color: "text.primary",
                     }}
                   >
@@ -444,14 +444,16 @@ export default function DnsfilterOneAppV3Page() {
                 color="secondary"
                 onClick={() => setScreen(null)}
                 startIcon={<MaterialSymbol name="chevron_left" size={18} />}
-                sx={{ flexShrink: 0 }}
+                // The theme's button type is 700 and uppercase; the client
+                // reads in title case at 600 like everything around it.
+                sx={{ flexShrink: 0, fontWeight: 600, textTransform: "none" }}
               >
                 Back
               </Button>
               <IconTile icon={feature.icon} tint={feature.tint} />
               <Box sx={{ minWidth: 0 }}>
                 <Typography
-                  sx={{ fontSize: 18, fontWeight: 700, color: "text.primary" }}
+                  sx={{ fontSize: 18, fontWeight: 600, color: "text.primary" }}
                 >
                   {feature.name}
                 </Typography>
@@ -478,7 +480,7 @@ export default function DnsfilterOneAppV3Page() {
                       px: 1,
                       borderRadius: "999px",
                       fontSize: 12,
-                      fontWeight: 700,
+                      fontWeight: 600,
                       letterSpacing: "0.08em",
                       background: BADGE_FILL_LIGHT,
                       color: "text.primary",
