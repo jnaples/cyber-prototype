@@ -173,7 +173,7 @@ function NavRail({
       sx={(theme) => ({
         width: 180,
         flexShrink: 0,
-        p: "24px",
+        p: "16px",
         display: "flex",
         flexDirection: "column",
         gap: "8px",
@@ -413,7 +413,7 @@ export default function DnsfilterOneAppV3Page() {
         <Box
           sx={(theme) => ({
             flexShrink: 0,
-            p: "24px",
+            p: "16px",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",

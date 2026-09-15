@@ -126,6 +126,11 @@ export function StatusChip({
         height: 24,
         padding: "0 8px",
         borderRadius: "999px",
+        // The outline takes the label's own color at a quarter strength,
+        // whatever the state — color-mix keeps it tied to `color` rather than
+        // restating each state's hex.
+        border: "1px solid",
+        borderColor: "color-mix(in srgb, currentColor 25%, transparent)",
         display: "inline-flex",
         alignItems: "center",
         gap: "6px",
