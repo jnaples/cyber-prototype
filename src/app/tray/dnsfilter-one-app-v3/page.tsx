@@ -155,10 +155,24 @@ const NAV_SELECTED_DARK = "#171B1E";
 // v3 puts the window's sections in a rail of their own.
 const NAV = [
   { key: "dashboard", label: "Dashboard", icon: "dashboard" },
+  // Hands off to the OS rather than opening a screen of its own, so it never
+  // takes the selected state and says where it goes. macOS registers this
+  // scheme, so the browser offers to open System Settings; elsewhere the link
+  // simply does nothing.
+  {
+    key: "settings",
+    label: "Settings",
+    icon: "settings",
+    href: "x-apple.systempreferences:com.apple.preference.network",
+  },
   { key: "help", label: "Help", icon: "support" },
 ] as const;
 
-type NavKey = (typeof NAV)[number]["key"];
+type NavKey = Exclude<(typeof NAV)[number]["key"], "settings">;
+
+const isExternal = (
+  item: (typeof NAV)[number],
+): item is Extract<(typeof NAV)[number], { href: string }> => "href" in item;
 
 function NavRail({
   active,
@@ -188,12 +202,17 @@ function NavRail({
       })}
     >
       {NAV.map((item) => {
-        const selected = item.key === active;
+        const external = isExternal(item);
+        const selected = !external && item.key === active;
         return (
           <Box
             key={item.key}
-            role="button"
-            onClick={() => onChange(item.key)}
+            {...(external
+              ? { component: "a" as const, href: item.href }
+              : {
+                  role: "button",
+                  onClick: () => onChange(item.key as NavKey),
+                })}
             sx={(theme) => ({
               px: "12px",
               py: "8px",
@@ -204,6 +223,7 @@ function NavRail({
               cursor: "pointer",
               fontSize: 14,
               fontWeight: 600,
+              textDecoration: "none",
               color: selected ? "text.primary" : "text.secondary",
               backgroundColor: selected ? NAV_SELECTED_LIGHT : "transparent",
               "&:hover": {
@@ -407,11 +427,18 @@ export default function DnsfilterOneAppV3Page() {
           borderRadius: "16px",
           border: `1px solid ${APP_BORDER_LIGHT}`,
           backgroundColor: APP_BG_LIGHT,
+          // The client's own text, redefined at the window so every
+          // `text.primary` / `text.secondary` inside it resolves through
+          // these two tokens.
+          "--dnsf-palette-text-primary": "#0A0F1C",
+          "--dnsf-palette-text-secondary": "#4B5569",
           ...theme.applyStyles("dark", {
             // The window's own edge, a step brighter than the hairlines
             // inside it.
             borderColor: "#29292D",
             backgroundColor: APP_BG_DARK,
+            "--dnsf-palette-text-primary": "#FFFFFF",
+            "--dnsf-palette-text-secondary": "#929AB4",
           }),
         })}
       >
@@ -524,7 +551,7 @@ export default function DnsfilterOneAppV3Page() {
             </IconButton>
             {/* v3 carries the service's own state up here, so the screen
                 below doesn't need a banner for it. */}
-            <StatusChip on dot label="Online" />
+            <StatusChip on dot outlined label="Online" />
           </Box>
         </Box>
 

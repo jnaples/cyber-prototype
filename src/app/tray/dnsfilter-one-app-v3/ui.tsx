@@ -114,11 +114,15 @@ export function StatusChip({
   on,
   label,
   dot = false,
+  outlined = false,
 }: {
   on: boolean;
   label?: string;
   /** Lead with a dot in the chip's own color. */
   dot?: boolean;
+  /** Ring the chip in its own color. Off by default: the chips inside a card
+   *  read as fills, and only the one in the masthead needs an edge. */
+  outlined?: boolean;
 }) {
   return (
     <Box
@@ -129,8 +133,12 @@ export function StatusChip({
         // The outline takes the label's own color at a quarter strength,
         // whatever the state — color-mix keeps it tied to `color` rather than
         // restating each state's hex.
-        border: "1px solid",
-        borderColor: "color-mix(in srgb, currentColor 25%, transparent)",
+        ...(outlined
+          ? {
+              border: "1px solid",
+              borderColor: "color-mix(in srgb, currentColor 25%, transparent)",
+            }
+          : {}),
         display: "inline-flex",
         alignItems: "center",
         gap: "6px",
