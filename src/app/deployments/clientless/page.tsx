@@ -187,7 +187,7 @@ const EDIT_SITES = [
   "Lincoln Middle School",
 ];
 
-// Deleted deployments, kept for 30 days so they can be put back. Session-only:
+// Deleted deployments, kept for 90 days so they can be put back. Session-only:
 // restoring one adds it to the grid until the page reloads.
 type ArchivedRow = DohRow & { deleted: string };
 
@@ -520,11 +520,15 @@ function DohActionsCell({
       >
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <Typography variant="body1" sx={{ color: "text.primary" }}>
-            Deleting this Clientless Device disables its DoH address.
+            Deleting this Clientless Device disables its endpoint.
           </Typography>
           <Typography variant="body1" sx={{ color: "text.primary" }}>
-            A device still configured with that address will lose internet
-            access until the address is removed from the device.
+            Any device still configured with that endpoint will lose internet
+            access until the endpoint is removed from the device.
+          </Typography>
+          <Typography variant="body1" sx={{ color: "text.primary" }}>
+            The Clientless Device moves to Recently Deleted and can be restored
+            within 90 days before permanent deletion.
           </Typography>
         </Box>
         <Box sx={{ mt: 2 }}>
@@ -959,7 +963,7 @@ export default function ClientlessPage() {
         />
       </TabbedDataCard>
 
-      {/* Recently Deleted — deleted deployments, restorable for 30 days.
+      {/* Recently Deleted — deleted deployments, restorable for 90 days.
           Panel modal, so its height matches the other panels. */}
       <PanelModal
         open={archivedOpen}
@@ -967,24 +971,48 @@ export default function ClientlessPage() {
         title="Recently Deleted"
         width={900}
         // The grid does its own scrolling; the panel hugs it until the cap.
-        bodySx={{ display: "flex", overflowY: "hidden" }}
+        // A column, so the line above it stacks rather than sitting beside it.
+        bodySx={{
+          display: "flex",
+          flexDirection: "column",
+          overflowY: "hidden",
+        }}
         actions={
-          <Button
-            type="button"
-            size="small"
-            variant="outlined"
-            color="secondary"
-            onClick={closeArchived}
-          >
-            Close
-          </Button>
+          <>
+            {/* Nothing sits opposite it here, so it takes the right edge. */}
+            <Box sx={{ flex: 1 }} />
+            <Button
+              type="button"
+              size="small"
+              variant="outlined"
+              color="secondary"
+              onClick={closeArchived}
+            >
+              Close
+            </Button>
+          </>
         }
       >
+        {/* How long anything in here has, before the grid says what's in it. */}
+        <Typography
+          variant="body1"
+          sx={{
+            mb: 2,
+            flexShrink: 0,
+            color: "text.primary",
+            textAlign: "center",
+          }}
+        >
+          Deleted Clientless Devices are available to restore for 90 days before
+          permanent deletion.
+        </Typography>
+
         {/* The grid as a card on a neutral pane, scrolling inside the body. */}
         <Box
           sx={(theme) => ({
             flex: 1,
             minWidth: 0,
+            minHeight: 0,
             display: "flex",
             bgcolor: "background.neutral",
             borderRadius: 1,
@@ -1000,6 +1028,7 @@ export default function ClientlessPage() {
             sx={{
               flex: 1,
               minWidth: 0,
+              minHeight: 0,
               display: "flex",
               flexDirection: "column",
               overflow: "hidden",
