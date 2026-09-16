@@ -225,6 +225,7 @@ export function SectionLabel({ children }: { children: ReactNode }) {
         display: "block",
         mb: 1,
         fontSize: 12,
+        fontWeight: 600,
         textTransform: "uppercase",
         letterSpacing: "0.08em",
         color: "text.secondary",

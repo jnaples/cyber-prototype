@@ -102,7 +102,7 @@ function FeatureRow({
   return (
     <Box
       sx={{
-        p: "16px",
+        padding: "16px 0",
         display: "flex",
         alignItems: "center",
         gap: 2,
@@ -383,7 +383,7 @@ function HomeScreen({ onOpen }: { onOpen: (name: string) => void }) {
     >
       {/* v2: the three products share one card, divided by rules rather than
           sitting in cards of their own. */}
-      <ClientCard padding={0}>
+      <ClientCard padding="0 16px">
         <Box sx={{ flex: 1, minWidth: 0 }}>
           {FEATURES.map((feature, i) => (
             <Fragment key={feature.name}>

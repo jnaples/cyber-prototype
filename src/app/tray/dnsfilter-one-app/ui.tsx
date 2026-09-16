@@ -143,7 +143,7 @@ export function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <Typography
       variant="overline"
-      sx={{ display: "block", mb: 1, color: "text.secondary" }}
+      sx={{ display: "block", mb: 1, fontWeight: 600, color: "text.secondary" }}
     >
       {children}
     </Typography>

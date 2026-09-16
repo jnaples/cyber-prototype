@@ -129,6 +129,9 @@ importers:
       typescript-eslint:
         specifier: ^8.58.2
         version: 8.59.2(eslint@10.3.0)(typescript@6.0.3)
+      us-atlas:
+        specifier: ^3.0.1
+        version: 3.0.1
       vite:
         specifier: ^8.0.10
         version: 8.0.11(@types/node@24.12.2)
@@ -1778,6 +1781,9 @@ packages:
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
+
+  us-atlas@3.0.1:
+    resolution: {integrity: sha512-wEIZCq0ImPvGblTd8gZMqNNCPkQshugMUG/8nkSWXb02+XqNFREg9atHOKP9w6prLZTpqcLhSvdBW81MkV3/0Q==}
 
   use-sync-external-store@1.6.0:
     resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
@@ -3531,6 +3537,8 @@ snapshots:
   uri-js@4.4.1:
     dependencies:
       punycode: 2.3.1
+
+  us-atlas@3.0.1: {}
 
   use-sync-external-store@1.6.0(react@19.2.6):
     dependencies:
