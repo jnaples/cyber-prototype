@@ -23,18 +23,21 @@ const EXIT = { lat: 40.7128, lon: -74.006 };
 
 const DEVICE_ID = "b62fb7810f4b4c98a5ccbd05874815e5";
 
-/** A label pinned to a coordinate on the map. */
+/** A label pinned to a coordinate on the map. The tone sets the dot, the
+ *  ring, the border and the title in one go — everything below reads it off
+ *  `color`, so it can't get out of step. */
 function MapPin({
   title,
   place,
-  accent,
+  tone,
   point,
   view,
   side = "top",
 }: {
   title: string;
   place: string;
-  accent: string;
+  /** "primary" for this device, "success" for the resolver answering it. */
+  tone: "primary" | "success";
   point: MapPoint;
   view: MapView;
   /** Which side of the dot the label hangs off. */
@@ -43,7 +46,7 @@ function MapPin({
   const { x, y } = viewProject(point, view);
   return (
     <Box
-      sx={{
+      sx={(theme) => ({
         position: "absolute",
         left: `${x * 100}%`,
         top: `${y * 100}%`,
@@ -54,15 +57,24 @@ function MapPin({
         flexDirection: side === "top" ? "column-reverse" : "column",
         alignItems: "center",
         gap: "6px",
-      }}
+        color:
+          tone === "primary"
+            ? theme.vars.palette.primary.main
+            : ACTIVE_LIGHT.fg,
+        ...theme.applyStyles("dark", {
+          // teal 200 on dark: the deep button blue disappears into the map.
+          color: tone === "primary" ? "#6FD0FF" : ACTIVE_DARK.fg,
+        }),
+      })}
     >
       <Box
         sx={{
           width: 10,
           height: 10,
           borderRadius: "50%",
-          backgroundColor: accent,
-          boxShadow: `0 0 0 4px color-mix(in srgb, ${accent} 24%, transparent)`,
+          backgroundColor: "currentColor",
+          boxShadow:
+            "0 0 0 4px color-mix(in srgb, currentColor 24%, transparent)",
         }}
       />
       <Box
@@ -71,7 +83,7 @@ function MapPin({
           py: 0.5,
           borderRadius: "8px",
           border: "1px solid",
-          borderColor: `color-mix(in srgb, ${accent} 40%, transparent)`,
+          borderColor: "color-mix(in srgb, currentColor 40%, transparent)",
           backgroundColor: theme.vars.palette.background.paper,
           whiteSpace: "nowrap",
           textAlign: "left",
@@ -80,15 +92,15 @@ function MapPin({
         <Typography
           sx={{
             fontSize: 12,
-            fontWeight: 700,
+            fontWeight: 600,
             letterSpacing: "0.08em",
-            color: accent,
+            color: "inherit",
           }}
         >
           {title}
         </Typography>
         <Typography
-          sx={{ fontSize: 12, fontWeight: 700, color: "text.primary" }}
+          sx={{ fontSize: 12, fontWeight: 600, color: "text.primary" }}
         >
           {place}
         </Typography>
@@ -127,7 +139,9 @@ function MapTag({
         backgroundColor: ACTIVE_LIGHT.bg,
         ...theme.applyStyles("dark", {
           color: ACTIVE_DARK.fg,
-          backgroundColor: ACTIVE_DARK.bg,
+          // The chip tint flattened against the card's ground: same color,
+          // but the map can't show through a readout.
+          backgroundColor: "#102C26",
         }),
       })}
     >
@@ -216,15 +230,21 @@ export function RoamingClientScreen() {
           }}
         >
           <DottedMap view={view}>
-            {/* The link's own tint, so the pins read against the dots. */}
+            {/* The link's own tint. Light mode needs only a breath of it —
+                the same wash that sets the pins off on a dark map turns a
+                light one grey. */}
             <Box
-              sx={{
+              sx={(theme) => ({
                 position: "absolute",
                 inset: 0,
                 background:
-                  "linear-gradient(135deg, rgba(40, 212, 145, 0.10) 0%, rgba(4, 4, 6, 0.28) 62%)",
+                  "linear-gradient(135deg, rgba(40, 212, 145, 0.10) 0%, rgba(30, 41, 74, 0.05) 62%)",
                 pointerEvents: "none",
-              }}
+                ...theme.applyStyles("dark", {
+                  background:
+                    "linear-gradient(135deg, rgba(40, 212, 145, 0.10) 0%, rgba(4, 4, 6, 0.28) 62%)",
+                }),
+              })}
             />
 
             <Box
@@ -247,14 +267,14 @@ export function RoamingClientScreen() {
             <MapPin
               title="YOU ARE HERE"
               place={here.place}
-              accent="#6FD0FF"
+              tone="primary"
               point={here}
               view={view}
             />
             <MapPin
               title="EXIT"
               place="DNSFilter · New York, NY"
-              accent={ACTIVE_DARK.fg}
+              tone="success"
               point={EXIT}
               view={view}
               side="bottom"
@@ -307,8 +327,7 @@ export function RoamingClientScreen() {
                 sx={{
                   fontFamily: "monospace",
                   fontSize: 14,
-                  // teal 200, the anchor the client marks identity with.
-                  color: "#6FD0FF",
+                  color: "text.secondary",
                   wordBreak: "break-all",
                 }}
               >
