@@ -34,7 +34,7 @@ type HistoryRow = {
 };
 
 const STATUS_LABEL: Record<RunStatus, string> = {
-  available: "Download Available",
+  available: "Download available",
   processing: "Processing",
   failed: "Failed",
 };
@@ -406,7 +406,7 @@ export function ReportHistory() {
     {
       icon: "check_circle",
       count: counts.available,
-      label: "Download Available",
+      label: "Download available",
       color: "success.main",
       iconColorVar: "var(--dnsf-palette-success-main)",
       progressValue: total ? (counts.available / total) * 100 : 0,
@@ -455,6 +455,8 @@ export function ReportHistory() {
         columns={columns}
         showExport={false}
         showDefaultView={false}
+        // A past run is a record, not something to act on in bulk.
+        checkboxSelection={false}
         pinnedShadowFields={{ left: "reportType", right: "actions" }}
       />
     </TabbedDataCard>
