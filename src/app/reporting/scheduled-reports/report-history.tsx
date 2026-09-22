@@ -29,15 +29,59 @@ type HistoryRow = {
   source: "Manual" | "Scheduled";
   runAt: string;
   status: RunStatus;
-  /** Email outcome — a dash for manual exports, which aren't delivered. */
+  /** Email outcome — a double dash for manual exports, which aren't
+   *  delivered. */
   delivery: string;
 };
+
+/** Processing answers "is this stuck?", so it reads relative — and never gets
+ *  old: a run takes minutes, so "90 min ago" is the signal you want. A Ready
+ *  or Failed run answers "which run was this?", so it keeps its timestamp;
+ *  degrading that to "2 days ago" takes away what the column is for, and a
+ *  column mixing both has no scannable order. The year is dropped inside the
+ *  current one. */
+function formatStarted(row: HistoryRow) {
+  const when = new Date(row.runAt);
+
+  if (row.status === "processing") {
+    const minutes = Math.max(
+      1,
+      Math.round((Date.now() - when.getTime()) / 60_000),
+    );
+    if (minutes < 60) return `${minutes} min ago`;
+    return `${Math.round(minutes / 60)} hr ago`;
+  }
+
+  const date = when.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+  const time = when.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  return when.getFullYear() === new Date().getFullYear()
+    ? `${date}, ${time}`
+    : `${date}, ${when.getFullYear()} ${time}`;
+}
 
 const STATUS_LABEL: Record<RunStatus, string> = {
   available: "Download available",
   processing: "Processing",
   failed: "Failed",
 };
+
+// Runs are dated from now rather than pinned to fixed days, so the list stays
+// inside the retention window however long the prototype sits.
+const daysAgo = (days: number, hour: number, minute: number) => {
+  const when = new Date();
+  when.setDate(when.getDate() - days);
+  when.setHours(hour, minute, 0, 0);
+  return when.toISOString();
+};
+
+const minutesAgo = (minutes: number) =>
+  new Date(Date.now() - minutes * 60_000).toISOString();
 
 // Runs from the last few weeks — recurring scheduled deliveries plus a few
 // one-off runs from other users.
@@ -47,9 +91,9 @@ const HISTORY: HistoryRow[] = [
     reportType: "Activity Overview",
     reportName: "Daily Activity Recap",
     customer: "Coastal Property Mgmt",
-    period: "Aug 5",
+    period: "Sep 21",
     source: "Scheduled",
-    runAt: "Aug 6, 2026 11:00 AM",
+    runAt: daysAgo(0, 11, 0),
     status: "available",
     delivery: "Delivered",
   },
@@ -58,9 +102,9 @@ const HISTORY: HistoryRow[] = [
     reportType: "Filter Protection Overview",
     reportName: "Monthly Protection Summary",
     customer: "Acme Retail Group",
-    period: "Jul 1–31",
+    period: "Aug 1–31",
     source: "Scheduled",
-    runAt: "Aug 5, 2026 8:00 AM",
+    runAt: daysAgo(1, 8, 0),
     status: "available",
     delivery: "Delivered",
   },
@@ -69,9 +113,9 @@ const HISTORY: HistoryRow[] = [
     reportType: "Activity Overview",
     reportName: "Coastal Weekly Digest",
     customer: "Coastal Property Mgmt",
-    period: "Jul 29–Aug 4",
+    period: "Sep 14–20",
     source: "Scheduled",
-    runAt: "Aug 5, 2026 11:01 AM",
+    runAt: daysAgo(1, 11, 1),
     status: "available",
     delivery: "Delivered",
   },
@@ -80,9 +124,9 @@ const HISTORY: HistoryRow[] = [
     reportType: "AI Tool Usage",
     reportName: "CyberSight AI Monthly Review",
     customer: "Summit Financial Advisors",
-    period: "Jul 1–31",
+    period: "Aug 1–31",
     source: "Scheduled",
-    runAt: "Aug 4, 2026 9:00 AM",
+    runAt: daysAgo(2, 9, 0),
     status: "failed",
     delivery: "Not sent",
   },
@@ -91,9 +135,9 @@ const HISTORY: HistoryRow[] = [
     reportType: "Activity Overview",
     reportName: "Daily Activity Recap",
     customer: "Coastal Property Mgmt",
-    period: "Aug 3",
+    period: "Sep 19",
     source: "Scheduled",
-    runAt: "Aug 4, 2026 11:01 AM",
+    runAt: daysAgo(2, 11, 1),
     status: "available",
     delivery: "Delivered",
   },
@@ -102,9 +146,9 @@ const HISTORY: HistoryRow[] = [
     reportType: "Filter Protection Overview",
     reportName: "Weekly Protection Recap",
     customer: "Riverside Dental Group",
-    period: "Jul 27–Aug 2",
+    period: "Sep 12–18",
     source: "Scheduled",
-    runAt: "Aug 3, 2026 7:30 AM",
+    runAt: daysAgo(3, 7, 30),
     status: "available",
     delivery: "Delivered",
   },
@@ -113,9 +157,9 @@ const HISTORY: HistoryRow[] = [
     reportType: "User Threat Activity",
     reportName: "Coastal Threat Recap",
     customer: "Coastal Property Mgmt",
-    period: "Jul 27–Aug 2",
+    period: "Sep 12–18",
     source: "Scheduled",
-    runAt: "Aug 3, 2026 11:01 AM",
+    runAt: daysAgo(3, 11, 1),
     status: "available",
     delivery: "Bounced (2)",
   },
@@ -124,20 +168,20 @@ const HISTORY: HistoryRow[] = [
     reportType: "Filter Protection Overview",
     reportName: "Business Review Packet",
     customer: "Acme Retail Group",
-    period: "Jul 1–31",
+    period: "Aug 1–31",
     source: "Manual",
-    runAt: "Aug 2, 2026 6:15 AM",
+    runAt: daysAgo(4, 6, 15),
     status: "available",
-    delivery: "-",
+    delivery: "--",
   },
   {
     id: 9,
     reportType: "Activity Overview",
     reportName: "Daily Activity Recap",
     customer: "Coastal Property Mgmt",
-    period: "Aug 1",
+    period: "Sep 17",
     source: "Scheduled",
-    runAt: "Aug 2, 2026 11:00 AM",
+    runAt: daysAgo(4, 11, 0),
     status: "available",
     delivery: "Delivered",
   },
@@ -146,9 +190,9 @@ const HISTORY: HistoryRow[] = [
     reportType: "Filter Protection Overview",
     reportName: "Coastal Protection Recap",
     customer: "Coastal Property Mgmt",
-    period: "Jul 24–30",
+    period: "Sep 9–15",
     source: "Scheduled",
-    runAt: "Aug 1, 2026 11:01 AM",
+    runAt: daysAgo(5, 11, 1),
     status: "available",
     delivery: "Delivered",
   },
@@ -157,9 +201,9 @@ const HISTORY: HistoryRow[] = [
     reportType: "Filter Protection Overview",
     reportName: "Acme Weekly Protection Digest",
     customer: "Acme Retail Group",
-    period: "Jul 24–30",
+    period: "Sep 9–15",
     source: "Scheduled",
-    runAt: "Jul 31, 2026 7:00 AM",
+    runAt: daysAgo(6, 7, 0),
     status: "available",
     delivery: "Delivered",
   },
@@ -168,9 +212,9 @@ const HISTORY: HistoryRow[] = [
     reportType: "Filter Protection Overview",
     reportName: "Weekly Protection Recap",
     customer: "Riverside Dental Group",
-    period: "Jul 20–26",
+    period: "Sep 5–11",
     source: "Scheduled",
-    runAt: "Jul 27, 2026 7:30 AM",
+    runAt: daysAgo(10, 7, 30),
     status: "available",
     delivery: "Delivered",
   },
@@ -179,20 +223,20 @@ const HISTORY: HistoryRow[] = [
     reportType: "AI Tool Usage",
     reportName: "AI Adoption Snapshot",
     customer: "Northwind Traders",
-    period: "Jul 1–31",
+    period: "Aug 1–31",
     source: "Manual",
-    runAt: "Aug 6, 2026 6:45 AM",
+    runAt: daysAgo(0, 6, 45),
     status: "available",
-    delivery: "-",
+    delivery: "--",
   },
   {
     id: 14,
     reportType: "AI Tool Usage",
     reportName: "CyberSight AI Monthly Review",
     customer: "Riverside Dental Group",
-    period: "Jul 1–31",
+    period: "Aug 1–31",
     source: "Scheduled",
-    runAt: "Aug 3, 2026 9:12 AM",
+    runAt: minutesAgo(4),
     status: "processing",
     delivery: "Not sent",
   },
@@ -201,20 +245,20 @@ const HISTORY: HistoryRow[] = [
     reportType: "AI Tool Usage",
     reportName: "AI Query Volume by Device",
     customer: "Coastal Property Mgmt",
-    period: "Jul 1–29",
+    period: "Aug 1–29",
     source: "Manual",
-    runAt: "Jul 30, 2026 2:20 PM",
+    runAt: daysAgo(7, 14, 20),
     status: "available",
-    delivery: "-",
+    delivery: "--",
   },
   {
     id: 16,
     reportType: "User Threat Activity",
     reportName: "Monthly Threat Briefing",
     customer: "Summit Financial Advisors",
-    period: "Jul 1–31",
+    period: "Aug 1–31",
     source: "Scheduled",
-    runAt: "Aug 5, 2026 5:05 AM",
+    runAt: daysAgo(1, 5, 5),
     status: "available",
     delivery: "Delivered",
   },
@@ -225,9 +269,9 @@ const HISTORY: HistoryRow[] = [
     customer: "Lakeside Law Group",
     period: "Apr 1–Jun 30",
     source: "Manual",
-    runAt: "Jul 29, 2026 8:40 AM",
+    runAt: daysAgo(8, 8, 40),
     status: "available",
-    delivery: "-",
+    delivery: "--",
   },
 ];
 
@@ -275,9 +319,12 @@ function ActionsCell({ row }: { row: HistoryRow }) {
   const available = row.status === "available";
   const [printing, setPrinting] = useState(false);
   const stopPrinting = useCallback(() => setPrinting(false), []);
-  // "Aug 6, 2026 4:00 PM" -> "Aug 6, 2026"; the time would put a colon in the
-  // file name.
-  const runDate = row.runAt.replace(/ \d{1,2}:\d{2} [AP]M$/, "");
+  // The date alone — a time would put a colon in the file name.
+  const runDate = new Date(row.runAt).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
   const fileName = `${row.reportName} - ${runDate}`;
   const reportKey = REPORT_KEY_BY_TYPE[row.reportType] ?? "";
   const downloadCsvFile = CSV_DOWNLOADS[reportKey];
@@ -363,11 +410,18 @@ const columns: GridColDef<HistoryRow>[] = [
     flex: 1.1,
     minWidth: 180,
     valueGetter: (_value, row) =>
-      row.source === "Scheduled" ? row.reportName : "-",
+      row.source === "Scheduled" ? row.reportName : "--",
   },
   { field: "source", headerName: "Source", flex: 0.7, minWidth: 110 },
   { field: "customer", headerName: "Organization", flex: 1, minWidth: 170 },
-  { field: "runAt", headerName: "Generated", flex: 1, minWidth: 170 },
+  {
+    // Sorted on the raw ISO stamp; only the cell reads by state.
+    field: "runAt",
+    headerName: "Started",
+    flex: 1,
+    minWidth: 170,
+    renderCell: (params) => formatStarted(params.row),
+  },
   {
     field: "status",
     headerName: "Status",
