@@ -356,6 +356,15 @@ const columns: GridColDef<HistoryRow>[] = [
     flex: 1.1,
     minWidth: 190,
   },
+  {
+    // A manual export came from nobody's schedule, so it has no name to show.
+    field: "reportName",
+    headerName: "Schedule Name",
+    flex: 1.1,
+    minWidth: 180,
+    valueGetter: (_value, row) =>
+      row.source === "Scheduled" ? row.reportName : "-",
+  },
   { field: "source", headerName: "Source", flex: 0.7, minWidth: 110 },
   { field: "customer", headerName: "Organization", flex: 1, minWidth: 170 },
   { field: "runAt", headerName: "Generated", flex: 1, minWidth: 170 },
