@@ -738,7 +738,6 @@ function ConfigurationScreen({
                         height: 32,
                         borderRadius: "10px",
                         fontSize: 14,
-                        fontWeight: 600,
                         // The field's own padding would push past that height.
                         "& .MuiSelect-select": {
                           minHeight: "auto",
@@ -886,9 +885,7 @@ function AuthPrompt({
               placeholder="Password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              // Focused, the field takes the primary button's own blue: the
-              // edge in it, and a soft ring of it around the edge.
-              sx={(theme) => ({
+              sx={{
                 mt: "16px",
                 "& .MuiOutlinedInput-root": {
                   height: 32,
@@ -897,21 +894,7 @@ function AuthPrompt({
                 },
                 // The field's own padding would push past that height.
                 "& .MuiOutlinedInput-input": { padding: "0 12px" },
-                "& .MuiOutlinedInput-root.Mui-focused": {
-                  boxShadow: `0 0 0 3px color-mix(in srgb, ${theme.vars.palette.primary.main} 28%, transparent)`,
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderColor: theme.vars.palette.primary.main,
-                  },
-                },
-                ...theme.applyStyles("dark", {
-                  "& .MuiOutlinedInput-root.Mui-focused": {
-                    boxShadow: `0 0 0 3px color-mix(in srgb, ${PRIMARY_DARK} 45%, transparent)`,
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: PRIMARY_DARK,
-                    },
-                  },
-                }),
-              })}
+              }}
             />
           )}
           <Box
@@ -1293,10 +1276,23 @@ function AppWindow({
           // own — so links and checkboxes match the controls beside them.
           "--dnsf-palette-primary-main": PRIMARY_DARK,
           "--dnsf-palette-primary-light": PRIMARY_DARK,
-          // The fields sit quieter than the buttons beside them.
+          // The fields' own states, one place for every input in the window.
           "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "rgba(30, 41, 74, 0.13)",
+            borderWidth: 1,
+            borderColor: "rgba(30, 41, 74, 0.2)",
           },
+          "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#13131B",
+          },
+          "& .MuiOutlinedInput-root.Mui-focused": {
+            boxShadow: "0 0 0 3px rgba(62, 111, 224, 0.2)",
+          },
+          "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+            { borderWidth: 2, borderColor: "#3E6FE0" },
+          "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline":
+            { borderColor: "#C8352A" },
+          "& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline":
+            { borderColor: "rgba(30, 41, 74, 0.13)" },
           ...theme.applyStyles("dark", {
             // The window's own edge, a step brighter than the hairlines
             // inside it.
@@ -1309,8 +1305,18 @@ function AppWindow({
             "--dnsf-palette-primary-main": ACCENT_DARK,
             "--dnsf-palette-primary-light": ACCENT_DARK,
             "& .MuiOutlinedInput-notchedOutline": {
-              borderColor: "rgba(120, 138, 190, 0.14)",
+              borderColor: "rgba(120, 138, 190, 0.35)",
             },
+            "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#FFFFFF",
+            },
+            "& .MuiOutlinedInput-root.Mui-focused": {
+              boxShadow: "0 0 0 3px rgba(74, 124, 240, 0.32)",
+            },
+            "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline":
+              { borderColor: "#FF5A4D" },
+            "& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline":
+              { borderColor: "rgba(120, 138, 190, 0.14)" },
           }),
         })}
       >
@@ -1525,7 +1531,7 @@ function AppWindow({
 export default function DnsfilterOneAppPage() {
   return (
     <Container maxWidth="lg">
-      <Box sx={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: "40px" }}>
         <AppWindow title="Filtering - Active" />
         <AppWindow
           title="Filtering - Can't reach service"
