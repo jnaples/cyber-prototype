@@ -10,18 +10,35 @@ const accentGradient = (angle: string) =>
   `linear-gradient(${angle}, #F306AE 0%, #00C8FD 50%, #3427FD 100%)`;
 
 export const ACCENT_RULE = accentGradient("90deg");
-export const ACCENT_RING = accentGradient("-45deg");
+// Pink at the left, deep blue at the right — the wash read left to right,
+// same as the hairline.
+export const ACCENT_RING = accentGradient("90deg");
 
 // The masthead's own ground — background.default from the palette these
 // screens were specced against.
 export const HEADER_BG_LIGHT = "#F8F9FB";
+
+// The window's own ground: washes of the brand colors over the flat fill,
+// so the pane has some depth under its cards instead of one dead color.
+export const APP_WASH_LIGHT = [
+  "radial-gradient(1200px 720px at 16% 0%, rgba(62, 111, 224, 0.06) 0%, rgba(236, 238, 243, 0) 50%)",
+  "radial-gradient(1000px 780px at 96% 100%, rgba(106, 79, 208, 0.04) 0%, rgba(236, 238, 243, 0) 46%)",
+  "#ECEEF3",
+].join(",");
+
+export const APP_WASH_DARK = [
+  "radial-gradient(1200px 720px at 16% 0%, rgba(62, 111, 224, 0.13) 0%, rgba(4, 4, 6, 0) 52%)",
+  "radial-gradient(1000px 780px at 96% 100%, rgba(106, 79, 208, 0.1) 0%, rgba(4, 4, 6, 0) 48%)",
+  "radial-gradient(900px 600px at 8% 96%, rgba(40, 212, 145, 0.05) 0%, rgba(4, 4, 6, 0) 44%)",
+  "#040406",
+].join(",");
 export const CARD_BG_LIGHT = "#FCFCFD";
 
 // The ONE badge's fill, a shade off the window's ground.
 export const BADGE_FILL_LIGHT =
-  "linear-gradient(45deg, #ECEEF3 0%, #FFFFFF 100%)";
+  "linear-gradient(45deg, #FFFFFF 0%, #ECEEF3 100%)";
 export const BADGE_FILL_DARK =
-  "linear-gradient(0deg, #040406 0%, #1C1E2A 100%)";
+  "linear-gradient(0deg, #1C1E2A 0%, #040406 100%)";
 
 // Success greens from the palette these screens were specced against. Each
 // scheme takes its own anchor for the text — 700 on light, 500 on dark — over
@@ -32,10 +49,15 @@ export const ACTIVE_DARK = { bg: "rgba(40, 212, 145, 0.16)", fg: "#28D491" };
 
 // The all-clear banner: the same green, thinner, since it carries a whole
 // card rather than a chip.
-export const BANNER_LIGHT = { bg: "#ECFCF5", border: "#A3F0D2" };
+export const BANNER_LIGHT = {
+  bg: "#D1E2E2",
+  fg: "#0A6B46",
+  border: "#A4CDBF",
+};
 export const BANNER_DARK = {
-  bg: "rgba(40, 212, 145, 0.08)",
-  border: "rgba(40, 212, 145, 0.24)",
+  bg: "#102B25",
+  fg: "#5FE8B0",
+  border: "#2A6853",
 };
 
 export const CONTROL_RADIUS = 10;

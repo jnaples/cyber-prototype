@@ -1,3 +1,4 @@
+import "@fontsource-variable/geist-mono/index.css";
 import "@fontsource-variable/inter/index.css";
 import "@fontsource-variable/montserrat/index.css";
 import "material-symbols/outlined.css";

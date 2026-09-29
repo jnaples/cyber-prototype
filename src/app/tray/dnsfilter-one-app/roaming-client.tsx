@@ -198,14 +198,19 @@ export function RoamingClientScreen() {
           <MaterialSymbol name={on ? "verified_user" : "gpp_maybe"} size={22} />
         </Box>
         <Box sx={{ minWidth: 0, flex: 1 }}>
+          {/* On, the banner sets the color; off, it's a plain card again. */}
           <Typography
-            sx={{ fontSize: 18, fontWeight: 700, color: "text.primary" }}
+            sx={{
+              fontSize: 18,
+              fontWeight: 600,
+              color: on ? "inherit" : "text.primary",
+            }}
           >
             {on ? "On" : "Off"}
           </Typography>
           <Typography
             variant="body2"
-            sx={{ mt: "4px", color: "text.secondary" }}
+            sx={{ mt: "4px", color: on ? "inherit" : "text.secondary" }}
           >
             {on
               ? "Protected — DNS is encrypted and filtered by DNSFilter"
@@ -307,7 +312,7 @@ export function RoamingClientScreen() {
                 <MaterialSymbol name="verified_user" size={18} />
               </Box>
               <Typography
-                sx={{ fontSize: 14, fontWeight: 700, color: "text.primary" }}
+                sx={{ fontSize: 14, fontWeight: 600, color: "text.primary" }}
               >
                 Active — per-device
               </Typography>
