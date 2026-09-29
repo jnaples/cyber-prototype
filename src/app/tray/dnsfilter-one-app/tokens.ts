@@ -60,8 +60,25 @@ export const BANNER_DARK = {
   border: "#2A6853",
 };
 
+// Amber, for when the service can't be reached. One pair per mode, shared by
+// the banner and the chip beside it so the two can't drift apart.
+export const WARN_BANNER_LIGHT = {
+  bg: "#EFE6DB",
+  fg: "#753404",
+  border: "#D3C2A6",
+};
+export const WARN_BANNER_DARK = {
+  bg: "#291E0C",
+  fg: "#FF8F3C",
+  border: "#6E4D14",
+};
+
 export const CONTROL_RADIUS = 10;
 export const DUR_FAST = 150;
+
+// What primary reads as on dark away from a button — a link, a checkbox, a
+// switch. The button's own blue disappears into the window at that weight.
+export const ACCENT_DARK = "#6FD0FF";
 
 // Dark-mode primary, from the palette these screens were specced against —
 // secureBlue 600 over 900. The palette in this repo still points dark

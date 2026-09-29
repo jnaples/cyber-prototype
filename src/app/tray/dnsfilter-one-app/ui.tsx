@@ -21,11 +21,20 @@ import {
   BANNER_LIGHT,
   CARD_BG_LIGHT,
   DUR_FAST,
+  WARN_BANNER_DARK,
+  WARN_BANNER_LIGHT,
 } from "./tokens";
 
+/** The tinted cards, by tone: the fill, the text and the edge for each mode. */
+const BANNERS = {
+  success: { light: BANNER_LIGHT, dark: BANNER_DARK },
+  warning: { light: WARN_BANNER_LIGHT, dark: WARN_BANNER_DARK },
+} as const;
+
 /** A card on the client's ground: one surface, one hairline, 16px radius.
- *  `success` tints it green, for an all-clear banner; `onClick` makes it a
- *  control, which is what earns the pointer and the brighter edge. */
+ *  `success` tints it green and `warning` amber, for a banner; `onClick`
+ *  makes it a control, which is what earns the pointer and the brighter
+ *  edge. */
 export function ClientCard({
   children,
   tone = "default",
@@ -35,7 +44,7 @@ export function ClientCard({
   gap = "16px",
 }: {
   children: ReactNode;
-  tone?: "default" | "success";
+  tone?: "default" | "success" | "warning";
   onClick?: () => void;
   /** Override the card's own inset. */
   padding?: string | number;
@@ -44,7 +53,7 @@ export function ClientCard({
   /** Override the space between what the card holds. */
   gap?: string | number;
 }) {
-  const success = tone === "success";
+  const banner = tone === "default" ? null : BANNERS[tone];
   const interactive = Boolean(onClick);
 
   return (
@@ -57,9 +66,9 @@ export function ClientCard({
         gap,
         borderRadius: radius,
         border: "1px solid",
-        borderColor: success ? BANNER_LIGHT.border : APP_BORDER_LIGHT,
-        backgroundColor: success ? BANNER_LIGHT.bg : CARD_BG_LIGHT,
-        ...(success ? { color: BANNER_LIGHT.fg } : {}),
+        borderColor: banner ? banner.light.border : APP_BORDER_LIGHT,
+        backgroundColor: banner ? banner.light.bg : CARD_BG_LIGHT,
+        ...(banner ? { color: banner.light.fg } : {}),
         // The window paints its own surfaces — no elevation overlay.
         backgroundImage: "none",
         transition: theme.transitions.create("border-color", {
@@ -73,9 +82,9 @@ export function ClientCard({
             }
           : {}),
         ...theme.applyStyles("dark", {
-          borderColor: success ? BANNER_DARK.border : APP_BORDER_DARK,
-          backgroundColor: success ? BANNER_DARK.bg : APP_SURFACE_DARK,
-          ...(success ? { color: BANNER_DARK.fg } : {}),
+          borderColor: banner ? banner.dark.border : APP_BORDER_DARK,
+          backgroundColor: banner ? banner.dark.bg : APP_SURFACE_DARK,
+          ...(banner ? { color: banner.dark.fg } : {}),
           ...(interactive
             ? { "&:hover": { borderColor: APP_BORDER_DARK_HOVER } }
             : {}),
@@ -123,9 +132,12 @@ export function StatusChip({
   label,
   dot = false,
   outlined = false,
+  tone = "success",
 }: {
   on: boolean;
   label?: string;
+  /** Which color `on` reads in — green for working, amber for a warning. */
+  tone?: "success" | "warning";
   /** Lead with a dot in the chip's own color. */
   dot?: boolean;
   /** Ring the chip in its own color. Off by default: the chips inside a card
@@ -156,11 +168,17 @@ export function StatusChip({
         whiteSpace: "nowrap",
         ...(on
           ? {
-              backgroundColor: ACTIVE_LIGHT.bg,
-              color: ACTIVE_LIGHT.fg,
+              // Light mode reads off the banners, so a chip and the banner
+              // under it are the same green.
+              backgroundColor:
+                tone === "warning" ? WARN_BANNER_LIGHT.bg : BANNER_LIGHT.bg,
+              color:
+                tone === "warning" ? WARN_BANNER_LIGHT.fg : BANNER_LIGHT.fg,
               ...theme.applyStyles("dark", {
-                backgroundColor: ACTIVE_DARK.bg,
-                color: ACTIVE_DARK.fg,
+                backgroundColor:
+                  tone === "warning" ? WARN_BANNER_DARK.bg : ACTIVE_DARK.bg,
+                color:
+                  tone === "warning" ? WARN_BANNER_DARK.fg : ACTIVE_DARK.fg,
               }),
             }
           : {

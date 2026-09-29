@@ -22,10 +22,10 @@ import {
 const sheen = (bottom: string, top: string) =>
   `linear-gradient(2deg, ${bottom} 0.97%, ${top} 96.96%)`;
 
-// Light mode gets the stronger dome; the same white over a darker fill reads
-// much hotter, so dark keeps a gentler lift.
-const SHEEN_LIGHT = sheen("rgba(0, 0, 0, 0.06)", "rgba(255, 255, 255, 0.16)");
+// Dark keeps the gentle white lift; light takes a blue-to-blue face instead,
+// which is what gives the button its dome on a pale ground.
 const SHEEN_DARK = sheen("rgba(0, 0, 0, 0)", "rgba(255, 255, 255, 0.1)");
+const FACE_LIGHT = "linear-gradient(180deg, #4A7CF0, #3E6FE0)";
 
 // Top highlight and bottom edge — the crisp lip above the sheen. `wash` tints
 // the whole face by flooding it with a huge inset spread, and is listed last
@@ -46,7 +46,7 @@ type ClientButtonProps = ButtonProps &
   Pick<React.AnchorHTMLAttributes<HTMLAnchorElement>, "target" | "rel">;
 
 export const ClientButton = styled(Button)<ClientButtonProps>(({ theme }) => {
-  const { main, dark, contrastText } = theme.vars.palette.primary;
+  const { contrastText } = theme.vars.palette.primary;
 
   // Everything hangs off `&&`: MUI's own contained-primary variant and the
   // app theme's `.MuiButton-containedPrimary` shadow are two-class rules, so a
@@ -69,9 +69,10 @@ export const ClientButton = styled(Button)<ClientButtonProps>(({ theme }) => {
       textTransform: "none",
       whiteSpace: "nowrap",
       color: contrastText,
-      backgroundColor: main,
-      backgroundImage: SHEEN_LIGHT,
-      boxShadow: face(dark, 0.2),
+      // Both schemes share the button's own blue; only the face differs.
+      backgroundColor: PRIMARY_DARK,
+      backgroundImage: FACE_LIGHT,
+      boxShadow: face(PRIMARY_DARK_EDGE, 0.2),
       transition: theme.transitions.create(
         ["background-color", "border-color", "box-shadow", "color"],
         { duration: DUR_FAST, easing: theme.transitions.easing.easeOut },
@@ -84,11 +85,23 @@ export const ClientButton = styled(Button)<ClientButtonProps>(({ theme }) => {
       },
       "&::before": { content: "none" },
       "&:hover": {
-        backgroundColor: main,
-        boxShadow: face(dark, 0.26, "rgba(255, 255, 255, 0.1)"),
+        backgroundColor: PRIMARY_DARK,
+        boxShadow: face(PRIMARY_DARK_EDGE, 0.26, "rgba(255, 255, 255, 0.1)"),
       },
-      "&:active": { boxShadow: face(dark, 0.14, "rgba(0, 0, 0, 0.12)") },
-      "&.Mui-focusVisible": { boxShadow: face(dark, 0.2) },
+      "&:active": {
+        boxShadow: face(PRIMARY_DARK_EDGE, 0.14, "rgba(0, 0, 0, 0.12)"),
+      },
+      "&.Mui-focusVisible": { boxShadow: face(PRIMARY_DARK_EDGE, 0.2) },
+      // Nothing to commit: the dome comes off entirely, since a lit face over
+      // a dead fill still reads as a button waiting to be pressed.
+      "&.Mui-disabled": {
+        color: theme.vars.palette.action.disabled,
+        backgroundColor: theme.vars.palette.action.disabledBackground,
+        backgroundImage: "none",
+        boxShadow: "none",
+        pointerEvents: "auto",
+        cursor: "not-allowed",
+      },
       ...theme.applyStyles("dark", {
         backgroundImage: SHEEN_DARK,
         backgroundColor: PRIMARY_DARK,
