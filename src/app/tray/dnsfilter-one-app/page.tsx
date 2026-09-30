@@ -142,7 +142,7 @@ function NavLink({
         borderRadius: "10px",
         cursor: "pointer",
         fontSize: 14,
-        fontWeight: 600,
+        fontWeight: 500,
         textDecoration: "none",
         color: selected ? "text.primary" : "text.secondary",
         backgroundColor: selected ? NAV_SELECTED_LIGHT : "transparent",
@@ -562,6 +562,26 @@ const RELAY_GROUPS = [
   { domains: ["printers.example.com"], via: ["10.0.0.5:53"] },
 ];
 
+/** The screen behind the Network sign-in checks row. */
+const SIGNIN_SCREEN = "Network sign-in checks";
+
+/** The hosts each operating system asks for to find out whether a network
+ *  wants it to sign in. The app ships with the list; nobody edits it. */
+const SIGNIN_HOSTS = [
+  "captive.apple.com",
+  "www.msftconnecttest.com",
+  "msftconnecttest.com",
+  "www.msftncsi.com",
+  "msftncsi.com",
+  "dns.msftncsi.com",
+  "connectivitycheck.gstatic.com",
+  "connectivitycheck.android.com",
+  "clients3.google.com",
+  "detectportal.firefox.com",
+  "networkcheck.kde.org",
+  "nmcheck.gnome.org",
+];
+
 /** The lookups that never leave the network, whatever else is configured. */
 const ALWAYS_LOCAL: readonly ConfigRow[] = [
   {
@@ -708,7 +728,7 @@ function ConfigurationScreen({
 
   return (
     <Box
-      sx={{ p: "24px", display: "flex", flexDirection: "column", gap: "16px" }}
+      sx={{ p: "24px", display: "flex", flexDirection: "column", gap: "24px" }}
     >
       <ScreenHeader
         title="Configuration"
@@ -1061,11 +1081,21 @@ function ScreenHeader({
   subtitle?: ReactNode;
 }) {
   return (
-    <Box>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, minWidth: 0 }}>
-        <BannerButton icon onClick={onBack} label={`Back from ${title}`}>
-          <MaterialSymbol name="arrow_back" size={18} />
-        </BannerButton>
+    // The arrow is centred against both lines; the two of them and anything
+    // on the right sit together, so an action lands on the lower line.
+    <Box sx={{ display: "flex", alignItems: "center", gap: 2, minWidth: 0 }}>
+      <BannerButton icon onClick={onBack} label={`Back from ${title}`}>
+        <MaterialSymbol name="arrow_back" size={18} />
+      </BannerButton>
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          display: "flex",
+          alignItems: "flex-end",
+          gap: 2,
+        }}
+      >
         <Box sx={{ minWidth: 0, flex: 1 }}>
           <Typography
             sx={{ fontSize: 18, fontWeight: 600, color: "text.primary" }}
@@ -1079,8 +1109,6 @@ function ScreenHeader({
         </Box>
         {action}
       </Box>
-      {/* Past the screen's own inset, so the header reads as a band. */}
-      <Divider sx={{ mt: "16px", mx: "-24px" }} />
     </Box>
   );
 }
@@ -1304,6 +1332,7 @@ function LocalResolutionScreen({
   editable = false,
   onEdit,
   advanced = false,
+  onOpenSignIn,
 }: {
   onBack: () => void;
   /** Whether the lock is off, which is what makes the lists typeable. */
@@ -1311,6 +1340,8 @@ function LocalResolutionScreen({
   onEdit?: () => void;
   /** Group each set of names under the resolvers that answer it. */
   advanced?: boolean;
+  /** Open the screen behind the Network sign-in checks row. */
+  onOpenSignIn?: () => void;
 }) {
   return (
     <Box
@@ -1406,6 +1437,7 @@ function LocalResolutionScreen({
                       component="button"
                       type="button"
                       underline="hover"
+                      onClick={onOpenSignIn}
                       sx={{ flexShrink: 0, fontSize: 14, fontWeight: 600 }}
                     >
                       View
@@ -1427,6 +1459,24 @@ function LocalResolutionScreen({
           </Box>
         </ClientCard>
       </Box>
+    </Box>
+  );
+}
+
+/** Network sign-in checks: the hosts the app never sends to the service, so a
+ *  sign in page can still be found. Nothing here is configurable. */
+function SignInChecksScreen({ onBack }: { onBack: () => void }) {
+  return (
+    <Box
+      sx={{ p: "24px", display: "flex", flexDirection: "column", gap: "24px" }}
+    >
+      <ScreenHeader
+        title="Network sign-in checks"
+        onBack={onBack}
+        action={<BannerButton>Copy</BannerButton>}
+        subtitle="The hosts used to detect a sign in page. Built into the app and not configurable."
+      />
+      <AddressList items={SIGNIN_HOSTS} />
     </Box>
   );
 }
@@ -1671,11 +1721,12 @@ function AppWindow({
   const feature = FEATURES.find((f) => f.name === screen);
   const config = screen === CONFIG_SCREEN;
   const local = screen === LOCAL_SCREEN || screen === ADVANCED_SCREEN;
+  const signIn = screen === SIGNIN_SCREEN;
   // A window that opens on a screen stays on it: the way back is still a
   // control, it just has nothing behind it to go to.
   const pinned = initialScreen !== null;
   // Both settings screens sit behind the same lock.
-  const settings = config || local;
+  const settings = config || local || signIn;
   // The settings are locked until the system's prompt is answered.
   const [locked, setLocked] = useState(!unlocked);
   const [asking, setAsking] = useState(false);
@@ -1925,7 +1976,13 @@ function AppWindow({
                 },
               })}
             >
-              {local ? (
+              {signIn ? (
+                <SignInChecksScreen
+                  onBack={() => {
+                    if (!pinned) setScreen(LOCAL_SCREEN);
+                  }}
+                />
+              ) : local ? (
                 <LocalResolutionScreen
                   key={edits}
                   onBack={() => {
@@ -1934,6 +1991,7 @@ function AppWindow({
                   editable={!locked}
                   onEdit={() => setDirty(true)}
                   advanced={screen === ADVANCED_SCREEN}
+                  onOpenSignIn={() => setScreen(SIGNIN_SCREEN)}
                 />
               ) : config ? (
                 <ConfigurationScreen
@@ -2024,6 +2082,10 @@ export default function DnsfilterOneAppPage() {
         <AppWindow
           title="Filtering - Local Resolution - Advanced Local Domains & Relay"
           initialScreen={ADVANCED_SCREEN}
+        />
+        <AppWindow
+          title="Filtering - Local Resolution - Network sign-in checks"
+          initialScreen={SIGNIN_SCREEN}
         />
       </Box>
     </Container>
