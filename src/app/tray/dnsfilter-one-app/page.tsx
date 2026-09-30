@@ -1710,8 +1710,9 @@ function AppWindow({
   // A window that opens on a screen stays on it: the way back is still a
   // control, it just has nothing behind it to go to.
   const pinned = initialScreen !== null;
-  // Both settings screens sit behind the same lock.
-  const settings = config || local || signIn;
+  // The two settings screens sit behind the same lock; sign-in checks are
+  // built into the app, so that screen has nothing to unlock.
+  const settings = config || local;
   // The settings are locked until the system's prompt is answered.
   const [locked, setLocked] = useState(!unlocked);
   const [asking, setAsking] = useState(false);
