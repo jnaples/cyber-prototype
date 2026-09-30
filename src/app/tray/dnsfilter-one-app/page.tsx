@@ -9,13 +9,14 @@ import {
   Checkbox,
   Container,
   Divider,
+  InputBase,
   Link,
   MenuItem,
   Select,
   TextField,
   Typography,
 } from "@mui/material";
-import { useColorScheme } from "@mui/material/styles";
+import { useColorScheme, type Theme } from "@mui/material/styles";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { Fragment, useState, type ReactNode } from "react";
 
@@ -481,21 +482,24 @@ function ActivityChart({
         yAxis={[{ width: 36 }]}
         sx={(theme) => ({
           // The frame reads as the window's own hairlines, not as chart
-          // furniture.
-          "& .MuiChartsAxis-line, & .MuiChartsAxis-tick": {
-            stroke: APP_BORDER_LIGHT,
-          },
-          "& .MuiChartsGrid-line": { stroke: APP_BORDER_LIGHT },
-          "& .MuiChartsAxis-tickLabel": {
-            fill: theme.vars.palette.text.secondary,
-            fontSize: 12,
-          },
-          ...theme.applyStyles("dark", {
+          // furniture. The chart states its own axis colors at the same
+          // weight, so these hang off `&&` to outrank them.
+          "&&": {
             "& .MuiChartsAxis-line, & .MuiChartsAxis-tick": {
-              stroke: APP_BORDER_DARK,
+              stroke: APP_BORDER_LIGHT,
             },
-            "& .MuiChartsGrid-line": { stroke: APP_BORDER_DARK },
-          }),
+            "& .MuiChartsGrid-line": { stroke: APP_BORDER_LIGHT },
+            "& .MuiChartsAxis-tickLabel": {
+              fill: theme.vars.palette.text.secondary,
+              fontSize: 12,
+            },
+            ...theme.applyStyles("dark", {
+              "& .MuiChartsAxis-line, & .MuiChartsAxis-tick": {
+                stroke: APP_BORDER_DARK,
+              },
+              "& .MuiChartsGrid-line": { stroke: APP_BORDER_DARK },
+            }),
+          },
           "& .MuiLineChart-area": { filter: "none", opacity: 1 },
           '& .MuiLineChart-area[data-series="allowed"]': {
             fill: `url(#${ALLOWED_GRADIENT})`,
@@ -532,6 +536,40 @@ function LegendChip({ label, color }: { label: string; color: string }) {
 /** The screen the Configuration card opens, kept out of FEATURES so the
  *  masthead can tell the two kinds of screen apart. */
 const CONFIG_SCREEN = "Configuration";
+
+/** The screen behind the Local resolution row. */
+const LOCAL_SCREEN = "Local resolution";
+
+/** The names the organization keeps on the local network, and who answers
+ *  them. Both read as addresses, so both are set in the mono face. */
+const LOCAL_DOMAINS = [
+  "corp.example.com",
+  "internal.example.com",
+  "ad.example.local",
+  "printers.example.com",
+];
+
+const LOCAL_RESOLVERS = ["10.0.0.1:53", "10.0.0.2:53"];
+
+/** The lookups that never leave the network, whatever else is configured. */
+const ALWAYS_LOCAL: readonly ConfigRow[] = [
+  {
+    label: "Private network address lookups",
+    detail: "Reverse lookups for addresses on the local network, IPv4 and IPv6",
+    value: "Always local",
+  },
+  {
+    label: "Names ending in .local",
+    detail: "Bonjour and multicast DNS names on the network",
+    value: "Always local",
+  },
+  {
+    label: "Network sign-in checks",
+    detail: "The hosts operating systems use to detect a sign in page",
+    value: "",
+    action: true,
+  },
+];
 
 /** The chevron a select drops, in place of MUI's filled triangle. */
 function SelectChevron({ className }: { className?: string }) {
@@ -637,10 +675,13 @@ const LAST_SYNCED = (() => {
  *  off from each other inside the card's own inset. */
 function ConfigurationScreen({
   onBack,
+  onOpenLocal,
   editable = false,
   onEdit,
 }: {
   onBack: () => void;
+  /** Open the screen behind the Local resolution row. */
+  onOpenLocal?: () => void;
   /** Whether the lock is off, which is what turns values into controls. */
   editable?: boolean;
   /** Called the first time anything here is changed. */
@@ -658,28 +699,7 @@ function ConfigurationScreen({
     <Box
       sx={{ p: "24px", display: "flex", flexDirection: "column", gap: "16px" }}
     >
-      {/* The settings belong to Filtering, so the way back names it. */}
-      <Box>
-        <Box
-          sx={{ display: "flex", alignItems: "center", gap: 2, minWidth: 0 }}
-        >
-          <BannerButton icon onClick={onBack} label="Back to Filtering">
-            <MaterialSymbol name="arrow_back" size={18} />
-          </BannerButton>
-          <Box sx={{ minWidth: 0 }}>
-            <Typography
-              sx={{ fontSize: 18, fontWeight: 600, color: "text.primary" }}
-            >
-              Configuration
-            </Typography>
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              Managed by the organization. Last synced {LAST_SYNCED}
-            </Typography>
-          </Box>
-        </Box>
-        {/* Past the screen's own inset, so the header reads as a band. */}
-        <Divider sx={{ mt: "16px", mx: "-24px" }} />
-      </Box>
+      <ScreenHeader title="Configuration" onBack={onBack} />
 
       <ClientCard>
         <Box
@@ -775,6 +795,7 @@ function ConfigurationScreen({
                       component="button"
                       type="button"
                       underline="hover"
+                      onClick={onOpenLocal}
                       sx={{ fontSize: 14, fontWeight: 600 }}
                     >
                       {editable ? "Edit" : "View"}
@@ -1000,6 +1021,272 @@ function LockBar({
           </ClientButton>
         </Box>
       )}
+    </Box>
+  );
+}
+
+/** A screen's own header: the way back, what it is, and where it came from. */
+function ScreenHeader({
+  title,
+  onBack,
+  action,
+}: {
+  title: string;
+  onBack: () => void;
+  /** One control on the right, for whatever the screen offers. */
+  action?: ReactNode;
+}) {
+  return (
+    <Box>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, minWidth: 0 }}>
+        <BannerButton icon onClick={onBack} label={`Back from ${title}`}>
+          <MaterialSymbol name="arrow_back" size={18} />
+        </BannerButton>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography
+            sx={{ fontSize: 18, fontWeight: 600, color: "text.primary" }}
+          >
+            {title}
+          </Typography>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            Managed by the organization. Last synced {LAST_SYNCED}
+          </Typography>
+        </Box>
+        {action}
+      </Box>
+      {/* Past the screen's own inset, so the header reads as a band. */}
+      <Divider sx={{ mt: "16px", mx: "-24px" }} />
+    </Box>
+  );
+}
+
+/** The pair that adds a line to a list or takes the last one off, joined into
+ *  one control the way the system's own lists do it. */
+function StepButtons({
+  onAdd,
+  onRemove,
+  canRemove,
+}: {
+  onAdd: () => void;
+  onRemove: () => void;
+  canRemove: boolean;
+}) {
+  // The same edge the outlined buttons take, at a size that sits under a card
+  // rather than beside it.
+  const step = (radius: string) => (theme: Theme) => ({
+    minWidth: 32,
+    height: 24,
+    px: 0,
+    fontSize: 14,
+    fontWeight: 600,
+    lineHeight: 1,
+    textTransform: "none" as const,
+    borderRadius: radius,
+    borderColor: "rgba(30, 41, 74, 0.2)",
+    ...theme.applyStyles("dark", {
+      borderColor: "rgba(120, 138, 190, 0.35)",
+    }),
+  });
+  return (
+    <Box sx={{ mt: "8px", display: "inline-flex" }}>
+      <Button
+        variant="outlined"
+        color="secondary"
+        onClick={onAdd}
+        aria-label="Add"
+        sx={step("8px 0 0 8px")}
+      >
+        +
+      </Button>
+      <Button
+        variant="outlined"
+        color="secondary"
+        onClick={onRemove}
+        disabled={!canRemove}
+        aria-label="Remove"
+        sx={[step("0 8px 8px 0"), { ml: "-1px" }]}
+      >
+        −
+      </Button>
+    </Box>
+  );
+}
+
+/** A card of addresses — domains, resolvers — one to a line in the mono face
+ *  the rest of the client uses for anything a machine reads. Unlocked, the
+ *  lines are typed into and the pair below adds or drops one. */
+function AddressList({
+  items,
+  editable = false,
+  onEdit,
+}: {
+  items: readonly string[];
+  editable?: boolean;
+  onEdit?: () => void;
+}) {
+  const [lines, setLines] = useState<string[]>(() => [...items]);
+  const edit = (next: string[]) => {
+    setLines(next);
+    onEdit?.();
+  };
+  const shown = editable ? lines : items;
+
+  const mono = {
+    fontFamily: '"Geist Mono Variable", ui-monospace, monospace',
+    fontSize: 14,
+    color: "text.primary",
+    wordBreak: "break-all" as const,
+  };
+
+  return (
+    <Box>
+      <ClientCard>
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {shown.map((item, index) => (
+            <Fragment key={index}>
+              {index > 0 && <Divider sx={{ my: "12px" }} />}
+              {editable ? (
+                <InputBase
+                  value={item}
+                  onChange={(event) =>
+                    edit(
+                      lines.map((line, at) =>
+                        at === index ? event.target.value : line,
+                      ),
+                    )
+                  }
+                  sx={{ ...mono, width: "100%", p: 0 }}
+                />
+              ) : (
+                <Typography sx={mono}>{item}</Typography>
+              )}
+            </Fragment>
+          ))}
+        </Box>
+      </ClientCard>
+      {editable && (
+        <StepButtons
+          onAdd={() => edit([...lines, ""])}
+          onRemove={() => edit(lines.slice(0, -1))}
+          canRemove={lines.length > 0}
+        />
+      )}
+    </Box>
+  );
+}
+
+/** Local resolution: which names the network answers for itself, who answers
+ *  them, and what never leaves it whatever else is set. */
+function LocalResolutionScreen({
+  onBack,
+  editable = false,
+  onEdit,
+}: {
+  onBack: () => void;
+  /** Whether the lock is off, which is what makes the lists typeable. */
+  editable?: boolean;
+  onEdit?: () => void;
+}) {
+  return (
+    <Box
+      sx={{ p: "24px", display: "flex", flexDirection: "column", gap: "16px" }}
+    >
+      <ScreenHeader
+        title="Local resolution"
+        onBack={onBack}
+        action={<BannerButton>Copy</BannerButton>}
+      />
+
+      <Box>
+        <SectionLabel>Local domains</SectionLabel>
+        <AddressList
+          items={LOCAL_DOMAINS}
+          editable={editable}
+          onEdit={onEdit}
+        />
+      </Box>
+
+      <Box>
+        <SectionLabel>Local resolvers</SectionLabel>
+        <AddressList
+          items={LOCAL_RESOLVERS}
+          editable={editable}
+          onEdit={onEdit}
+        />
+      </Box>
+
+      <Box>
+        <SectionLabel>Always local</SectionLabel>
+        <ClientCard>
+          <Box
+            sx={{
+              flex: 1,
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {ALWAYS_LOCAL.map((row, index) => (
+              <Fragment key={row.label}>
+                {index > 0 && <Divider sx={{ my: "12px" }} />}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 2,
+                  }}
+                >
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography
+                      sx={{
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: "text.primary",
+                      }}
+                    >
+                      {row.label}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{ mt: "2px", color: "text.secondary" }}
+                    >
+                      {row.detail}
+                    </Typography>
+                  </Box>
+                  {row.action ? (
+                    <Link
+                      component="button"
+                      type="button"
+                      underline="hover"
+                      sx={{ flexShrink: 0, fontSize: 14, fontWeight: 600 }}
+                    >
+                      View
+                    </Link>
+                  ) : (
+                    <Typography
+                      sx={{
+                        flexShrink: 0,
+                        fontSize: 14,
+                        color: "text.primary",
+                      }}
+                    >
+                      {row.value}
+                    </Typography>
+                  )}
+                </Box>
+              </Fragment>
+            ))}
+          </Box>
+        </ClientCard>
+      </Box>
     </Box>
   );
 }
@@ -1235,6 +1522,9 @@ function AppWindow({
   const [nav, setNav] = useState<NavKey>("filtering");
   const feature = FEATURES.find((f) => f.name === screen);
   const config = screen === CONFIG_SCREEN;
+  const local = screen === LOCAL_SCREEN;
+  // Both settings screens sit behind the same lock.
+  const settings = config || local;
   // The settings are locked until the system's prompt is answered.
   const [locked, setLocked] = useState(!unlocked);
   const [asking, setAsking] = useState(false);
@@ -1276,23 +1566,6 @@ function AppWindow({
           // own — so links and checkboxes match the controls beside them.
           "--dnsf-palette-primary-main": PRIMARY_DARK,
           "--dnsf-palette-primary-light": PRIMARY_DARK,
-          // The fields' own states, one place for every input in the window.
-          "& .MuiOutlinedInput-notchedOutline": {
-            borderWidth: 1,
-            borderColor: "rgba(30, 41, 74, 0.2)",
-          },
-          "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#13131B",
-          },
-          "& .MuiOutlinedInput-root.Mui-focused": {
-            boxShadow: "0 0 0 3px rgba(62, 111, 224, 0.2)",
-          },
-          "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-            { borderWidth: 2, borderColor: "#3E6FE0" },
-          "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline":
-            { borderColor: "#C8352A" },
-          "& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline":
-            { borderColor: "rgba(30, 41, 74, 0.13)" },
           ...theme.applyStyles("dark", {
             // The window's own edge, a step brighter than the hairlines
             // inside it.
@@ -1304,20 +1577,43 @@ function AppWindow({
             // checkboxes, switches — lifts off the dark ground.
             "--dnsf-palette-primary-main": ACCENT_DARK,
             "--dnsf-palette-primary-light": ACCENT_DARK,
+          }),
+          // The fields' own states, one place for every input in the window.
+          // The app theme states them at the same weight and lands later in
+          // the sheet, so these hang off `&&` to outrank it — with the scheme
+          // switch nested inside, never around it.
+          "&&": {
             "& .MuiOutlinedInput-notchedOutline": {
-              borderColor: "rgba(120, 138, 190, 0.35)",
+              borderWidth: 1,
+              borderColor: "rgba(30, 41, 74, 0.2)",
             },
             "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-              borderColor: "#FFFFFF",
+              borderColor: "#13131B",
             },
             "& .MuiOutlinedInput-root.Mui-focused": {
-              boxShadow: "0 0 0 3px rgba(74, 124, 240, 0.32)",
+              boxShadow: "0 0 0 3px rgba(62, 111, 224, 0.2)",
             },
+            "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+              { borderWidth: 2, borderColor: "#3E6FE0" },
             "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline":
-              { borderColor: "#FF5A4D" },
+              { borderColor: "#C8352A" },
             "& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline":
-              { borderColor: "rgba(120, 138, 190, 0.14)" },
-          }),
+              { borderColor: "rgba(30, 41, 74, 0.13)" },
+            ...theme.applyStyles("dark", {
+              "& .MuiOutlinedInput-notchedOutline": {
+                borderColor: "rgba(120, 138, 190, 0.35)",
+              },
+              "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
+                { borderColor: "#FFFFFF" },
+              "& .MuiOutlinedInput-root.Mui-focused": {
+                boxShadow: "0 0 0 3px rgba(74, 124, 240, 0.32)",
+              },
+              "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline":
+                { borderColor: "#FF5A4D" },
+              "& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline":
+                { borderColor: "rgba(120, 138, 190, 0.14)" },
+            }),
+          },
         })}
       >
         <Box
@@ -1473,10 +1769,18 @@ function AppWindow({
                 },
               })}
             >
-              {config ? (
+              {local ? (
+                <LocalResolutionScreen
+                  key={edits}
+                  onBack={() => setScreen(CONFIG_SCREEN)}
+                  editable={!locked}
+                  onEdit={() => setDirty(true)}
+                />
+              ) : config ? (
                 <ConfigurationScreen
                   key={edits}
                   onBack={() => setScreen(null)}
+                  onOpenLocal={() => setScreen(LOCAL_SCREEN)}
                   editable={!locked}
                   onEdit={() => setDirty(true)}
                 />
@@ -1496,7 +1800,7 @@ function AppWindow({
               )}
             </Box>
 
-            {config && (
+            {settings && (
               <LockBar
                 locked={locked}
                 dirty={dirty}
@@ -1512,7 +1816,7 @@ function AppWindow({
               />
             )}
 
-            {config && asking && (
+            {settings && asking && (
               <AuthPrompt
                 onCancel={() => setAsking(false)}
                 onConfirm={() => {
@@ -1546,6 +1850,10 @@ export default function DnsfilterOneAppPage() {
           title="Filtering - Configuration unlocked"
           initialScreen={CONFIG_SCREEN}
           unlocked
+        />
+        <AppWindow
+          title="Filtering - Local Resolution"
+          initialScreen={LOCAL_SCREEN}
         />
       </Box>
     </Container>
