@@ -9,7 +9,6 @@ import {
   Checkbox,
   Container,
   Divider,
-  InputBase,
   Link,
   MenuItem,
   Select,
@@ -1073,6 +1072,9 @@ function AddressList({
   onEdit?: () => void;
 }) {
   const [lines, setLines] = useState<string[]>(() => [...items]);
+  // Which line is open for typing, if any. A line commits on the way out, so
+  // only the one being written to is a field.
+  const [writing, setWriting] = useState<number | null>(null);
   const edit = (next: string[]) => {
     setLines(next);
     onEdit?.();
@@ -1084,6 +1086,13 @@ function AddressList({
     fontSize: 14,
     color: "text.primary",
     wordBreak: "break-all" as const,
+  };
+
+  /** Leaving a line keeps what was typed, and drops it if nothing was. */
+  const commit = (index: number) => {
+    setWriting(null);
+    if (!lines[index]?.trim())
+      setLines((was) => was.filter((_line, at) => at !== index));
   };
 
   return (
@@ -1101,29 +1110,74 @@ function AddressList({
             <Fragment key={index}>
               {index > 0 && <Divider sx={{ my: "12px" }} />}
               {editable ? (
-                <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <InputBase
-                    value={item}
-                    onChange={(event) =>
-                      edit(
-                        lines.map((line, at) =>
-                          at === index ? event.target.value : line,
-                        ),
-                      )
-                    }
-                    sx={{ ...mono, flex: 1, minWidth: 0, p: 0 }}
-                  />
-                  {/* Each line goes on its own, so dropping the second one
-                      doesn't take the third with it. */}
-                  <BannerButton
-                    icon
-                    label={`Remove ${item || "line"}`}
-                    onClick={() =>
-                      edit(lines.filter((_line, at) => at !== index))
-                    }
-                  >
-                    <MaterialSymbol name="close" size={18} />
-                  </BannerButton>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: "16px" }}
+                >
+                  {writing === index ? (
+                    <TextField
+                      autoFocus
+                      size="small"
+                      value={item}
+                      onChange={(event) =>
+                        edit(
+                          lines.map((line, at) =>
+                            at === index ? event.target.value : line,
+                          ),
+                        )
+                      }
+                      onBlur={() => commit(index)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === "Escape")
+                          event.currentTarget.querySelector("input")?.blur();
+                      }}
+                      sx={{
+                        flex: 1,
+                        minWidth: 0,
+                        "& .MuiOutlinedInput-root": {
+                          ...mono,
+                          height: 32,
+                          borderRadius: "10px",
+                        },
+                        "& .MuiOutlinedInput-input": { padding: "0 12px" },
+                      }}
+                    />
+                  ) : (
+                    <Typography
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setWriting(index)}
+                      onFocus={() => setWriting(index)}
+                      sx={{
+                        ...mono,
+                        flex: 1,
+                        minWidth: 0,
+                        py: "5px",
+                        cursor: "text",
+                      }}
+                    >
+                      {item}
+                    </Typography>
+                  )}
+                  {/* Each line is opened and dropped on its own, so working
+                      on the second one never touches the third. */}
+                  <Box sx={{ flexShrink: 0, display: "flex", gap: "8px" }}>
+                    <BannerButton
+                      icon
+                      label={`Edit ${item || "line"}`}
+                      onClick={() => setWriting(index)}
+                    >
+                      <MaterialSymbol name="edit" size={18} />
+                    </BannerButton>
+                    <BannerButton
+                      icon
+                      label={`Remove ${item || "line"}`}
+                      onClick={() =>
+                        edit(lines.filter((_line, at) => at !== index))
+                      }
+                    >
+                      <MaterialSymbol name="close" size={18} />
+                    </BannerButton>
+                  </Box>
                 </Box>
               ) : (
                 <Typography sx={mono}>{item}</Typography>
@@ -1134,7 +1188,12 @@ function AddressList({
       </ClientCard>
       {editable && (
         <Box sx={{ mt: "8px" }}>
-          <BannerButton onClick={() => edit([...lines, ""])}>
+          <BannerButton
+            onClick={() => {
+              edit([...lines, ""]);
+              setWriting(lines.length);
+            }}
+          >
             <MaterialSymbol name="add" size={18} />
             Add
           </BannerButton>
@@ -1158,7 +1217,7 @@ function LocalResolutionScreen({
 }) {
   return (
     <Box
-      sx={{ p: "24px", display: "flex", flexDirection: "column", gap: "16px" }}
+      sx={{ p: "24px", display: "flex", flexDirection: "column", gap: "24px" }}
     >
       <ScreenHeader
         title="Local resolution"
@@ -1578,6 +1637,11 @@ function AppWindow({
               "& .MuiOutlinedInput-root.Mui-focused": {
                 boxShadow: "0 0 0 3px rgba(74, 124, 240, 0.32)",
               },
+              // Stated again after the hover rule above it: the two match on
+              // specificity, so the later one is what a hovered, focused
+              // field shows — and that has to be the focus edge.
+              "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                { borderWidth: 2, borderColor: "#3E6FE0" },
               "& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline":
                 { borderColor: "#FF5A4D" },
               "& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline":
