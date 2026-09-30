@@ -80,8 +80,8 @@ export const ERROR_BANNER_LIGHT = {
   border: "#DFA9AA",
 };
 export const ERROR_BANNER_DARK = {
-  bg: "#2D1417",
-  fg: "#712D2A",
+  bg: "#2E1519",
+  fg: "#FF5A4E",
   border: "#712D2A",
 };
 
