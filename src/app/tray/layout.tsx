@@ -9,7 +9,7 @@ const TRAY_GROUPS: SidebarGroup[] = [
   {
     items: [
       { label: "DNSFilter One App", path: `${BASE}/dnsfilter-one-app` },
-      { label: "Tray Variants", path: `${BASE}/tray-variants` },
+      { label: "Menu Bar", path: `${BASE}/tray-variants` },
     ],
   },
 ];

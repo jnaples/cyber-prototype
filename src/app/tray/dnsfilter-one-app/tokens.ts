@@ -73,6 +73,18 @@ export const WARN_BANNER_DARK = {
   border: "#6E4D14",
 };
 
+// Red, for a service that can't be reached at all.
+export const ERROR_BANNER_LIGHT = {
+  bg: "#E8D5DA",
+  fg: "#A72F25",
+  border: "#DFA9AA",
+};
+export const ERROR_BANNER_DARK = {
+  bg: "#2D1417",
+  fg: "#712D2A",
+  border: "#712D2A",
+};
+
 export const CONTROL_RADIUS = 10;
 export const DUR_FAST = 150;
 

@@ -1487,11 +1487,17 @@ const WARNINGS = {
     title: "Can't reach service",
     body: "The service cannot be reached from this network.",
     actions: ["Start Travel Wi-Fi", "Report a Problem"],
+    // Nothing is being filtered at all, which is a failure rather than a
+    // caveat — so it reads red, with the mark an error Alert leads with.
+    tone: "error",
+    icon: "error",
   },
   "travel-wifi": {
     title: "Travel Wi-Fi on",
     body: "Sign in pages can load for 30 seconds. The service cannot be reached until sign in completes.",
     actions: ["Stop"],
+    tone: "warning",
+    icon: "warning",
   },
 } as const;
 
@@ -1603,10 +1609,10 @@ function FilteringScreen({
           </Box>
         </ClientCard>
       ) : (
-        <ClientCard tone="warning" padding="12px" radius="12px" gap="12px">
-          {/* The mark a warning Alert leads with, on the title's line. */}
+        <ClientCard tone={warning.tone} padding="12px" radius="12px" gap="12px">
+          {/* The mark its Alert leads with, on the title's line. */}
           <MaterialSymbol
-            name="warning"
+            name={warning.icon}
             size={22}
             sx={{ alignSelf: "flex-start", mt: "1px", color: "inherit" }}
           />
@@ -1922,7 +1928,7 @@ function AppWindow({
             {/* v3 carries the service's own state up here, so the screen
                 below doesn't need a banner for it. */}
             {state === "unreachable" ? (
-              <StatusChip on dot tone="warning" label="Can't reach service" />
+              <StatusChip on dot tone="error" label="Can't reach service" />
             ) : (
               // Travel Wi-Fi is still a live connection, so the masthead reads
               // the same as it does when filtering is clean.

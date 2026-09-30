@@ -1,4 +1,4 @@
-// Tray Variants — the popup's states, grouped by whether the user is allowed
+// Menu Bar — the tray popup's states, grouped by whether the user is allowed
 // to turn filtering off.
 
 import { Box, Container, Divider, Typography } from "@mui/material";

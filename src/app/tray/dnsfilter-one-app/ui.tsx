@@ -21,6 +21,8 @@ import {
   BANNER_LIGHT,
   CARD_BG_LIGHT,
   DUR_FAST,
+  ERROR_BANNER_DARK,
+  ERROR_BANNER_LIGHT,
   WARN_BANNER_DARK,
   WARN_BANNER_LIGHT,
 } from "./tokens";
@@ -29,10 +31,11 @@ import {
 const BANNERS = {
   success: { light: BANNER_LIGHT, dark: BANNER_DARK },
   warning: { light: WARN_BANNER_LIGHT, dark: WARN_BANNER_DARK },
+  error: { light: ERROR_BANNER_LIGHT, dark: ERROR_BANNER_DARK },
 } as const;
 
 /** A card on the client's ground: one surface, one hairline, 16px radius.
- *  `success` tints it green and `warning` amber, for a banner; `onClick`
+ *  `success` tints it green, `warning` amber and `error` red, for a banner; `onClick`
  *  makes it a control, which is what earns the pointer and the brighter
  *  edge. */
 export function ClientCard({
@@ -44,7 +47,7 @@ export function ClientCard({
   gap = "16px",
 }: {
   children: ReactNode;
-  tone?: "default" | "success" | "warning";
+  tone?: "default" | "success" | "warning" | "error";
   onClick?: () => void;
   /** Override the card's own inset. */
   padding?: string | number;
@@ -136,8 +139,9 @@ export function StatusChip({
 }: {
   on: boolean;
   label?: string;
-  /** Which color `on` reads in — green for working, amber for a warning. */
-  tone?: "success" | "warning";
+  /** Which color `on` reads in — green for working, amber for a warning,
+   *  red for a service that can't be reached. */
+  tone?: "success" | "warning" | "error";
   /** Lead with a dot in the chip's own color. */
   dot?: boolean;
   /** Ring the chip in its own color. Off by default: the chips inside a card
@@ -169,16 +173,16 @@ export function StatusChip({
         ...(on
           ? {
               // Light mode reads off the banners, so a chip and the banner
-              // under it are the same green.
+              // under it are the same color.
               backgroundColor:
-                tone === "warning" ? WARN_BANNER_LIGHT.bg : BANNER_LIGHT.bg,
+                tone === "success" ? BANNER_LIGHT.bg : BANNERS[tone].light.bg,
               color:
-                tone === "warning" ? WARN_BANNER_LIGHT.fg : BANNER_LIGHT.fg,
+                tone === "success" ? BANNER_LIGHT.fg : BANNERS[tone].light.fg,
               ...theme.applyStyles("dark", {
                 backgroundColor:
-                  tone === "warning" ? WARN_BANNER_DARK.bg : ACTIVE_DARK.bg,
+                  tone === "success" ? ACTIVE_DARK.bg : BANNERS[tone].dark.bg,
                 color:
-                  tone === "warning" ? WARN_BANNER_DARK.fg : ACTIVE_DARK.fg,
+                  tone === "success" ? ACTIVE_DARK.fg : BANNERS[tone].dark.fg,
               }),
             }
           : {
