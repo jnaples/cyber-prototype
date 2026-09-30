@@ -15,7 +15,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useColorScheme, type Theme } from "@mui/material/styles";
+import { useColorScheme } from "@mui/material/styles";
 import { LineChart } from "@mui/x-charts/LineChart";
 import { Fragment, useState, type ReactNode } from "react";
 
@@ -37,6 +37,7 @@ import {
   BADGE_FILL_LIGHT,
   ACCENT_DARK,
   HEADER_BG_LIGHT,
+  outlinedFace,
   PRIMARY_DARK,
 } from "./tokens";
 import { ClientButton } from "./client-button";
@@ -1503,28 +1504,6 @@ const WARNINGS = {
 
 /** An action inside a banner: outlined and secondary, so it reads as a way
  *  out of the state rather than the thing the screen is for. */
-/** The outlined secondary face: the edge, the hairline of light along the
- *  top, and both hovers. Anything outlined in the window reads off this. */
-const outlinedFace = (theme: Theme) => ({
-  textTransform: "none" as const,
-  borderColor: "rgba(30, 41, 74, 0.2)",
-  // The same hairline of light the selected nav item takes, so a control
-  // reads as raised out of what it sits on.
-  boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.65)",
-  "&:hover": {
-    backgroundColor: "#F3F5FA",
-    borderColor: "rgba(30, 41, 74, 0.34)",
-  },
-  ...theme.applyStyles("dark", {
-    borderColor: "rgba(120, 138, 190, 0.35)",
-    boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.05)",
-    "&:hover": {
-      backgroundColor: "rgba(26, 28, 36, 0.72)",
-      borderColor: "rgba(120, 138, 190, 0.49)",
-    },
-  }),
-});
-
 function BannerButton({
   children,
   onClick,

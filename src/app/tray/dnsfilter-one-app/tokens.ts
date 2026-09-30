@@ -5,6 +5,30 @@
 // as the exception. Product tints and the brand wash are brand art rather
 // than UI color, so they stay fixed too.
 
+import type { Theme } from "@mui/material/styles";
+
+/** The outlined secondary face: the edge, the hairline of light along the
+ *  top, and both hovers. Anything outlined in the client reads off this. */
+export const outlinedFace = (theme: Theme) => ({
+  textTransform: "none" as const,
+  borderColor: "rgba(30, 41, 74, 0.2)",
+  // The same hairline of light the selected nav item takes, so a control
+  // reads as raised out of what it sits on.
+  boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.65)",
+  "&:hover": {
+    backgroundColor: "#F3F5FA",
+    borderColor: "rgba(30, 41, 74, 0.34)",
+  },
+  ...theme.applyStyles("dark", {
+    borderColor: "rgba(120, 138, 190, 0.35)",
+    boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.05)",
+    "&:hover": {
+      backgroundColor: "rgba(26, 28, 36, 0.72)",
+      borderColor: "rgba(120, 138, 190, 0.49)",
+    },
+  }),
+});
+
 // The brand wash: a hairline under the masthead, and the ring around ONE.
 const accentGradient = (angle: string) =>
   `linear-gradient(${angle}, #F306AE 0%, #00C8FD 50%, #3427FD 100%)`;

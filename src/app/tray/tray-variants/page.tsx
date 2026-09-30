@@ -39,9 +39,13 @@ function Variation({
   );
 }
 
-// Two popups to a row, 40px apart.
+// One popup to a row, 40px apart — the page reads as a single column.
 function VariationRow({ children }: { children: ReactNode }) {
-  return <Box sx={{ display: "flex", gap: "40px" }}>{children}</Box>;
+  return (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: "40px" }}>
+      {children}
+    </Box>
+  );
 }
 
 // A set of variations under its own title.
@@ -82,8 +86,16 @@ export default function TrayVariantsPage() {
           </VariationRow>
           <VariationRow>
             <Variation
-              label="Permissions disabled - Not protected"
+              label="Permissions disabled - Not filtering, service incident"
               state="incident"
+            />
+            <Variation
+              label="Permissions disabled - Sign-in required"
+              state="sign-in"
+            />
+            <Variation
+              label="Permissions disabled - Travel Wi-Fi on"
+              state="travel-wifi"
             />
           </VariationRow>
         </Section>
@@ -119,8 +131,18 @@ export default function TrayVariantsPage() {
               permissions
             />
             <Variation
-              label="Permissions enabled - Not protected"
+              label="Permissions enabled - Not filtering, service incident"
               state="incident"
+              permissions
+            />
+            <Variation
+              label="Permissions enabled - Sign-in required"
+              state="sign-in"
+              permissions
+            />
+            <Variation
+              label="Permissions enabled - Travel Wi-Fi on"
+              state="travel-wifi"
               permissions
             />
           </VariationRow>

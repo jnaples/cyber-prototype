@@ -5,18 +5,32 @@
 // Shared by the tray pages, and the place the state props will land as the
 // variations are built out.
 
-import {
-  Alert,
-  Box,
-  ButtonBase,
-  Divider,
-  Link,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Divider, Link, Typography } from "@mui/material";
 import { useState, type ReactNode } from "react";
 
 import { CLIENT_BG_DARK, CLIENT_BG_LIGHT } from "./client-surface";
+import {
+  ACCENT_RULE,
+  ACTIVE_DARK,
+  ACTIVE_LIGHT,
+  BANNER_DARK,
+  BANNER_LIGHT,
+  ERROR_BANNER_DARK,
+  ERROR_BANNER_LIGHT,
+  outlinedFace,
+  WARN_BANNER_DARK,
+  WARN_BANNER_LIGHT,
+} from "./dnsfilter-one-app/tokens";
+import { StatusChip } from "./dnsfilter-one-app/ui";
 import { IosSwitch } from "./ios-switch";
+
+/** The tints the desktop window uses for the same three states, so a banner
+ *  or a dot in the popup reads as the same thing it does there. */
+const TONES = {
+  success: { light: BANNER_LIGHT, dark: BANNER_DARK },
+  warning: { light: WARN_BANNER_LIGHT, dark: WARN_BANNER_DARK },
+  error: { light: ERROR_BANNER_LIGHT, dark: ERROR_BANNER_DARK },
+} as const;
 
 /** Green when healthy, amber when degraded, otherwise the gray a default Chip
  *  gives its icon. */
@@ -32,7 +46,9 @@ export type TrayState =
   | "unreachable"
   | "not-filtering"
   | "turned-off"
-  | "incident";
+  | "incident"
+  | "sign-in"
+  | "travel-wifi";
 
 const STATES: Record<
   TrayState,
@@ -75,7 +91,7 @@ const STATES: Record<
     },
   },
   incident: {
-    status: "Not protected",
+    status: "Not filtering",
     statusTone: "warning",
     filtering: "Not filtering",
     filteringTone: "warning",
@@ -83,8 +99,8 @@ const STATES: Record<
       severity: "warning",
       text: (
         <>
-          DNSFilter is reporting an incident. Filtering may be interrupted until
-          it&apos;s resolved.
+          The service is reporting an incident. Filtering may be interrupted
+          until it&apos;s resolved.
           <br />
           <Link
             href="https://status.dnsfilter.com/"
@@ -119,6 +135,56 @@ const STATES: Record<
       severity: "error",
     },
   },
+  "travel-wifi": {
+    status: "Travel Wi-Fi on",
+    statusTone: "warning",
+    filtering: "Waiting",
+    filteringTone: "warning",
+    banner: {
+      severity: "warning",
+      text: (
+        <>
+          Sign in pages can load for 30 seconds. The service cannot be reached
+          until sign in completes.
+          <br />
+          <Box
+            component="span"
+            sx={{ display: "inline-block", mt: "4px", fontWeight: 600 }}
+          >
+            Stop, 0:24 remaining
+          </Box>
+        </>
+      ),
+    },
+  },
+  "sign-in": {
+    status: "Sign-in required",
+    statusTone: "warning",
+    filtering: "Waiting",
+    filteringTone: "warning",
+    banner: {
+      severity: "warning",
+      text: (
+        <>
+          This network requires a sign in. The service cannot be reached until
+          it completes.
+          <br />
+          <Link
+            href="https://status.dnsfilter.com/"
+            target="_blank"
+            rel="noopener"
+            sx={{
+              color: "inherit",
+              fontWeight: 600,
+              textDecoration: "underline",
+            }}
+          >
+            Status page
+          </Link>
+        </>
+      ),
+    },
+  },
 };
 
 function Banner({
@@ -144,10 +210,27 @@ function Banner({
       </Box>
     );
   }
+  const tone = TONES[severity];
   return (
-    <Alert severity={severity} icon={false} sx={{ py: 0.5, fontSize: 14 }}>
+    <Box
+      sx={(theme) => ({
+        px: "12px",
+        py: "6px",
+        borderRadius: "10px",
+        border: "1px solid",
+        fontSize: 14,
+        borderColor: tone.light.border,
+        backgroundColor: tone.light.bg,
+        color: tone.light.fg,
+        ...theme.applyStyles("dark", {
+          borderColor: tone.dark.border,
+          backgroundColor: tone.dark.bg,
+          color: tone.dark.fg,
+        }),
+      })}
+    >
       {text}
-    </Alert>
+    </Box>
   );
 }
 
@@ -228,10 +311,16 @@ function StatusDot({ tone }: { tone: DotTone }) {
         height: 7,
         flexShrink: 0,
         borderRadius: "50%",
-        backgroundColor:
-          tone === "idle"
-            ? theme.vars.palette.Chip.defaultIconColor
-            : theme.vars.palette[tone].main,
+        ...(tone === "idle"
+          ? { backgroundColor: theme.vars.palette.Chip.defaultIconColor }
+          : {
+              backgroundColor:
+                tone === "success" ? ACTIVE_LIGHT.fg : TONES[tone].light.fg,
+              ...theme.applyStyles("dark", {
+                backgroundColor:
+                  tone === "success" ? ACTIVE_DARK.fg : TONES[tone].dark.fg,
+              }),
+            }),
       })}
     />
   );
@@ -241,20 +330,21 @@ function StatusDot({ tone }: { tone: DotTone }) {
 // than taking a width measured off the design.
 function TrayAction({ children }: { children: ReactNode }) {
   return (
-    <ButtonBase
-      sx={{
+    <Button
+      variant="outlined"
+      color="secondary"
+      size="small"
+      sx={(theme) => ({
+        ...outlinedFace(theme),
         py: "6px",
         px: "12px",
-        borderRadius: "8px",
-        backgroundColor: "action.selected",
-        color: "text.primary",
+        borderRadius: "10px",
         fontSize: 13,
         fontWeight: 600,
-        "&:hover": { backgroundColor: "action.focus" },
-      }}
+      })}
     >
       {children}
-    </ButtonBase>
+    </Button>
   );
 }
 
@@ -301,6 +391,7 @@ export function TrayPopup({
     >
       <Box
         sx={{
+          pb: "16px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -338,15 +429,19 @@ export function TrayPopup({
           </Typography>
         </Box>
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
-          <StatusDot tone={statusTone} />
-          <Typography
-            sx={{ fontSize: 12, fontWeight: 600, color: "text.secondary" }}
-          >
-            {status}
-          </Typography>
-        </Box>
+        {/* The same chip the desktop window carries in its masthead. */}
+        <StatusChip
+          on={statusTone !== "idle"}
+          tone={statusTone === "idle" ? "success" : statusTone}
+          label={status}
+          dot
+        />
       </Box>
+
+      {/* The brand colors, as a hairline under the header — the same rule the
+          desktop window carries under its masthead. Bled past the popup's own
+          inset, so it spans the whole width. */}
+      <Box sx={{ mx: -2, mt: -2, height: "2px", background: ACCENT_RULE }} />
 
       {banner && <Banner text={banner.text} severity={banner.severity} />}
 
