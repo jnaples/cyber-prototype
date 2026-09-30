@@ -1060,58 +1060,6 @@ function ScreenHeader({
   );
 }
 
-/** The pair that adds a line to a list or takes the last one off, joined into
- *  one control the way the system's own lists do it. */
-function StepButtons({
-  onAdd,
-  onRemove,
-  canRemove,
-}: {
-  onAdd: () => void;
-  onRemove: () => void;
-  canRemove: boolean;
-}) {
-  // The same edge the outlined buttons take, at a size that sits under a card
-  // rather than beside it.
-  const step = (radius: string) => (theme: Theme) => ({
-    minWidth: 32,
-    height: 24,
-    px: 0,
-    fontSize: 14,
-    fontWeight: 600,
-    lineHeight: 1,
-    textTransform: "none" as const,
-    borderRadius: radius,
-    borderColor: "rgba(30, 41, 74, 0.2)",
-    ...theme.applyStyles("dark", {
-      borderColor: "rgba(120, 138, 190, 0.35)",
-    }),
-  });
-  return (
-    <Box sx={{ mt: "8px", display: "inline-flex" }}>
-      <Button
-        variant="outlined"
-        color="secondary"
-        onClick={onAdd}
-        aria-label="Add"
-        sx={step("8px 0 0 8px")}
-      >
-        +
-      </Button>
-      <Button
-        variant="outlined"
-        color="secondary"
-        onClick={onRemove}
-        disabled={!canRemove}
-        aria-label="Remove"
-        sx={[step("0 8px 8px 0"), { ml: "-1px" }]}
-      >
-        −
-      </Button>
-    </Box>
-  );
-}
-
 /** A card of addresses — domains, resolvers — one to a line in the mono face
  *  the rest of the client uses for anything a machine reads. Unlocked, the
  *  lines are typed into and the pair below adds or drops one. */
@@ -1153,17 +1101,30 @@ function AddressList({
             <Fragment key={index}>
               {index > 0 && <Divider sx={{ my: "12px" }} />}
               {editable ? (
-                <InputBase
-                  value={item}
-                  onChange={(event) =>
-                    edit(
-                      lines.map((line, at) =>
-                        at === index ? event.target.value : line,
-                      ),
-                    )
-                  }
-                  sx={{ ...mono, width: "100%", p: 0 }}
-                />
+                <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <InputBase
+                    value={item}
+                    onChange={(event) =>
+                      edit(
+                        lines.map((line, at) =>
+                          at === index ? event.target.value : line,
+                        ),
+                      )
+                    }
+                    sx={{ ...mono, flex: 1, minWidth: 0, p: 0 }}
+                  />
+                  {/* Each line goes on its own, so dropping the second one
+                      doesn't take the third with it. */}
+                  <BannerButton
+                    icon
+                    label={`Remove ${item || "line"}`}
+                    onClick={() =>
+                      edit(lines.filter((_line, at) => at !== index))
+                    }
+                  >
+                    <MaterialSymbol name="close" size={18} />
+                  </BannerButton>
+                </Box>
               ) : (
                 <Typography sx={mono}>{item}</Typography>
               )}
@@ -1172,11 +1133,12 @@ function AddressList({
         </Box>
       </ClientCard>
       {editable && (
-        <StepButtons
-          onAdd={() => edit([...lines, ""])}
-          onRemove={() => edit(lines.slice(0, -1))}
-          canRemove={lines.length > 0}
-        />
+        <Box sx={{ mt: "8px" }}>
+          <BannerButton onClick={() => edit([...lines, ""])}>
+            <MaterialSymbol name="add" size={18} />
+            Add
+          </BannerButton>
+        </Box>
       )}
     </Box>
   );
@@ -1307,6 +1269,28 @@ const WARNINGS = {
 
 /** An action inside a banner: outlined and secondary, so it reads as a way
  *  out of the state rather than the thing the screen is for. */
+/** The outlined secondary face: the edge, the hairline of light along the
+ *  top, and both hovers. Anything outlined in the window reads off this. */
+const outlinedFace = (theme: Theme) => ({
+  textTransform: "none" as const,
+  borderColor: "rgba(30, 41, 74, 0.2)",
+  // The same hairline of light the selected nav item takes, so a control
+  // reads as raised out of what it sits on.
+  boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.65)",
+  "&:hover": {
+    backgroundColor: "#F3F5FA",
+    borderColor: "rgba(30, 41, 74, 0.34)",
+  },
+  ...theme.applyStyles("dark", {
+    borderColor: "rgba(120, 138, 190, 0.35)",
+    boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.05)",
+    "&:hover": {
+      backgroundColor: "rgba(26, 28, 36, 0.72)",
+      borderColor: "rgba(120, 138, 190, 0.49)",
+    },
+  }),
+});
+
 function BannerButton({
   children,
   onClick,
@@ -1330,29 +1314,15 @@ function BannerButton({
       // The theme's button type is 700 and uppercase; the client reads in
       // title case at 600 like everything around it.
       sx={(theme) => ({
+        ...outlinedFace(theme),
         whiteSpace: "nowrap",
+        // A glyph beside a label rather than MUI's startIcon margins.
+        gap: "6px",
         ...(icon ? { minWidth: 0, px: "8px" } : {}),
         height: 32,
         borderRadius: "10px",
         fontSize: 14,
         fontWeight: 600,
-        textTransform: "none",
-        borderColor: "rgba(30, 41, 74, 0.2)",
-        // The same hairline of light the selected nav item takes, so a
-        // control in the banner reads as raised out of it.
-        boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.65)",
-        "&:hover": {
-          backgroundColor: "#F3F5FA",
-          borderColor: "rgba(30, 41, 74, 0.34)",
-        },
-        ...theme.applyStyles("dark", {
-          borderColor: "rgba(120, 138, 190, 0.35)",
-          boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.05)",
-          "&:hover": {
-            backgroundColor: "rgba(26, 28, 36, 0.72)",
-            borderColor: "rgba(120, 138, 190, 0.49)",
-          },
-        }),
       })}
     >
       {children}
@@ -1854,6 +1824,11 @@ export default function DnsfilterOneAppPage() {
         <AppWindow
           title="Filtering - Local Resolution"
           initialScreen={LOCAL_SCREEN}
+        />
+        <AppWindow
+          title="Filtering - Local Resolution unlocked"
+          initialScreen={LOCAL_SCREEN}
+          unlocked
         />
       </Box>
     </Container>
