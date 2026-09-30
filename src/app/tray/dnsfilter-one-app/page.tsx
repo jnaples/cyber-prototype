@@ -550,6 +550,18 @@ const LOCAL_DOMAINS = [
 
 const LOCAL_RESOLVERS = ["10.0.0.1:53", "10.0.0.2:53"];
 
+/** The screen behind Local resolution, where each set of names carries the
+ *  resolvers that answer it rather than sharing one list. */
+const ADVANCED_SCREEN = "Local resolution advanced";
+
+const RELAY_GROUPS = [
+  {
+    domains: ["corp.example.com", "internal.example.com", "ad.example.local"],
+    via: ["10.0.0.1:53", "10.0.0.2:53"],
+  },
+  { domains: ["printers.example.com"], via: ["10.0.0.5:53"] },
+];
+
 /** The lookups that never leave the network, whatever else is configured. */
 const ALWAYS_LOCAL: readonly ConfigRow[] = [
   {
@@ -698,7 +710,17 @@ function ConfigurationScreen({
     <Box
       sx={{ p: "24px", display: "flex", flexDirection: "column", gap: "16px" }}
     >
-      <ScreenHeader title="Configuration" onBack={onBack} />
+      <ScreenHeader
+        title="Configuration"
+        onBack={onBack}
+        // Unlocked, what matters isn't where the settings came from but what
+        // happens to the ones being changed.
+        subtitle={
+          editable
+            ? "Changes save to this device and take effect within 15 seconds"
+            : undefined
+        }
+      />
 
       <ClientCard>
         <Box
@@ -1029,11 +1051,14 @@ function ScreenHeader({
   title,
   onBack,
   action,
+  subtitle,
 }: {
   title: string;
   onBack: () => void;
   /** One control on the right, for whatever the screen offers. */
   action?: ReactNode;
+  /** What the line under the title says, when it isn't where this came from. */
+  subtitle?: ReactNode;
 }) {
   return (
     <Box>
@@ -1048,7 +1073,8 @@ function ScreenHeader({
             {title}
           </Typography>
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            Managed by the organization. Last synced {LAST_SYNCED}
+            {subtitle ??
+              `Managed by the organization. Last synced ${LAST_SYNCED}`}
           </Typography>
         </Box>
         {action}
@@ -1203,17 +1229,88 @@ function AddressList({
   );
 }
 
+/** A set of names and the resolvers behind them: the names on the card's own
+ *  ground, and what answers them on the band at its foot. */
+function RelayCard({
+  domains,
+  via,
+}: {
+  domains: readonly string[];
+  via: readonly string[];
+}) {
+  const mono = {
+    fontFamily: '"Geist Mono Variable", ui-monospace, monospace',
+    fontSize: 14,
+    wordBreak: "break-all" as const,
+  };
+
+  return (
+    <ClientCard padding="0">
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Box sx={{ p: "16px", display: "flex", flexDirection: "column" }}>
+          {domains.map((domain, index) => (
+            <Fragment key={domain}>
+              {index > 0 && <Divider sx={{ my: "12px" }} />}
+              <Typography sx={{ ...mono, color: "text.primary" }}>
+                {domain}
+              </Typography>
+            </Fragment>
+          ))}
+        </Box>
+        {/* The rule between the names and what answers them keeps the card's
+            own inset, like every other rule in these screens. */}
+        <Divider sx={{ mx: "16px" }} />
+        {/* The band the masthead and the rail are on, closing the card. */}
+        <Box
+          sx={(theme) => ({
+            px: "16px",
+            py: "10px",
+            display: "flex",
+            alignItems: "baseline",
+            gap: "8px",
+            backgroundColor: HEADER_BG_LIGHT,
+            borderRadius: "0 0 15px 15px",
+            ...theme.applyStyles("dark", {
+              backgroundColor: APP_SURFACE_DARK,
+            }),
+          })}
+        >
+          {/* The same type as the section label above the card. */}
+          <Typography
+            sx={{
+              fontSize: 12,
+              fontWeight: 600,
+              lineHeight: 1,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "text.secondary",
+            }}
+          >
+            Via
+          </Typography>
+          <Typography sx={{ ...mono, color: "text.secondary" }}>
+            {via.join(", ")}
+          </Typography>
+        </Box>
+      </Box>
+    </ClientCard>
+  );
+}
+
 /** Local resolution: which names the network answers for itself, who answers
  *  them, and what never leaves it whatever else is set. */
 function LocalResolutionScreen({
   onBack,
   editable = false,
   onEdit,
+  advanced = false,
 }: {
   onBack: () => void;
   /** Whether the lock is off, which is what makes the lists typeable. */
   editable?: boolean;
   onEdit?: () => void;
+  /** Group each set of names under the resolvers that answer it. */
+  advanced?: boolean;
 }) {
   return (
     <Box
@@ -1223,25 +1320,47 @@ function LocalResolutionScreen({
         title="Local resolution"
         onBack={onBack}
         action={<BannerButton>Copy</BannerButton>}
+        subtitle={
+          editable
+            ? "Changes save to this device and take effect within 15 seconds"
+            : undefined
+        }
       />
 
-      <Box>
-        <SectionLabel>Local domains</SectionLabel>
-        <AddressList
-          items={LOCAL_DOMAINS}
-          editable={editable}
-          onEdit={onEdit}
-        />
-      </Box>
+      {advanced ? (
+        <Box>
+          <SectionLabel>Domains and resolvers</SectionLabel>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {RELAY_GROUPS.map((group) => (
+              <RelayCard
+                key={group.domains[0]}
+                domains={group.domains}
+                via={group.via}
+              />
+            ))}
+          </Box>
+        </Box>
+      ) : (
+        <>
+          <Box>
+            <SectionLabel>Local domains</SectionLabel>
+            <AddressList
+              items={LOCAL_DOMAINS}
+              editable={editable}
+              onEdit={onEdit}
+            />
+          </Box>
 
-      <Box>
-        <SectionLabel>Local resolvers</SectionLabel>
-        <AddressList
-          items={LOCAL_RESOLVERS}
-          editable={editable}
-          onEdit={onEdit}
-        />
-      </Box>
+          <Box>
+            <SectionLabel>Local resolvers</SectionLabel>
+            <AddressList
+              items={LOCAL_RESOLVERS}
+              editable={editable}
+              onEdit={onEdit}
+            />
+          </Box>
+        </>
+      )}
 
       <Box>
         <SectionLabel>Always local</SectionLabel>
@@ -1551,7 +1670,10 @@ function AppWindow({
   const [nav, setNav] = useState<NavKey>("filtering");
   const feature = FEATURES.find((f) => f.name === screen);
   const config = screen === CONFIG_SCREEN;
-  const local = screen === LOCAL_SCREEN;
+  const local = screen === LOCAL_SCREEN || screen === ADVANCED_SCREEN;
+  // A window that opens on a screen stays on it: the way back is still a
+  // control, it just has nothing behind it to go to.
+  const pinned = initialScreen !== null;
   // Both settings screens sit behind the same lock.
   const settings = config || local;
   // The settings are locked until the system's prompt is answered.
@@ -1806,14 +1928,19 @@ function AppWindow({
               {local ? (
                 <LocalResolutionScreen
                   key={edits}
-                  onBack={() => setScreen(CONFIG_SCREEN)}
+                  onBack={() => {
+                    if (!pinned) setScreen(CONFIG_SCREEN);
+                  }}
                   editable={!locked}
                   onEdit={() => setDirty(true)}
+                  advanced={screen === ADVANCED_SCREEN}
                 />
               ) : config ? (
                 <ConfigurationScreen
                   key={edits}
-                  onBack={() => setScreen(null)}
+                  onBack={() => {
+                    if (!pinned) setScreen(null);
+                  }}
                   onOpenLocal={() => setScreen(LOCAL_SCREEN)}
                   editable={!locked}
                   onEdit={() => setDirty(true)}
@@ -1893,6 +2020,10 @@ export default function DnsfilterOneAppPage() {
           title="Filtering - Local Resolution unlocked"
           initialScreen={LOCAL_SCREEN}
           unlocked
+        />
+        <AppWindow
+          title="Filtering - Local Resolution - Advanced Local Domains & Relay"
+          initialScreen={ADVANCED_SCREEN}
         />
       </Box>
     </Container>
