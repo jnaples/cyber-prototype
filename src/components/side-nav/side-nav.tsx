@@ -621,36 +621,113 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             </Collapse>
           </Box>
 
-          {/* SecureShield Link */}
-          {withCollapsedTooltip(
-            "SecureShield",
-            <Box
-              sx={getItemStyles("secureshield")}
-              onClick={() => {
-                handleItemClick("secureshield");
-                navigate("/secureshield");
-              }}
-            >
-              <Icon name="shield" size={isExpanded ? 20 : 24} />
-              {isExpanded && (
-                <>
-                  <span style={{ margin: "4px 0" }}>SecureShield</span>
-                  <Badge
-                    badgeContent="NEW"
-                    sx={{
-                      mx: 1,
-                      "& .MuiBadge-badge": {
-                        position: "static",
-                        transform: "none",
-                        bgcolor: "tertiary.main",
-                        color: "tertiary.contrastText",
-                      },
+          {/* AgentShield Link with Dropdown */}
+          <Box sx={getDropdownWrapperStyles("agentshield")}>
+            {withCollapsedTooltip(
+              "AgentShield",
+              <Box
+                sx={getItemStyles(
+                  "agentshield",
+                  expandedDropdown === "agentshield",
+                )}
+                onClick={() => handleDropdownToggle("agentshield")}
+              >
+                {isExpanded && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      width: "100%",
+                      justifyContent: "space-between",
                     }}
-                  />
-                </>
-              )}
-            </Box>,
-          )}
+                  >
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <Icon name="memory" size={20} />
+                      <span style={{ margin: "4px 0 4px 8px" }}>
+                        AgentShield
+                      </span>
+                      <Badge
+                        badgeContent="NEW"
+                        sx={{
+                          mx: 1,
+                          "& .MuiBadge-badge": {
+                            position: "static",
+                            transform: "none",
+                            bgcolor: "tertiary.main",
+                            color: "tertiary.contrastText",
+                          },
+                        }}
+                      />
+                    </div>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      {expandedDropdown === "agentshield" ? (
+                        <Icon name="expand_less" />
+                      ) : (
+                        <Icon name="expand_more" />
+                      )}
+                    </Box>
+                  </div>
+                )}
+                {!isExpanded && <Icon name="memory" size={24} />}
+              </Box>,
+            )}
+
+            {/* AgentShield Dropdown Items */}
+            <Collapse in={expandedDropdown === "agentshield" && isExpanded}>
+              <Box
+                sx={{
+                  p: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "2px",
+                  borderRadius: "0 0 6px 6px",
+                }}
+              >
+                <Box
+                  sx={getSubItemStyles("agentshield-overview")}
+                  onClick={() => {
+                    handleItemClick("agentshield-overview");
+                    navigate("/secureshield?tab=overview");
+                  }}
+                >
+                  <span style={{ margin: "4px 0" }}>Overview</span>
+                </Box>
+                <Box
+                  sx={getSubItemStyles("agentshield-ai-applications")}
+                  onClick={() => {
+                    handleItemClick("agentshield-ai-applications");
+                    navigate("/secureshield?tab=ai-applications");
+                  }}
+                >
+                  <span style={{ margin: "4px 0" }}>AI Applications</span>
+                </Box>
+                <Box
+                  sx={getSubItemStyles("agentshield-sessions")}
+                  onClick={() => {
+                    handleItemClick("agentshield-sessions");
+                    navigate("/secureshield?tab=sessions");
+                  }}
+                >
+                  <span style={{ margin: "4px 0" }}>Sessions</span>
+                </Box>
+                <Box
+                  sx={getSubItemStyles("agentshield-logs")}
+                  onClick={() => {
+                    handleItemClick("agentshield-logs");
+                    navigate("/secureshield?tab=logs");
+                  }}
+                >
+                  <span style={{ margin: "4px 0" }}>Logs</span>
+                </Box>
+              </Box>
+            </Collapse>
+          </Box>
 
           {sectionLabel("Monitor")}
 

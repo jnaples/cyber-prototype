@@ -8,6 +8,9 @@ import type { ReactNode } from "react";
 
 type PageHeaderProps = {
   title: string;
+  /** A line under the title — a publisher, an owner, whatever names the
+   *  thing the page is about. */
+  subtitle?: ReactNode;
   onBack?: () => void;
   leftSlot?: ReactNode;
   actions?: ReactNode;
@@ -20,6 +23,7 @@ type PageHeaderProps = {
 
 export function PageHeader({
   title,
+  subtitle,
   onBack,
   leftSlot,
   actions,
@@ -64,9 +68,19 @@ export function PageHeader({
             </IconButton>
           )}
 
-          <Typography variant="pageTitle" component="h1" noWrap>
-            {title}
-          </Typography>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="pageTitle" component="h1" noWrap>
+              {title}
+            </Typography>
+            {subtitle && (
+              <Typography
+                variant="body2"
+                sx={{ mt: "4px", color: "text.secondary" }}
+              >
+                {subtitle}
+              </Typography>
+            )}
+          </Box>
 
           {leftSlot && (
             <Stack

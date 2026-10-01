@@ -7,7 +7,8 @@ import RootLayout from "@/app/layout";
 import CybersightPage from "@/app/cybersight/page";
 import GlobalPoliciesPage from "@/app/global-policies/page";
 import CreatePolicyPage from "@/app/global-policies/create/page";
-import SecureShieldPage from "@/app/secureshield/page";
+import AgentShieldPage from "@/app/secureshield/page";
+import AgentShieldApplicationPage from "@/app/secureshield/application-detail";
 import DeploymentsLayout from "@/app/deployments/layout";
 import DeploymentsIndexPage from "@/app/deployments/page";
 import RoamingClientsPage from "@/app/deployments/roaming-clients/page";
@@ -90,7 +91,11 @@ function App() {
           <Route path="dashboards" element={<DashboardsPage />} />
           <Route path="dashboards/manage" element={<ManageDashboardsPage />} />
           <Route path="cybersight" element={<CybersightPage />} />
-          <Route path="secureshield" element={<SecureShieldPage />} />
+          <Route path="secureshield" element={<AgentShieldPage />} />
+          <Route
+            path="secureshield/applications/:appId"
+            element={<AgentShieldApplicationPage />}
+          />
           <Route path="query-logs" element={<QueryLogsPage />} />
           <Route path="reporting">
             <Route path="custom-reports" element={<CustomReportsPage />} />

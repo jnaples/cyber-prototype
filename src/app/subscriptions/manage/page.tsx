@@ -23,9 +23,15 @@ type PlanSummary = {
 };
 
 const PLAN_SUMMARIES: PlanSummary[] = [
-  { title: "Basic", subtitle: "Network Traffic", available: 20, purchased: 720 },
+  {
+    title: "Basic",
+    subtitle: "Network Traffic",
+    available: 20,
+    purchased: 720,
+  },
   { title: "Pro", subtitle: "Roaming Clients", available: 50, purchased: 1850 },
   { title: "SecureTransit", available: 75, purchased: 1500 },
+  { title: "AgentShield", available: 40, purchased: 600 },
 ];
 
 function PlanSummaryCard({ plan }: { plan: PlanSummary }) {
@@ -82,6 +88,7 @@ type OrgRow = {
   guardian: number | null;
   cybersight: boolean;
   dataExport: boolean;
+  agentshield: boolean;
 };
 
 const num = (value: number | null) =>
@@ -89,7 +96,11 @@ const num = (value: number | null) =>
 
 function FeatureCell({ on }: { on: boolean }) {
   if (!on) {
-    return <Box component="span" sx={{ color: "text.disabled" }}>-</Box>;
+    return (
+      <Box component="span" sx={{ color: "text.disabled" }}>
+        -
+      </Box>
+    );
   }
   return (
     <MaterialSymbol
@@ -170,6 +181,15 @@ const columns: GridColDef<OrgRow>[] = [
     renderCell: (params) => <FeatureCell on={params.value as boolean} />,
   },
   {
+    field: "agentshield",
+    headerName: "AgentShield",
+    width: 130,
+    align: "center",
+    headerAlign: "center",
+    sortable: false,
+    renderCell: (params) => <FeatureCell on={params.value as boolean} />,
+  },
+  {
     field: "actions",
     headerName: "Actions",
     width: 90,
@@ -210,6 +230,7 @@ const columnGroupingModel: GridColumnGroupingModel = [
       { field: "guardian" },
       { field: "cybersight" },
       { field: "dataExport" },
+      { field: "agentshield" },
     ],
   },
 ];
@@ -276,6 +297,9 @@ const rows: OrgRow[] = SEED.map(
     guardian,
     cybersight: cs,
     dataExport: de,
+    // The newest add-on: the Pro organizations already exporting their logs
+    // are the ones that have taken it so far.
+    agentshield: plan === "Pro" && de,
   }),
 );
 
