@@ -16,8 +16,6 @@ import {
   MenuItem,
   Snackbar,
   Switch,
-  Tab,
-  Tabs,
   Typography,
 } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -35,6 +33,7 @@ import { useOrgScope } from "@/hooks/use-org-scope";
 import { Modal } from "@/components/modal";
 import { OrgScopeSlot } from "@/components/org-scope-slot";
 import { PageHeader } from "@/components/page-header";
+import { PageTabs } from "@/components/page-tabs";
 import { PageShell } from "@/components/page-shell";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
@@ -470,22 +469,6 @@ const STATUS_KEYS: SummaryKey[] = ["all", "active", "paused", "issue"];
 // base path lands on Templates.
 const PAGE_TABS = REPORT_MANAGER_TABS.filter((tab) => !("hidden" in tab));
 
-// Selected page tab reads as a card lifted out of the neutral strip.
-const selectedTabSx = {
-  "&.Mui-selected": {
-    backgroundColor: (
-      theme: Theme & {
-        vars?: { palette?: { background?: { paper?: string } } };
-      },
-    ) =>
-      theme.vars?.palette?.background?.paper ?? theme.palette.background.paper,
-    borderTopLeftRadius: "6px",
-    borderTopRightRadius: "6px",
-    boxShadow: (theme: Theme) => theme.shadows[3],
-    zIndex: (theme: Theme) => theme.zIndex.appBar,
-  },
-};
-
 export default function ScheduledReportsPage({
   basePath = REPORT_MANAGER_BASE,
   scheduleDrawer = "drawer",
@@ -696,45 +679,14 @@ export default function ScheduledReportsPage({
     <PageShell
       header={
         <PageHeader title="Reports" leftSlot={<OrgScopeSlot />}>
-          <Box
-            sx={{
-              mb: -2,
-              display: "flex",
-              alignContent: "flex-end",
-              backgroundColor: (
-                theme: Theme & {
-                  vars?: { palette?: { background?: { neutral?: string } } };
-                },
-              ) =>
-                theme.vars?.palette?.background?.neutral ??
-                theme.palette.background.neutral,
-              color: (
-                theme: Theme & {
-                  vars?: { palette?: { text?: { primary?: string } } };
-                },
-              ) =>
-                theme.vars?.palette?.text?.primary ??
-                theme.palette.text.primary,
-            }}
-          >
-            <Tabs
-              value={pageTab}
-              onChange={(_e, next: number) =>
-                navigate(`${basePath}/${PAGE_TABS[next].path}`)
-              }
-              aria-label="report manager tabs"
-              sx={{ px: 3 }}
-            >
-              {PAGE_TABS.map((tab) => (
-                <Tab
-                  key={tab.label}
-                  label={tab.label}
-                  icon={<MaterialSymbol name={tab.icon} size={20} />}
-                  sx={selectedTabSx}
-                />
-              ))}
-            </Tabs>
-          </Box>
+          <PageTabs
+            tabs={PAGE_TABS}
+            value={pageTab}
+            ariaLabel="report manager tabs"
+            onChange={(_event, next: number) =>
+              navigate(`${basePath}/${PAGE_TABS[next].path}`)
+            }
+          />
         </PageHeader>
       }
     >

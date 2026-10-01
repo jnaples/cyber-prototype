@@ -6,26 +6,15 @@
 
 import DeleteForeverOutlinedIcon from "@mui/icons-material/DeleteForeverOutlined";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
-import {
-  Autocomplete,
-  Box,
-  Button,
-  Tab,
-  Tabs,
-  Typography,
-} from "@mui/material";
+import { Autocomplete, Box, Button, Typography } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 
-import { AdvancedFilters } from "@/app/dashboards/advanced-filters";
-import type {
-  AppliedAdvancedFilter,
-  FilterColumn,
-} from "@/app/dashboards/advanced-filters";
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
+import { PageTabs } from "@/components/page-tabs";
 import { TextField } from "@/components/text-field";
 import {
   roamingClients as ROAMING_CLIENT_OPTIONS,
@@ -33,6 +22,8 @@ import {
 } from "@/data/query-logs";
 
 import { AiApplicationsTab } from "./ai-applications-tab";
+import { FiltersDrawer, type AgentShieldFilters } from "./filters-drawer";
+import { LogsTab } from "./logs-tab";
 import { OverviewTab } from "./overview-tab";
 import { SessionsTab } from "./sessions-tab";
 
@@ -53,28 +44,6 @@ const AI_APP_OPTIONS = [
 
 const FILTERS_DISABLED_TOOLTIP =
   "Select an Organization to enable this filter.";
-
-// The columns the "More Filters" drawer offers — what an agent session is made
-// of, the way Query Logs offers its own.
-const AGENTSHIELD_FILTER_COLUMNS: FilterColumn[] = [
-  { field: "aiApplication", label: "AI Application", options: AI_APP_OPTIONS },
-  { field: "domain", label: "Domain" },
-  { field: "user", label: "User" },
-  { field: "roamingClient", label: "Roaming Client" },
-  { field: "site", label: "Site" },
-  {
-    field: "category",
-    label: "Category",
-    options: [
-      "Generative AI",
-      "Developer Tools",
-      "File Sharing",
-      "Malware",
-      "Phishing",
-    ],
-  },
-  { field: "result", label: "Result", options: ["Allowed", "Blocked"] },
-];
 
 /** A month up to today, the window the filters open on. */
 const DEFAULT_RANGE = (() => {
@@ -148,9 +117,7 @@ export default function AgentShieldPage() {
 
   // "More Filters" opens the shared advanced-filters drawer, as on Query Logs.
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [appliedAdvancedFilters, setAppliedAdvancedFilters] = useState<
-    AppliedAdvancedFilter[]
-  >([]);
+  const [moreFilters, setMoreFilters] = useState<AgentShieldFilters>({});
 
   // Which view is open, kept in the URL so the side nav can link to one.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -283,8 +250,8 @@ export default function AgentShieldPage() {
                   onClick={() => setAdvancedOpen(true)}
                   startIcon={<FilterAltOutlinedIcon sx={{ fontSize: 20 }} />}
                 >
-                  {appliedAdvancedFilters.length > 0
-                    ? `More Filters (${appliedAdvancedFilters.length})`
+                  {Object.keys(moreFilters).length > 0
+                    ? `More Filters (${Object.keys(moreFilters).length})`
                     : "More Filters"}
                 </Button>
               </Box>
@@ -330,42 +297,15 @@ export default function AgentShieldPage() {
           </Box>
         </Box>
 
-        {/* Tab nav — the same rail CyberSight carries under its filters. */}
-        <Box sx={{ mt: 2, px: 3, pt: 1, bgcolor: "background.neutral" }}>
-          <Tabs
-            value={tabIndex}
-            onChange={(_event, next: number) =>
-              setSearchParams({ tab: TABS[next].key })
-            }
-            aria-label="agentshield tabs"
-            sx={{ minHeight: 0 }}
-          >
-            {TABS.map((tab) => (
-              <Tab
-                key={tab.key}
-                label={tab.label}
-                icon={<MaterialSymbol name={tab.icon} size={20} />}
-                iconPosition="start"
-                sx={{
-                  minHeight: 0,
-                  textTransform: "none",
-                  fontSize: 13,
-                  py: 0.5,
-                  px: 1,
-                  mr: 2,
-                  gap: 0.75,
-                  "&.Mui-selected": {
-                    backgroundColor: (theme: Theme) =>
-                      theme.vars.palette.background.paper,
-                    borderTopLeftRadius: 6,
-                    borderTopRightRadius: 6,
-                    boxShadow: (theme: Theme) => theme.shadows[3],
-                  },
-                }}
-              />
-            ))}
-          </Tabs>
-        </Box>
+        {/* The rail Deployments and the report manager carry. */}
+        <PageTabs
+          tabs={TABS}
+          value={tabIndex}
+          ariaLabel="agentshield tabs"
+          onChange={(_event, next: number) =>
+            setSearchParams({ tab: TABS[next].key })
+          }
+        />
       </PageHeader>
 
       {tabKey === "overview" ? (
@@ -374,6 +314,8 @@ export default function AgentShieldPage() {
         <AiApplicationsTab />
       ) : tabKey === "sessions" ? (
         <SessionsTab />
+      ) : tabKey === "logs" ? (
+        <LogsTab />
       ) : (
         <Box sx={{ p: 3 }}>
           <Typography
@@ -389,20 +331,15 @@ export default function AgentShieldPage() {
         </Box>
       )}
 
-      <AdvancedFilters
+      <FiltersDrawer
         open={advancedOpen}
         onClose={() => setAdvancedOpen(false)}
-        columns={AGENTSHIELD_FILTER_COLUMNS}
+        applied={moreFilters}
         onApply={(next) => {
           // Applying here behaves like the header's own Apply.
-          setAppliedAdvancedFilters(next);
+          setMoreFilters(next);
           applyFilters();
         }}
-        seedFilters={appliedAdvancedFilters}
-        applyLabel="Apply"
-        title="More Filters"
-        lockConjunction
-        uniqueColumns
       />
     </Box>
   );

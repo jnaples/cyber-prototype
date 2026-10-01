@@ -11,6 +11,8 @@ import {
   CardContent,
   IconButton,
   Link,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
@@ -31,6 +33,16 @@ import {
   TOTAL_SESSIONS,
   type SessionRow,
 } from "./sessions-data";
+
+/** The windows the timeline can be drawn over. The runs are positioned as a
+ *  fraction of the window, so the same tracks read against any of them. */
+const WINDOWS = [
+  { key: "24h", label: "Last 24 hours", days: 1 },
+  { key: "7d", label: "7 days", days: 7 },
+  { key: "30d", label: "30 days", days: 30 },
+] as const;
+
+type WindowKey = (typeof WINDOWS)[number]["key"];
 
 const stamp = (iso: string) =>
   new Date(iso).toLocaleString("en-US", {
@@ -61,6 +73,28 @@ const number = (
 /** The hour under a tick, as the axis prints it. */
 const tickLabel = (minutes: number) =>
   `${String(Math.floor(minutes / 60)).padStart(2, "0")}:00`;
+
+/** Past a day, the axis counts back in dates rather than hours. */
+const axisLabel = (minutes: number, days: number) => {
+  if (days === 1) return tickLabel(minutes);
+  const when = new Date();
+  when.setDate(when.getDate() - days + (minutes / DAY_MINUTES) * days);
+  return when.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
+
+/** A card title with the note that explains it tucked behind an info mark. */
+function PanelTitle({ title, note }: { title: string; note: string }) {
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+      <Typography variant="cardTitle">{title}</Typography>
+      <ArrowTooltip title={note}>
+        <Box sx={{ display: "flex", color: "text.secondary" }}>
+          <MaterialSymbol name="info" size={18} />
+        </Box>
+      </ArrowTooltip>
+    </Box>
+  );
+}
 
 /** One machine's day: the track, with a block per run on it. */
 function TimelineTrack({
@@ -124,6 +158,8 @@ function TimelineTrack({
 export function SessionsTab() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [window, setWindow] = useState<WindowKey>("24h");
+  const days = WINDOWS.find((option) => option.key === window)?.days ?? 1;
 
   const rows = useMemo(() => {
     const needle = search.trim().toLowerCase();
@@ -241,22 +277,36 @@ export function SessionsTab() {
             },
           }}
         />
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          {TOTAL_SESSIONS.toLocaleString()} sessions · {rows.length} rows
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Typography variant="body2" sx={{ color: "text.secondary" }}>
+            {TOTAL_SESSIONS.toLocaleString()} sessions · {rows.length} rows
+          </Typography>
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={window}
+            onChange={(_event, next: WindowKey | null) => {
+              if (next) setWindow(next);
+            }}
+            sx={{ "& .MuiToggleButton-root": { py: "4px", px: "12px" } }}
+          >
+            {WINDOWS.map((option) => (
+              <ToggleButton key={option.key} value={option.key}>
+                {option.label}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+        </Box>
       </Box>
 
       <Card>
         <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-          <Typography variant="cardTitle">
-            When AI Was Running on Each Machine
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{ mt: "4px", mb: 2, color: "text.secondary" }}
-          >
-            top 5 roaming clients over the window
-          </Typography>
+          <Box sx={{ mb: 2 }}>
+            <PanelTitle
+              title="When AI Was Running on Each Machine"
+              note="Each track is one roaming client, showing the five busiest over the window you've selected."
+            />
+          </Box>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             {TIMELINE.map((track) => (
@@ -296,7 +346,7 @@ export function SessionsTab() {
                     color: "text.secondary",
                   }}
                 >
-                  {tickLabel(tick)}
+                  {axisLabel(tick, days)}
                 </Typography>
               ))}
             </Box>
@@ -306,14 +356,11 @@ export function SessionsTab() {
 
       <Card>
         <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-          <Box sx={{ mb: 2, display: "flex", alignItems: "baseline", gap: 1 }}>
-            <Typography variant="cardTitle">
-              How Much Each AI Application Ran on Each Machine
-            </Typography>
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              a session opens on the first attributed request and closes after a
-              quiet gap
-            </Typography>
+          <Box sx={{ mb: 2 }}>
+            <PanelTitle
+              title="How Much Each AI Application Ran on Each Machine"
+              note="A session opens on the first attributed request and closes after a quiet gap."
+            />
           </Box>
           <DataTable
             rows={rows}

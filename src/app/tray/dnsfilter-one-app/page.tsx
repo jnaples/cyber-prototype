@@ -1671,15 +1671,7 @@ function FilteringScreen({
             resolve
           </Typography>
         </Box>
-        <Link
-          component="button"
-          type="button"
-          underline="hover"
-          onClick={onViewConfig}
-          sx={{ flexShrink: 0, fontSize: 14, fontWeight: 600 }}
-        >
-          View
-        </Link>
+        <BannerButton onClick={onViewConfig}>View</BannerButton>
       </ClientCard>
     </Box>
   );

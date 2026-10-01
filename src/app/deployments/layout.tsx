@@ -1,13 +1,10 @@
-import { Tab, Tabs } from "@mui/material";
-import Box from "@mui/material/Box";
-import type { Theme } from "@mui/material/styles";
 import React from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 
-import { MaterialSymbol } from "@/components/material-symbol";
 import { OrgScopeSlot } from "@/components/org-scope-slot";
 import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
+import { PageTabs } from "@/components/page-tabs";
 
 // ---------------------------------------------------------------------------
 // Tab configuration
@@ -47,65 +44,18 @@ export default function DeploymentsLayout() {
     navigate(TABS[newValue].path);
   };
 
-  const selectedTabSx = {
-    "&.Mui-selected": {
-      backgroundColor: (
-        theme: Theme & {
-          vars?: { palette?: { background?: { paper?: string } } };
-        },
-      ) =>
-        theme.vars?.palette?.background?.paper ??
-        theme.palette.background.paper,
-      borderTopLeftRadius: "6px",
-      borderTopRightRadius: "6px",
-      boxShadow: (theme: Theme) => theme.shadows[3],
-      zIndex: (theme: Theme) => theme.zIndex.appBar,
-    },
-  };
-
   return (
     <PageShell
       // The grids on these tabs fill the page and scroll their own rows.
       fill
       header={
         <PageHeader title="Deployments" leftSlot={<OrgScopeSlot />}>
-          <Box
-            sx={{
-              mb: -2,
-              display: "flex",
-              alignContent: "flex-end",
-              backgroundColor: (
-                theme: Theme & {
-                  vars?: { palette?: { background?: { neutral?: string } } };
-                },
-              ) =>
-                theme.vars?.palette?.background?.neutral ??
-                theme.palette.background.neutral,
-              color: (
-                theme: Theme & {
-                  vars?: { palette?: { text?: { primary?: string } } };
-                },
-              ) =>
-                theme.vars?.palette?.text?.primary ??
-                theme.palette.text.primary,
-            }}
-          >
-            <Tabs
-              value={tabValue}
-              onChange={handleTabChange}
-              aria-label="deployments tabs"
-              sx={{ px: 3 }}
-            >
-              {TABS.map((tab) => (
-                <Tab
-                  key={tab.path}
-                  label={tab.label}
-                  icon={<MaterialSymbol name={tab.icon} size={20} />}
-                  sx={selectedTabSx}
-                />
-              ))}
-            </Tabs>
-          </Box>
+          <PageTabs
+            tabs={TABS}
+            value={tabValue}
+            onChange={handleTabChange}
+            ariaLabel="deployments tabs"
+          />
         </PageHeader>
       }
     >
