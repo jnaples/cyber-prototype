@@ -19,4 +19,20 @@ export const ROAMING_CLIENTS = [
   "LOWES-SURFACE-09",
 ];
 
+export const RELAYS = [
+  "HQ-Relay",
+  "NYC-Branch-Relay",
+  "London-Relay",
+  "Tokyo-Relay",
+  "SF-Campus-Relay",
+];
+
+/** The one list the Query Logs filter offers: roaming clients and the relays
+ *  beside them, grouped under their own headings. */
+export const ROAMING_CLIENTS_AND_RELAYS = [...ROAMING_CLIENTS, ...RELAYS];
+
+/** Which heading an entry sits under in that list. */
+export const roamingClientGroup = (option: string) =>
+  RELAYS.includes(option) ? "Relays" : "Roaming Clients";
+
 export const USERS = ["Kaya Trojanowski", "Bob Smith", "Priya Xu", "Dana Lowe"];

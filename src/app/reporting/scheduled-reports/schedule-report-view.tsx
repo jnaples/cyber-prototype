@@ -34,7 +34,12 @@ import { useOrgScope } from "@/hooks/use-org-scope";
 import { Drawer } from "@/components/drawer";
 import { MaterialSymbol } from "@/components/material-symbol";
 import { SearchableMultiSelect } from "@/components/searchable-multi-select";
-import { ROAMING_CLIENTS, SITES, USERS } from "./scope-options";
+import {
+  ROAMING_CLIENTS_AND_RELAYS,
+  roamingClientGroup,
+  SITES,
+  USERS,
+} from "./scope-options";
 import { SearchableSelect } from "@/components/searchable-select";
 import { Select } from "@/components/select";
 import { TextField } from "@/components/text-field";
@@ -784,15 +789,18 @@ export function ScheduleReportView({
                 disabled={selectedOrg === ""}
                 disabledTooltip="Select an Organization for specific Sites."
               />
+              {/* The same grouped list Query Logs filters on. */}
               <SearchableMultiSelect
-                label="Roaming Clients"
+                label="Roaming Clients & Relays"
                 optional
                 summarize
-                options={ROAMING_CLIENTS}
+                options={ROAMING_CLIENTS_AND_RELAYS}
+                groupBy={roamingClientGroup}
+                allLabel="All Roaming Clients & Relays"
                 selected={scopeClients}
                 onChange={setScopeClients}
                 disabled={selectedOrg === ""}
-                disabledTooltip="Select an Organization for specific Roaming Clients."
+                disabledTooltip="Select an Organization for specific Roaming Clients & Relays."
               />
               <SearchableMultiSelect
                 label="Users"
