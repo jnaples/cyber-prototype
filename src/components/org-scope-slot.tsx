@@ -12,7 +12,7 @@ export function OrgScopeSlot() {
 
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-      <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" color="text.primary">
         {organization ?? "All Organizations"}
       </Typography>
       <Divider

@@ -9,6 +9,23 @@ const MuiAlertTitle: Components<Theme>["MuiAlertTitle"] = {
   },
 };
 
+// A filled red or amber banner carries white type on dark, like the buttons
+// and chips beside it.
+const MuiAlert: Components<Theme>["MuiAlert"] = {
+  styleOverrides: {
+    root: ({ theme }) => ({
+      ...theme.applyStyles("dark", {
+        "&.MuiAlert-filled.MuiAlert-colorError, &.MuiAlert-filled.MuiAlert-colorWarning":
+          {
+            color: theme.vars.palette.common.white,
+            "& .MuiAlert-icon": { color: theme.vars.palette.common.white },
+          },
+      }),
+    }),
+  },
+};
+
 export const alert: Components<Theme> = {
+  MuiAlert,
   MuiAlertTitle,
 };

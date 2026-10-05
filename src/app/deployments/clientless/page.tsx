@@ -33,6 +33,7 @@ import { TabbedDataCard } from "@/components/tabbed-data-card";
 import { MSP_ORGANIZATIONS } from "@/data/organizations";
 import { useOrgScope } from "@/hooks/use-org-scope";
 
+import { CleanupDrawer } from "./cleanup-drawer";
 import { ConnectionDetailsDrawer } from "./connection-details-drawer";
 
 type DohStatus = "Active" | "Inactive" | "Pending";
@@ -712,6 +713,7 @@ export default function ClientlessPage() {
     (location.state as { toast?: string } | null)?.toast ?? null,
   );
   const [cardTab, setCardTab] = useState(0);
+  const [cleanupOpen, setCleanupOpen] = useState(false);
   // Recently Deleted modal, and what's still in it — restoring is
   // session-only, so a reload puts everything back.
   const [archivedOpen, setArchivedOpen] = useState(false);
@@ -933,13 +935,25 @@ export default function ClientlessPage() {
         >
           Add Clientless Device
         </Button>
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={() => setArchivedOpen(true)}
-        >
-          Recently Deleted
-        </Button>
+        {/* What tidies the list, beside what it was tidied into. */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<MaterialSymbol name="cleaning_services" size={20} />}
+            onClick={() => setCleanupOpen(true)}
+          >
+            Cleanup
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<MaterialSymbol name="auto_delete" size={20} />}
+            onClick={() => setArchivedOpen(true)}
+          >
+            Recently Deleted
+          </Button>
+        </Box>
       </Box>
 
       <TabbedDataCard
@@ -1072,6 +1086,8 @@ export default function ClientlessPage() {
           </Card>
         </Box>
       </PanelModal>
+
+      <CleanupDrawer open={cleanupOpen} onClose={() => setCleanupOpen(false)} />
 
       <Snackbar
         open={Boolean(toast)}

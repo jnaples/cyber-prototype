@@ -32,6 +32,20 @@ const MuiButton: Components<Theme>["MuiButton"] = {
       "&.MuiButton-contained.Mui-disabled:hover": {
         backgroundColor: theme.vars.palette.action.disabledBackground,
       },
+      // The dark palette's error/warning contrastText is near-black, which
+      // reads as a hole in a filled red or amber button. White throughout.
+      ...theme.applyStyles("dark", {
+        "&.MuiButton-contained.MuiButton-colorError, &.MuiButton-contained.MuiButton-colorWarning":
+          {
+            color: theme.vars.palette.common.white,
+          },
+        // A step down the red ramp from error.main (red 400), so a filled
+        // Delete sits on the dark ground rather than glowing off it.
+        "&.MuiButton-contained.MuiButton-colorError:not(.Mui-disabled)": {
+          backgroundColor: "#F44336",
+          "&:hover": { backgroundColor: "#E53935" },
+        },
+      }),
     }),
     sizeSmall: {
       fontSize: "13px",

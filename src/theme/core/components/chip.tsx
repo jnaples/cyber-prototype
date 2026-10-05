@@ -10,10 +10,21 @@ export const PILL_CHIP_RADIUS = 999;
 const MuiChip: Components<Theme>["MuiChip"] = {
   styleOverrides: {
     // All chips (and badge-style pill chips) use 13px text, regardless of size.
-    root: {
+    root: ({ theme }) => ({
       borderRadius: 6,
       fontSize: 13,
-    },
+      // Same rule the buttons follow: a filled red or amber chip carries white
+      // type on dark rather than the palette's near-black contrastText.
+      ...theme.applyStyles("dark", {
+        "&.MuiChip-filled.MuiChip-colorError, &.MuiChip-filled.MuiChip-colorWarning":
+          {
+            color: theme.vars.palette.common.white,
+            "& .MuiChip-icon, & .MuiChip-deleteIcon": {
+              color: theme.vars.palette.common.white,
+            },
+          },
+      }),
+    }),
     sizeSmall: {
       fontSize: 13,
     },

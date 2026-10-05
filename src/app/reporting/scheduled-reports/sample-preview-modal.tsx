@@ -48,7 +48,7 @@ export function SamplePreviewModal({
       title="Preview Report"
       titleAlign="left"
       titleAdornment={<Chip label="Sample data" size="small" />}
-      width={1080}
+      width={900}
       // Why the footer offers an upgrade instead of running the report.
       headerContent={
         locked && (
