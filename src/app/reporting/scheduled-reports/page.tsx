@@ -455,10 +455,10 @@ const buildColumns = (
 // Summary strip
 // ---------------------------------------------------------------------------
 
-type SummaryKey = "all" | "active" | "paused" | "issue";
+type SummaryKey = "all" | "active" | "paused";
 
 // Order of the status tabs; the tab index maps to one of these keys.
-const STATUS_KEYS: SummaryKey[] = ["all", "active", "paused", "issue"];
+const STATUS_KEYS: SummaryKey[] = ["all", "active", "paused"];
 
 // ---------------------------------------------------------------------------
 // Page
@@ -564,7 +564,6 @@ export default function ScheduledReportsPage({
       all: inScope.length,
       active: inScope.filter((s) => s.status !== "paused").length,
       paused: inScope.filter((s) => s.status === "paused").length,
-      issue: inScope.filter((s) => s.status === "issue").length,
     };
   }, [schedules, scopedOrg]);
 
@@ -575,7 +574,6 @@ export default function ScheduledReportsPage({
       if (scopedOrg && s.organizations !== scopedOrg) return false;
       if (statusFilter === "active" && s.status === "paused") return false;
       if (statusFilter === "paused" && s.status !== "paused") return false;
-      if (statusFilter === "issue" && s.status !== "issue") return false;
       if (
         q &&
         !s.name.toLowerCase().includes(q) &&
@@ -664,14 +662,6 @@ export default function ScheduledReportsPage({
       color: "text.secondary",
       iconColorVar: "var(--dnsf-palette-text-secondary)",
       progressValue: counts.all ? (counts.paused / counts.all) * 100 : 0,
-    },
-    {
-      icon: "error",
-      count: counts.issue,
-      label: "Delivery Issues",
-      color: "error.main",
-      iconColorVar: "var(--dnsf-palette-error-main)",
-      progressValue: counts.all ? (counts.issue / counts.all) * 100 : 0,
     },
   ];
 
