@@ -15,8 +15,11 @@ export type PageTab = {
   icon: string;
 };
 
-/** Selected page tab reads as a card lifted out of the neutral strip. */
+/** Selected page tab reads as a card lifted out of the neutral strip. The
+ *  theme's 90px minimum would leave a short label like "Logs" sitting in a
+ *  card wider than itself, so a tab in the rail hugs its own content. */
 const selectedTabSx = {
+  minWidth: "auto",
   "&.Mui-selected": {
     backgroundColor: (theme: Theme) => theme.vars.palette.background.paper,
     borderTopLeftRadius: "6px",

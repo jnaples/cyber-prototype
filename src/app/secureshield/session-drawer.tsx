@@ -4,13 +4,23 @@
 // ran, and — because attribution is the question this page always raises —
 // why every one of them reports as the application rather than as itself.
 
-import { Box, Card, Chip, Typography } from "@mui/material";
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  Card,
+  Chip,
+  Divider,
+  Typography,
+} from "@mui/material";
 import type { Theme } from "@mui/material/styles";
+import type { GridColDef } from "@mui/x-data-grid";
 
+import { DataTable } from "@/components/data-table";
 import { Drawer } from "@/components/drawer";
 import { MaterialSymbol } from "@/components/material-symbol";
 
-import { CATEGORY_COLORS, type LogRow } from "./logs-data";
+import type { LogRow } from "./logs-data";
 import { sessionFor } from "./session-data";
 
 /** A label over its value, the way the application page states its facts. */
@@ -23,19 +33,22 @@ function Fact({ label, value }: { label: string; value: string }) {
       >
         {label}
       </Typography>
-      <Typography sx={{ mt: "2px", fontWeight: 600, color: "text.primary" }}>
+      <Typography
+        variant="body2"
+        sx={{ mt: "2px", fontWeight: 600, color: "text.primary" }}
+      >
         {value}
       </Typography>
     </Box>
   );
 }
 
-/** The small caps heading over each block of the drawer. */
+/** The heading over each block of the drawer. */
 function Section({ children }: { children: string }) {
   return (
     <Typography
-      variant="overline"
-      sx={{ display: "block", lineHeight: 1.4, color: "text.secondary" }}
+      variant="body2"
+      sx={{ display: "block", fontWeight: 600, color: "text.primary" }}
     >
       {children}
     </Typography>
@@ -59,6 +72,85 @@ const clock = (iso: string) =>
     second: "2-digit",
   });
 
+/** The request that led here, in the Logs table's own columns. */
+const SOURCE_COLUMNS: GridColDef[] = [
+  {
+    field: "fqdn",
+    headerName: "FQDN",
+    flex: 1,
+    minWidth: 220,
+    renderCell: (params) => (
+      <Box
+        sx={{
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          fontWeight: 600,
+        }}
+      >
+        {params.value as string}
+      </Box>
+    ),
+  },
+  {
+    field: "time",
+    headerName: "Time",
+    width: 210,
+    valueFormatter: (value: string) => stamp(value),
+  },
+  {
+    field: "category",
+    headerName: "Category",
+    width: 200,
+    // Neutral, like any other label on a row — the dot carries the category.
+    renderCell: (params) => {
+      const category = params.value as string;
+      return (
+        <Box sx={{ height: "100%", display: "flex", alignItems: "center" }}>
+          <Chip
+            size="small"
+            label={category}
+            sx={(theme: Theme) => ({
+              borderRadius: "6px",
+              bgcolor: theme.vars.palette.action.selected,
+              color: theme.vars.palette.text.primary,
+            })}
+          />
+        </Box>
+      );
+    },
+  },
+  {
+    field: "result",
+    headerName: "Result",
+    width: 140,
+    renderCell: (params) => {
+      const allowed = params.value === "Allowed";
+      return (
+        <Box sx={{ height: "100%", display: "flex", alignItems: "center" }}>
+          <Chip
+            size="small"
+            icon={
+              <MaterialSymbol name={allowed ? "check" : "block"} size={16} />
+            }
+            label={params.value as string}
+            sx={(theme: Theme) => ({
+              borderRadius: "6px",
+              bgcolor: allowed
+                ? theme.vars.palette.Alert.successStandardBg
+                : theme.vars.palette.Alert.errorStandardBg,
+              color: allowed
+                ? theme.vars.palette.Alert.successColor
+                : theme.vars.palette.Alert.errorColor,
+              "& .MuiChip-icon, & .MuiChip-label": { color: "inherit" },
+            })}
+          />
+        </Box>
+      );
+    },
+  },
+];
+
 export function SessionDrawer({
   open,
   row,
@@ -76,27 +168,31 @@ export function SessionDrawer({
       open={open}
       onClose={onClose}
       size="large"
-      title={session ? `${session.app} on ${session.client}` : "Session"}
+      title={
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {session ? `${session.app} on ${session.client}` : "Session"}
+          {/* What the session ran into, beside what it was. */}
+          {session?.threats ? (
+            <Chip
+              size="small"
+              label={`${session.threats} threat${session.threats > 1 ? "s" : ""} reached`}
+              sx={(theme: Theme) => ({
+                borderRadius: "6px",
+                fontWeight: 400,
+                bgcolor: theme.vars.palette.Alert.errorStandardBg,
+                color: theme.vars.palette.Alert.errorColor,
+                "& .MuiChip-label": { color: "inherit", fontWeight: 400 },
+              })}
+            />
+          ) : null}
+        </Box>
+      }
       subheader={
         session
           ? `Session ${session.sessionId} · ${stamp(session.start)} – ${clock(
               session.end,
             )}`
           : undefined
-      }
-      actions={
-        session?.threats ? (
-          <Chip
-            size="small"
-            label={`${session.threats} threat${session.threats > 1 ? "s" : ""} reached`}
-            sx={(theme: Theme) => ({
-              borderRadius: "6px",
-              bgcolor: theme.vars.palette.Alert.errorStandardBg,
-              color: theme.vars.palette.Alert.errorColor,
-              "& .MuiChip-label": { color: "inherit" },
-            })}
-          />
-        ) : undefined
       }
       primaryAction={{ label: "Close", onClick: onClose }}
     >
@@ -121,72 +217,33 @@ export function SessionDrawer({
           </Box>
 
           <Box>
+            <Divider sx={{ mb: 2 }} />
             <Section>The request you came from</Section>
-            <Card
-              variant="outlined"
-              sx={{
-                mt: 1,
-                p: 2,
-                display: "flex",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: 2,
-              }}
-            >
-              <Typography sx={{ fontWeight: 600, color: "text.primary" }}>
-                {session.source.fqdn}
-              </Typography>
-              <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                {stamp(session.source.time)}
-              </Typography>
-              <Box
-                sx={{
-                  ml: "auto",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Box
-                    sx={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: "50%",
-                      backgroundColor:
-                        CATEGORY_COLORS[session.source.category] ??
-                        "text.disabled",
-                    }}
-                  />
-                  <Typography variant="body2">
-                    {session.source.category}
-                  </Typography>
-                </Box>
-                <Chip
-                  size="small"
-                  icon={
-                    <MaterialSymbol
-                      name={
-                        session.source.result === "Allowed" ? "check" : "block"
-                      }
-                      size={16}
-                    />
-                  }
-                  label={session.source.result}
-                  sx={(theme: Theme) => ({
-                    borderRadius: "6px",
-                    bgcolor:
-                      session.source.result === "Allowed"
-                        ? theme.vars.palette.Alert.successStandardBg
-                        : theme.vars.palette.Alert.errorStandardBg,
-                    color:
-                      session.source.result === "Allowed"
-                        ? theme.vars.palette.Alert.successColor
-                        : theme.vars.palette.Alert.errorColor,
-                    "& .MuiChip-icon, & .MuiChip-label": { color: "inherit" },
-                  })}
-                />
-              </Box>
+            <Card variant="outlined" sx={{ mt: 1 }}>
+              {/* One row, as a grid — the same five columns the Logs table
+                  shows, for the request that led here. */}
+              <DataTable
+                rows={[
+                  {
+                    id: "source",
+                    fqdn: session.source.fqdn,
+                    time: session.source.time,
+                    category: session.source.category,
+                    result: session.source.result,
+                  },
+                ]}
+                columns={SOURCE_COLUMNS}
+                checkboxSelection={false}
+                showSearch={false}
+                showFilters={false}
+                showDefaultView={false}
+                showPreferences={false}
+                showExport={false}
+                showRefresh={false}
+                initialPageSize={5}
+                // One row: the pager underneath it is noise.
+                sx={{ "& .MuiDataGrid-footerContainer": { display: "none" } }}
+              />
             </Card>
           </Box>
 
@@ -235,13 +292,7 @@ export function SessionDrawer({
                 </Box>
                 <Box component="tbody">
                   {session.processes.map((process) => (
-                    <Box
-                      component="tr"
-                      key={process.pid}
-                      sx={
-                        process.source ? { bgcolor: "action.hover" } : undefined
-                      }
-                    >
+                    <Box component="tr" key={process.pid}>
                       <Box component="td" sx={{ fontWeight: 600 }}>
                         <Box
                           component="span"
@@ -277,12 +328,16 @@ export function SessionDrawer({
             </Card>
           </Box>
 
-          <Box>
-            <Section>{`Why this session says ${session.app}`}</Section>
-            <Typography sx={{ mt: 1, color: "text.primary" }}>
+          {/* Attribution is the question this page always raises, so the
+              answer reads as a note rather than more body copy. */}
+          <Alert severity="info" sx={{ "& .MuiAlertTitle-root": { mb: 0.5 } }}>
+            <AlertTitle sx={{ fontSize: 14 }}>
+              {`Why this session says ${session.app}`}
+            </AlertTitle>
+            <Typography variant="body2" sx={{ color: "inherit" }}>
               {session.why}
             </Typography>
-          </Box>
+          </Alert>
         </Box>
       )}
     </Drawer>
