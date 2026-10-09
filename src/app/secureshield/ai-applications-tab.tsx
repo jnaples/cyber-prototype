@@ -27,8 +27,9 @@ import {
 const FILTERS: { label: string; status: AppStatus | null; icon: string }[] = [
   { label: "All", status: null, icon: "apps" },
   { label: "Unreviewed", status: "Unreviewed", icon: "help" },
-  { label: "Sanctioned", status: "Sanctioned", icon: "verified" },
-  { label: "Unsanctioned", status: "Unsanctioned", icon: "block" },
+  { label: "Approved", status: "Approved", icon: "verified" },
+  { label: "Unapproved", status: "Unapproved", icon: "do_not_disturb_on" },
+  { label: "Blocked", status: "Blocked", icon: "block" },
 ];
 
 /** The chip each standing wears — the muted Alert tints Query Logs uses for
@@ -36,11 +37,16 @@ const FILTERS: { label: string; status: AppStatus | null; icon: string }[] = [
 type ChipTint = { bgcolor: string; color: string };
 
 const STATUS_CHIP: Record<AppStatus, (theme: Theme) => ChipTint> = {
-  Sanctioned: (theme) => ({
+  Approved: (theme) => ({
     bgcolor: theme.vars.palette.Alert.successStandardBg,
     color: theme.vars.palette.Alert.successColor,
   }),
-  Unsanctioned: (theme) => ({
+  // Not approved but still resolving — a caution rather than a stop.
+  Unapproved: (theme) => ({
+    bgcolor: theme.vars.palette.Alert.warningStandardBg,
+    color: theme.vars.palette.Alert.warningColor,
+  }),
+  Blocked: (theme) => ({
     bgcolor: theme.vars.palette.Alert.errorStandardBg,
     color: theme.vars.palette.Alert.errorColor,
   }),
@@ -57,6 +63,7 @@ const TAB_COLORS = [
     iconColorVar: "var(--dnsf-palette-text-secondary)",
   },
   { color: "success.main", iconColorVar: "var(--dnsf-palette-success-main)" },
+  { color: "warning.main", iconColorVar: "var(--dnsf-palette-warning-main)" },
   { color: "error.main", iconColorVar: "var(--dnsf-palette-error-main)" },
 ];
 

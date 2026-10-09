@@ -3,8 +3,17 @@
 // Dates are generated against now, so the grid always reads as the current
 // window: an application first seen in the last week is still "new".
 
-/** Where an application stands with the organization. */
-export type AppStatus = "Unreviewed" | "Sanctioned" | "Unsanctioned";
+/** Where an application stands with the organization: nobody has ruled on it,
+ *  it's allowed, it's not allowed but still resolving, or policy stops it. */
+export type AppStatus = "Unreviewed" | "Approved" | "Unapproved" | "Blocked";
+
+/** Every standing, in the order the filters show them. */
+export const APP_STATUSES: AppStatus[] = [
+  "Unreviewed",
+  "Approved",
+  "Unapproved",
+  "Blocked",
+];
 
 export type AiApplicationRow = {
   id: string;
@@ -18,6 +27,9 @@ export type AiApplicationRow = {
   /** ISO timestamps; the grid formats them. */
   firstSeen: string;
   lastActivity: string;
+  /** Who last ruled on it, and when — shown on the application's own page. */
+  reviewedBy?: string;
+  reviewedOn?: string;
 };
 
 /** `days` back from now, at a fixed time of day so the column doesn't jitter
@@ -53,7 +65,7 @@ export const AI_APPLICATIONS: AiApplicationRow[] = [
   {
     id: "cursor",
     app: "Cursor",
-    status: "Unsanctioned",
+    status: "Unapproved",
     clients: 31,
     users: 28,
     allowed: 23999,
@@ -61,11 +73,13 @@ export const AI_APPLICATIONS: AiApplicationRow[] = [
     threats: 2,
     firstSeen: at(6, 13, 41),
     lastActivity: at(0, 19, 18),
+    reviewedBy: "k.trojanowski",
+    reviewedOn: at(3, 9, 22),
   },
   {
     id: "claude-code",
     app: "Claude Code",
-    status: "Sanctioned",
+    status: "Approved",
     clients: 47,
     users: 41,
     allowed: 57952,
@@ -73,11 +87,13 @@ export const AI_APPLICATIONS: AiApplicationRow[] = [
     threats: 2,
     firstSeen: at(26, 8, 27),
     lastActivity: at(0, 19, 24),
+    reviewedBy: "k.trojanowski",
+    reviewedOn: at(9, 11, 5),
   },
   {
     id: "chatgpt-desktop",
     app: "ChatGPT Desktop",
-    status: "Unsanctioned",
+    status: "Unapproved",
     clients: 22,
     users: 20,
     allowed: 17907,
@@ -85,11 +101,13 @@ export const AI_APPLICATIONS: AiApplicationRow[] = [
     threats: 0,
     firstSeen: at(24, 16, 8),
     lastActivity: at(0, 18, 46),
+    reviewedBy: "f.mancuso",
+    reviewedOn: at(11, 10, 12),
   },
   {
     id: "github-copilot",
     app: "GitHub Copilot",
-    status: "Sanctioned",
+    status: "Approved",
     clients: 38,
     users: 35,
     allowed: 18826,
@@ -97,6 +115,8 @@ export const AI_APPLICATIONS: AiApplicationRow[] = [
     threats: 0,
     firstSeen: at(21, 10, 3),
     lastActivity: at(0, 19, 11),
+    reviewedBy: "f.mancuso",
+    reviewedOn: at(14, 15, 40),
   },
   {
     id: "claude-desktop",

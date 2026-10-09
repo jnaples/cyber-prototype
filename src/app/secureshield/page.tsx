@@ -161,8 +161,17 @@ export default function AgentShieldPage() {
         pb: "80px",
       }}
     >
-      <PageHeader title="AgentShield" sx={{ pb: 0 }}>
-        <Box sx={{ px: 3, display: "flex", flexDirection: "column", gap: 2 }}>
+      <PageHeader title="AgentShield">
+        <Box
+          sx={{
+            px: 3,
+            pt: 1,
+            pb: 2,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
           <Box
             sx={{
               display: "grid",

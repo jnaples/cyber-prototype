@@ -4,65 +4,35 @@
 // clients know about it, the signatures it's matched by, and the parent
 // processes it was started from.
 
+import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import {
   Box,
   Button,
   Card,
   CardContent,
-  Chip,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import type { Theme } from "@mui/material/styles";
 import type { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 
-import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
-import { MaterialSymbol } from "@/components/material-symbol";
 import { PageHeader } from "@/components/page-header";
 
-import type { AppStatus } from "./ai-applications-data";
 import {
-  detailFor,
-  type SignatureRow,
-  type SignatureSource,
-} from "./application-detail-data";
+  APP_STATUSES,
+  type AiApplicationRow,
+  type AppStatus,
+} from "./ai-applications-data";
+import { detailFor, type SignatureRow } from "./application-detail-data";
 
-const STATUSES: AppStatus[] = ["Unreviewed", "Sanctioned", "Unsanctioned"];
-
-/** What the line beside the control says about where the application stands. */
-const STATUS_NOTE: Record<AppStatus, string> = {
-  Unreviewed: "Not reviewed yet",
-  Sanctioned: "Approved for use across the organization",
-  Unsanctioned: "Not approved — policy blocks what it reaches",
-};
-
-/** Where a signature came from, as a chip: the catalog in the product's own
- *  blue, a person's entry neutral, something found on a client in green. */
-const SOURCE_LABEL: Record<SignatureSource, string> = {
-  catalog: "DNSFilter Catalog",
-  manual: "Added manually",
-  discovered: "Discovered on roaming client",
-};
-
-const sourceTint = (source: SignatureSource) => (theme: Theme) => {
-  if (source === "catalog")
-    return {
-      bgcolor: theme.vars.palette.Alert.infoStandardBg,
-      color: theme.vars.palette.Alert.infoColor,
-    };
-  if (source === "discovered")
-    return {
-      bgcolor: theme.vars.palette.Alert.successStandardBg,
-      color: theme.vars.palette.Alert.successColor,
-    };
-  return {
-    bgcolor: theme.vars.palette.action.selected,
-    color: theme.vars.palette.text.secondary,
-  };
+/** Who set the standing and when, or that nobody has. */
+const reviewNote = (row: AiApplicationRow, status: AppStatus) => {
+  if (status === "Unreviewed" || !row.reviewedBy || !row.reviewedOn)
+    return "Not reviewed yet";
+  return `Set by ${row.reviewedBy} on ${day(row.reviewedOn)}`;
 };
 
 const day = (iso: string) =>
@@ -166,127 +136,20 @@ export default function ApplicationDetailPage() {
     );
   }
 
-  const { row, publisher, sessions, signatures, launchPaths } = detail;
-  const manual = signatures.filter((s) => s.source === "manual").length;
-  const discovered = signatures.filter((s) => s.source === "discovered").length;
+  const { row, publisher, sessions, signatures } = detail;
 
   const SIGNATURE_COLUMNS: GridColDef[] = [
-    { field: "matchType", headerName: "Match Type", width: 150 },
-    { field: "value", headerName: "Value", flex: 1, minWidth: 220 },
-    {
-      field: "source",
-      headerName: "Source",
-      width: 230,
-      renderCell: (params) => {
-        const source = params.value as SignatureSource;
-        return (
-          <Box sx={{ height: "100%", display: "flex", alignItems: "center" }}>
-            <Chip
-              size="small"
-              label={SOURCE_LABEL[source]}
-              sx={(theme) => ({
-                borderRadius: "6px",
-                ...sourceTint(source)(theme),
-                "& .MuiChip-label": { color: "inherit" },
-              })}
-            />
-          </Box>
-        );
-      },
-    },
-    { field: "addedBy", headerName: "Added By", width: 180 },
-    {
-      field: "added",
-      headerName: "Added",
-      width: 150,
-      valueFormatter: (value: string) => day(value),
-    },
-    number("clients", "Roaming Clients", 160),
-    number("requests", "Requests", 130),
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 120,
-      sortable: false,
-      filterable: false,
-      resizable: false,
-      align: "center",
-      headerAlign: "center",
-      // A signature someone added is edited; the rest are only read.
-      renderCell: (params) => {
-        const signature = params.row as SignatureRow;
-        return (
-          <Box
-            sx={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {signature.source === "manual" ? (
-              <Button variant="outlined" color="secondary" size="small">
-                Edit
-              </Button>
-            ) : (
-              <Button
-                variant="outlined"
-                color="secondary"
-                size="small"
-                startIcon={<MaterialSymbol name="search" size={16} />}
-              >
-                Logs
-              </Button>
-            )}
-          </Box>
-        );
-      },
-    },
-  ];
-
-  const LAUNCH_PATH_COLUMNS: GridColDef[] = [
-    { field: "path", headerName: "Launch Path", flex: 1, minWidth: 260 },
-    number("clients", "Roaming Clients", 160),
-    number("sessions", "Sessions", 130),
+    { field: "matchType", headerName: "Attribute", width: 170 },
+    { field: "value", headerName: "Value", flex: 1, minWidth: 260 },
+    number("clients", "Roaming Clients", 170),
+    number("requests", "Requests", 140),
     {
       field: "lastSeen",
       headerName: "Last Seen",
       width: 190,
+      valueGetter: (_value, gridRow) => (gridRow as SignatureRow).added,
       valueFormatter: (value: string) => stamp(value),
-    },
-    {
-      field: "actions",
-      headerName: "Actions",
-      width: 100,
-      sortable: false,
-      filterable: false,
-      resizable: false,
-      align: "center",
-      headerAlign: "center",
-      renderCell: () => (
-        <Box
-          sx={{
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <ArrowTooltip title="Sessions">
-            <Button
-              variant="outlined"
-              color="secondary"
-              size="small"
-              aria-label="Sessions"
-              sx={{ minWidth: 0, px: 1 }}
-            >
-              <MaterialSymbol name="search" size={16} />
-            </Button>
-          </ArrowTooltip>
-        </Box>
-      ),
+      cellClassName: "ss-quiet",
     },
   ];
 
@@ -317,14 +180,25 @@ export default function ApplicationDetailPage() {
         subtitle={publisher}
         onBack={back}
         actions={
-          <Button
-            variant="contained"
-            size="small"
-            disabled={status === saved}
-            onClick={() => setSaved(status)}
-          >
-            Save Changes
-          </Button>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              size="small"
+              startIcon={<ManageSearchIcon sx={{ fontSize: 18 }} />}
+              onClick={() => navigate("/secureshield?tab=logs")}
+            >
+              View logs
+            </Button>
+            <Button
+              variant="contained"
+              size="small"
+              disabled={status === saved}
+              onClick={() => setSaved(status)}
+            >
+              Save Changes
+            </Button>
+          </Box>
         }
       />
 
@@ -340,11 +214,8 @@ export default function ApplicationDetailPage() {
               gap: 2,
             }}
           >
-            <Typography
-              variant="overline"
-              sx={{ color: "text.secondary", lineHeight: 1.4 }}
-            >
-              Review status
+            <Typography variant="cardTitle" sx={{ mr: 1 }}>
+              Status
             </Typography>
             <ToggleButtonGroup
               exclusive
@@ -355,14 +226,14 @@ export default function ApplicationDetailPage() {
               }}
               sx={{ "& .MuiToggleButton-root": { py: "4px", px: "12px" } }}
             >
-              {STATUSES.map((option) => (
+              {APP_STATUSES.map((option) => (
                 <ToggleButton key={option} value={option}>
                   {option}
                 </ToggleButton>
               ))}
             </ToggleButtonGroup>
             <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              {STATUS_NOTE[saved]}
+              {reviewNote(row, saved)}
             </Typography>
           </CardContent>
         </Card>
@@ -402,25 +273,13 @@ export default function ApplicationDetailPage() {
           </CardContent>
         </Card>
 
-        <Panel
-          title="Signatures"
-          caption={`${signatures.length} signatures · ${manual} added manually · ${discovered} discovered`}
-        >
+        <Panel title="Signatures" caption={`${signatures.length} signatures`}>
           <DataTable
             rows={signatures}
             columns={SIGNATURE_COLUMNS}
             {...gridProps}
-          />
-        </Panel>
-
-        <Panel
-          title="Launch Paths Observed"
-          caption="parent process at start, across all roaming clients"
-        >
-          <DataTable
-            rows={launchPaths}
-            columns={LAUNCH_PATH_COLUMNS}
-            {...gridProps}
+            // Last seen reads as a timestamp beside the counts, not as data.
+            sx={{ "& .ss-quiet": { color: "text.secondary" } }}
           />
         </Panel>
       </Box>

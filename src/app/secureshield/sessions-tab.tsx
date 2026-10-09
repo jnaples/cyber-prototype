@@ -1,48 +1,48 @@
 // AgentShield → Sessions.
 //
-// When each machine had an AI application running, drawn the way the Activity
-// Timeline report draws a device's day: one track per machine on a shared
-// axis. The grid under it says how much each application ran on each machine.
+// The activity band draws every machine's sessions over the chosen window —
+// runs on a day or a week, a heat cell per day or month beyond that. The table
+// under it counts sessions per machine and application, and each row opens to
+// the newest runs behind it.
 
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
 import {
   Box,
+  Button,
   Card,
   CardContent,
+  FormControl,
   IconButton,
   Link,
-  ToggleButton,
-  ToggleButtonGroup,
+  MenuItem,
   Typography,
 } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
-import type { GridColDef } from "@mui/x-data-grid";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router";
 
 import { ArrowTooltip } from "@/components/arrow-tooltip";
-import { DataTable } from "@/components/data-table";
-import { MaterialSymbol } from "@/components/material-symbol";
-import { TextField } from "@/components/text-field";
+import { Select } from "@/components/select";
 
 import {
-  AXIS_TICKS,
-  DAY_MINUTES,
+  MACHINES,
   SESSION_ROWS,
-  TIMELINE,
-  TOTAL_SESSIONS,
+  shapeFor,
+  WINDOWS,
+  type Block,
   type SessionRow,
+  type WindowKey,
 } from "./sessions-data";
 
-/** The windows the timeline can be drawn over. The runs are positioned as a
- *  fraction of the window, so the same tracks read against any of them. */
-const WINDOWS = [
-  { key: "24h", label: "Last 24 hours", days: 1 },
-  { key: "7d", label: "7 days", days: 7 },
-  { key: "30d", label: "30 days", days: 30 },
-] as const;
+/** How many machines a page of the band shows. */
+const LANE_OPTIONS = [5, 10, 25];
 
-type WindowKey = (typeof WINDOWS)[number]["key"];
+/** The four steps of the band, light to dark — the primary at a quarter, a
+ *  half, three quarters, and whole. */
+const level = (step: number) => (theme: Theme) =>
+  step === 0
+    ? theme.vars.palette.background.neutral
+    : `color-mix(in srgb, ${theme.vars.palette.primary.main} ${step * 30 + 10}%, transparent)`;
 
 const stamp = (iso: string) =>
   new Date(iso).toLocaleString("en-US", {
@@ -53,203 +53,96 @@ const stamp = (iso: string) =>
     minute: "2-digit",
   });
 
-/** Right-aligned, like every other count in these grids. */
-const number = (
-  field: string,
-  headerName: string,
-  width: number,
-  format: (value: number) => string = (value) => value.toLocaleString(),
-) =>
-  ({
-    field,
-    headerName,
-    width,
-    type: "number",
-    align: "right",
-    headerAlign: "right",
-    valueFormatter: format,
-  }) satisfies GridColDef;
+const precise = (iso: string) =>
+  new Date(iso).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 
-/** The hour under a tick, as the axis prints it. */
-const tickLabel = (minutes: number) =>
-  `${String(Math.floor(minutes / 60)).padStart(2, "0")}:00`;
-
-/** Past a day, the axis counts back in dates rather than hours. */
-const axisLabel = (minutes: number, days: number) => {
-  if (days === 1) return tickLabel(minutes);
-  const when = new Date();
-  when.setDate(when.getDate() - days + (minutes / DAY_MINUTES) * days);
-  return when.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-};
-
-/** A card title with the note that explains it tucked behind an info mark. */
-function PanelTitle({ title, note }: { title: string; note: string }) {
+/** The key over the band: what the four steps mean. */
+function IntensityKey() {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-      <Typography variant="cardTitle">{title}</Typography>
-      <ArrowTooltip title={note}>
-        <Box sx={{ display: "flex", color: "text.secondary" }}>
-          <MaterialSymbol name="info" size={18} />
-        </Box>
-      </ArrowTooltip>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Typography variant="body2" sx={{ color: "text.secondary" }}>
+        Fewer requests
+      </Typography>
+      {[0, 1, 2, 3].map((step) => (
+        <Box
+          key={step}
+          sx={(theme) => ({
+            width: 18,
+            height: 12,
+            borderRadius: "3px",
+            backgroundColor: level(step)(theme),
+          })}
+        />
+      ))}
+      <Typography variant="body2" sx={{ color: "text.secondary" }}>
+        More
+      </Typography>
     </Box>
   );
 }
 
-/** One machine's day: the track, with a block per run on it. */
-function TimelineTrack({
-  client,
-  runs,
-  onOpen,
+/** One machine's band: the track, with its blocks laid on it by fraction. */
+function Band({
+  blocks,
+  contiguous,
 }: {
-  client: string;
-  runs: { start: number; end: number }[];
-  onOpen: () => void;
+  blocks: Block[];
+  contiguous: boolean;
 }) {
   return (
     <Box
-      sx={{
-        display: "grid",
-        gridTemplateColumns: "120px 1fr",
-        alignItems: "center",
-        gap: 2,
-      }}
+      sx={(theme) => ({
+        position: "relative",
+        height: 28,
+        borderRadius: "6px",
+        backgroundColor: contiguous
+          ? "transparent"
+          : theme.vars.palette.background.neutral,
+      })}
     >
-      <Link
-        component="button"
-        type="button"
-        underline="hover"
-        onClick={onOpen}
-        sx={{ justifySelf: "end", fontSize: 14 }}
-      >
-        {client}
-      </Link>
-      <Box
-        sx={(theme: Theme) => ({
-          position: "relative",
-          height: 28,
-          borderRadius: "6px",
-          backgroundColor: theme.vars.palette.background.neutral,
-        })}
-      >
-        {runs.map((run) => (
-          <ArrowTooltip
-            key={`${run.start}-${run.end}`}
-            title={`${tickLabel(run.start)} – ${tickLabel(run.end)}`}
-          >
-            <Box
-              sx={(theme: Theme) => ({
-                position: "absolute",
-                top: 4,
-                bottom: 4,
-                left: `${(run.start / DAY_MINUTES) * 100}%`,
-                width: `${((run.end - run.start) / DAY_MINUTES) * 100}%`,
-                borderRadius: "4px",
-                backgroundColor: theme.vars.palette.primary.main,
-              })}
-            />
-          </ArrowTooltip>
-        ))}
-      </Box>
+      {blocks.map((block) => (
+        <Box
+          key={block.start}
+          sx={(theme) => ({
+            position: "absolute",
+            top: contiguous ? 0 : 4,
+            bottom: contiguous ? 0 : 4,
+            left: `${block.start * 100}%`,
+            // Cells leave a hairline between them; runs take their own width.
+            width: `calc(${(block.end - block.start) * 100}% - ${contiguous ? 3 : 0}px)`,
+            borderRadius: "4px",
+            backgroundColor: level(block.level)(theme),
+          })}
+        />
+      ))}
     </Box>
   );
 }
 
 export function SessionsTab() {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
   const [window, setWindow] = useState<WindowKey>("24h");
-  const days = WINDOWS.find((option) => option.key === window)?.days ?? 1;
+  const [lanes, setLanes] = useState(10);
+  const [page, setPage] = useState(0);
+  // Which rows are open, by id.
+  const [open, setOpen] = useState<string[]>([]);
 
-  const rows = useMemo(() => {
-    const needle = search.trim().toLowerCase();
-    if (!needle) return SESSION_ROWS;
-    return SESSION_ROWS.filter((row) =>
-      [row.client, row.user, row.app].some((field) =>
-        field.toLowerCase().includes(needle),
-      ),
+  const shape = shapeFor(window);
+  const pages = Math.max(1, Math.ceil(MACHINES.length / lanes));
+  const first = Math.min(page, pages - 1) * lanes;
+  const visible = MACHINES.slice(first, first + lanes);
+
+  const toggle = (id: string) =>
+    setOpen((was) =>
+      was.includes(id) ? was.filter((open) => open !== id) : [...was, id],
     );
-  }, [search]);
-
-  const columns: GridColDef[] = useMemo(
-    () => [
-      {
-        field: "client",
-        headerName: "Roaming Client",
-        width: 170,
-        renderCell: (params) => (
-          <Box sx={{ height: "100%", display: "flex", alignItems: "center" }}>
-            <Link component="button" type="button" underline="hover">
-              {params.value as string}
-            </Link>
-          </Box>
-        ),
-      },
-      { field: "user", headerName: "Logged on User", width: 170 },
-      {
-        field: "app",
-        headerName: "AI Application",
-        width: 180,
-        renderCell: (params) => {
-          const row = params.row as SessionRow;
-          return (
-            <Box sx={{ height: "100%", display: "flex", alignItems: "center" }}>
-              <Link
-                component="button"
-                type="button"
-                underline="hover"
-                onClick={() =>
-                  navigate(`/secureshield/applications/${row.appId}`)
-                }
-              >
-                {row.app}
-              </Link>
-            </Box>
-          );
-        },
-      },
-      number("sessions", "Sessions", 120),
-      number("requests", "DNS Requests", 150),
-      number("blocked", "Blocked", 120),
-      number("threats", "Threats", 110),
-      number("perDay", "Sessions / Day", 150, (value) => value.toFixed(1)),
-      {
-        field: "lastStarted",
-        headerName: "Last Started",
-        width: 190,
-        valueFormatter: (value: string) => stamp(value),
-      },
-      {
-        field: "actions",
-        headerName: "Actions",
-        width: 120,
-        sortable: false,
-        filterable: false,
-        resizable: false,
-        align: "center",
-        headerAlign: "center",
-        // Every run behind the row it sits on.
-        renderCell: () => (
-          <Box
-            sx={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <ArrowTooltip title="Runs">
-              <IconButton size="small" aria-label="Runs">
-                <ManageSearchIcon sx={{ fontSize: 20 }} />
-              </IconButton>
-            </ArrowTooltip>
-          </Box>
-        ),
-      },
-    ],
-    [navigate],
-  );
 
   return (
     <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -257,98 +150,157 @@ export function SessionsTab() {
         sx={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: "flex-end",
           gap: 2,
         }}
       >
-        <TextField
-          size="small"
-          placeholder="Search"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          sx={{ width: 320 }}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <Box sx={{ display: "flex", alignItems: "center", pr: 1 }}>
-                  <MaterialSymbol name="search" size={20} />
-                </Box>
-              ),
-            },
-          }}
-        />
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            {TOTAL_SESSIONS.toLocaleString()} sessions · {rows.length} rows
-          </Typography>
-          <ToggleButtonGroup
-            exclusive
-            size="small"
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          {shape.sessions.toLocaleString()} sessions ·{" "}
+          {SESSION_ROWS.length.toLocaleString()} rows
+        </Typography>
+        <FormControl size="small" sx={{ width: 180 }}>
+          <Select
             value={window}
-            onChange={(_event, next: WindowKey | null) => {
-              if (next) setWindow(next);
+            onChange={(event) => {
+              setWindow(event.target.value as WindowKey);
+              setPage(0);
             }}
-            sx={{ "& .MuiToggleButton-root": { py: "4px", px: "12px" } }}
           >
             {WINDOWS.map((option) => (
-              <ToggleButton key={option.key} value={option.key}>
+              <MenuItem key={option.key} value={option.key}>
                 {option.label}
-              </ToggleButton>
+              </MenuItem>
             ))}
-          </ToggleButtonGroup>
-        </Box>
+            <MenuItem value="custom" disabled>
+              Custom
+            </MenuItem>
+          </Select>
+        </FormControl>
       </Box>
 
       <Card>
         <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-          <Box sx={{ mb: 2 }}>
-            <PanelTitle
-              title="When AI Was Running on Each Machine"
-              note="Each track is one roaming client, showing the five busiest over the window you've selected."
-            />
+          <Box
+            sx={{
+              mb: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 2,
+            }}
+          >
+            <Typography variant="cardTitle">Activity</Typography>
+            <IntensityKey />
           </Box>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            {TIMELINE.map((track) => (
-              <TimelineTrack
-                key={track.client}
-                client={track.client}
-                runs={track.runs}
-                onOpen={() => setSearch(track.client)}
-              />
-            ))}
+            {visible.map((machine) => {
+              const index = MACHINES.indexOf(machine);
+              return (
+                <Box
+                  key={machine.client}
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "160px 1fr",
+                    alignItems: "center",
+                    gap: 2,
+                  }}
+                >
+                  <Box sx={{ minWidth: 0 }}>
+                    <Link
+                      component="button"
+                      type="button"
+                      underline="hover"
+                      sx={{ fontSize: 14, fontWeight: 600 }}
+                    >
+                      {machine.client}
+                    </Link>
+                    <Typography
+                      variant="body2"
+                      sx={{ color: "text.secondary" }}
+                    >
+                      {machine.user}
+                    </Typography>
+                  </Box>
+                  <Band
+                    blocks={shape.bands[index] ?? []}
+                    contiguous={shape.contiguous}
+                  />
+                </Box>
+              );
+            })}
           </Box>
 
-          {/* The shared axis the tracks are drawn against. */}
+          {/* The axis the bands are drawn against. */}
           <Box
             sx={{
               mt: 1,
               display: "grid",
-              gridTemplateColumns: "120px 1fr",
+              gridTemplateColumns: "160px 1fr",
               gap: 2,
             }}
           >
             <Box />
-            <Box sx={{ position: "relative", height: 20 }}>
-              {AXIS_TICKS.map((tick) => (
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              {shape.ticks.map((tick) => (
                 <Typography
                   key={tick}
                   variant="body2"
-                  sx={{
-                    position: "absolute",
-                    left: `${(tick / DAY_MINUTES) * 100}%`,
-                    transform:
-                      tick === 0
-                        ? "none"
-                        : tick === DAY_MINUTES
-                          ? "translateX(-100%)"
-                          : "translateX(-50%)",
-                    color: "text.secondary",
-                  }}
+                  sx={{ color: "text.secondary" }}
                 >
-                  {axisLabel(tick, days)}
+                  {tick}
                 </Typography>
               ))}
+            </Box>
+          </Box>
+
+          {/* How many machines to a page, and the way through them. */}
+          <Box
+            sx={{
+              mt: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 2,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                Lanes
+              </Typography>
+              <FormControl size="small" sx={{ width: 92 }}>
+                <Select
+                  value={String(lanes)}
+                  onChange={(event) => {
+                    setLanes(Number(event.target.value));
+                    setPage(0);
+                  }}
+                >
+                  {LANE_OPTIONS.map((option) => (
+                    <MenuItem key={option} value={String(option)}>
+                      {option}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <IconButton
+                size="small"
+                aria-label="Previous machines"
+                disabled={page === 0}
+                onClick={() => setPage((was) => Math.max(0, was - 1))}
+              >
+                <MaterialChevron direction="left" />
+              </IconButton>
+              <IconButton
+                size="small"
+                aria-label="More machines"
+                disabled={page >= pages - 1}
+                onClick={() => setPage((was) => Math.min(pages - 1, was + 1))}
+              >
+                <MaterialChevron direction="right" />
+              </IconButton>
             </Box>
           </Box>
         </CardContent>
@@ -356,26 +308,261 @@ export function SessionsTab() {
 
       <Card>
         <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-          <Box sx={{ mb: 2 }}>
-            <PanelTitle
-              title="How Much Each AI Application Ran on Each Machine"
-              note="A session opens on the first attributed request and closes after a quiet gap."
-            />
+          <Box
+            sx={{
+              mb: 2,
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+              gap: 2,
+            }}
+          >
+            <Typography variant="cardTitle">
+              Sessions by roaming client and application
+            </Typography>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              one row per application per machine · open a row for its sessions
+            </Typography>
           </Box>
-          <DataTable
-            rows={rows}
-            columns={columns}
-            checkboxSelection={false}
-            showSearch={false}
-            showFilters={false}
-            showDefaultView={false}
-            showPreferences={false}
-            showExport={false}
-            showRefresh={false}
-            initialPageSize={25}
-          />
+
+          <Box
+            component="table"
+            sx={{
+              width: "100%",
+              borderCollapse: "collapse",
+              "& th, & td": {
+                px: 2,
+                py: 1.25,
+                textAlign: "left",
+                borderBottom: "1px solid",
+                borderColor: "divider",
+              },
+              "& th": {
+                fontWeight: 600,
+                fontSize: 14,
+                color: "text.primary",
+                whiteSpace: "nowrap",
+              },
+              "& td": { fontSize: 14, color: "text.primary" },
+              "& .num": { textAlign: "right", whiteSpace: "nowrap" },
+              "& .quiet": { color: "text.secondary" },
+            }}
+          >
+            <Box component="thead">
+              <Box component="tr">
+                <Box component="th">Roaming Client</Box>
+                <Box component="th">Logged on User</Box>
+                <Box component="th">AI Application</Box>
+                <Box component="th" className="num">
+                  Sessions
+                </Box>
+                <Box component="th" className="num">
+                  DNS Requests
+                </Box>
+                <Box component="th" className="num">
+                  Blocked
+                </Box>
+                <Box component="th" className="num">
+                  Threats
+                </Box>
+                <Box component="th" className="num">
+                  Sessions / Day
+                </Box>
+                <Box component="th">Last Started</Box>
+                <Box component="th">Actions</Box>
+              </Box>
+            </Box>
+            <Box component="tbody">
+              {SESSION_ROWS.map((row) => (
+                <SessionRows
+                  key={row.id}
+                  row={row}
+                  open={open.includes(row.id)}
+                  onToggle={() => toggle(row.id)}
+                  onOpenApp={() =>
+                    navigate(`/secureshield/applications/${row.appId}`)
+                  }
+                />
+              ))}
+            </Box>
+          </Box>
         </CardContent>
       </Card>
     </Box>
+  );
+}
+
+/** One row, plus the runs it opens to. */
+function SessionRows({
+  row,
+  open,
+  onToggle,
+  onOpenApp,
+}: {
+  row: SessionRow;
+  open: boolean;
+  onToggle: () => void;
+  onOpenApp: () => void;
+}) {
+  return (
+    <>
+      <Box
+        component="tr"
+        sx={open ? { backgroundColor: "action.hover" } : undefined}
+      >
+        <Box component="td">
+          <Link component="button" type="button" underline="hover">
+            {row.client}
+          </Link>
+        </Box>
+        <Box component="td">{row.user}</Box>
+        <Box component="td">
+          <Link
+            component="button"
+            type="button"
+            underline="hover"
+            onClick={onOpenApp}
+          >
+            {row.app}
+          </Link>
+        </Box>
+        <Box component="td" className="num">
+          {row.sessions.toLocaleString()}
+        </Box>
+        <Box component="td" className="num">
+          {row.requests.toLocaleString()}
+        </Box>
+        <Box component="td" className="num">
+          {row.blocked.toLocaleString()}
+        </Box>
+        <Box component="td" className="num">
+          {row.threats.toLocaleString()}
+        </Box>
+        <Box component="td" className="num">
+          {row.perDay.toFixed(1)}
+        </Box>
+        <Box component="td" className="quiet">
+          {stamp(row.lastStarted)}
+        </Box>
+        <Box component="td">
+          <Button
+            variant="outlined"
+            color="secondary"
+            size="small"
+            startIcon={<ManageSearchIcon sx={{ fontSize: 18 }} />}
+            onClick={onToggle}
+          >
+            {open ? "Collapse" : "Expand"}
+          </Button>
+        </Box>
+      </Box>
+
+      {open && (
+        <>
+          <Box component="tr" sx={{ backgroundColor: "background.neutral" }}>
+            <Box component="td" colSpan={2} className="quiet">
+              <Typography variant="overline" sx={{ lineHeight: 1.4 }}>
+                First request
+              </Typography>
+            </Box>
+            <Box component="td" className="quiet">
+              <Typography variant="overline" sx={{ lineHeight: 1.4 }}>
+                Logged on user
+              </Typography>
+            </Box>
+            <Box component="td" className="num quiet">
+              <Typography variant="overline" sx={{ lineHeight: 1.4 }}>
+                Requests
+              </Typography>
+            </Box>
+            <Box component="td" className="num quiet">
+              <Typography variant="overline" sx={{ lineHeight: 1.4 }}>
+                Blocked
+              </Typography>
+            </Box>
+            <Box component="td" className="num quiet">
+              <Typography variant="overline" sx={{ lineHeight: 1.4 }}>
+                Threats
+              </Typography>
+            </Box>
+            <Box component="td" className="num quiet">
+              <Typography variant="overline" sx={{ lineHeight: 1.4 }}>
+                Domains
+              </Typography>
+            </Box>
+            <Box component="td" colSpan={2} className="quiet">
+              <Typography variant="overline" sx={{ lineHeight: 1.4 }}>
+                {row.sessions} runs, newest {row.runs.length}
+              </Typography>
+            </Box>
+          </Box>
+
+          {row.runs.map((run) => (
+            <Box component="tr" key={run.id}>
+              <Box component="td" colSpan={2}>
+                {precise(run.firstRequest)} – {precise(run.lastRequest)}
+              </Box>
+              <Box component="td">{run.user}</Box>
+              <Box component="td" className="num">
+                {run.requests.toLocaleString()}
+              </Box>
+              <Box component="td" className="num">
+                {run.blocked.toLocaleString()}
+              </Box>
+              <Box component="td" className="num">
+                {run.threats.toLocaleString()}
+              </Box>
+              <Box component="td" className="num">
+                {run.domains.toLocaleString()}
+              </Box>
+              <Box component="td" colSpan={2}>
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    size="small"
+                    startIcon={<ManageSearchIcon sx={{ fontSize: 18 }} />}
+                  >
+                    Logs
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    size="small"
+                    startIcon={<ManageSearchIcon sx={{ fontSize: 18 }} />}
+                  >
+                    Process tree
+                  </Button>
+                </Box>
+              </Box>
+            </Box>
+          ))}
+
+          <Box component="tr">
+            <Box component="td" colSpan={10}>
+              <Link component="button" type="button" underline="hover">
+                See all {row.sessions} runs
+              </Link>
+            </Box>
+          </Box>
+        </>
+      )}
+    </>
+  );
+}
+
+/** The pager's own chevrons, at the size the icon buttons want. */
+function MaterialChevron({ direction }: { direction: "left" | "right" }) {
+  return (
+    <ArrowTooltip title={direction === "left" ? "Previous" : "Next"}>
+      <Box
+        component="span"
+        className="material-symbols-outlined"
+        aria-hidden
+        sx={{ fontSize: 20, lineHeight: 1 }}
+      >
+        {direction === "left" ? "chevron_left" : "chevron_right"}
+      </Box>
+    </ArrowTooltip>
   );
 }

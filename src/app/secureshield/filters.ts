@@ -70,7 +70,7 @@ export const FILTER_GROUPS: Group[] = [
         key: "status",
         label: "Status",
         all: "All",
-        options: ["Unreviewed", "Sanctioned", "Unsanctioned"],
+        options: ["Unreviewed", "Approved", "Unapproved", "Blocked"],
       },
       {
         key: "signatureSource",
