@@ -11,24 +11,24 @@ import {
   Button,
   Card,
   CardContent,
-  FormControl,
   IconButton,
   Link,
   MenuItem,
+  Pagination,
+  PaginationItem,
   Typography,
 } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
-import { ArrowTooltip } from "@/components/arrow-tooltip";
+import { MaterialSymbol } from "@/components/material-symbol";
 import { Select } from "@/components/select";
 
 import {
   MACHINES,
   SESSION_ROWS,
   shapeFor,
-  WINDOWS,
   type Block,
   type SessionRow,
   type WindowKey,
@@ -128,7 +128,9 @@ function Band({
 
 export function SessionsTab() {
   const navigate = useNavigate();
-  const [window, setWindow] = useState<WindowKey>("24h");
+  // The band covers the window the page's own date range is set to — a month
+  // by default, which is what the filter bar opens on.
+  const [window] = useState<WindowKey>("30d");
   const [lanes, setLanes] = useState(10);
   const [page, setPage] = useState(0);
   // Which rows are open, by id.
@@ -146,38 +148,6 @@ export function SessionsTab() {
 
   return (
     <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          gap: 2,
-        }}
-      >
-        <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          {shape.sessions.toLocaleString()} sessions ·{" "}
-          {SESSION_ROWS.length.toLocaleString()} rows
-        </Typography>
-        <FormControl size="small" sx={{ width: 180 }}>
-          <Select
-            value={window}
-            onChange={(event) => {
-              setWindow(event.target.value as WindowKey);
-              setPage(0);
-            }}
-          >
-            {WINDOWS.map((option) => (
-              <MenuItem key={option.key} value={option.key}>
-                {option.label}
-              </MenuItem>
-            ))}
-            <MenuItem value="custom" disabled>
-              Custom
-            </MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-
       <Card>
         <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
           <Box
@@ -189,7 +159,9 @@ export function SessionsTab() {
               gap: 2,
             }}
           >
-            <Typography variant="cardTitle">Activity</Typography>
+            <Typography variant="cardTitle">
+              AI Activity by Roaming Client
+            </Typography>
             <IntensityKey />
           </Box>
 
@@ -254,54 +226,74 @@ export function SessionsTab() {
             </Box>
           </Box>
 
-          {/* How many machines to a page, and the way through them. */}
+          {/* The same footer the grids carry: rows per page, the range, and
+              the way through it. */}
           <Box
             sx={{
               mt: 2,
+              mx: -2,
+              mb: -2,
+              px: 2,
+              py: 1,
+              borderTop: "1px solid",
+              borderColor: "divider",
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
+              justifyContent: "flex-end",
               gap: 2,
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                Lanes
+                Rows per page:
               </Typography>
-              <FormControl size="small" sx={{ width: 92 }}>
-                <Select
-                  value={String(lanes)}
-                  onChange={(event) => {
-                    setLanes(Number(event.target.value));
-                    setPage(0);
+              <Select
+                size="small"
+                value={String(lanes)}
+                onChange={(event) => {
+                  setLanes(Number(event.target.value));
+                  setPage(0);
+                }}
+                sx={{
+                  minWidth: 70,
+                  "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+                }}
+              >
+                {LANE_OPTIONS.map((option) => (
+                  <MenuItem key={option} value={String(option)}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Box>
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
+              {first + 1}–{Math.min(first + lanes, MACHINES.length)} of{" "}
+              {MACHINES.length}
+            </Typography>
+            {/* The grids' own pager: the page number sits between the arrows. */}
+            <Pagination
+              color="primary"
+              shape="rounded"
+              page={Math.min(page, pages - 1) + 1}
+              count={pages}
+              onChange={(_event, value) => setPage(value - 1)}
+              renderItem={(itemProps) => (
+                <PaginationItem
+                  {...itemProps}
+                  sx={{
+                    ...((itemProps.type === "previous" ||
+                      itemProps.type === "next") && { border: "none" }),
+                    "&.Mui-selected": {
+                      borderRadius: "999px !important",
+                      border: "none !important",
+                      backgroundColor: "primary.main",
+                      color: "#fff !important",
+                      "&:hover": { backgroundColor: "primary.dark" },
+                    },
                   }}
-                >
-                  {LANE_OPTIONS.map((option) => (
-                    <MenuItem key={option} value={String(option)}>
-                      {option}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <IconButton
-                size="small"
-                aria-label="Previous machines"
-                disabled={page === 0}
-                onClick={() => setPage((was) => Math.max(0, was - 1))}
-              >
-                <MaterialChevron direction="left" />
-              </IconButton>
-              <IconButton
-                size="small"
-                aria-label="More machines"
-                disabled={page >= pages - 1}
-                onClick={() => setPage((was) => Math.min(pages - 1, was + 1))}
-              >
-                <MaterialChevron direction="right" />
-              </IconButton>
-            </Box>
+                />
+              )}
+            />
           </Box>
         </CardContent>
       </Card>
@@ -445,15 +437,21 @@ function SessionRows({
           {stamp(row.lastStarted)}
         </Box>
         <Box component="td">
-          <Button
-            variant="outlined"
-            color="secondary"
+          {/* The same chevron the side nav turns on an open group. */}
+          <IconButton
             size="small"
-            startIcon={<ManageSearchIcon sx={{ fontSize: 18 }} />}
+            aria-label={open ? "Collapse sessions" : "Expand sessions"}
             onClick={onToggle}
           >
-            {open ? "Collapse" : "Expand"}
-          </Button>
+            <MaterialSymbol
+              name="expand_more"
+              size={20}
+              sx={{
+                transition: "transform 0.2s",
+                transform: open ? "rotate(180deg)" : "none",
+              }}
+            />
+          </IconButton>
         </Box>
       </Box>
 
@@ -548,21 +546,5 @@ function SessionRows({
         </>
       )}
     </>
-  );
-}
-
-/** The pager's own chevrons, at the size the icon buttons want. */
-function MaterialChevron({ direction }: { direction: "left" | "right" }) {
-  return (
-    <ArrowTooltip title={direction === "left" ? "Previous" : "Next"}>
-      <Box
-        component="span"
-        className="material-symbols-outlined"
-        aria-hidden
-        sx={{ fontSize: 20, lineHeight: 1 }}
-      >
-        {direction === "left" ? "chevron_left" : "chevron_right"}
-      </Box>
-    </ArrowTooltip>
   );
 }
