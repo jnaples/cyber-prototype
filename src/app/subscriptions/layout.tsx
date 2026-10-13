@@ -29,8 +29,13 @@ const TABS = [
     label: "Plans & Licenses",
     icon: <LayersOutlinedIcon />,
     path: "/subscriptions/plans-licenses",
+    // Not being built yet. The page and its route are untouched — this only
+    // keeps the tab out of the rail until it comes back.
+    hidden: true,
   },
 ] as const;
+
+const VISIBLE_TABS = TABS.filter((tab) => !("hidden" in tab));
 
 // ---------------------------------------------------------------------------
 // Layout component
@@ -40,7 +45,9 @@ export default function SubscriptionsLayout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const activeTab = TABS.findIndex((tab) => pathname.startsWith(tab.path));
+  const activeTab = VISIBLE_TABS.findIndex((tab) =>
+    pathname.startsWith(tab.path),
+  );
   const tabValue = activeTab === -1 ? 0 : activeTab;
 
   // The Subscriptions tab holds a wide table, so it renders full-bleed rather
@@ -48,7 +55,7 @@ export default function SubscriptionsLayout() {
   const isSubscriptionsTab = pathname.startsWith("/subscriptions/manage");
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    navigate(TABS[newValue].path);
+    navigate(VISIBLE_TABS[newValue].path);
   };
 
   const selectedTabSx = {
@@ -99,7 +106,7 @@ export default function SubscriptionsLayout() {
               aria-label="subscriptions tabs"
               sx={{ px: 3 }}
             >
-              {TABS.map((tab) => (
+              {VISIBLE_TABS.map((tab) => (
                 <Tab
                   key={tab.path}
                   label={tab.label}
