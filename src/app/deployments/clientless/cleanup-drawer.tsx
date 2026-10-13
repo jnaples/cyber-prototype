@@ -115,13 +115,13 @@ export function CleanupDrawer({
             explanation, with the way back under it. */}
         <Box>
           <Typography variant="body2" sx={{ color: "text.secondary" }}>
-            Identify and remove stale clientless devices from the dashboard.
+            Identify and remove stale Clientless Devices from the dashboard.
             {expanded ? (
               <>
                 {" "}
-                Anything removed moves to Recently Deleted, where it can be
-                restored for 90 days before it is deleted permanently. This is
-                useful for keeping your clientless device count up to date.{" "}
+                Clean Up removes the Clientless Device from the dashboard and
+                disables its endpoint, but does not remove the endpoint from the
+                device.{" "}
                 <Link
                   component="button"
                   type="button"
@@ -225,12 +225,32 @@ export function CleanupDrawer({
               >
                 <AlertTitle>
                   {stale === 0
-                    ? "No clientless devices match this period"
-                    : `Are you sure you want to delete ${stale} clientless device${stale > 1 ? "s" : ""}?`}
+                    ? "No Clientless Devices match this period"
+                    : `Delete ${stale} Clientless Device${stale > 1 ? "s" : ""}`}
                 </AlertTitle>
-                {stale === 0
-                  ? "Nothing has been quiet this long. Choose a longer period to catch more devices."
-                  : "Deleted devices move to Recently Deleted, where they can be restored for 90 days. Until they are restored their traffic is no longer filtered by DNSFilter or attributed to this organization."}
+                {stale === 0 ? (
+                  "Nothing has been quiet this long. Choose a longer period to catch more devices."
+                ) : (
+                  // Three beats: what Delete does, what it costs, and how long
+                  // it can be undone.
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", gap: 1 }}
+                  >
+                    <span>
+                      Delete removes the selected Clientless Devices from the
+                      dashboard and disables their endpoints.
+                    </span>
+                    <span>
+                      Any device still configured with a deleted endpoint will
+                      lose internet access until the endpoint is removed from
+                      the device.
+                    </span>
+                    <span>
+                      Deleted Clientless Devices move to Recently Deleted and
+                      can be restored within 90 days before permanent deletion.
+                    </span>
+                  </Box>
+                )}
               </Alert>
 
               {stale > 0 && (
@@ -241,7 +261,7 @@ export function CleanupDrawer({
                     <Select
                       displayEmpty
                       value=""
-                      renderValue={() => "Clientless devices to be deleted"}
+                      renderValue={() => "Clientless Devices to Delete"}
                     >
                       {devices.map((device) => (
                         <MenuItem key={device} value={device}>
@@ -261,7 +281,7 @@ export function CleanupDrawer({
                     }}
                   >
                     <Button variant="outlined" color="secondary" size="small">
-                      View devices in table
+                      View Clientless Devices in Table
                     </Button>
                     <Button variant="contained" color="error" size="small">
                       Delete
