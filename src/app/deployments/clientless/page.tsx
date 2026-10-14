@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   Divider,
-  FormLabel,
   IconButton,
   Link,
   ListItemIcon,
@@ -24,9 +23,9 @@ import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { DataTable } from "@/components/data-table";
 import { DataTableBulkActions } from "@/components/data-table-bulk-actions";
 import { MaterialSymbol } from "@/components/material-symbol";
-import { TextField } from "@/components/text-field";
 import { Modal } from "@/components/modal";
 import { NoResultsOverlay } from "@/components/no-results-overlay";
+import { ConfirmPhrase } from "@/components/confirm-phrase";
 import { PanelModal } from "@/components/panel-modal";
 import type { StatusTabConfig } from "@/components/tabbed-data-card";
 import { TabbedDataCard } from "@/components/tabbed-data-card";
@@ -533,16 +532,7 @@ function DohActionsCell({
           </Typography>
         </Box>
         <Box sx={{ mt: 2 }}>
-          <FormLabel sx={{ display: "block", mb: 0.5 }}>
-            Type DELETE to confirm
-          </FormLabel>
-          <TextField
-            fullWidth
-            size="small"
-            placeholder="DELETE"
-            value={confirmText}
-            onChange={(e) => setConfirmText(e.target.value)}
-          />
+          <ConfirmPhrase value={confirmText} onChange={setConfirmText} />
         </Box>
       </Modal>
     </Box>

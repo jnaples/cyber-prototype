@@ -13,10 +13,14 @@ export function CopyButton({
   label = "Copy",
   onCopy,
   disabled = false,
+  color = "primary",
 }: {
   value: string;
   size?: number;
   label?: string;
+  /** Primary by default; secondary where the button sits inside something
+   *  else, like a copyable phrase. */
+  color?: "primary" | "secondary";
   /** Called after a successful copy. */
   onCopy?: () => void;
   /** Greys the button out when there's nothing to copy yet. */
@@ -40,9 +44,12 @@ export function CopyButton({
         disabled={disabled}
         onClick={copy}
         sx={(theme) => ({
-          color: "primary.main",
+          color: color === "secondary" ? "text.secondary" : "primary.main",
           ...theme.applyStyles("dark", {
-            color: theme.vars.palette.primary.light,
+            color:
+              color === "secondary"
+                ? theme.vars.palette.text.secondary
+                : theme.vars.palette.primary.light,
           }),
         })}
       >
