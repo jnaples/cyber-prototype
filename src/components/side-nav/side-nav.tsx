@@ -11,6 +11,7 @@ import { useNavigate } from "react-router";
 import { ArrowTooltip } from "@/components/arrow-tooltip";
 import { Logo, LogoCollapsed } from "@/components/logo";
 import { MspBadge } from "@/components/msp-badge";
+import { NEW_UI_URL } from "@/data/new-ui";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { ThemeModeToggle } from "@/components/theme-mode-toggle";
 import { lightPalette } from "@/theme/core/palette";
@@ -56,6 +57,9 @@ const DrawerContainer = styled(Box, {
 })<{ isExpanded: boolean }>(({ theme, isExpanded }) => ({
   width: isExpanded ? DRAWER_WIDTH_EXPANDED : DRAWER_WIDTH_COLLAPSED,
   flexShrink: 0,
+  // The toggle hangs off the rail's edge, so it anchors to this.
+  position: "relative",
+  height: "100%",
   transition: theme.transitions.create("width", {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.standard,
@@ -207,7 +211,9 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           color: "#ffffff",
           display: "flex",
           flexDirection: "column",
-          position: "fixed",
+          position: "absolute",
+          top: 0,
+          left: 0,
           zIndex: 1200,
           transition: (theme: Theme) =>
             theme.transitions.create("width", {
@@ -229,10 +235,12 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
             color: "white",
             cursor: "pointer",
             borderRadius: "6px",
-            position: "fixed",
+            position: "absolute",
             top: "16px",
-            left: isExpanded ? DRAWER_WIDTH_EXPANDED : DRAWER_WIDTH_COLLAPSED, // Adjust '40' as needed for button width/padding
-            transform: "translateX(-50%)", // Center the button based on its own width
+            // Straddles the rail's right edge, centred on it.
+            left: isExpanded ? DRAWER_WIDTH_EXPANDED : DRAWER_WIDTH_COLLAPSED,
+            transform: "translateX(-50%)",
+            zIndex: 1201,
           }}
         >
           {isExpanded ? (
@@ -1260,6 +1268,34 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                     onClick={() => handleItemClick("account-settings")}
                   >
                     <span style={{ margin: "4px 0" }}>Account Settings</span>
+                  </Box>
+                  {/* The refreshed dashboard, which opens in its own tab. */}
+                  <Box
+                    component="a"
+                    href={NEW_UI_URL}
+                    target="_blank"
+                    rel="noopener"
+                    sx={{
+                      ...getSubItemStyles("account-new-look"),
+                      justifyContent: "space-between",
+                      textDecoration: "none",
+                      color: "inherit",
+                    }}
+                    onClick={() => handleItemClick("account-new-look")}
+                  >
+                    <span style={{ margin: "4px 0" }}>Switch to New Look</span>
+                    <Badge
+                      badgeContent="BETA"
+                      sx={{
+                        mr: 1,
+                        "& .MuiBadge-badge": {
+                          position: "static",
+                          transform: "none",
+                          bgcolor: "tertiary.main",
+                          color: "tertiary.contrastText",
+                        },
+                      }}
+                    />
                   </Box>
                   <Box
                     sx={getSubItemStyles("account-logout")}

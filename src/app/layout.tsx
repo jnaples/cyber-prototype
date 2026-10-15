@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Outlet, useLocation } from "react-router";
 
 import Footer from "@/components/footer";
+import { NewUiBanner } from "@/components/new-ui-banner";
 import Sidebar from "@/components/side-nav/side-nav";
 import { MSP_DASHBOARDS } from "@/data/organizations";
 import { OrgScopeContext } from "@/hooks/use-org-scope";
@@ -43,22 +44,36 @@ export default function RootLayout() {
   return (
     <WorkspaceContext.Provider value={workspace}>
       <OrgScopeContext.Provider value={orgScope}>
+        {/* The banner spans everything, so the shell below it is what's left
+            of the viewport. */}
         <Box
           sx={{
             display: "flex",
-            alignItems: "stretch",
-            overflow: "hidden",
+            flexDirection: "column",
             width: "100%",
             height: "100svh",
+            overflow: "hidden",
           }}
         >
-          {!hideSidebar && (
-            <Sidebar isExpanded={isExpanded} onToggle={toggleSidebar} />
-          )}
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Outlet />
+          {!hideSidebar && <NewUiBanner />}
+          <Box
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              display: "flex",
+              alignItems: "stretch",
+              overflow: "hidden",
+              width: "100%",
+            }}
+          >
+            {!hideSidebar && (
+              <Sidebar isExpanded={isExpanded} onToggle={toggleSidebar} />
+            )}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Outlet />
+            </Box>
+            {!hideFooter && <Footer sidebarWidth={isExpanded ? 280 : 72} />}
           </Box>
-          {!hideFooter && <Footer sidebarWidth={isExpanded ? 280 : 72} />}
         </Box>
       </OrgScopeContext.Provider>
     </WorkspaceContext.Provider>
