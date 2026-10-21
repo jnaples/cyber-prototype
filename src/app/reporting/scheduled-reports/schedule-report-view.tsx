@@ -418,7 +418,7 @@ export function ScheduleReportView({
 
   const canSave = isComplete && (!isEdit || isDirty);
   const saveTooltip = !restComplete
-    ? "Please fill out all required fields."
+    ? "Fill out all required fields."
     : !hasRecipient
       ? "Add at least one internal or external recipient."
       : isEdit && !isDirty

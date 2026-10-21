@@ -4,6 +4,7 @@ import { BrandingContext } from "@/hooks/use-branding";
 import { Navigate, Route, Routes } from "react-router";
 
 import RootLayout from "@/app/layout";
+import AuditLogsPage from "@/app/audit-logs/page";
 import CybersightPage from "@/app/cybersight/page";
 import GlobalPoliciesPage from "@/app/global-policies/page";
 import CreatePolicyPage from "@/app/global-policies/create/page";
@@ -97,6 +98,7 @@ function App() {
             element={<AgentShieldApplicationPage />}
           />
           <Route path="query-logs" element={<QueryLogsPage />} />
+          <Route path="audit-logs" element={<AuditLogsPage />} />
           <Route path="reporting">
             <Route path="custom-reports" element={<CustomReportsPage />} />
             <Route

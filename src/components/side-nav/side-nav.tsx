@@ -1115,10 +1115,13 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                   <span style={{ margin: "4px 0" }}>Data Export</span>
                 </Box>
                 <Box
-                  sx={getSubItemStyles("tools-policy-audit-log")}
-                  onClick={() => handleItemClick("tools-policy-audit-log")}
+                  sx={getSubItemStyles("tools-audit-logs")}
+                  onClick={() => {
+                    handleItemClick("tools-audit-logs");
+                    navigate("/audit-logs");
+                  }}
                 >
-                  <span style={{ margin: "4px 0" }}>Policy Audit Log</span>
+                  <span style={{ margin: "4px 0" }}>Audit Logs</span>
                 </Box>
                 <Box
                   sx={getSubItemStyles("tools-debug-page")}

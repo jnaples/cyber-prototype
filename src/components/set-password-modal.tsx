@@ -38,7 +38,7 @@ const setPasswordSchema = z
         ];
         return checks.filter(Boolean).length >= 3;
       }, "Must contain at least 3 of: lowercase letters, uppercase letters, numbers, special characters"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
+    confirmPassword: z.string().min(1, "Confirm your password"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords do not match",
@@ -54,14 +54,21 @@ type SetPasswordFormValues = z.infer<typeof setPasswordSchema>;
 export interface SetPasswordModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (values: { temporaryPassword: string; newPassword: string }) => void;
+  onSubmit: (values: {
+    temporaryPassword: string;
+    newPassword: string;
+  }) => void;
 }
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function SetPasswordModal({ open, onClose, onSubmit }: SetPasswordModalProps) {
+export function SetPasswordModal({
+  open,
+  onClose,
+  onSubmit,
+}: SetPasswordModalProps) {
   const [showTemporary, setShowTemporary] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -106,11 +113,8 @@ export function SetPasswordModal({ open, onClose, onSubmit }: SetPasswordModalPr
           <Stack spacing={4}>
             {/* Header */}
             <Stack spacing={1}>
-              <Typography
-                variant="h4"
-                sx={{ textAlign: "center" }}
-              >
-                Please set a new password
+              <Typography variant="h4" sx={{ textAlign: "center" }}>
+                Set a new password
               </Typography>
               <Typography
                 variant="body1"

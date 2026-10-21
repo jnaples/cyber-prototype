@@ -1033,6 +1033,8 @@ export interface DataTableProps {
   pinnedShadowFields?: { left?: string; right?: string };
   /** Grouped column headers (e.g. spanning header over several columns). */
   columnGroupingModel?: DataGridProps["columnGroupingModel"];
+  /** Row height, for grids whose cells hold more than one line. */
+  getRowHeight?: DataGridProps["getRowHeight"];
   /**
    * Provide an external grid api ref to drive the grid from outside (e.g. apply
    * a filter from a control rendered elsewhere on the page). Defaults to an
@@ -1106,6 +1108,7 @@ export function DataTable({
   bulkActions,
   pinnedShadowFields,
   columnGroupingModel,
+  getRowHeight,
   apiRef: apiRefProp,
   hiddenFilterIds,
   sx: sxOverrides,
@@ -1455,6 +1458,7 @@ export function DataTable({
             rows={filteredRows}
             columns={processedColumns}
             columnGroupingModel={columnGroupingModel}
+            getRowHeight={getRowHeight}
             density={density}
             pagination
             paginationMode="client"

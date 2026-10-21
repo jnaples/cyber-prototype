@@ -475,7 +475,7 @@ export default function CreateClientlessPage() {
                 <ArrowTooltip
                   title={
                     !complete
-                      ? "Please fill out all required fields."
+                      ? "Fill out all required fields."
                       : dirty
                         ? ""
                         : "No changes to save."
