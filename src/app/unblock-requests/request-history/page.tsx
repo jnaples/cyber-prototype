@@ -381,7 +381,7 @@ const HISTORY: HistoryRequest[] = [
     email: "lisa.wang@umbrellaretail.com",
     requestReason: "Designing this quarter's promo graphics",
     actionedBy: "Casey Morgan",
-    action: "Blocked",
+    action: "Denied",
     internalNote: "Denied — use the licensed design tool already provisioned.",
   },
   {
@@ -437,7 +437,7 @@ const HISTORY: HistoryRequest[] = [
     email: "hannah.lee@umbrellaretail.com",
     requestReason: "Embedded product demo for the landing page",
     actionedBy: "Riley Adams",
-    action: "Blocked",
+    action: "Denied",
     internalNote: "Denied — host the demo on the marketing CDN instead.",
   },
   {
