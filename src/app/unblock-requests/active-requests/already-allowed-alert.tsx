@@ -1,6 +1,6 @@
 // "Already allowed" banner — the domain is on a policy's allow list already, so
 // the request is stale. Shown in whichever drawer the admin opens (Approve,
-// Deny, Deny & Ignore) so the same fact reads the same way in each.
+// Deny, Ignore) so the same fact reads the same way in each.
 
 import { Alert, AlertTitle, Box, Link } from "@mui/material";
 import { format as fnsFormat } from "date-fns";

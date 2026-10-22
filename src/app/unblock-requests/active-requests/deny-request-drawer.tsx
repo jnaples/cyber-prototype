@@ -1,7 +1,7 @@
 // "Deny Request" drawer — opened from the Active Requests Deny row action.
 // Mirrors the Add to Allow List drawer: request context up top, a summary of
 // what denying does, an editable message sent to the requester, and a
-// secondary "Deny & Ignore" action that also suppresses future requests.
+// secondary "Ignore" action that also suppresses future requests.
 
 import { Box, Chip, Divider, Typography } from "@mui/material";
 import { useState } from "react";
@@ -57,7 +57,7 @@ export function DenyRequestDrawer({
     <Drawer
       open={open}
       onClose={onClose}
-      title={ignore ? "Deny Request & Ignore" : "Deny Request"}
+      title={ignore ? "Ignore Request" : "Deny Request"}
       secondaryAction={{ label: "Cancel", onClick: onClose }}
       primaryAction={{
         // Nothing left to deny once the domain is allowed — the action is
@@ -65,7 +65,7 @@ export function DenyRequestDrawer({
         label: alreadyAllowed
           ? "Resolve Request"
           : ignore
-            ? "Deny & Ignore"
+            ? "Ignore Request"
             : "Deny Request",
         onClick: () => {
           onDeny?.();
@@ -80,8 +80,8 @@ export function DenyRequestDrawer({
       {/* Summary — the banner covers it once the domain is already allowed. */}
       {alreadyAllowed ? null : ignore ? (
         <Typography variant="body2" sx={{ color: "text.primary" }}>
-          Stop future requests for this domain from {requester}. No notification
-          is sent.
+          Ignore request for this domain from {requester}. No notification is
+          sent.
         </Typography>
       ) : (
         <Box>

@@ -37,7 +37,7 @@ import { InvestigateModal } from "./investigate-modal";
 // Items shown in the Deny popout menu.
 const DENY_ACTIONS: { label: string; icon: string }[] = [
   { label: "Deny Request", icon: "block" },
-  { label: "Deny Request & Ignore", icon: "notifications_off" },
+  { label: "Ignore Request", icon: "comments_disabled" },
 ];
 
 // Items kept in the overflow menu: the "go look at it elsewhere" links first,
@@ -131,7 +131,7 @@ function RowActionsCell({
           <MaterialSymbol name="check" size={20} />
         </IconButton>
       </ArrowTooltip>
-      <ArrowTooltip title="Deny Request">
+      <ArrowTooltip title="Deny or Ignore Request">
         <IconButton
           size="small"
           aria-label="Deny Request"
@@ -160,7 +160,7 @@ function RowActionsCell({
             key={label}
             onClick={() => {
               closeDeny();
-              setDenyIgnore(label === "Deny Request & Ignore");
+              setDenyIgnore(label === "Ignore Request");
               setDenyOpen(true);
             }}
           >
@@ -276,7 +276,7 @@ function RowActionsCell({
             alreadyAllowed
               ? "Request resolved."
               : denyIgnore
-                ? `Request denied. Future requests from ${requester} ignored.`
+                ? `Request ignored. Future requests from ${requester} ignored.`
                 : "Request denied.",
           )
         }

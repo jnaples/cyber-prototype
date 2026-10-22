@@ -190,26 +190,45 @@ const columns: GridColDef[] = [
     flex: 1,
     minWidth: 120,
     renderCell: (params) => {
-      const allowed = params.value === "Allowed";
+      const decision = params.value as string;
+      // Ignored isn't a verdict on the domain, so it reads neutral rather
+      // than as an allow or a block.
+      const icon =
+        decision === "Allowed"
+          ? "check"
+          : decision === "Ignored"
+            ? "comments_disabled"
+            : "block";
       return (
         <Box sx={{ display: "flex", alignItems: "center", height: "100%" }}>
-          <Chip
-            size="small"
-            icon={
-              <MaterialSymbol name={allowed ? "check" : "block"} size={16} />
-            }
-            label={params.value}
-            sx={(theme) => ({
-              borderRadius: "6px",
-              bgcolor: allowed
-                ? theme.vars.palette.Alert.successStandardBg
-                : theme.vars.palette.Alert.errorStandardBg,
-              color: allowed
-                ? theme.vars.palette.Alert.successColor
-                : theme.vars.palette.Alert.errorColor,
-              "& .MuiChip-icon, & .MuiChip-label": { color: "inherit" },
-            })}
-          />
+          {decision === "Ignored" ? (
+            // Ignored is the plain chip — our default fill and text, no tint
+            // of a status color.
+            <Chip
+              size="small"
+              icon={<MaterialSymbol name={icon} size={16} />}
+              label={decision}
+            />
+          ) : (
+            <Chip
+              size="small"
+              icon={<MaterialSymbol name={icon} size={16} />}
+              label={decision}
+              sx={(theme) => ({
+                borderRadius: "6px",
+                ...(decision === "Allowed"
+                  ? {
+                      bgcolor: theme.vars.palette.Alert.successStandardBg,
+                      color: theme.vars.palette.Alert.successColor,
+                    }
+                  : {
+                      bgcolor: theme.vars.palette.Alert.errorStandardBg,
+                      color: theme.vars.palette.Alert.errorColor,
+                    }),
+                "& .MuiChip-icon, & .MuiChip-label": { color: "inherit" },
+              })}
+            />
+          )}
         </Box>
       );
     },
@@ -249,6 +268,50 @@ type HistoryRequest = {
 };
 
 const HISTORY: HistoryRequest[] = [
+  // Ignored: the request was closed without a verdict on the domain, and the
+  // requester wasn't told.
+  {
+    domain: "tiktok.com",
+    organization: "Vanguard Auto Repair",
+    site: "Detroit Plant",
+    policy: "Default Filtering",
+    category: "Social Networking",
+    blockedBy: "Blocked - Social Networking",
+    loggedInUser: "Diego Salas",
+    email: "d.salas@vanguardauto.com",
+    requestReason: "Want to check comments on our shop's account",
+    actionedBy: "Casey Morgan",
+    action: "Ignored",
+    internalNote: "Repeat ask — no notification sent.",
+  },
+  {
+    domain: "roblox.com",
+    organization: "Bright Future Pediatrics",
+    site: "Austin Clinic",
+    policy: "HIPAA Strict",
+    category: "Games",
+    blockedBy: "Blocked - Games",
+    loggedInUser: "Priya Patel",
+    email: "priya.patel@contosohealth.com",
+    requestReason: "Waiting room tablet for kids",
+    actionedBy: "Riley Adams",
+    action: "Ignored",
+    internalNote: "Guest network isn't in scope for clinical devices.",
+  },
+  {
+    domain: "coinhive.com",
+    organization: "Lakeside Law Group",
+    site: "Chicago Office",
+    policy: "Standard Policy",
+    category: "Cryptomining",
+    blockedBy: "Blocked - Cryptomining",
+    loggedInUser: "Marcus Thompson",
+    email: "marcus.thompson@globex.com",
+    requestReason: "Testing a crypto widget for a client site",
+    actionedBy: "Jordan Blake",
+    action: "Ignored",
+    internalNote: "Known mining host — closed without reply.",
+  },
   {
     domain: "linkedin.com",
     organization: "Northwind Traders",
