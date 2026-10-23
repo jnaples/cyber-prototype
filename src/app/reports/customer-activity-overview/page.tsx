@@ -435,9 +435,6 @@ export default function CustomerActivityOverviewReport() {
         </Box>
         <ReportLogo />
       </Box>
-      {/* The rule and the scope band below it run the page's full width,
-          past the 64px gutters. */}
-      <Box sx={{ mx: "-64px", height: "2px", bgcolor: TEXT }} />
 
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
@@ -451,7 +448,10 @@ export default function CustomerActivityOverviewReport() {
             // still lines up with the rest of the report.
             p: "40px 64px",
             bgcolor: NEUTRAL,
-            // Closed off with the same rule the KPI tiles are drawn with.
+            // Closed off top and bottom with the same rule the KPI tiles are
+            // drawn with — the band itself separates the masthead from the
+            // report.
+            borderTop: `1px solid ${DIVIDER}`,
             borderBottom: `1px solid ${DIVIDER}`,
             fontSize: 20,
             color: TEXT2,
