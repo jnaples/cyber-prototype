@@ -171,6 +171,11 @@ function App() {
             path="customer-activity-overview"
             element={<CustomerActivityOverviewReport />}
           />
+          {/* The filtered sample runs the same report for now. */}
+          <Route
+            path="customer-activity-overview-filtered"
+            element={<CustomerActivityOverviewReport />}
+          />
           <Route path="endpoint-traffic-logs" element={<ReportPlaceholder />} />
           <Route
             path="filter-protection-summary"

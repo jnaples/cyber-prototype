@@ -19,7 +19,18 @@ const REPORT_GROUPS: SidebarGroup[] = [
     ],
   },
   {
-    header: "Legacy Reports",
+    // The same Activity Overview, rendered from a filtered sample so the
+    // report can be read without picking an organization first.
+    header: "Sample Filtered Report",
+    items: [
+      {
+        label: "Activity Overview - Filtered",
+        path: `${BASE}/customer-activity-overview-filtered`,
+      },
+    ],
+  },
+  {
+    header: "Filtering Reports",
     items: [
       {
         label: "Filter Protection Overview",

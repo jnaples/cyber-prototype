@@ -6,6 +6,8 @@
 import { Box } from "@mui/material";
 import type { Theme } from "@mui/material/styles";
 
+import { MaterialSymbol } from "@/components/material-symbol";
+
 import { ReportLogo } from "../report-logo";
 
 // Token / dataviz palette (from the template).
@@ -17,6 +19,8 @@ const DIVIDER = "rgba(3,22,37,.12)";
 // The page's own edge — lighter than the rules inside it.
 const PAGE_BORDER = "#E5E5EC";
 const TRACK = "#edf0f6";
+// background.neutral from the app palette — the ground its tab rails sit on.
+const NEUTRAL = "#F6F8FC";
 const C = {
   web: "#207BBE", // secureBlue[800]
   app: "#9435EC", // pairingPurple.main (purple[400])
@@ -214,6 +218,24 @@ function UserIcon() {
   );
 }
 
+/** One line of the report's scope: the label, then the value. */
+function ScopeLine({
+  label,
+  children,
+}: {
+  label: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <Box>
+      <Box component="span" sx={{ fontWeight: 600, color: TEXT }}>
+        {label}:
+      </Box>{" "}
+      {children}
+    </Box>
+  );
+}
+
 function SecHead({
   title,
   sub,
@@ -388,37 +410,75 @@ export default function CustomerActivityOverviewReport() {
         sx={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "flex-start",
-          pb: "24px",
+          alignItems: "center",
+          pb: "40px",
         }}
       >
         <Box>
           <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 30 }}>
             Brightwave IT
           </Box>
-          <Box sx={{ mt: "16px" }}>
-            <Box
-              sx={{
-                fontSize: 16,
-                letterSpacing: "1.5px",
-                textTransform: "uppercase",
-                color: TEXT2,
-                fontWeight: 600,
-              }}
-            >
-              Monthly report
-            </Box>
-            <Box sx={{ fontSize: 20, fontWeight: 600, mt: "4px" }}>
-              Jul 1 – Jul 31, 2026
-            </Box>
+          {/* The window itself rides with the organization in the band
+              below, so the masthead only says what kind of report this is. */}
+          <Box
+            sx={{
+              mt: "8px",
+              fontSize: 16,
+              letterSpacing: "1.5px",
+              textTransform: "uppercase",
+              color: TEXT2,
+              fontWeight: 600,
+            }}
+          >
+            Monthly report
           </Box>
         </Box>
         <ReportLogo />
       </Box>
-      <Box sx={{ height: "2px", bgcolor: TEXT, mb: "40px" }} />
+      {/* The rule and the scope band below it run the page's full width,
+          past the 64px gutters. */}
+      <Box sx={{ mx: "-64px", height: "2px", bgcolor: TEXT }} />
 
       {/* Title block */}
       <Box sx={{ mb: "48px" }}>
+        {/* Who the report is about and what it was scoped to, on the neutral
+            band the app's tab rails sit on. It runs the page's width; a long
+            list wraps rather than pushing past it. */}
+        <Box
+          sx={{
+            mx: "-64px",
+            // Bled to the page's edges, but its text keeps the gutter so it
+            // still lines up with the rest of the report.
+            p: "40px 64px",
+            bgcolor: NEUTRAL,
+            // Closed off with the same rule the KPI tiles are drawn with.
+            borderBottom: `1px solid ${DIVIDER}`,
+            fontSize: 20,
+            color: TEXT2,
+            overflowWrap: "anywhere",
+          }}
+        >
+          <Box sx={{ mb: "16px", fontSize: 24, color: TEXT2 }}>
+            <Box component="span" sx={{ fontWeight: 600, color: TEXT }}>
+              Acme Manufacturing
+            </Box>{" "}
+            · Jul 1 – Jul 31, 2026
+          </Box>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <ScopeLine label="Sites">
+              3 of 10 — Austin Office, Chicago HQ, London Branch
+            </ScopeLine>
+            <ScopeLine label="Roaming Clients &amp; Relays">
+              27 of 100 — Chicago-RC-01, Austin-Relay-2, +25 more
+              {/* What the two together actually mean. */}
+              <Box sx={{ fontStyle: "italic", fontSize: 16 }}>
+                Protected devices and network forwarders covered by this
+                service.
+              </Box>
+            </ScopeLine>
+            <ScopeLine label="Users">All</ScopeLine>
+          </Box>
+        </Box>
         <Box
           component="h1"
           sx={{
@@ -426,12 +486,12 @@ export default function CustomerActivityOverviewReport() {
             fontWeight: 600,
             fontSize: 48,
             lineHeight: 1.2,
-            m: "8px 0",
+            m: 0,
+            pt: "36px",
           }}
         >
           Activity Overview
         </Box>
-        <Box sx={{ fontSize: 24, color: TEXT2 }}>Acme Manufacturing</Box>
       </Box>
 
       {/* KPI band */}
@@ -444,24 +504,61 @@ export default function CustomerActivityOverviewReport() {
         }}
       >
         {[
-          { num: "8.5h", cap: "Avg active time per device per day" },
-          { num: "10", cap: "Active devices" },
-          { num: "3", cap: "Active users" },
-          { num: "254h 30m", cap: "Total active time" },
+          {
+            num: "8.5h",
+            cap: "Avg active time per device per day",
+            icon: "schedule",
+            color: C.web,
+          },
+          {
+            num: "10",
+            cap: "Active devices",
+            icon: "devices",
+            color: C.app,
+          },
+          { num: "3", cap: "Active users", icon: "group", color: C.client },
+          {
+            num: "254h 30m",
+            cap: "Total active time",
+            icon: "timelapse",
+            color: C.cat,
+          },
         ].map((k) => (
           <Box
             key={k.cap}
             sx={{
               border: `1px solid ${DIVIDER}`,
+              // The metric's colour carries down the card's leading edge.
+              borderLeft: `4px solid ${k.color}`,
               borderRadius: "6px",
-              p: "28px 32px 24px",
+              p: "24px 32px 28px",
               display: "flex",
               flexDirection: "column",
-              justifyContent: "flex-end",
+              justifyContent: "space-between",
             }}
           >
+            {/* The caption leads, with the metric's own colour on its icon. */}
+            <Box sx={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+              <MaterialSymbol
+                name={k.icon}
+                size={22}
+                sx={{ mt: "2px", flexShrink: 0, color: k.color }}
+              />
+              <Box
+                sx={{
+                  fontSize: 16,
+                  fontWeight: 600,
+                  letterSpacing: "1.5px",
+                  textTransform: "uppercase",
+                  color: TEXT2,
+                }}
+              >
+                {k.cap}
+              </Box>
+            </Box>
             <Box
               sx={{
+                mt: "16px",
                 fontFamily: montserrat,
                 fontWeight: 600,
                 fontSize: 40,
@@ -471,18 +568,6 @@ export default function CustomerActivityOverviewReport() {
               }}
             >
               {k.num}
-            </Box>
-            <Box
-              sx={{
-                fontSize: 16,
-                fontWeight: 600,
-                letterSpacing: "1.5px",
-                textTransform: "uppercase",
-                color: TEXT2,
-                mt: "12px",
-              }}
-            >
-              {k.cap}
             </Box>
           </Box>
         ))}
