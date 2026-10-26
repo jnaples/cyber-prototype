@@ -171,10 +171,10 @@ function App() {
             path="customer-activity-overview"
             element={<CustomerActivityOverviewReport />}
           />
-          {/* The filtered sample runs the same report for now. */}
+          {/* The filtered sample is the same report, drawn with rounder cards. */}
           <Route
             path="customer-activity-overview-filtered"
-            element={<CustomerActivityOverviewReport />}
+            element={<CustomerActivityOverviewReport filtered />}
           />
           <Route path="endpoint-traffic-logs" element={<ReportPlaceholder />} />
           <Route

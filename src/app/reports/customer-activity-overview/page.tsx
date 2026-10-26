@@ -30,7 +30,10 @@ const C = {
   client: "#05864A", // green[800]
 };
 
-const montserrat = (theme: Theme) => theme.typography.fontSecondaryFamily;
+const INTER = "'Inter Variable', sans-serif";
+/** Headings and figures follow the page's display face, which the report's
+ *  root sets — Montserrat normally, Inter on the filtered sample. */
+const DISPLAY = "var(--report-display)";
 
 type Row = {
   nm: string;
@@ -218,6 +221,19 @@ function UserIcon() {
   );
 }
 
+/** How many of a scope's members are named before it gives a count instead. */
+const SCOPE_NAMES_SHOWN = 5;
+
+/** A scope's value: how many of the total it covers, then the members
+ *  themselves — up to five by name, with the rest as a count. */
+function scopeValue(selected: number, total: number, names: string[]) {
+  const shown = names.slice(0, SCOPE_NAMES_SHOWN);
+  const rest = selected - shown.length;
+  const list =
+    rest > 0 ? `${shown.join(", ")}, +${rest} more` : shown.join(", ");
+  return `${selected} of ${total} — ${list}`;
+}
+
 /** One line of the report's scope: the label, then the value. */
 function ScopeLine({
   label,
@@ -226,8 +242,10 @@ function ScopeLine({
   label: React.ReactNode;
   children: React.ReactNode;
 }) {
+  // Held to a readable measure; a longer list wraps rather than running the
+  // width of the page.
   return (
-    <Box>
+    <Box sx={{ maxWidth: 640 }}>
       <Box component="span" sx={{ fontWeight: 600, color: TEXT }}>
         {label}:
       </Box>{" "}
@@ -250,7 +268,7 @@ function SecHead({
         component="h2"
         sx={{
           m: 0,
-          fontFamily: montserrat,
+          fontFamily: DISPLAY,
           fontSize: 24,
           fontWeight: 600,
           textTransform: "capitalize",
@@ -388,7 +406,12 @@ function TopNColumn({
   );
 }
 
-export default function CustomerActivityOverviewReport() {
+export default function CustomerActivityOverviewReport({
+  // The filtered sample runs the same report with a softer card treatment.
+  filtered = false,
+}: {
+  filtered?: boolean;
+}) {
   return (
     <Box
       // Fixed light-mode PDF-style document, 1400px canvas.
@@ -402,7 +425,11 @@ export default function CustomerActivityOverviewReport() {
         border: `1px solid ${PAGE_BORDER}`,
         boxShadow: (theme) => theme.shadows[3],
         p: "64px 64px 48px",
-        fontFamily: "'Inter Variable', sans-serif",
+        fontFamily: INTER,
+        // The display face every heading and figure on the page pulls from.
+        // The filtered sample sets the whole report in Inter instead.
+        "--report-display": (theme: Theme) =>
+          filtered ? INTER : (theme.typography.fontSecondaryFamily ?? INTER),
       }}
     >
       {/* Masthead */}
@@ -415,7 +442,7 @@ export default function CustomerActivityOverviewReport() {
         }}
       >
         <Box>
-          <Box sx={{ fontFamily: montserrat, fontWeight: 600, fontSize: 30 }}>
+          <Box sx={{ fontFamily: DISPLAY, fontWeight: 600, fontSize: 30 }}>
             Brightwave IT
           </Box>
           {/* The window itself rides with the organization in the band
@@ -466,12 +493,22 @@ export default function CustomerActivityOverviewReport() {
           </Box>
           <Box sx={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <ScopeLine label="Sites">
-              3 of 10 — Austin Office, Chicago HQ, London Branch
+              {scopeValue(3, 10, [
+                "Austin Office",
+                "Chicago HQ",
+                "London Branch",
+              ])}
             </ScopeLine>
             <ScopeLine label="Roaming Clients &amp; Relays">
-              27 of 100 — Chicago-RC-01, Austin-Relay-2, +25 more
+              {scopeValue(27, 100, [
+                "Chicago-RC-01",
+                "Austin-Relay-2",
+                "London-RC-07",
+                "Boston-RC-03",
+                "Seattle-Relay-1",
+              ])}
               {/* What the two together actually mean. */}
-              <Box sx={{ fontStyle: "italic", fontSize: 16 }}>
+              <Box sx={{ mt: "4px", fontStyle: "italic", fontSize: 16 }}>
                 Protected devices and network forwarders covered by this
                 service.
               </Box>
@@ -482,7 +519,7 @@ export default function CustomerActivityOverviewReport() {
         <Box
           component="h1"
           sx={{
-            fontFamily: montserrat,
+            fontFamily: DISPLAY,
             fontWeight: 600,
             fontSize: 48,
             lineHeight: 1.2,
@@ -527,14 +564,25 @@ export default function CustomerActivityOverviewReport() {
           <Box
             key={k.cap}
             sx={{
+              position: "relative",
+              overflow: "hidden",
               border: `1px solid ${DIVIDER}`,
-              // The metric's colour carries down the card's leading edge.
-              borderLeft: `4px solid ${k.color}`,
-              borderRadius: "6px",
+              borderRadius: filtered ? "16px" : "6px",
               p: "24px 32px 28px",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
+              // The metric's colour runs down the card's leading edge, drawn
+              // rather than bordered so it follows the rounded corners.
+              "&::before": {
+                content: '""',
+                position: "absolute",
+                insetInlineStart: 0,
+                top: 0,
+                bottom: 0,
+                width: "4px",
+                bgcolor: k.color,
+              },
             }}
           >
             {/* The caption leads, with the metric's own colour on its icon. */}
@@ -559,7 +607,7 @@ export default function CustomerActivityOverviewReport() {
             <Box
               sx={{
                 mt: "16px",
-                fontFamily: montserrat,
+                fontFamily: DISPLAY,
                 fontWeight: 600,
                 fontSize: 40,
                 lineHeight: 1,
