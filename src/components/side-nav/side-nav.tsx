@@ -1110,7 +1110,10 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                 </Box>
                 <Box
                   sx={getSubItemStyles("tools-data-exports")}
-                  onClick={() => handleItemClick("tools-data-exports")}
+                  onClick={() => {
+                    handleItemClick("tools-data-exports");
+                    navigate("/tools/data-export");
+                  }}
                 >
                   <span style={{ margin: "4px 0" }}>Data Export</span>
                 </Box>
@@ -1125,13 +1128,19 @@ export default function Sidebar({ isExpanded, onToggle }: SidebarProps) {
                 </Box>
                 <Box
                   sx={getSubItemStyles("tools-debug-page")}
-                  onClick={() => handleItemClick("tools-debug-page")}
+                  onClick={() => {
+                    handleItemClick("tools-debug-page");
+                    navigate("/tools/debug-page");
+                  }}
                 >
                   <span style={{ margin: "4px 0" }}>Debug Page</span>
                 </Box>
                 <Box
                   sx={getSubItemStyles("tools-ssl-certificate")}
-                  onClick={() => handleItemClick("tools-ssl-certificate")}
+                  onClick={() => {
+                    handleItemClick("tools-ssl-certificate");
+                    navigate("/tools/ssl-certificate");
+                  }}
                 >
                   <span style={{ margin: "4px 0" }}>SSL Certificate</span>
                 </Box>

@@ -5,6 +5,9 @@ import { Navigate, Route, Routes } from "react-router";
 
 import RootLayout from "@/app/layout";
 import AuditLogsPage from "@/app/audit-logs/page";
+import ToolsLayout from "@/app/tools/layout";
+import { ToolPlaceholder } from "@/app/tools/placeholder";
+import SslCertificatePage from "@/app/tools/ssl-certificate/page";
 import CybersightPage from "@/app/cybersight/page";
 import GlobalPoliciesPage from "@/app/global-policies/page";
 import CreatePolicyPage from "@/app/global-policies/create/page";
@@ -99,6 +102,18 @@ function App() {
           />
           <Route path="query-logs" element={<QueryLogsPage />} />
           <Route path="audit-logs" element={<AuditLogsPage />} />
+          <Route path="tools" element={<ToolsLayout />}>
+            <Route index element={<Navigate to="ssl-certificate" replace />} />
+            <Route
+              path="data-export"
+              element={<ToolPlaceholder title="Data Export" />}
+            />
+            <Route
+              path="debug-page"
+              element={<ToolPlaceholder title="Debug Page" />}
+            />
+            <Route path="ssl-certificate" element={<SslCertificatePage />} />
+          </Route>
           <Route path="reporting">
             <Route path="custom-reports" element={<CustomReportsPage />} />
             <Route
