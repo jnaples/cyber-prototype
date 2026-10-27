@@ -11,11 +11,12 @@ import { PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
 import { PageTabs } from "@/components/page-tabs";
 
+// Label-only: these tabs name settings pages, not places on a map.
 const TABS = [
-  { label: "Data Export", icon: "download", path: "/tools/data-export" },
-  { label: "Audit Logs", icon: "receipt_long", path: "/audit-logs" },
-  { label: "Debug Page", icon: "bug_report", path: "/tools/debug-page" },
-  { label: "SSL Certificate", icon: "lock", path: "/tools/ssl-certificate" },
+  { label: "Data Export", path: "/tools/data-export" },
+  { label: "Audit Logs", path: "/audit-logs" },
+  { label: "Debug Page", path: "/tools/debug-page" },
+  { label: "SSL Certificate", path: "/tools/ssl-certificate" },
 ] as const;
 
 export default function ToolsLayout() {

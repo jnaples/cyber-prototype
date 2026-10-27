@@ -11,8 +11,9 @@ import { MaterialSymbol } from "@/components/material-symbol";
 
 export type PageTab = {
   label: string;
-  /** Material Symbols name, drawn at the theme's 20px tab size. */
-  icon: string;
+  /** Material Symbols name, drawn at the theme's 20px tab size. A rail that
+   *  leaves it out is label-only. */
+  icon?: string;
 };
 
 /** Selected page tab reads as a card lifted out of the neutral strip. The
@@ -62,7 +63,11 @@ export function PageTabs({
           <Tab
             key={tab.label}
             label={tab.label}
-            icon={<MaterialSymbol name={tab.icon} size={20} />}
+            icon={
+              tab.icon ? (
+                <MaterialSymbol name={tab.icon} size={20} />
+              ) : undefined
+            }
             sx={selectedTabSx}
           />
         ))}
