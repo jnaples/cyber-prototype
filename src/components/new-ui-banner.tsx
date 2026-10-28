@@ -47,7 +47,12 @@ export function NewUiBanner() {
         </Typography>
         <Typography
           variant="body2"
-          sx={{ minWidth: 0, color: "rgba(255, 255, 255, 0.72)" }}
+          // blueGrey 100 — the palette's lightest blue-tinted neutral, which
+          // reads as a step down from the white title on the dark band.
+          sx={(theme) => ({
+            minWidth: 0,
+            color: theme.vars.palette.blueGrey[100],
+          })}
         >
           The updated interface is in beta. Switch back anytime from the Account
           menu.
